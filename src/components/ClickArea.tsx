@@ -2,20 +2,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
-import { Sparkles, Pickaxe } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
-// Particle effect component
+// Space debris/asteroid particle effect
 interface ParticleProps {
   x: number;
   y: number;
   color: string;
+  size?: number;
+  duration?: number;
   onAnimationEnd: () => void;
 }
 
-const Particle: React.FC<ParticleProps> = ({ x, y, color, onAnimationEnd }) => {
-  const randomSize = Math.floor(Math.random() * 4) + 2; // 2-5px
-  const randomDuration = (Math.random() * 0.5) + 0.5; // 0.5-1s
+const Particle: React.FC<ParticleProps> = ({ 
+  x, y, color, size, duration, onAnimationEnd 
+}) => {
+  const randomSize = size || Math.floor(Math.random() * 4) + 2; // 2-5px
+  const randomDuration = duration || (Math.random() * 0.5) + 0.5; // 0.5-1s
   const randomOpacity = (Math.random() * 0.5) + 0.5; // 0.5-1
+  const randomRotation = Math.random() * 360; // 0-360 degrees
   
   return (
     <div 
@@ -27,6 +32,7 @@ const Particle: React.FC<ParticleProps> = ({ x, y, color, onAnimationEnd }) => {
         height: `${randomSize}px`, 
         backgroundColor: color,
         opacity: randomOpacity,
+        transform: `rotate(${randomRotation}deg)`,
         animation: `float-up ${randomDuration}s ease-out forwards`
       }}
       onAnimationEnd={onAnimationEnd}
@@ -45,7 +51,7 @@ interface ClickEffectProps {
 const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }) => {
   return (
     <div 
-      className="click-effect text-game-accent font-medium"
+      className="click-effect text-purple-400 font-medium text-shadow-glow"
       style={{ left: x, top: y }}
       onAnimationEnd={onAnimationEnd}
     >
@@ -57,23 +63,35 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 const ClickArea: React.FC = () => {
   const { state, handleClick } = useGame();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string }>>([]);
+  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [showPickaxe, setShowPickaxe] = useState(false);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const nextId = useRef(0);
   
-  // Get element color based on current coins
-  const getElementColor = () => {
+  // Get asteroid color based on current coins
+  const getAsteroidColor = () => {
     const coins = state.coins;
-    if (coins < 100) return "#81D4FA"; // Hydrogen (blue)
-    if (coins < 1000) return "#424242"; // Carbon (dark grey)
-    if (coins < 10000) return "#90CAF9"; // Oxygen (light blue)
-    if (coins < 100000) return "#CB8D73"; // Iron (rust)
-    if (coins < 1000000) return "#D87F46"; // Copper (orange-brown)
-    if (coins >= 1000000) return "#FFC107"; // Gold (yellow)
+    if (coins < 100) return "#81D4FA"; // Blue asteroid
+    if (coins < 1000) return "#424242"; // Carbon asteroid
+    if (coins < 10000) return "#90CAF9"; // Ice asteroid
+    if (coins < 100000) return "#CB8D73"; // Iron asteroid
+    if (coins < 1000000) return "#D87F46"; // Copper asteroid
+    if (coins >= 1000000) return "#FFC107"; // Gold asteroid
     return "#BA68C8"; // Default: rare element (purple)
   };
+  
+  // Slowly rotate asteroid for ambient animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotation(prev => ({
+        x: prev.x + 0.1,
+        y: prev.y + 0.2
+      }));
+    }, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   const handleAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Get click position relative to the container
@@ -91,18 +109,32 @@ const ClickArea: React.FC = () => {
       { id: nextId.current++, x: effectX, y: effectY }
     ]);
     
-    // Add particle effects
-    const particleCount = Math.min(5 + Math.floor(state.coinsPerClick / 100), 15);
+    // Add particle effects - space debris from asteroid
+    const particleCount = Math.min(10 + Math.floor(state.coinsPerClick / 100), 20);
     const newParticles = [];
-    const elementColor = getElementColor();
+    const asteroidColor = getAsteroidColor();
     
+    // Create diverse space debris
     for (let i = 0; i < particleCount; i++) {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
+      const size = Math.random() * 5 + 2; // Varied sizes for debris
+      
+      // Mix of colors for richer debris effect
+      const colors = [
+        asteroidColor, 
+        "#ffffff", // Some white sparkles
+        "#c0c0c0", // Silver
+        "#808080"  // Gray
+      ];
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
       newParticles.push({ 
         id: nextId.current++, 
         x: particleX, 
         y: particleY,
-        color: elementColor
+        color: color,
+        size: size
       });
     }
     
@@ -114,10 +146,6 @@ const ClickArea: React.FC = () => {
     // Add button animation
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150);
-    
-    // Show pickaxe animation
-    setShowPickaxe(true);
-    setTimeout(() => setShowPickaxe(false), 300);
   };
   
   // Remove effects after animation
@@ -130,40 +158,49 @@ const ClickArea: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col items-center justify-center py-6">
+    <div className="flex flex-col items-center justify-center py-6 relative z-20">
       <div 
         ref={containerRef}
         className="relative w-64 h-64 mb-5 flex items-center justify-center select-none"
       >
-        {/* Mining area with sparkle effect */}
+        {/* Asteroid with glow effect */}
         <div 
-          className={`w-48 h-48 rounded-full bg-gradient-to-br from-white to-slate-100 shadow-lg flex items-center justify-center cursor-pointer transition-transform relative overflow-visible
+          className={`w-48 h-48 rounded-full flex items-center justify-center cursor-pointer transition-transform relative overflow-visible
             ${isAnimating ? 'animate-pulse-click' : ''}`}
           onClick={handleAreaClick}
+          style={{
+            transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+            background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
+            boxShadow: `0 0 20px 5px rgba(${getAsteroidColor() === '#FFC107' ? '255, 193, 7' : '186, 104, 200'}, 0.3)`,
+          }}
         >
+          {/* Asteroid texture overlay */}
+          <div className="absolute inset-0 rounded-full opacity-40"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 70% 20%, transparent 0%, #00000070 80%)',
+              mixBlendMode: 'multiply'
+            }}
+          ></div>
+          
+          {/* Asteroid craters */}
+          <div className="absolute w-10 h-10 rounded-full bg-black opacity-20" 
+            style={{ top: '20%', left: '30%' }}></div>
+          <div className="absolute w-6 h-6 rounded-full bg-black opacity-20" 
+            style={{ top: '50%', left: '20%' }}></div>
+          <div className="absolute w-8 h-8 rounded-full bg-black opacity-20" 
+            style={{ top: '60%', left: '60%' }}></div>
+          
           {/* Subtle sparkle effect */}
           <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-            <Sparkles className="w-36 h-36 text-slate-300" />
+            <Sparkles className="w-36 h-36 text-white" />
           </div>
           
-          <div className="text-center z-10">
-            <p className="text-3xl font-semibold mb-2 text-game-accent">{formatNumber(state.coins)}</p>
-            <p className="text-sm text-game-text-secondary">
+          <div className="text-center z-10 p-4 rounded-full backdrop-blur-sm bg-opacity-20 bg-black">
+            <p className="text-3xl font-semibold mb-2 text-white text-shadow-glow">{formatNumber(state.coins)}</p>
+            <p className="text-sm text-white text-shadow-sm">
               +{formatNumber(state.coinsPerClick)} per tap
             </p>
           </div>
-          
-          {/* Mining pickaxe animation */}
-          {showPickaxe && (
-            <div className="absolute -right-2 -top-8 animate-mining z-20">
-              <Pickaxe size={32} className="text-slate-600" />
-            </div>
-          )}
-          
-          {/* Subtle rings around the main circle */}
-          <div className="absolute w-full h-full rounded-full border-4 border-white opacity-50"></div>
-          <div className="absolute w-[110%] h-[110%] rounded-full border-2 border-white opacity-30"></div>
-          <div className="absolute w-[120%] h-[120%] rounded-full border border-white opacity-20"></div>
         </div>
         
         {/* Click effects rendering */}
@@ -184,6 +221,7 @@ const ClickArea: React.FC = () => {
             x={particle.x}
             y={particle.y}
             color={particle.color}
+            size={particle.size}
             onAnimationEnd={() => removeParticle(particle.id)}
           />
         ))}
@@ -192,7 +230,7 @@ const ClickArea: React.FC = () => {
       {/* Passive income indicator */}
       {state.coinsPerSecond > 0 && (
         <div className="text-center mb-8 animate-slide-up">
-          <p className="text-sm text-game-text-secondary">
+          <p className="text-sm text-white text-shadow-sm">
             +{formatNumber(state.coinsPerSecond)} coins per second
           </p>
         </div>
