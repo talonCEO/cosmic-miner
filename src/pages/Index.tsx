@@ -17,18 +17,6 @@ const SpaceBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas dimensions to match window
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      
-      // Redraw stars on resize
-      drawStars();
-    };
-    
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial sizing
-    
     // Create stars
     const stars: {x: number, y: number, radius: number, opacity: number, speed: number}[] = [];
     const asteroids: {x: number, y: number, radius: number, speed: number, rotation: number, rotationSpeed: number}[] = [];
@@ -183,6 +171,18 @@ const SpaceBackground = () => {
       drawComet();
     }
     
+    // Set canvas dimensions to match window
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // Redraw stars on resize
+      drawStars();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial sizing
+    
     // Animation loop
     function animate() {
       drawStars();
@@ -238,3 +238,4 @@ const Index: React.FC = () => {
 };
 
 export default Index;
+
