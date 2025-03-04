@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
+import PowerupsManager from '@/components/PowerupsManager';
 
 // Simplified space background with subtle particle effects
 const SpaceBackground = () => {
@@ -166,6 +167,9 @@ const Index: React.FC = () => {
         <div className="relative z-10">
           <Header />
         </div>
+        
+        {/* Powerups Manager */}
+        <PowerupsManager />
         
         <main className="flex-1 max-w-4xl mx-auto w-full px-4 relative z-10">
           <div className="py-4">

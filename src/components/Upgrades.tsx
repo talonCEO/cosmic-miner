@@ -9,9 +9,10 @@ import {
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 
 const Upgrades: React.FC = () => {
-  const { state, buyUpgrade } = useGame();
+  const { state, buyUpgrade, toggleAutoBuy } = useGame();
   const { toast } = useToast();
   
   const iconMap: Record<string, React.ReactNode> = {
@@ -66,7 +67,17 @@ const Upgrades: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto pb-8">
-      <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Element Mining</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-medium text-slate-100">Element Mining</h2>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-slate-300">Auto Buy</span>
+          <Switch 
+            checked={state.autoBuy} 
+            onCheckedChange={toggleAutoBuy}
+            className="data-[state=checked]:bg-indigo-600"
+          />
+        </div>
+      </div>
       
       <div className="space-y-4">
         {sortedUpgrades.map((upgrade, index) => {

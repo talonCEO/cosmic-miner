@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
-import { Sparkles } from 'lucide-react';
+import AnimatedAsteroid from './AnimatedAsteroid';
 
 // Particle effect when clicking
 interface ParticleProps {
@@ -78,7 +78,7 @@ const ClickArea: React.FC = () => {
     return "#BA68C8"; // Default: rare element (purple)
   };
   
-  const handleAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleAreaClick = () => {
     // Get click position relative to the container
     if (!containerRef.current) return;
     
@@ -148,44 +148,11 @@ const ClickArea: React.FC = () => {
         ref={containerRef}
         className="relative w-64 h-64 mb-5 flex items-center justify-center select-none"
       >
-        {/* Asteroid with glow effect */}
-        <div 
-          className={`w-48 h-48 rounded-full flex items-center justify-center cursor-pointer transition-transform relative overflow-visible
-            ${isAnimating ? 'animate-pulse-click' : ''}`}
+        {/* Animated asteroid */}
+        <AnimatedAsteroid 
           onClick={handleAreaClick}
-          style={{
-            background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
-            boxShadow: `0 0 20px 5px rgba(${getAsteroidColor() === '#FFC107' ? '255, 193, 7' : '186, 104, 200'}, 0.3)`,
-          }}
-        >
-          {/* Asteroid texture overlay */}
-          <div className="absolute inset-0 rounded-full opacity-40"
-            style={{
-              backgroundImage: 'radial-gradient(circle at 70% 20%, transparent 0%, #00000070 80%)',
-              mixBlendMode: 'multiply'
-            }}
-          ></div>
-          
-          {/* Asteroid craters */}
-          <div className="absolute w-10 h-10 rounded-full bg-black opacity-20" 
-            style={{ top: '20%', left: '30%' }}></div>
-          <div className="absolute w-6 h-6 rounded-full bg-black opacity-20" 
-            style={{ top: '50%', left: '20%' }}></div>
-          <div className="absolute w-8 h-8 rounded-full bg-black opacity-20" 
-            style={{ top: '60%', left: '60%' }}></div>
-          
-          {/* Subtle sparkle effect */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-            <Sparkles className="w-36 h-36 text-white" />
-          </div>
-          
-          <div className="text-center z-10 p-4 rounded-full backdrop-blur-sm bg-opacity-20 bg-black">
-            <p className="text-3xl font-semibold mb-2 text-white text-shadow-glow">{formatNumber(state.coins)}</p>
-            <p className="text-sm text-white text-shadow-sm">
-              +{formatNumber(state.coinsPerClick)} per tap
-            </p>
-          </div>
-        </div>
+          isAnimating={isAnimating}
+        />
         
         {/* Click effects rendering */}
         {clickEffects.map(effect => (

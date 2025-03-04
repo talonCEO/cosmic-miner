@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -258,7 +257,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'PRESTIGE': {
       const essenceReward = calculateEssenceReward(state.totalEarned);
       
-      // Reset progress but keep essence and add reward
+      // Reset progress but keep essence, managers, artifacts, and achievements
       return {
         ...initialState,
         essence: state.essence + essenceReward,
