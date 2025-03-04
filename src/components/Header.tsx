@@ -3,7 +3,7 @@ import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
-import { Sparkles, Coins } from 'lucide-react';
+import { Sparkles, Bitcoin } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Header: React.FC = () => {
@@ -74,7 +74,7 @@ const Header: React.FC = () => {
           <div className="text-right flex flex-col items-end px-3 py-1.5">
             <p className="text-sm text-slate-400">Coins</p>
             <div className="flex items-center">
-              <Coins size={16} className="text-green-400 mr-1 animate-pulse" />
+              <Bitcoin size={16} className="text-green-400 mr-1 animate-pulse" />
               <p className="text-lg font-medium text-green-300">{formatNumber(state.coins)}</p>
             </div>
           </div>
