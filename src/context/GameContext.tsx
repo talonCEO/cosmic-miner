@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -180,7 +181,7 @@ const calculateStartingCoins = (ownedArtifacts: string[]): number => {
 };
 
 // Calculate maximum affordable purchases for an upgrade
-const calculateMaxPurchaseAmount = (state: GameState, upgradeId: string): number => {
+const getMaxPurchaseAmount = (state: GameState, upgradeId: string): number => {
   const upgrade = state.upgrades.find(u => u.id === upgradeId);
   if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
   
@@ -542,7 +543,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   // Calculate maximum affordable purchases
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
-    return calculateMaxPurchaseAmount(state, upgradeId);
+    return getMaxPurchaseAmount(state, upgradeId);
   };
 
   // Set up the automatic tick for passive income and achievement checking
