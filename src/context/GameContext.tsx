@@ -28,6 +28,7 @@ export interface GameState {
   achievementsChecked: Record<string, boolean>;
   managers: typeof managers;
   artifacts: typeof artifacts;
+  prestigeCount: number;
 }
 
 // Upgrade interface
@@ -83,8 +84,8 @@ const createAchievements = (): Achievement[] => {
 // Updated upgrades with increased maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
-  maxLevel: 1000, // Update max level to 1000
-  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 10 // Multiply passive income by 10
+  maxLevel: 1000,
+  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 10
 }));
 
 // Initial game state
@@ -97,12 +98,13 @@ const initialState: GameState = {
   totalEarned: 0,
   autoBuy: false,
   essence: 0,
-  ownedManagers: ["manager-default"], // Starting with default manager
-  ownedArtifacts: ["artifact-default"], // Starting with default artifact
+  ownedManagers: ["manager-default"],
+  ownedArtifacts: ["artifact-default"],
   achievements: createAchievements(),
   achievementsChecked: {},
   managers: managers,
-  artifacts: artifacts
+  artifacts: artifacts,
+  prestigeCount: 0
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -145,34 +147,27 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       if (upgrade.level >= upgrade.maxLevel) return state;
       
-      // Calculate how many levels we can buy (up to requested quantity)
       const maxPossibleQuantity = Math.min(
         quantity, 
         upgrade.maxLevel - upgrade.level
       );
       
-      // Calculate total cost for bulk purchase
       const totalCost = calculateBulkCost(upgrade.baseCost, upgrade.level, maxPossibleQuantity);
       
-      // Check if player can afford it
       if (state.coins < totalCost) return state;
       
-      // Calculate new stats with all purchased levels
       const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * maxPossibleQuantity);
       const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * maxPossibleQuantity);
       
-      // Update the upgrade
       const updatedUpgrade = {
         ...upgrade,
         level: upgrade.level + maxPossibleQuantity,
         cost: Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.level + maxPossibleQuantity))
       };
       
-      // Create a new upgrades array
       const newUpgrades = [...state.upgrades];
       newUpgrades[upgradeIndex] = updatedUpgrade;
       
-      // Check for unlocks based on this upgrade purchase
       state.upgrades.forEach((u, index) => {
         if (!u.unlocked && u.unlocksAt && 
             u.unlocksAt.upgradeId === upgrade.id && 
@@ -205,9 +200,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
       
-      // Auto-buy logic
       if (newState.autoBuy) {
-        // Find the cheapest affordable and unlocked upgrade
         const affordableUpgrades = newState.upgrades
           .filter(u => u.unlocked && u.level < u.maxLevel && newState.coins >= u.cost)
           .sort((a, b) => a.cost - b.cost);
@@ -215,25 +208,20 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         if (affordableUpgrades.length > 0) {
           const cheapestUpgrade = affordableUpgrades[0];
           
-          // Execute the purchase
           const upgradeIndex = newState.upgrades.findIndex(u => u.id === cheapestUpgrade.id);
           
-          // Calculate new stats
           const newCoinsPerClick = newState.coinsPerClick + cheapestUpgrade.coinsPerClickBonus;
           const newCoinsPerSecond = newState.coinsPerSecond + cheapestUpgrade.coinsPerSecondBonus;
           
-          // Update the upgrade
           const updatedUpgrade = {
             ...cheapestUpgrade,
             level: cheapestUpgrade.level + 1,
             cost: Math.floor(cheapestUpgrade.baseCost * Math.pow(1.15, cheapestUpgrade.level + 1))
           };
           
-          // Create a new upgrades array
           const newUpgrades = [...newState.upgrades];
           newUpgrades[upgradeIndex] = updatedUpgrade;
           
-          // Check for unlocks based on this upgrade purchase
           newState.upgrades.forEach((u, index) => {
             if (!u.unlocked && u.unlocksAt && 
                 u.unlocksAt.upgradeId === cheapestUpgrade.id && 
@@ -257,7 +245,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'PRESTIGE': {
       const essenceReward = calculateEssenceReward(state.totalEarned);
       
-      // Reset progress but keep essence, managers, artifacts, and achievements
       return {
         ...initialState,
         essence: state.essence + essenceReward,
@@ -266,7 +253,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievements: state.achievements,
         achievementsChecked: state.achievementsChecked,
         managers: state.managers,
-        artifacts: state.artifacts
+        artifacts: state.artifacts,
+        prestigeCount: state.prestigeCount + 1
       };
     }
     case 'BUY_MANAGER': {
@@ -318,7 +306,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     }
     case 'CHECK_ACHIEVEMENTS': {
-      // Check each achievement that hasn't been unlocked yet
       const unlockableAchievements = state.achievements
         .filter(a => !a.unlocked && !state.achievementsChecked[a.id])
         .filter(a => a.checkCondition(state));
@@ -412,33 +399,27 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const interval = setInterval(() => {
       dispatch({ type: 'TICK' });
       
-      // Check achievements every second (every 10 ticks)
       if (Math.random() < 0.1) {
         checkAchievements();
       }
-    }, 100); // 10 ticks per second for smooth animation
+    }, 100);
 
     return () => clearInterval(interval);
   }, []);
   
-  // Check for newly unlocked achievements and show notification
   const previousAchievementsRef = React.useRef<Achievement[]>(state.achievements);
   
   useEffect(() => {
     const prevUnlocked = previousAchievementsRef.current.filter(a => a.unlocked).length;
     const currentUnlocked = state.achievements.filter(a => a.unlocked).length;
     
-    // If we've unlocked new achievements
     if (currentUnlocked > prevUnlocked) {
-      // Find newly unlocked achievements
       const newlyUnlocked = state.achievements.filter(a => {
         const prev = previousAchievementsRef.current.find(p => p.id === a.id);
         return a.unlocked && prev && !prev.unlocked;
       });
       
-      // Show notifications for each
       newlyUnlocked.forEach(achievement => {
-        // Use browser notification API
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("Achievement Unlocked!", {
             body: `${achievement.name}: ${achievement.description}`,

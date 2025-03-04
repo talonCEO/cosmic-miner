@@ -104,6 +104,22 @@ const Stats: React.FC = () => {
     return null;
   };
 
+  // Calculate income multiplier from artifacts
+  const calculateIncomeMultiplier = () => {
+    // Default multiplier is 1.0
+    let multiplier = 1.0;
+    
+    // Add bonuses from owned artifacts (simple implementation)
+    if (state.ownedArtifacts.includes("artifact-1")) {
+      multiplier += 0.25; // Quantum Computer adds 25%
+    }
+    if (state.ownedArtifacts.includes("artifact-10")) {
+      multiplier += 0.5; // Energy Core adds 50% to production bonuses
+    }
+    
+    return multiplier.toFixed(2);
+  };
+
   // Game Statistics Table for Dialog
   const allGameStats = [
     { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
@@ -111,66 +127,18 @@ const Stats: React.FC = () => {
     { category: "Resources", icon: "💵", name: "Total Earned", value: formatNumber(state.totalEarned) },
     { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(state.coinsPerClick) },
     { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(state.coinsPerSecond) },
+    { category: "Production", icon: "⚡", name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
     { category: "Interactions", icon: "🖱️", name: "Total Clicks", value: formatNumber(state.totalClicks) },
+    { category: "Interactions", icon: "🔄", name: "Prestige Count", value: state.prestigeCount || 0 },
     { category: "Collections", icon: "👨‍💼", name: "Managers Owned", value: state.ownedManagers.length },
     { category: "Collections", icon: "🔮", name: "Artifacts Owned", value: state.ownedArtifacts.length },
     { category: "Achievements", icon: "🏆", name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
-    { category: "Game", icon: "🎮", name: "Auto Buy", value: state.autoBuy ? "Enabled" : "Disabled" }
   ];
   
   return (
     <div className="w-full mb-8 max-w-md mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-white">Statistics</h2>
-        
-        <Dialog>
-          <DialogTrigger asChild>
-            <button className="p-2 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-slate-600/30">
-              <ShieldQuestion size={18} className="text-slate-300" />
-            </button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md bg-slate-900 border border-indigo-500/30">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
-            </DialogHeader>
-            <div className="mt-4 max-h-[60vh] overflow-y-auto">
-              {Object.entries(
-                allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
-                  if (!acc[stat.category]) acc[stat.category] = [];
-                  acc[stat.category].push(stat);
-                  return acc;
-                }, {})
-              ).map(([category, stats]) => (
-                <div key={category} className="mb-6">
-                  <h3 className="text-md font-medium text-indigo-400 mb-2">{category}</h3>
-                  <div className="bg-slate-800/50 rounded-lg border border-slate-700/50">
-                    <table className="w-full">
-                      <thead className="border-b border-slate-700/50">
-                        <tr>
-                          <th className="p-2 text-left text-xs text-slate-400">Name</th>
-                          <th className="p-2 text-right text-xs text-slate-400">Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(stats as any[]).map((stat, index) => (
-                          <tr key={index} className="border-t border-slate-700/30 first:border-0">
-                            <td className="p-3 text-left">
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">{stat.icon}</span>
-                                <span className="text-slate-200">{stat.name}</span>
-                              </div>
-                            </td>
-                            <td className="p-3 text-right font-medium text-slate-300">{stat.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -187,7 +155,58 @@ const Stats: React.FC = () => {
       </div>
       
       <div className="mt-8 bg-slate-800/40 rounded-xl p-4 border border-indigo-500/20">
-        <h3 className="text-md font-medium mb-4 text-center text-white">Company Income</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-md font-medium text-white">Company Income</h3>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="p-2 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-slate-600/30">
+                <ShieldQuestion size={18} className="text-slate-300" />
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md bg-slate-900 border border-indigo-500/30">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
+              </DialogHeader>
+              <div className="mt-4">
+                {Object.entries(
+                  allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
+                    if (!acc[stat.category]) acc[stat.category] = [];
+                    acc[stat.category].push(stat);
+                    return acc;
+                  }, {})
+                ).map(([category, stats]) => (
+                  <div key={category} className="mb-6">
+                    <h3 className="text-md font-medium text-indigo-400 mb-2">{category}</h3>
+                    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50">
+                      <table className="w-full">
+                        <thead className="border-b border-slate-700/50">
+                          <tr>
+                            <th className="p-2 text-left text-xs text-slate-400">Name</th>
+                            <th className="p-2 text-right text-xs text-slate-400">Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(stats as any[]).map((stat, index) => (
+                            <tr key={index} className="border-t border-slate-700/30 first:border-0">
+                              <td className="p-3 text-left">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{stat.icon}</span>
+                                  <span className="text-slate-200">{stat.name}</span>
+                                </div>
+                              </td>
+                              <td className="p-3 text-right font-medium text-slate-300">{stat.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
         
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -239,6 +258,21 @@ const Stats: React.FC = () => {
               />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+        
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="text-center">
+            <p className="text-xs text-slate-400">Coins</p>
+            <p className="font-medium text-green-400">{formatNumber(state.coins)}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-slate-400">Essence</p>
+            <p className="font-medium text-purple-400">{formatNumber(state.essence)}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-slate-400">CPS</p>
+            <p className="font-medium text-yellow-400">{formatNumber(state.coinsPerSecond)}</p>
+          </div>
         </div>
         
         <p className="text-xs text-slate-400 mt-2 text-center">
