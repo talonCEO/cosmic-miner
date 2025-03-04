@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -21,6 +22,7 @@ export interface GameState {
   totalClicks: number;
   totalEarned: number;
   autoBuy: boolean;
+  autoTap: boolean;
   essence: number;
   ownedManagers: string[];
   ownedArtifacts: string[];
@@ -29,6 +31,7 @@ export interface GameState {
   managers: typeof managers;
   artifacts: typeof artifacts;
   prestigeCount: number;
+  incomeMultiplier: number;
 }
 
 // Upgrade interface
@@ -56,8 +59,11 @@ export interface Upgrade {
 type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_COINS'; amount: number }
+  | { type: 'ADD_ESSENCE'; amount: number }
   | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
   | { type: 'TOGGLE_AUTO_BUY' }
+  | { type: 'TOGGLE_AUTO_TAP' }
+  | { type: 'SET_INCOME_MULTIPLIER'; multiplier: number }
   | { type: 'TICK' }
   | { type: 'PRESTIGE' }
   | { type: 'BUY_MANAGER'; managerId: string }
@@ -97,6 +103,7 @@ const initialState: GameState = {
   totalClicks: 0,
   totalEarned: 0,
   autoBuy: false,
+  autoTap: false,
   essence: 0,
   ownedManagers: ["manager-default"],
   ownedArtifacts: ["artifact-default"],
@@ -104,7 +111,8 @@ const initialState: GameState = {
   achievementsChecked: {},
   managers: managers,
   artifacts: artifacts,
-  prestigeCount: 0
+  prestigeCount: 0,
+  incomeMultiplier: 1.0
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -125,17 +133,23 @@ const calculateEssenceReward = (totalEarned: number): number => {
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK':
+      const baseClickAmount = state.coinsPerClick * (state.incomeMultiplier || 1);
       return {
         ...state,
-        coins: state.coins + state.coinsPerClick,
+        coins: state.coins + baseClickAmount,
         totalClicks: state.totalClicks + 1,
-        totalEarned: state.totalEarned + state.coinsPerClick
+        totalEarned: state.totalEarned + baseClickAmount
       };
     case 'ADD_COINS':
       return {
         ...state,
         coins: state.coins + action.amount,
         totalEarned: state.totalEarned + action.amount
+      };
+    case 'ADD_ESSENCE':
+      return {
+        ...state,
+        essence: state.essence + action.amount
       };
     case 'BUY_UPGRADE': {
       const upgradeIndex = state.upgrades.findIndex(u => u.id === action.upgradeId);
@@ -189,17 +203,41 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         autoBuy: !state.autoBuy
       };
+    case 'TOGGLE_AUTO_TAP':
+      return {
+        ...state,
+        autoTap: !state.autoTap
+      };
+    case 'SET_INCOME_MULTIPLIER':
+      return {
+        ...state,
+        incomeMultiplier: action.multiplier
+      };
     case 'TICK': {
       let newState = { ...state };
       
+      // Process passive income (adjusted by multiplier)
       if (state.coinsPerSecond > 0) {
+        const passiveAmount = (state.coinsPerSecond / 10) * (state.incomeMultiplier || 1);
         newState = {
           ...newState,
-          coins: newState.coins + state.coinsPerSecond / 10,
-          totalEarned: newState.totalEarned + state.coinsPerSecond / 10
+          coins: newState.coins + passiveAmount,
+          totalEarned: newState.totalEarned + passiveAmount
         };
       }
       
+      // Process auto tap if enabled
+      if (newState.autoTap) {
+        const autoTapAmount = newState.coinsPerClick * (newState.incomeMultiplier || 1);
+        newState = {
+          ...newState,
+          coins: newState.coins + autoTapAmount,
+          totalEarned: newState.totalEarned + autoTapAmount,
+          totalClicks: newState.totalClicks + 1
+        };
+      }
+      
+      // Process auto buy
       if (newState.autoBuy) {
         const affordableUpgrades = newState.upgrades
           .filter(u => u.unlocked && u.level < u.maxLevel && newState.coins >= u.cost)
@@ -340,12 +378,16 @@ type GameContextType = {
   handleClick: () => void;
   buyUpgrade: (upgradeId: string, quantity?: number) => void;
   toggleAutoBuy: () => void;
+  toggleAutoTap: () => void;
+  setIncomeMultiplier: (multiplier: number) => void;
   prestige: () => void;
   calculateEssenceReward: (totalEarned: number) => number;
   buyManager: (managerId: string) => void;
   buyArtifact: (artifactId: string) => void;
   checkAchievements: () => void;
   unlockAchievement: (achievementId: string) => void;
+  addCoins: (amount: number) => void;
+  addEssence: (amount: number) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -367,6 +409,26 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Toggle auto-buy
   const toggleAutoBuy = () => {
     dispatch({ type: 'TOGGLE_AUTO_BUY' });
+  };
+  
+  // Toggle auto-tap
+  const toggleAutoTap = () => {
+    dispatch({ type: 'TOGGLE_AUTO_TAP' });
+  };
+  
+  // Set income multiplier
+  const setIncomeMultiplier = (multiplier: number) => {
+    dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
+  };
+  
+  // Admin: Add coins
+  const addCoins = (amount: number) => {
+    dispatch({ type: 'ADD_COINS', amount });
+  };
+  
+  // Admin: Add essence
+  const addEssence = (amount: number) => {
+    dispatch({ type: 'ADD_ESSENCE', amount });
   };
   
   // Prestige function
@@ -437,13 +499,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       state, 
       handleClick, 
       buyUpgrade, 
-      toggleAutoBuy, 
+      toggleAutoBuy,
+      toggleAutoTap,
+      setIncomeMultiplier,
       prestige,
       calculateEssenceReward,
       buyManager,
       buyArtifact,
       checkAchievements,
-      unlockAchievement
+      unlockAchievement,
+      addCoins,
+      addEssence
     }}>
       {children}
     </GameContext.Provider>

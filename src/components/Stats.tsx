@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -11,6 +10,8 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import AdminPanel from './AdminPanel';
 
 const Stats: React.FC = () => {
   const { state } = useGame();
@@ -104,23 +105,19 @@ const Stats: React.FC = () => {
     return null;
   };
 
-  // Calculate income multiplier from artifacts
   const calculateIncomeMultiplier = () => {
-    // Default multiplier is 1.0
     let multiplier = 1.0;
     
-    // Add bonuses from owned artifacts (simple implementation)
     if (state.ownedArtifacts.includes("artifact-1")) {
-      multiplier += 0.25; // Quantum Computer adds 25%
+      multiplier += 0.25;
     }
     if (state.ownedArtifacts.includes("artifact-10")) {
-      multiplier += 0.5; // Energy Core adds 50% to production bonuses
+      multiplier += 0.5;
     }
     
     return multiplier.toFixed(2);
   };
 
-  // Game Statistics Table for Dialog
   const allGameStats = [
     { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
     { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
@@ -134,7 +131,7 @@ const Stats: React.FC = () => {
     { category: "Collections", icon: "🔮", name: "Artifacts Owned", value: state.ownedArtifacts.length },
     { category: "Achievements", icon: "🏆", name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
   ];
-  
+
   return (
     <div className="w-full mb-8 max-w-md mx-auto">
       <div className="flex justify-between items-center mb-4">
