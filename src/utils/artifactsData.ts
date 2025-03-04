@@ -10,6 +10,14 @@ export interface Artifact {
 
 export const artifacts: Artifact[] = [
   {
+    id: "artifact-default",
+    name: "Ordinary Rock",
+    description: "Just a regular rock you found on your first day",
+    bonus: "Provides absolutely no benefit whatsoever",
+    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=rock",
+    cost: 0
+  },
+  {
     id: "artifact-1",
     name: "Quantum Computer",
     description: "Advanced computational device using quantum mechanics",

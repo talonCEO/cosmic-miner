@@ -97,8 +97,8 @@ const initialState: GameState = {
   totalEarned: 0,
   autoBuy: false,
   essence: 0,
-  ownedManagers: [],
-  ownedArtifacts: [],
+  ownedManagers: ["manager-default"], // Starting with default manager
+  ownedArtifacts: ["artifact-default"], // Starting with default artifact
   achievements: createAchievements(),
   achievementsChecked: {},
   managers: managers,

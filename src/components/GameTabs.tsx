@@ -5,7 +5,7 @@ import Upgrades from '@/components/Upgrades';
 import Managers from '@/components/Managers';
 import ArtifactsTab from '@/components/OtherOptions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartNoAxesCombined, Rocket, UserCog, Telescope } from 'lucide-react';
+import { ChartNoAxesCombined, Rocket, User, Telescope } from 'lucide-react';
 
 const GameTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState("stats");
@@ -22,7 +22,7 @@ const GameTabs: React.FC = () => {
           <span>Upgrades</span>
         </TabsTrigger>
         <TabsTrigger value="managers" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white flex items-center justify-center gap-1">
-          <UserCog size={18} />
+          <User size={18} />
           <span>Managers</span>
         </TabsTrigger>
         <TabsTrigger value="artifacts" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white flex items-center justify-center gap-1">

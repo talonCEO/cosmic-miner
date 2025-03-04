@@ -1,11 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { ShieldQuestion } from 'lucide-react';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
 
 const Stats: React.FC = () => {
   const { state } = useGame();
-  const [resourceData, setResourceData] = useState<{ time: string; coins: number; totalEarned: number; coinsPerSecond: number }[]>([]);
+  const [resourceData, setResourceData] = useState<{ time: string; coins: number; totalEarned: number; coinsPerSecond: number; essence: number }[]>([]);
   
   useEffect(() => {
     const savedData = localStorage.getItem('resourceHistory');
@@ -16,7 +25,8 @@ const Stats: React.FC = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         coins: state.coins,
         totalEarned: state.totalEarned,
-        coinsPerSecond: state.coinsPerSecond
+        coinsPerSecond: state.coinsPerSecond,
+        essence: state.essence
       };
       setResourceData([initialData]);
     }
@@ -28,7 +38,8 @@ const Stats: React.FC = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         coins: state.coins,
         totalEarned: state.totalEarned,
-        coinsPerSecond: state.coinsPerSecond
+        coinsPerSecond: state.coinsPerSecond,
+        essence: state.essence
       };
       
       setResourceData(prev => {
@@ -40,7 +51,7 @@ const Stats: React.FC = () => {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [state.coins, state.totalEarned, state.coinsPerSecond]);
+  }, [state.coins, state.totalEarned, state.coinsPerSecond, state.essence]);
   
   useEffect(() => {
     const handlePrestige = () => {
@@ -48,7 +59,8 @@ const Stats: React.FC = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (Prestige)",
         coins: 0,
         totalEarned: 0,
-        coinsPerSecond: 0
+        coinsPerSecond: 0,
+        essence: state.essence
       };
       
       setResourceData([newDataPoint]);
@@ -61,7 +73,7 @@ const Stats: React.FC = () => {
         handlePrestige();
       }
     }
-  }, [state.totalEarned, resourceData]);
+  }, [state.totalEarned, resourceData, state.essence]);
   
   const stats = [
     { label: 'Total Taps', value: formatNumber(state.totalClicks) },
@@ -91,10 +103,75 @@ const Stats: React.FC = () => {
     }
     return null;
   };
+
+  // Game Statistics Table for Dialog
+  const allGameStats = [
+    { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
+    { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
+    { category: "Resources", icon: "💵", name: "Total Earned", value: formatNumber(state.totalEarned) },
+    { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(state.coinsPerClick) },
+    { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(state.coinsPerSecond) },
+    { category: "Interactions", icon: "🖱️", name: "Total Clicks", value: formatNumber(state.totalClicks) },
+    { category: "Collections", icon: "👨‍💼", name: "Managers Owned", value: state.ownedManagers.length },
+    { category: "Collections", icon: "🔮", name: "Artifacts Owned", value: state.ownedArtifacts.length },
+    { category: "Achievements", icon: "🏆", name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
+    { category: "Game", icon: "🎮", name: "Auto Buy", value: state.autoBuy ? "Enabled" : "Disabled" }
+  ];
   
   return (
     <div className="w-full mb-8 max-w-md mx-auto">
-      <h2 className="text-lg font-medium mb-4 text-center text-white">Statistics</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-medium text-white">Statistics</h2>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="p-2 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-slate-600/30">
+              <ShieldQuestion size={18} className="text-slate-300" />
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md bg-slate-900 border border-indigo-500/30">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4 max-h-[60vh] overflow-y-auto">
+              {Object.entries(
+                allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
+                  if (!acc[stat.category]) acc[stat.category] = [];
+                  acc[stat.category].push(stat);
+                  return acc;
+                }, {})
+              ).map(([category, stats]) => (
+                <div key={category} className="mb-6">
+                  <h3 className="text-md font-medium text-indigo-400 mb-2">{category}</h3>
+                  <div className="bg-slate-800/50 rounded-lg border border-slate-700/50">
+                    <table className="w-full">
+                      <thead className="border-b border-slate-700/50">
+                        <tr>
+                          <th className="p-2 text-left text-xs text-slate-400">Name</th>
+                          <th className="p-2 text-right text-xs text-slate-400">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(stats as any[]).map((stat, index) => (
+                          <tr key={index} className="border-t border-slate-700/30 first:border-0">
+                            <td className="p-3 text-left">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{stat.icon}</span>
+                                <span className="text-slate-200">{stat.name}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-right font-medium text-slate-300">{stat.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
       
       <div className="grid grid-cols-2 gap-4 mb-6">
         {stats.map((stat, index) => (
@@ -110,7 +187,7 @@ const Stats: React.FC = () => {
       </div>
       
       <div className="mt-8 bg-slate-800/40 rounded-xl p-4 border border-indigo-500/20">
-        <h3 className="text-md font-medium mb-4 text-center text-white">Resource History</h3>
+        <h3 className="text-md font-medium mb-4 text-center text-white">Company Income</h3>
         
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -137,15 +214,15 @@ const Stats: React.FC = () => {
                 type="monotone" 
                 dataKey="coins" 
                 name="Coins" 
-                stroke="#60a5fa" 
+                stroke="#34d399" 
                 strokeWidth={2} 
-                dot={{ fill: '#60a5fa', r: 3 }}
+                dot={{ fill: '#34d399', r: 3 }}
                 activeDot={{ r: 5 }}
               />
               <Line 
                 type="monotone" 
-                dataKey="totalEarned" 
-                name="Total Earned" 
+                dataKey="essence" 
+                name="Essence" 
                 stroke="#a78bfa" 
                 strokeWidth={2}
                 dot={{ fill: '#a78bfa', r: 3 }}
@@ -155,9 +232,9 @@ const Stats: React.FC = () => {
                 type="monotone" 
                 dataKey="coinsPerSecond" 
                 name="CPS" 
-                stroke="#34d399" 
+                stroke="#fbbf24" 
                 strokeWidth={2}
-                dot={{ fill: '#34d399', r: 3 }}
+                dot={{ fill: '#fbbf24', r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>

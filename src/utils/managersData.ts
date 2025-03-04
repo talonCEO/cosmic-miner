@@ -11,6 +11,15 @@ export interface Manager {
 
 export const managers: Manager[] = [
   {
+    id: "manager-default",
+    name: "Steve",
+    description: "The first employee you hired. He's not great, but he tries",
+    bonus: "+10% can-do attitude (purely cosmetic)",
+    requiredCoins: 0,
+    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=steve",
+    cost: 0
+  },
+  {
     id: "manager-1",
     name: "Dr. Hydrogen",
     description: "Expert in lightweight element extraction",
