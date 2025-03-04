@@ -15,9 +15,10 @@ const PowerupsManager: React.FC = () => {
   const { toast } = useToast();
   const { state, handleClick } = useGame();
   
-  // Function to generate a random spawn time between 30 and 300 seconds
+  // Function to generate a random spawn time between 5 and 30 seconds (for testing, later can be 30-300)
   const getRandomSpawnTime = useCallback(() => {
-    return Math.floor(Math.random() * (300 - 30 + 1) + 30) * 1000;
+    // For testing purposes - shorter spawn times
+    return Math.floor(Math.random() * (30 - 5 + 1) + 5) * 1000;
   }, []);
   
   // Function to generate a random position at the top of the screen
@@ -48,17 +49,18 @@ const PowerupsManager: React.FC = () => {
   
   // Initialize powerup spawning
   useEffect(() => {
-    // Start spawning each type after a random delay
-    const starTimeout = setTimeout(() => spawnPowerup('star'), getRandomSpawnTime());
-    const orbTimeout = setTimeout(() => spawnPowerup('orb'), getRandomSpawnTime());
-    const cubeTimeout = setTimeout(() => spawnPowerup('cube'), getRandomSpawnTime());
+    // Start immediate spawn for each type for testing
+    setTimeout(() => spawnPowerup('star'), 3000);
+    setTimeout(() => spawnPowerup('orb'), 5000);
+    setTimeout(() => spawnPowerup('cube'), 7000);
+    
+    // Log to verify initialization
+    console.log("PowerupsManager initialized");
     
     return () => {
-      clearTimeout(starTimeout);
-      clearTimeout(orbTimeout);
-      clearTimeout(cubeTimeout);
+      // No cleanup needed for immediate spawns
     };
-  }, [spawnPowerup, getRandomSpawnTime]);
+  }, [spawnPowerup]);
   
   // Handle powerup click
   const handlePowerupClick = useCallback((id: number, type: 'star' | 'orb' | 'cube') => {

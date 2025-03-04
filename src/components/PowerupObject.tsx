@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface PowerupObjectProps {
   type: 'star' | 'orb' | 'cube';
@@ -10,36 +10,62 @@ interface PowerupObjectProps {
 
 const PowerupObject: React.FC<PowerupObjectProps> = ({ type, position, onOffScreen, onClick }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [currentY, setCurrentY] = useState(position.y);
   
+  // Handle vertical movement
   useEffect(() => {
-    const checkIfOffScreen = () => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        if (rect.top > window.innerHeight) {
+    const moveDown = () => {
+      setCurrentY(prev => {
+        const newY = prev + 1; // Move 1px at a time
+        
+        // Check if off screen
+        if (newY > window.innerHeight + 100) {
           onOffScreen();
         }
-      }
+        
+        return newY;
+      });
     };
     
-    const interval = setInterval(checkIfOffScreen, 1000);
+    // Move at different speeds based on type
+    let interval;
+    switch (type) {
+      case 'star':
+        interval = setInterval(moveDown, 40); // Faster
+        break;
+      case 'orb':
+        interval = setInterval(moveDown, 35); // Medium
+        break;
+      case 'cube':
+        interval = setInterval(moveDown, 45); // Slower
+        break;
+      default:
+        interval = setInterval(moveDown, 40);
+    }
+    
     return () => clearInterval(interval);
-  }, [onOffScreen]);
+  }, [type, onOffScreen]);
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick();
+  };
   
   const renderPowerup = () => {
     switch (type) {
       case 'star':
         return (
           <div 
-            className="w-12 h-12 absolute flex items-center justify-center cursor-pointer animate-pulse"
+            className="w-16 h-16 absolute flex items-center justify-center cursor-pointer pointer-events-auto"
             style={{
               left: position.x,
-              top: position.y,
+              top: currentY,
+              zIndex: 50,
               filter: 'drop-shadow(0 0 8px rgba(255, 255, 100, 0.8))',
-              transition: 'top 40s linear',
               willChange: 'top'
             }}
             ref={ref}
-            onClick={onClick}
+            onClick={handleClick}
           >
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path 
@@ -49,26 +75,27 @@ const PowerupObject: React.FC<PowerupObjectProps> = ({ type, position, onOffScre
                 strokeWidth="0.5"
               />
             </svg>
-            <div className="absolute inset-0 bg-yellow-300 rounded-full opacity-20 animate-pulse"></div>
+            <div className="absolute inset-0 rounded-full opacity-20 animate-pulse" 
+                 style={{ backgroundColor: '#FFD700' }}></div>
           </div>
         );
         
       case 'orb':
         return (
           <div 
-            className="w-14 h-14 absolute flex items-center justify-center cursor-pointer"
+            className="w-16 h-16 absolute flex items-center justify-center cursor-pointer pointer-events-auto"
             style={{
               left: position.x,
-              top: position.y,
-              transition: 'top 35s linear',
+              top: currentY,
+              zIndex: 50,
               willChange: 'top'
             }}
             ref={ref}
-            onClick={onClick}
+            onClick={handleClick}
           >
-            <div className="absolute w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
-            <div className="absolute w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-red-800 opacity-80"></div>
-            <div className="absolute w-3 h-3 rounded-full bg-white opacity-80 blur-[2px]" 
+            <div className="absolute w-12 h-12 rounded-full bg-red-600 animate-pulse"></div>
+            <div className="absolute w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-red-800 opacity-80"></div>
+            <div className="absolute w-4 h-4 rounded-full bg-white opacity-80 blur-[2px]" 
                  style={{ top: '30%', left: '30%' }}></div>
             <div className="absolute inset-0 rounded-full border-2 border-red-400 animate-spin" 
                  style={{ animationDuration: '8s' }}></div>
@@ -78,35 +105,35 @@ const PowerupObject: React.FC<PowerupObjectProps> = ({ type, position, onOffScre
       case 'cube':
         return (
           <div 
-            className="w-16 h-16 absolute flex items-center justify-center cursor-pointer perspective-[800px]"
+            className="w-16 h-16 absolute flex items-center justify-center cursor-pointer pointer-events-auto perspective-800"
             style={{
               left: position.x,
-              top: position.y,
-              transition: 'top 45s linear',
+              top: currentY,
+              zIndex: 50,
               willChange: 'top'
             }}
             ref={ref}
-            onClick={onClick}
+            onClick={handleClick}
           >
-            <div className="w-10 h-10 relative animate-spin" style={{ transformStyle: 'preserve-3d', animationDuration: '12s' }}>
+            <div className="w-12 h-12 relative animate-spin" style={{ transformStyle: 'preserve-3d', animationDuration: '12s' }}>
               {/* Front face */}
               <div className="absolute w-full h-full bg-purple-600 opacity-80" 
-                   style={{ transform: 'translateZ(5px)' }}></div>
+                   style={{ transform: 'translateZ(6px)' }}></div>
               {/* Back face */}
               <div className="absolute w-full h-full bg-purple-800 opacity-80" 
-                   style={{ transform: 'rotateY(180deg) translateZ(5px)' }}></div>
+                   style={{ transform: 'rotateY(180deg) translateZ(6px)' }}></div>
               {/* Right face */}
               <div className="absolute w-full h-full bg-purple-700 opacity-80" 
-                   style={{ transform: 'rotateY(90deg) translateZ(5px)' }}></div>
+                   style={{ transform: 'rotateY(90deg) translateZ(6px)' }}></div>
               {/* Left face */}
               <div className="absolute w-full h-full bg-purple-500 opacity-80" 
-                   style={{ transform: 'rotateY(-90deg) translateZ(5px)' }}></div>
+                   style={{ transform: 'rotateY(-90deg) translateZ(6px)' }}></div>
               {/* Top face */}
               <div className="absolute w-full h-full bg-purple-400 opacity-80" 
-                   style={{ transform: 'rotateX(90deg) translateZ(5px)' }}></div>
+                   style={{ transform: 'rotateX(90deg) translateZ(6px)' }}></div>
               {/* Bottom face */}
               <div className="absolute w-full h-full bg-purple-900 opacity-80" 
-                   style={{ transform: 'rotateX(-90deg) translateZ(5px)' }}></div>
+                   style={{ transform: 'rotateX(-90deg) translateZ(6px)' }}></div>
             </div>
           </div>
         );

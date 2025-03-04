@@ -69,7 +69,7 @@ const Upgrades: React.FC = () => {
     <div className="w-full max-w-md mx-auto pb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-slate-100">Element Mining</h2>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 bg-slate-800/70 p-2 rounded-lg border border-indigo-500/30">
           <span className="text-sm text-slate-300">Auto Buy</span>
           <Switch 
             checked={state.autoBuy} 
