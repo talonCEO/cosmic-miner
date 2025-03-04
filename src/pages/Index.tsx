@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import Stats from '@/components/Stats';
 import Upgrades from '@/components/Upgrades';
+import GameMenu from '@/components/GameMenu';
 import { Toaster } from "@/components/ui/toaster";
 
 const BackgroundElements = () => {
@@ -80,6 +81,9 @@ const Index: React.FC = () => {
           <p>Mine elements from the periodic table! Discover all 50 rare elements!</p>
           <p className="text-xs mt-1">Auto-buy: purchases the cheapest available upgrade automatically</p>
         </footer>
+        
+        {/* Game Menu */}
+        <GameMenu />
         
         <Toaster />
       </div>

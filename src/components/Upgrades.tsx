@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress } from '@/utils/gameLogic';
@@ -7,7 +6,7 @@ import {
   Atom, Battery, Bolt, Cpu, Database, Eye, FlaskConical, Flame, 
   Gem, Globe, Hammer, Lightbulb, Layers, Magnet, Monitor, Pickaxe, 
   Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote,
-  Plus, ToggleLeft, ToggleRight
+  ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -15,7 +14,6 @@ const Upgrades: React.FC = () => {
   const { state, buyUpgrade, toggleAutoBuy } = useGame();
   const { toast } = useToast();
   
-  // Map of upgrade IDs to their icon components
   const iconMap: Record<string, React.ReactNode> = {
     'atom': <Atom size={20} />,
     'flask-conical': <FlaskConical size={20} />,
@@ -43,24 +41,17 @@ const Upgrades: React.FC = () => {
     'test-tube': <TestTube size={20} />
   };
   
-  // Filter for unlocked upgrades
   const unlockedUpgrades = state.upgrades.filter(upgrade => upgrade.unlocked);
-  
-  // Sort upgrades by cost (ascending)
   const sortedUpgrades = [...unlockedUpgrades].sort((a, b) => a.baseCost - b.baseCost);
 
-  // Handle bulk purchase with notification
   const handleBulkPurchase = (upgradeId: string, quantity: number) => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) return;
     
-    // Current level before purchase
     const beforeLevel = upgrade.level;
     
-    // Attempt to buy
     buyUpgrade(upgradeId, quantity);
     
-    // Check if purchase was successful by comparing levels
     setTimeout(() => {
       const afterUpgrade = state.upgrades.find(u => u.id === upgradeId);
       if (afterUpgrade && afterUpgrade.level > beforeLevel) {
@@ -78,7 +69,6 @@ const Upgrades: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-center">Element Mining</h2>
         
-        {/* Auto Buy Toggle */}
         <button 
           onClick={toggleAutoBuy}
           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
@@ -134,7 +124,6 @@ const Upgrades: React.FC = () => {
                 
                 {!isMaxLevel && (
                   <>
-                    {/* Progress bar */}
                     <div className="w-full bg-slate-200 rounded-full h-1.5 mb-1">
                       <div 
                         className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" 
@@ -142,7 +131,6 @@ const Upgrades: React.FC = () => {
                       ></div>
                     </div>
                     
-                    {/* Bonus and time to save */}
                     <div className="flex justify-between text-xs text-slate-500 mb-2">
                       <span>
                         {upgrade.coinsPerClickBonus > 0 && `+${formatNumber(upgrade.coinsPerClickBonus)} per tap`}
@@ -152,7 +140,6 @@ const Upgrades: React.FC = () => {
                       {!canAfford && <span>{timeToSave}</span>}
                     </div>
                     
-                    {/* Bulk purchase buttons */}
                     <div className="flex gap-1 justify-end mt-1">
                       {[5, 10, 50, 100].map(quantity => (
                         <button
@@ -161,10 +148,9 @@ const Upgrades: React.FC = () => {
                             e.stopPropagation();
                             handleBulkPurchase(upgrade.id, quantity);
                           }}
-                          className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-medium transition-colors"
+                          className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-medium transition-colors"
                           title={`Buy ${quantity}`}
                         >
-                          <Plus size={10} />
                           {quantity}
                         </button>
                       ))}

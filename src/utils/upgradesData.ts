@@ -23,9 +23,9 @@ const createElementUpgrade = (
   cost: baseCost,
   baseCost,
   level: 0,
-  maxLevel: 10,
+  maxLevel: 1000, // Changed from 10 to 1000
   coinsPerClickBonus: clickValue,
-  coinsPerSecondBonus: passiveValue,
+  coinsPerSecondBonus: passiveValue * 10, // Multiplied by 10
   multiplierBonus: 0,
   icon,
   unlocked: id === 1, // Only the first element is unlocked by default
