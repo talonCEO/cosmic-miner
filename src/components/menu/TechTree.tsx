@@ -19,17 +19,19 @@ const TechTree: React.FC = () => {
     return acc;
   }, {} as Record<number, Ability[]>);
 
-  // Filter out the 2 outside abilities from row 5
-  if (abilitiesByRow[5] && abilitiesByRow[5].length > 3) {
-    // Sort by column to ensure we keep the center 3
-    const row5Abilities = [...abilitiesByRow[5]].sort((a, b) => a.column - b.column);
-    // Keep only the middle 3 abilities (assuming they're ordered by column)
-    const middleIndex = Math.floor(row5Abilities.length / 2);
-    abilitiesByRow[5] = row5Abilities.slice(
-      Math.max(0, middleIndex - 1),
-      Math.min(row5Abilities.length, middleIndex + 2)
-    );
-  }
+  // Limit each row to a maximum of 3 abilities
+  Object.keys(abilitiesByRow).forEach(row => {
+    if (abilitiesByRow[parseInt(row)].length > 3) {
+      // Sort by column to ensure we keep the center abilities
+      const abilities = [...abilitiesByRow[parseInt(row)]].sort((a, b) => a.column - b.column);
+      // Get the middle 3 abilities
+      const middleIndex = Math.floor(abilities.length / 2);
+      abilitiesByRow[parseInt(row)] = abilities.slice(
+        Math.max(0, middleIndex - 1),
+        Math.min(abilities.length, middleIndex + 2)
+      );
+    }
+  });
 
   // Check if an ability can be unlocked
   const canUnlockAbility = (ability: Ability): boolean => {
@@ -78,15 +80,7 @@ const TechTree: React.FC = () => {
           <div className="relative flex flex-col gap-8 items-center">
             {/* Render abilities by row */}
             {Object.keys(abilitiesByRow).map((row) => {
-              // Get only center 3 abilities per row (max) to avoid overcrowding
-              let abilities = abilitiesByRow[parseInt(row)];
-              if (parseInt(row) > 0 && parseInt(row) < 4) {
-                // For rows 1-3, limit to 3 abilities max
-                const centerIndex = Math.floor(abilities.length / 2);
-                abilities = abilities
-                  .sort((a, b) => a.column - b.column)
-                  .slice(Math.max(0, centerIndex - 1), Math.min(abilities.length, centerIndex + 2));
-              }
+              const abilities = abilitiesByRow[parseInt(row)];
               
               return (
                 <div key={row} className="flex justify-center gap-6 relative w-full">

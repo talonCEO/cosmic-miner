@@ -16,30 +16,48 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Stats: React.FC = () => {
   const { state } = useGame();
-  const [resourceData, setResourceData] = useState<{ time: string; coins: number; totalEarned: number; coinsPerSecond: number; essence: number }[]>([]);
+  const [resourceData, setResourceData] = useState<{ time: string; gross: number; net: number; coinsPerSecond: number; essence: number }[]>([]);
   
   useEffect(() => {
     const savedData = localStorage.getItem('resourceHistory');
     if (savedData) {
-      setResourceData(JSON.parse(savedData));
+      try {
+        const parsedData = JSON.parse(savedData);
+        // Convert old data format to new format if needed
+        const convertedData = parsedData.map((item: any) => ({
+          time: item.time,
+          gross: item.totalEarned || 0,
+          net: (item.totalEarned || 0) - ((item.totalEarned || 0) - (item.coins || 0)),
+          coinsPerSecond: item.coinsPerSecond || 0,
+          essence: item.essence || 0
+        }));
+        setResourceData(convertedData);
+      } catch (e) {
+        console.error("Error parsing saved data:", e);
+        initializeData();
+      }
     } else {
-      const initialData = {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        coins: state.coins,
-        totalEarned: state.totalEarned,
-        coinsPerSecond: state.coinsPerSecond,
-        essence: state.essence
-      };
-      setResourceData([initialData]);
+      initializeData();
     }
   }, []);
+
+  const initializeData = () => {
+    const initialData = {
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      gross: state.totalEarned,
+      net: state.coins,
+      coinsPerSecond: state.coinsPerSecond,
+      essence: state.essence
+    };
+    setResourceData([initialData]);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
       const newDataPoint = {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        coins: state.coins,
-        totalEarned: state.totalEarned,
+        gross: state.totalEarned,
+        net: state.coins,
         coinsPerSecond: state.coinsPerSecond,
         essence: state.essence
       };
@@ -59,8 +77,8 @@ const Stats: React.FC = () => {
     const handlePrestige = () => {
       const newDataPoint = {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (Prestige)",
-        coins: 0,
-        totalEarned: 0,
+        gross: 0,
+        net: 0,
         coinsPerSecond: 0,
         essence: state.essence
       };
@@ -71,7 +89,7 @@ const Stats: React.FC = () => {
     
     if (resourceData.length > 1) {
       const lastPoint = resourceData[resourceData.length - 1];
-      if (lastPoint && state.totalEarned < lastPoint.totalEarned * 0.5) {
+      if (lastPoint && state.totalEarned < lastPoint.gross * 0.5) {
         handlePrestige();
       }
     }
@@ -122,7 +140,8 @@ const Stats: React.FC = () => {
   const allGameStats = [
     { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
     { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
-    { category: "Resources", icon: "💵", name: "Coins Earned", value: formatNumber(state.totalEarned) },
+    { category: "Resources", icon: "💵", name: "Gross Revenue", value: formatNumber(state.totalEarned) },
+    { category: "Resources", icon: "📊", name: "Net Revenue", value: formatNumber(state.coins) },
     { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(state.coinsPerClick) },
     { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(state.coinsPerSecond) },
     { category: "Production", icon: "⚡", name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
@@ -154,7 +173,7 @@ const Stats: React.FC = () => {
       
       <div className="mt-8 bg-slate-800/40 rounded-xl p-4 border border-indigo-500/20">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-md font-medium text-white">Company Income</h3>
+          <h3 className="text-md font-medium text-white">Analytics</h3>
           
           <Dialog>
             <DialogTrigger asChild>
@@ -231,8 +250,8 @@ const Stats: React.FC = () => {
               <Legend wrapperStyle={{ paddingTop: '8px' }} />
               <Line 
                 type="monotone" 
-                dataKey="coins" 
-                name="Coins" 
+                dataKey="gross" 
+                name="Gross" 
                 stroke="#34d399" 
                 strokeWidth={2} 
                 dot={{ fill: '#34d399', r: 3 }}
@@ -240,11 +259,11 @@ const Stats: React.FC = () => {
               />
               <Line 
                 type="monotone" 
-                dataKey="essence" 
-                name="Essence" 
-                stroke="#a78bfa" 
+                dataKey="net" 
+                name="Net" 
+                stroke="#60a5fa" 
                 strokeWidth={2}
-                dot={{ fill: '#a78bfa', r: 3 }}
+                dot={{ fill: '#60a5fa', r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -253,18 +272,18 @@ const Stats: React.FC = () => {
         
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="text-center">
-            <p className="text-xs text-slate-400">Coins</p>
-            <p className="font-medium text-green-400">{formatNumber(state.coins)}</p>
+            <p className="text-xs text-slate-400">Gross</p>
+            <p className="font-medium text-green-400">{formatNumber(state.totalEarned)}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-slate-400">Essence</p>
-            <p className="font-medium text-purple-400">{formatNumber(state.essence)}</p>
+            <p className="text-xs text-slate-400">Net</p>
+            <p className="font-medium text-blue-400">{formatNumber(state.coins)}</p>
           </div>
         </div>
         
         <p className="text-xs text-slate-400 mt-2 text-center">
           {resourceData.length <= 1 
-            ? "Tracking resource changes over time. More data will appear soon..." 
+            ? "Tracking financial data over time. More data will appear soon..." 
             : `Showing the last ${resourceData.length} data points. Updated every 30 seconds.`}
         </p>
       </div>
