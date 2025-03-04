@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
+import { artifacts } from '@/utils/artifactsData';
 
 // Achievement interface
 export interface Achievement {
@@ -22,9 +23,11 @@ interface GameState {
   autoBuy: boolean;
   essence: number;
   ownedManagers: string[];
+  ownedArtifacts: string[];
   achievements: Achievement[];
   achievementsChecked: Record<string, boolean>;
   managers: typeof managers;
+  artifacts: typeof artifacts;
 }
 
 // Upgrade interface
@@ -57,6 +60,7 @@ type GameAction =
   | { type: 'TICK' }
   | { type: 'PRESTIGE' }
   | { type: 'BUY_MANAGER'; managerId: string }
+  | { type: 'BUY_ARTIFACT'; artifactId: string }
   | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
   | { type: 'CHECK_ACHIEVEMENTS' };
 
@@ -94,9 +98,11 @@ const initialState: GameState = {
   autoBuy: false,
   essence: 0,
   ownedManagers: [],
+  ownedArtifacts: [],
   achievements: createAchievements(),
   achievementsChecked: {},
-  managers: managers
+  managers: managers,
+  artifacts: artifacts
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -256,9 +262,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...initialState,
         essence: state.essence + essenceReward,
         ownedManagers: state.ownedManagers,
+        ownedArtifacts: state.ownedArtifacts,
         achievements: state.achievements,
         achievementsChecked: state.achievementsChecked,
-        managers: state.managers
+        managers: state.managers,
+        artifacts: state.artifacts
       };
     }
     case 'BUY_MANAGER': {
@@ -272,6 +280,19 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         essence: state.essence - manager.cost,
         ownedManagers: [...state.ownedManagers, action.managerId]
+      };
+    }
+    case 'BUY_ARTIFACT': {
+      const artifact = artifacts.find(a => a.id === action.artifactId);
+      
+      if (!artifact || state.ownedArtifacts.includes(action.artifactId) || state.essence < artifact.cost) {
+        return state;
+      }
+      
+      return {
+        ...state,
+        essence: state.essence - artifact.cost,
+        ownedArtifacts: [...state.ownedArtifacts, action.artifactId]
       };
     }
     case 'UNLOCK_ACHIEVEMENT': {
@@ -335,6 +356,7 @@ type GameContextType = {
   prestige: () => void;
   calculateEssenceReward: (totalEarned: number) => number;
   buyManager: (managerId: string) => void;
+  buyArtifact: (artifactId: string) => void;
   checkAchievements: () => void;
   unlockAchievement: (achievementId: string) => void;
 };
@@ -368,6 +390,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Buy manager
   const buyManager = (managerId: string) => {
     dispatch({ type: 'BUY_MANAGER', managerId });
+  };
+  
+  // Buy artifact
+  const buyArtifact = (artifactId: string) => {
+    dispatch({ type: 'BUY_ARTIFACT', artifactId });
   };
   
   // Check achievements
@@ -433,6 +460,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       prestige,
       calculateEssenceReward,
       buyManager,
+      buyArtifact,
       checkAchievements,
       unlockAchievement
     }}>

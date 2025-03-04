@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Stats from '@/components/Stats';
 import Upgrades from '@/components/Upgrades';
 import Managers from '@/components/Managers';
-import OtherOptions from '@/components/OtherOptions';
+import ArtifactsTab from '@/components/OtherOptions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const GameTabs: React.FC = () => {
@@ -15,7 +15,7 @@ const GameTabs: React.FC = () => {
         <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Statistics</TabsTrigger>
         <TabsTrigger value="upgrades" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Upgrades</TabsTrigger>
         <TabsTrigger value="managers" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Managers</TabsTrigger>
-        <TabsTrigger value="other" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Other</TabsTrigger>
+        <TabsTrigger value="artifacts" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Artifacts</TabsTrigger>
       </TabsList>
       
       <TabsContent value="stats" className="animate-fade-in">
@@ -30,8 +30,8 @@ const GameTabs: React.FC = () => {
         <Managers />
       </TabsContent>
       
-      <TabsContent value="other" className="animate-fade-in">
-        <OtherOptions />
+      <TabsContent value="artifacts" className="animate-fade-in">
+        <ArtifactsTab />
       </TabsContent>
     </Tabs>
   );

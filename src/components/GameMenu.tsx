@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Menu, X, Award, ArrowUp, ShoppingBag, Sparkles } from 'lucide-react';
+import { Menu, Award, ArrowUp, ShoppingBag, Sparkles } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -13,11 +13,12 @@ import {
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { useToast } from '@/components/ui/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export type MenuType = "main" | "achievements" | "prestige" | "shop" | "none";
 
 const GameMenu: React.FC = () => {
-  const { state, prestige, calculateEssenceReward } = useGame();
+  const { state, prestige, calculateEssenceReward, buyManager, buyArtifact } = useGame();
   const [menuType, setMenuType] = useState<MenuType>("none");
   const { toast } = useToast();
   
@@ -40,6 +41,26 @@ const GameMenu: React.FC = () => {
     toast({
       title: "Prestige Complete!",
       description: `Gained ${essenceReward} essence. All progress has been reset.`,
+      variant: "default",
+    });
+  };
+
+  const handleBuyManager = (managerId: string, name: string) => {
+    buyManager(managerId);
+    
+    toast({
+      title: `${name} Hired!`,
+      description: `Manager added to your team.`,
+      variant: "default",
+    });
+  };
+
+  const handleBuyArtifact = (artifactId: string, name: string) => {
+    buyArtifact(artifactId);
+    
+    toast({
+      title: `${name} Acquired!`,
+      description: `Artifact added to your collection.`,
       variant: "default",
     });
   };
@@ -106,14 +127,8 @@ const GameMenu: React.FC = () => {
         
         {menuType === "achievements" && (
           <>
-            <DialogHeader className="p-4 border-b border-indigo-500/20 flex justify-between items-center">
+            <DialogHeader className="p-4 border-b border-indigo-500/20">
               <DialogTitle className="text-xl">Achievements</DialogTitle>
-              <button 
-                onClick={() => setMenuType("main")} 
-                className="p-1 rounded-full hover:bg-slate-700"
-              >
-                <X size={20} />
-              </button>
             </DialogHeader>
             <div className="p-6 max-h-[60vh] overflow-y-auto">
               <div className="mb-4 bg-slate-800/50 rounded-lg p-3">
@@ -164,14 +179,8 @@ const GameMenu: React.FC = () => {
         
         {menuType === "prestige" && (
           <>
-            <DialogHeader className="p-4 border-b border-indigo-500/20 flex justify-between items-center">
+            <DialogHeader className="p-4 border-b border-indigo-500/20">
               <DialogTitle className="text-xl">Prestige</DialogTitle>
-              <button 
-                onClick={() => setMenuType("main")} 
-                className="p-1 rounded-full hover:bg-slate-700"
-              >
-                <X size={20} />
-              </button>
             </DialogHeader>
             <div className="p-6 flex flex-col items-center">
               <div className="bg-indigo-900/30 rounded-lg py-3 px-6 mb-4 flex items-center">
@@ -212,14 +221,8 @@ const GameMenu: React.FC = () => {
         
         {menuType === "shop" && (
           <>
-            <DialogHeader className="p-4 border-b border-indigo-500/20 flex justify-between items-center">
-              <DialogTitle className="text-xl">Manager Shop</DialogTitle>
-              <button 
-                onClick={() => setMenuType("main")} 
-                className="p-1 rounded-full hover:bg-slate-700"
-              >
-                <X size={20} />
-              </button>
+            <DialogHeader className="p-4 border-b border-indigo-500/20">
+              <DialogTitle className="text-xl">Shop</DialogTitle>
             </DialogHeader>
             <div className="p-4 max-h-[60vh] overflow-y-auto">
               <div className="flex items-center mb-4 bg-indigo-900/30 rounded-lg p-2">
@@ -228,66 +231,125 @@ const GameMenu: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-3">
-                {state.managers.map(manager => {
-                  const isOwned = manager.owned;
-                  const canAfford = state.essence >= manager.cost;
-                  
-                  return (
-                    <div 
-                      key={manager.id} 
-                      className={`rounded-lg border p-3 transition ${
-                        isOwned 
-                          ? "border-green-500/30 bg-green-900/10" 
-                          : canAfford 
-                            ? "border-indigo-500/30 bg-indigo-900/10 hover:bg-indigo-900/20" 
-                            : "border-slate-700/30 bg-slate-800/10 opacity-70"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          isOwned ? "bg-green-700/50" : "bg-indigo-700/50"
-                        }`}>
-                          {manager.icon}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-center border-b border-indigo-500/30 pb-1">Managers</h3>
+                  {state.managers.map(manager => {
+                    const isOwned = state.ownedManagers.includes(manager.id);
+                    const canAfford = state.essence >= manager.cost;
+                    
+                    return (
+                      <div 
+                        key={manager.id} 
+                        className={`rounded-lg border p-3 transition ${
+                          isOwned 
+                            ? "border-green-500/30 bg-green-900/10" 
+                            : canAfford 
+                              ? "border-indigo-500/30 bg-indigo-900/10 hover:bg-indigo-900/20" 
+                              : "border-slate-700/30 bg-slate-800/10 opacity-70"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-10 w-10 rounded-full">
+                            <AvatarImage src={manager.avatar} alt={manager.name} />
+                            <AvatarFallback className="bg-indigo-700/50">
+                              {manager.name.substring(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-medium text-sm">{manager.name}</h3>
+                            <p className="text-xs text-slate-300 truncate">{manager.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-medium text-sm">{manager.name}</h3>
-                          <p className="text-xs text-slate-300 truncate">{manager.description}</p>
-                        </div>
+                        <p className="text-xs text-indigo-400 mb-2">{manager.bonus}</p>
+                        
+                        {isOwned ? (
+                          <div className="bg-green-900/20 text-green-400 text-center py-1 rounded text-sm font-medium">
+                            Owned
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleBuyManager(manager.id, manager.name)}
+                            className={`w-full py-1 px-2 rounded text-sm font-medium ${
+                              canAfford 
+                                ? "bg-indigo-600 text-white hover:bg-indigo-700" 
+                                : "bg-slate-700 text-slate-300 cursor-not-allowed"
+                            }`}
+                            disabled={!canAfford}
+                          >
+                            {canAfford ? (
+                              <span className="flex items-center justify-center gap-1">
+                                <Sparkles size={12} />
+                                <span>{manager.cost}</span>
+                              </span>
+                            ) : (
+                              <span>Can't afford</span>
+                            )}
+                          </button>
+                        )}
                       </div>
-                      
-                      {isOwned ? (
-                        <div className="bg-green-900/20 text-green-400 text-center py-1 rounded text-sm font-medium">
-                          Owned
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => manager.buy()}
-                          className={`w-full py-1 px-2 rounded text-sm font-medium ${
-                            canAfford 
-                              ? "bg-indigo-600 text-white hover:bg-indigo-700" 
-                              : "bg-slate-700 text-slate-300 cursor-not-allowed"
-                          }`}
-                          disabled={!canAfford}
-                        >
-                          {canAfford ? (
-                            <span className="flex items-center justify-center gap-1">
-                              <Sparkles size={12} />
-                              <span>{manager.cost}</span>
-                            </span>
-                          ) : (
-                            <span>Can't afford</span>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
                 
-                {state.managers.length === 0 && (
-                  <div className="col-span-2 text-center py-6 text-slate-400">
-                    <p>No managers available yet</p>
-                  </div>
-                )}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-center border-b border-indigo-500/30 pb-1">Artifacts</h3>
+                  {state.artifacts.map(artifact => {
+                    const isOwned = state.ownedArtifacts.includes(artifact.id);
+                    const canAfford = state.essence >= artifact.cost;
+                    
+                    return (
+                      <div 
+                        key={artifact.id} 
+                        className={`rounded-lg border p-3 transition ${
+                          isOwned 
+                            ? "border-green-500/30 bg-green-900/10" 
+                            : canAfford 
+                              ? "border-indigo-500/30 bg-indigo-900/10 hover:bg-indigo-900/20" 
+                              : "border-slate-700/30 bg-slate-800/10 opacity-70"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-10 w-10 rounded-full">
+                            <AvatarImage src={artifact.avatar} alt={artifact.name} />
+                            <AvatarFallback className="bg-purple-700/50">
+                              {artifact.name.substring(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-medium text-sm">{artifact.name}</h3>
+                            <p className="text-xs text-slate-300 truncate">{artifact.description}</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-purple-400 mb-2">{artifact.bonus}</p>
+                        
+                        {isOwned ? (
+                          <div className="bg-green-900/20 text-green-400 text-center py-1 rounded text-sm font-medium">
+                            Owned
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleBuyArtifact(artifact.id, artifact.name)}
+                            className={`w-full py-1 px-2 rounded text-sm font-medium ${
+                              canAfford 
+                                ? "bg-purple-600 text-white hover:bg-purple-700" 
+                                : "bg-slate-700 text-slate-300 cursor-not-allowed"
+                            }`}
+                            disabled={!canAfford}
+                          >
+                            {canAfford ? (
+                              <span className="flex items-center justify-center gap-1">
+                                <Sparkles size={12} />
+                                <span>{artifact.cost}</span>
+                              </span>
+                            ) : (
+                              <span>Can't afford</span>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </>
