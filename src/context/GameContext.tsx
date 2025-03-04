@@ -1,5 +1,16 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
+import { managers } from '@/utils/managersData';
+
+// Achievement interface
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  checkCondition: (state: GameState) => boolean;
+}
 
 // Game state interface
 interface GameState {
@@ -10,7 +21,10 @@ interface GameState {
   totalClicks: number;
   totalEarned: number;
   autoBuy: boolean;
-  essence: number; // New essence currency
+  essence: number;
+  ownedManagers: string[];
+  achievements: Achievement[];
+  achievementsChecked: Record<string, boolean>;
 }
 
 // Upgrade interface
@@ -41,18 +55,47 @@ type GameAction =
   | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
   | { type: 'TOGGLE_AUTO_BUY' }
   | { type: 'TICK' }
-  | { type: 'PRESTIGE' }; // New prestige action
+  | { type: 'PRESTIGE' }
+  | { type: 'BUY_MANAGER'; managerId: string }
+  | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
+  | { type: 'CHECK_ACHIEVEMENTS' };
+
+// Create achievements based on upgrades
+const createAchievements = (): Achievement[] => {
+  const achievementsList: Achievement[] = upgradesList.map(upgrade => ({
+    id: `${upgrade.id}-mastery`,
+    name: `${upgrade.name} Mastery`,
+    description: `Reach level 1000 with ${upgrade.name}`,
+    unlocked: false,
+    checkCondition: (state: GameState) => {
+      const currentUpgrade = state.upgrades.find(u => u.id === upgrade.id);
+      return currentUpgrade ? currentUpgrade.level >= 1000 : false;
+    }
+  }));
+
+  return achievementsList;
+};
+
+// Updated upgrades with increased maxLevel
+const updatedUpgradesList = upgradesList.map(upgrade => ({
+  ...upgrade,
+  maxLevel: 1000, // Update max level to 1000
+  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 10 // Multiply passive income by 10
+}));
 
 // Initial game state
 const initialState: GameState = {
   coins: 0,
   coinsPerClick: 1,
   coinsPerSecond: 0,
-  upgrades: upgradesList,
+  upgrades: updatedUpgradesList,
   totalClicks: 0,
   totalEarned: 0,
   autoBuy: false,
-  essence: 0 // Initialize essence to 0
+  essence: 0,
+  ownedManagers: [],
+  achievements: createAchievements(),
+  achievementsChecked: {}
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -210,7 +253,70 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // Reset progress but keep essence and add reward
       return {
         ...initialState,
-        essence: state.essence + essenceReward
+        essence: state.essence + essenceReward,
+        ownedManagers: state.ownedManagers,
+        achievements: state.achievements,
+        achievementsChecked: state.achievementsChecked
+      };
+    }
+    case 'BUY_MANAGER': {
+      const manager = managers.find(m => m.id === action.managerId);
+      
+      if (!manager || state.ownedManagers.includes(action.managerId) || state.essence < manager.cost) {
+        return state;
+      }
+      
+      return {
+        ...state,
+        essence: state.essence - manager.cost,
+        ownedManagers: [...state.ownedManagers, action.managerId]
+      };
+    }
+    case 'UNLOCK_ACHIEVEMENT': {
+      const achievementIndex = state.achievements.findIndex(a => a.id === action.achievementId);
+      
+      if (achievementIndex === -1 || state.achievements[achievementIndex].unlocked) {
+        return state;
+      }
+      
+      const newAchievements = [...state.achievements];
+      newAchievements[achievementIndex] = {
+        ...newAchievements[achievementIndex],
+        unlocked: true
+      };
+      
+      return {
+        ...state,
+        achievements: newAchievements,
+        achievementsChecked: {
+          ...state.achievementsChecked,
+          [action.achievementId]: true
+        }
+      };
+    }
+    case 'CHECK_ACHIEVEMENTS': {
+      // Check each achievement that hasn't been unlocked yet
+      const unlockableAchievements = state.achievements
+        .filter(a => !a.unlocked && !state.achievementsChecked[a.id])
+        .filter(a => a.checkCondition(state));
+      
+      if (unlockableAchievements.length === 0) {
+        return state;
+      }
+      
+      const newAchievements = [...state.achievements];
+      const newAchievementsChecked = { ...state.achievementsChecked };
+      
+      unlockableAchievements.forEach(achievement => {
+        const index = newAchievements.findIndex(a => a.id === achievement.id);
+        newAchievements[index] = { ...newAchievements[index], unlocked: true };
+        newAchievementsChecked[achievement.id] = true;
+      });
+      
+      return {
+        ...state,
+        achievements: newAchievements,
+        achievementsChecked: newAchievementsChecked
       };
     }
     default:
@@ -224,8 +330,11 @@ type GameContextType = {
   handleClick: () => void;
   buyUpgrade: (upgradeId: string, quantity?: number) => void;
   toggleAutoBuy: () => void;
-  prestige: () => void;  // New prestige function
-  calculateEssenceReward: (totalEarned: number) => number; // Expose the essence calculation
+  prestige: () => void;
+  calculateEssenceReward: (totalEarned: number) => number;
+  buyManager: (managerId: string) => void;
+  checkAchievements: () => void;
+  unlockAchievement: (achievementId: string) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -253,15 +362,65 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const prestige = () => {
     dispatch({ type: 'PRESTIGE' });
   };
+  
+  // Buy manager
+  const buyManager = (managerId: string) => {
+    dispatch({ type: 'BUY_MANAGER', managerId });
+  };
+  
+  // Check achievements
+  const checkAchievements = () => {
+    dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+  };
+  
+  // Unlock specific achievement
+  const unlockAchievement = (achievementId: string) => {
+    dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
+  };
 
-  // Set up the automatic tick for passive income
+  // Set up the automatic tick for passive income and achievement checking
   useEffect(() => {
     const interval = setInterval(() => {
       dispatch({ type: 'TICK' });
+      
+      // Check achievements every second (every 10 ticks)
+      if (Math.random() < 0.1) {
+        checkAchievements();
+      }
     }, 100); // 10 ticks per second for smooth animation
 
     return () => clearInterval(interval);
   }, []);
+  
+  // Check for newly unlocked achievements and show notification
+  const previousAchievementsRef = React.useRef<Achievement[]>(state.achievements);
+  
+  useEffect(() => {
+    const prevUnlocked = previousAchievementsRef.current.filter(a => a.unlocked).length;
+    const currentUnlocked = state.achievements.filter(a => a.unlocked).length;
+    
+    // If we've unlocked new achievements
+    if (currentUnlocked > prevUnlocked) {
+      // Find newly unlocked achievements
+      const newlyUnlocked = state.achievements.filter(a => {
+        const prev = previousAchievementsRef.current.find(p => p.id === a.id);
+        return a.unlocked && prev && !prev.unlocked;
+      });
+      
+      // Show notifications for each
+      newlyUnlocked.forEach(achievement => {
+        // Use browser notification API
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Achievement Unlocked!", {
+            body: `${achievement.name}: ${achievement.description}`,
+            icon: "/favicon.ico"
+          });
+        }
+      });
+    }
+    
+    previousAchievementsRef.current = state.achievements;
+  }, [state.achievements]);
 
   return (
     <GameContext.Provider value={{ 
@@ -270,7 +429,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       buyUpgrade, 
       toggleAutoBuy, 
       prestige,
-      calculateEssenceReward
+      calculateEssenceReward,
+      buyManager,
+      checkAchievements,
+      unlockAchievement
     }}>
       {children}
     </GameContext.Provider>

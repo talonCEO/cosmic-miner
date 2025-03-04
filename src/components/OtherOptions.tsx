@@ -12,9 +12,11 @@ import { MenuType } from '@/components/GameMenu';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { useToast } from '@/components/ui/use-toast';
+import { managers } from '@/utils/managersData';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const OtherOptions: React.FC = () => {
-  const { state, prestige, calculateEssenceReward } = useGame();
+  const { state, prestige, calculateEssenceReward, buyManager } = useGame();
   const [menuType, setMenuType] = React.useState<MenuType>("none");
   const { toast } = useToast();
   
@@ -37,7 +39,23 @@ const OtherOptions: React.FC = () => {
     });
   };
   
+  const handleBuyManager = (managerId: string, cost: number, name: string) => {
+    buyManager(managerId);
+    
+    toast({
+      title: `${name} Hired!`,
+      description: `Manager added to your team.`,
+      variant: "default",
+    });
+  };
+  
   const potentialEssenceReward = calculateEssenceReward(state.totalEarned);
+  
+  // Calculate achievement progress
+  const unlockedAchievements = state.achievements.filter(a => a.unlocked).length;
+  const totalAchievements = state.achievements.length;
+  const achievementProgress = totalAchievements > 0 ? 
+    Math.round((unlockedAchievements / totalAchievements) * 100) : 0;
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -59,11 +77,33 @@ const OtherOptions: React.FC = () => {
             <DialogHeader className="p-4 border-b flex justify-between items-center">
               <DialogTitle className="text-xl">Achievements</DialogTitle>
             </DialogHeader>
-            <div className="p-6">
-              <p className="text-center text-slate-500">Achievements coming soon!</p>
-              <p className="text-center text-sm text-slate-400 mt-2">
-                Unlock achievements as you progress in the game.
+            <div className="p-4">
+              <div className="bg-gray-200 rounded-full h-2 mb-4">
+                <div 
+                  className="bg-indigo-500 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${achievementProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-center text-slate-500 mb-4">
+                {unlockedAchievements} of {totalAchievements} achievements unlocked ({achievementProgress}%)
               </p>
+              
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
+                {state.achievements.map((achievement) => (
+                  <div 
+                    key={achievement.id}
+                    className={`flex items-start gap-4 p-3 border-b border-slate-200 transition-opacity ${achievement.unlocked ? 'opacity-100' : 'opacity-50'}`}
+                  >
+                    <div className="rounded-lg bg-indigo-100 p-2 h-12 w-12 flex items-center justify-center flex-shrink-0">
+                      <Award size={24} className={`${achievement.unlocked ? 'text-indigo-600' : 'text-slate-400'}`} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold">{achievement.name}</h3>
+                      <p className="text-sm text-slate-500">{achievement.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -131,18 +171,66 @@ const OtherOptions: React.FC = () => {
             </button>
           </DialogTrigger>
           
-          <DialogContent className="sm:max-w-md bg-white rounded-xl p-0 border-none shadow-xl">
+          <DialogContent className="sm:max-w-md bg-white rounded-xl p-0 border-none shadow-xl max-h-[90vh] overflow-hidden">
             <DialogHeader className="p-4 border-b flex justify-between items-center">
-              <DialogTitle className="text-xl">Shop</DialogTitle>
+              <DialogTitle className="text-xl">Managers Shop</DialogTitle>
             </DialogHeader>
-            <div className="p-6">
-              <p className="text-center text-slate-500">Shop coming soon!</p>
-              <p className="text-center text-sm text-slate-400 mt-2">
-                Purchase special items and upgrades with your Essence.
-              </p>
-              <div className="flex items-center justify-center mt-3">
+            <div className="p-4">
+              <div className="flex items-center justify-center mb-4">
                 <Sparkles size={16} className="text-purple-500 mr-1" />
                 <p className="text-lg font-medium text-purple-500">{formatNumber(state.essence)} Essence Available</p>
+              </div>
+              
+              <div className="overflow-y-auto max-h-[60vh] pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {managers.map((manager) => {
+                    const isOwned = state.ownedManagers.includes(manager.id);
+                    const canAfford = state.essence >= manager.cost;
+                    
+                    return (
+                      <div 
+                        key={manager.id}
+                        className={`border rounded-lg p-4 transition-all ${isOwned ? 'border-green-500 bg-green-50' : 'border-slate-200'}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <Avatar className="h-16 w-16 rounded-xl">
+                            <AvatarImage src={manager.avatar} alt={manager.name} />
+                            <AvatarFallback className="bg-indigo-100 text-indigo-500 rounded-xl">
+                              {manager.name.substring(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1">
+                            <h3 className="font-bold text-slate-800">{manager.name}</h3>
+                            <p className="text-xs text-indigo-500 mt-1">{manager.bonus}</p>
+                            
+                            {!isOwned ? (
+                              <div className="mt-2 flex justify-between items-center">
+                                <div className="flex items-center">
+                                  <Sparkles size={12} className="text-purple-500 mr-1" />
+                                  <span className="text-sm font-medium">{formatNumber(manager.cost)}</span>
+                                </div>
+                                
+                                <button
+                                  onClick={() => handleBuyManager(manager.id, manager.cost, manager.name)}
+                                  disabled={!canAfford}
+                                  className={`px-3 py-1 rounded text-xs font-medium 
+                                    ${canAfford 
+                                      ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                                      : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
+                                >
+                                  Buy
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-green-500 mt-2 font-medium">Owned</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </DialogContent>
