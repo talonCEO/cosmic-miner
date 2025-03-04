@@ -130,6 +130,19 @@ export default {
 					'0%': { transform: 'rotate(-5deg)' },
 					'50%': { transform: 'rotate(5deg)' },
 					'100%': { transform: 'rotate(-5deg)' }
+				},
+				'float-vertical': {
+					'0%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(40px)' },
+					'100%': { transform: 'translateY(0)' }
+				},
+				'shimmer': {
+					'0%': { backgroundPosition: '-200% 0' },
+					'100%': { backgroundPosition: '200% 0' }
+				},
+				'orbit': {
+					'0%': { transform: 'rotate(0deg) translateX(50px) rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg) translateX(50px) rotate(-360deg)' }
 				}
 			},
 			animation: {
@@ -141,9 +154,25 @@ export default {
 				'slide-up': 'slide-up 0.5s ease-out',
 				'slide-down': 'slide-down 0.5s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
-				'mining': 'mining 0.5s ease-in-out infinite'
+				'mining': 'mining 0.5s ease-in-out infinite',
+				'float-vertical': 'float-vertical 3s ease-in-out infinite',
+				'shimmer': 'shimmer 2s infinite linear',
+				'orbit': 'orbit 8s linear infinite'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities, theme, e }: any) {
+			const newUtilities = {
+				'.clip-triangle': {
+					clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'
+				},
+				'.clip-hexagon': {
+					clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)'
+				}
+			};
+			addUtilities(newUtilities);
+		}
+	],
 } satisfies Config;
