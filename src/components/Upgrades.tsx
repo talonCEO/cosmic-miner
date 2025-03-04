@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress } from '@/utils/gameLogic';
@@ -10,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Upgrades: React.FC = () => {
-  const { state, buyUpgrade, toggleAutoBuy } = useGame();
+  const { state, buyUpgrade, toggleAutoBuy, calculateMaxPurchaseAmount } = useGame();
   const { toast } = useToast();
   
   const iconMap: Record<string, React.ReactNode> = {
@@ -61,6 +62,16 @@ const Upgrades: React.FC = () => {
         });
       }
     }, 100);
+  };
+  
+  const handleMaxPurchase = (upgradeId: string) => {
+    const upgrade = state.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade) return;
+    
+    const maxAmount = calculateMaxPurchaseAmount(upgradeId);
+    if (maxAmount > 0) {
+      handleBulkPurchase(upgradeId, maxAmount);
+    }
   };
 
   return (
@@ -145,6 +156,16 @@ const Upgrades: React.FC = () => {
                           {quantity}
                         </button>
                       ))}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMaxPurchase(upgrade.id);
+                        }}
+                        className="px-2 py-0.5 bg-indigo-700/50 hover:bg-indigo-600/50 rounded text-xs font-medium transition-colors"
+                        title="Buy maximum affordable amount"
+                      >
+                        MAX
+                      </button>
                     </div>
                   </>
                 )}

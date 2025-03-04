@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -110,10 +109,10 @@ const Stats: React.FC = () => {
     let multiplier = 1.0;
     
     if (state.ownedArtifacts.includes("artifact-1")) {
-      multiplier += 0.25;
+      multiplier += 0.1;
     }
-    if (state.ownedArtifacts.includes("artifact-10")) {
-      multiplier += 0.5;
+    if (state.ownedArtifacts.includes("artifact-6")) {
+      multiplier += 0.25;
     }
     
     return multiplier.toFixed(2);
@@ -138,7 +137,6 @@ const Stats: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-white">Statistics</h2>
         
-        {/* Admin Panel button - moved to the top level for visibility */}
         <AdminPanel />
       </div>
       
@@ -250,20 +248,11 @@ const Stats: React.FC = () => {
                 dot={{ fill: '#a78bfa', r: 3 }}
                 activeDot={{ r: 5 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="coinsPerSecond" 
-                name="CPS" 
-                stroke="#fbbf24" 
-                strokeWidth={2}
-                dot={{ fill: '#fbbf24', r: 3 }}
-                activeDot={{ r: 5 }}
-              />
             </LineChart>
           </ResponsiveContainer>
         </div>
         
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="text-center">
             <p className="text-xs text-slate-400">Coins</p>
             <p className="font-medium text-green-400">{formatNumber(state.coins)}</p>
@@ -271,10 +260,6 @@ const Stats: React.FC = () => {
           <div className="text-center">
             <p className="text-xs text-slate-400">Essence</p>
             <p className="font-medium text-purple-400">{formatNumber(state.essence)}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-slate-400">CPS</p>
-            <p className="font-medium text-yellow-400">{formatNumber(state.coinsPerSecond)}</p>
           </div>
         </div>
         

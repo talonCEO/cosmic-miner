@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -119,27 +118,105 @@ const initialState: GameState = {
 const calculateBulkCost = (baseCost: number, currentLevel: number, quantity: number): number => {
   let totalCost = 0;
   for (let i = 0; i < quantity; i++) {
-    totalCost += Math.floor(baseCost * Math.pow(1.15, currentLevel + i));
+    totalCost += Math.floor(baseCost * Math.pow(1.07, currentLevel + i));
   }
   return totalCost;
 };
 
 // Helper function to calculate potential essence reward
-const calculateEssenceReward = (totalEarned: number): number => {
-  return Math.floor(totalEarned / 100000);
+const calculateEssenceReward = (totalEarned: number, ownedArtifacts: string[]): number => {
+  let essenceMultiplier = 1;
+  
+  if (ownedArtifacts.includes("artifact-3")) { // Element Scanner
+    essenceMultiplier += 1.25;
+  }
+  if (ownedArtifacts.includes("artifact-8")) { // Quantum Microscope
+    essenceMultiplier += 2.25;
+  }
+  
+  return Math.floor((totalEarned / 100000) * essenceMultiplier);
+};
+
+// Helper function to calculate upgrade cost reduction from artifacts
+const calculateCostReduction = (ownedArtifacts: string[]): number => {
+  let reduction = 1; // Default: no reduction (multiplier of 1)
+  
+  if (ownedArtifacts.includes("artifact-4")) { // Telescope Array
+    reduction -= 0.1; // 10% reduction
+  }
+  if (ownedArtifacts.includes("artifact-9")) { // Satellite Network
+    reduction -= 0.25; // 25% reduction
+  }
+  
+  return Math.max(0.5, reduction);
+};
+
+// Helper function to calculate click multiplier from artifacts
+const calculateClickMultiplier = (ownedArtifacts: string[]): number => {
+  let multiplier = 1;
+  
+  if (ownedArtifacts.includes("artifact-2")) { // Space Rocket
+    multiplier += 0.5; // 1.5x multiplier
+  }
+  if (ownedArtifacts.includes("artifact-7")) { // Molecular Flask
+    multiplier += 1.5; // Additional 2.5x multiplier
+  }
+  
+  return multiplier;
+};
+
+// Helper function to calculate starting coins after prestige
+const calculateStartingCoins = (ownedArtifacts: string[]): number => {
+  let coins = 0;
+  
+  if (ownedArtifacts.includes("artifact-5")) { // Crystalline Gem
+    coins += 100000;
+  }
+  if (ownedArtifacts.includes("artifact-10")) { // Energy Core
+    coins += 1000000;
+  }
+  
+  return coins;
+};
+
+// Calculate maximum affordable purchases for an upgrade
+const calculateMaxPurchaseAmount = (state: GameState, upgradeId: string): number => {
+  const upgrade = state.upgrades.find(u => u.id === upgradeId);
+  if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
+  
+  const costReduction = calculateCostReduction(state.ownedArtifacts);
+  let remainingCoins = state.coins;
+  let purchaseCount = 0;
+  let currentLevel = upgrade.level;
+  
+  while (remainingCoins > 0 && currentLevel < upgrade.maxLevel) {
+    const nextUpgradeCost = Math.floor(upgrade.baseCost * Math.pow(1.07, currentLevel) * costReduction);
+    
+    if (remainingCoins >= nextUpgradeCost) {
+      remainingCoins -= nextUpgradeCost;
+      purchaseCount++;
+      currentLevel++;
+    } else {
+      break;
+    }
+  }
+  
+  return purchaseCount;
 };
 
 // Game reducer
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
-    case 'CLICK':
-      const baseClickAmount = state.coinsPerClick * (state.incomeMultiplier || 1);
+    case 'CLICK': {
+      const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
+      const baseClickAmount = state.coinsPerClick * (state.incomeMultiplier || 1) * clickMultiplier;
       return {
         ...state,
         coins: state.coins + baseClickAmount,
         totalClicks: state.totalClicks + 1,
         totalEarned: state.totalEarned + baseClickAmount
       };
+    }
     case 'ADD_COINS':
       return {
         ...state,
@@ -157,6 +234,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (upgradeIndex === -1) return state;
       
       const upgrade = state.upgrades[upgradeIndex];
+      const costReduction = calculateCostReduction(state.ownedArtifacts);
       const quantity = action.quantity || 1;
       
       if (upgrade.level >= upgrade.maxLevel) return state;
@@ -166,7 +244,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         upgrade.maxLevel - upgrade.level
       );
       
-      const totalCost = calculateBulkCost(upgrade.baseCost, upgrade.level, maxPossibleQuantity);
+      const totalCost = Math.floor(calculateBulkCost(upgrade.baseCost, upgrade.level, maxPossibleQuantity) * costReduction);
       
       if (state.coins < totalCost) return state;
       
@@ -176,7 +254,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const updatedUpgrade = {
         ...upgrade,
         level: upgrade.level + maxPossibleQuantity,
-        cost: Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.level + maxPossibleQuantity))
+        cost: Math.floor(upgrade.baseCost * Math.pow(1.07, upgrade.level + maxPossibleQuantity) * costReduction)
       };
       
       const newUpgrades = [...state.upgrades];
@@ -228,7 +306,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       // Process auto tap if enabled
       if (newState.autoTap) {
-        const autoTapAmount = newState.coinsPerClick * (newState.incomeMultiplier || 1);
+        const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
+        const autoTapAmount = newState.coinsPerClick * (newState.incomeMultiplier || 1) * clickMultiplier;
         newState = {
           ...newState,
           coins: newState.coins + autoTapAmount,
@@ -237,11 +316,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
       
-      // Process auto buy
+      // Process auto buy with new cost reduction from artifacts
       if (newState.autoBuy) {
+        const costReduction = calculateCostReduction(state.ownedArtifacts);
         const affordableUpgrades = newState.upgrades
-          .filter(u => u.unlocked && u.level < u.maxLevel && newState.coins >= u.cost)
-          .sort((a, b) => a.cost - b.cost);
+          .filter(u => u.unlocked && u.level < u.maxLevel && 
+                   newState.coins >= (u.cost * costReduction))
+          .sort((a, b) => (a.cost * costReduction) - (b.cost * costReduction));
         
         if (affordableUpgrades.length > 0) {
           const cheapestUpgrade = affordableUpgrades[0];
@@ -254,7 +335,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           const updatedUpgrade = {
             ...cheapestUpgrade,
             level: cheapestUpgrade.level + 1,
-            cost: Math.floor(cheapestUpgrade.baseCost * Math.pow(1.15, cheapestUpgrade.level + 1))
+            cost: Math.floor(cheapestUpgrade.baseCost * Math.pow(1.07, cheapestUpgrade.level + 1) * costReduction)
           };
           
           const newUpgrades = [...newState.upgrades];
@@ -270,7 +351,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           
           newState = {
             ...newState,
-            coins: newState.coins - cheapestUpgrade.cost,
+            coins: newState.coins - (cheapestUpgrade.cost * costReduction),
             coinsPerClick: newCoinsPerClick,
             coinsPerSecond: newCoinsPerSecond,
             upgrades: newUpgrades
@@ -281,10 +362,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return newState;
     }
     case 'PRESTIGE': {
-      const essenceReward = calculateEssenceReward(state.totalEarned);
+      const essenceReward = calculateEssenceReward(state.totalEarned, state.ownedArtifacts);
+      const startingCoins = calculateStartingCoins(state.ownedArtifacts);
       
       return {
         ...initialState,
+        coins: startingCoins,
         essence: state.essence + essenceReward,
         ownedManagers: state.ownedManagers,
         ownedArtifacts: state.ownedArtifacts,
@@ -388,6 +471,7 @@ type GameContextType = {
   unlockAchievement: (achievementId: string) => void;
   addCoins: (amount: number) => void;
   addEssence: (amount: number) => void;
+  calculateMaxPurchaseAmount: (upgradeId: string) => number;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -455,6 +539,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const unlockAchievement = (achievementId: string) => {
     dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
   };
+  
+  // Calculate maximum affordable purchases
+  const calculateMaxPurchaseAmount = (upgradeId: string): number => {
+    return calculateMaxPurchaseAmount(state, upgradeId);
+  };
 
   // Set up the automatic tick for passive income and achievement checking
   useEffect(() => {
@@ -503,13 +592,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toggleAutoTap,
       setIncomeMultiplier,
       prestige,
-      calculateEssenceReward,
+      calculateEssenceReward: (totalEarned: number) => calculateEssenceReward(totalEarned, state.ownedArtifacts),
       buyManager,
       buyArtifact,
       checkAchievements,
       unlockAchievement,
       addCoins,
-      addEssence
+      addEssence,
+      calculateMaxPurchaseAmount
     }}>
       {children}
     </GameContext.Provider>
