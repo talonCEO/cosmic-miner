@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ShieldQuestion, X } from 'lucide-react';
 import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
   DialogTitle,
   DialogTrigger,
   DialogClose
@@ -15,262 +14,186 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Stats: React.FC = () => {
   const { state } = useGame();
-  const [resourceData, setResourceData] = useState<{ time: string; coins: number; totalEarned: number; coinsPerSecond: number; essence: number }[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [resourceData, setResourceData] = useState<any[]>([]);
   
+  // Record data points for the chart
   useEffect(() => {
-    const savedData = localStorage.getItem('resourceHistory');
-    if (savedData) {
-      setResourceData(JSON.parse(savedData));
-    } else {
-      const initialData = {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        coins: state.coins,
-        totalEarned: state.totalEarned,
-        coinsPerSecond: state.coinsPerSecond,
-        essence: state.essence
-      };
-      setResourceData([initialData]);
-    }
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newDataPoint = {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        coins: state.coins,
-        totalEarned: state.totalEarned,
-        coinsPerSecond: state.coinsPerSecond,
-        essence: state.essence
-      };
-      
-      setResourceData(prev => {
-        const updatedData = [...prev, newDataPoint];
-        const trimmedData = updatedData.slice(-20);
-        localStorage.setItem('resourceHistory', JSON.stringify(trimmedData));
-        return trimmedData;
-      });
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, [state.coins, state.totalEarned, state.coinsPerSecond, state.essence]);
-  
-  useEffect(() => {
-    const handlePrestige = () => {
-      const newDataPoint = {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (Prestige)",
-        coins: 0,
-        totalEarned: 0,
-        coinsPerSecond: 0,
-        essence: state.essence
-      };
-      
-      setResourceData([newDataPoint]);
-      localStorage.setItem('resourceHistory', JSON.stringify([newDataPoint]));
+    const now = new Date();
+    const newDataPoint = {
+      time: now.toLocaleTimeString(),
+      coins: state.coins,
+      essence: state.essence
     };
     
-    if (resourceData.length > 1) {
-      const lastPoint = resourceData[resourceData.length - 1];
-      if (lastPoint && state.totalEarned < lastPoint.totalEarned * 0.5) {
-        handlePrestige();
+    setChartData(prev => {
+      const updated = [...prev, newDataPoint];
+      // Keep only the last 10 data points
+      if (updated.length > 10) {
+        return updated.slice(updated.length - 10);
       }
-    }
+      return updated;
+    });
+  }, [state.coins, state.essence]);
+  
+  // Record resource data
+  useEffect(() => {
+    const topUpgrades = state.upgrades
+      .filter(u => u.level > 0)
+      .sort((a, b) => b.level - a.level)
+      .slice(0, 5);
+    
+    const topUpgradesData = topUpgrades.map(upgrade => ({
+      name: upgrade.name,
+      level: upgrade.level,
+      contribution: upgrade.coinsPerSecondBonus * upgrade.level
+    }));
+    
+    setResourceData(topUpgradesData);
+  }, [state.upgrades]);
+  
+  // Calculate distribution for the pie chart
+  const calculateResourceDistribution = () => {
+    const totalContribution = resourceData.reduce((sum, item) => sum + item.contribution, 0);
+    
+    if (totalContribution === 0) return [];
+    
+    return resourceData.map(item => ({
+      ...item,
+      percentage: Math.round((item.contribution / totalContribution) * 100)
+    }));
+  };
+  
+  // Effect to maintain chart data over time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const newDataPoint = {
+        time: now.toLocaleTimeString(),
+        coins: state.coins,
+        essence: state.essence
+      };
+      
+      setChartData(prev => {
+        const updated = [...prev, newDataPoint];
+        if (updated.length > 10) {
+          return updated.slice(updated.length - 10);
+        }
+        return updated;
+      });
+    }, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(interval);
   }, [state.totalEarned, resourceData, state.essence]);
   
   const stats = [
-    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1) + 'x' },
+    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1, 2) + 'x' },
     { label: 'Coins Earned', value: formatNumber(state.totalEarned) },
     { label: 'CPT (Coins Per Tap)', value: formatNumber(state.coinsPerClick) },
     { label: 'CPS (Coins Per Sec)', value: formatNumber(state.coinsPerSecond) }
   ];
   
-  const formatYAxis = (value: number) => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-    return value.toString();
-  };
+  const distribution = calculateResourceDistribution();
   
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900/90 p-3 border border-indigo-500/30 rounded-lg">
-          <p className="text-indigo-300 font-medium">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }}>
-              {entry.name}: {formatNumber(entry.value)}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const calculateIncomeMultiplier = () => {
-    let multiplier = 1.0;
-    
-    if (state.ownedArtifacts.includes("artifact-1")) {
-      multiplier += 0.1;
-    }
-    if (state.ownedArtifacts.includes("artifact-6")) {
-      multiplier += 0.25;
-    }
-    
-    return multiplier.toFixed(2);
-  };
-
-  const allGameStats = [
-    { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
-    { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
-    { category: "Resources", icon: "💵", name: "Coins Earned", value: formatNumber(state.totalEarned) },
-    { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(state.coinsPerClick) },
-    { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(state.coinsPerSecond) },
-    { category: "Production", icon: "⚡", name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
-    { category: "Interactions", icon: "🖱️", name: "Total Clicks", value: formatNumber(state.totalClicks) },
-    { category: "Interactions", icon: "🔄", name: "Prestige Count", value: state.prestigeCount || 0 },
-    { category: "Collections", icon: "👨‍💼", name: "Managers Owned", value: state.ownedManagers.length },
-    { category: "Collections", icon: "🔮", name: "Artifacts Owned", value: state.ownedArtifacts.length },
-    { category: "Achievements", icon: "🏆", name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
-  ];
-
   return (
-    <div className="w-full mb-8 max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium text-white">Statistics</h2>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        {stats.map((stat, index) => (
-          <div 
-            key={index}
-            className="bg-game-upgrade-bg rounded-xl p-4 shadow-sm border border-game-upgrade-border card-hover animate-scale-in"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <p className="text-sm text-slate-300 mb-1">{stat.label}</p>
-            <p className="text-lg font-medium text-white">{stat.value}</p>
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="flex items-center gap-2 bg-indigo-600/20 hover:bg-indigo-600/30 px-4 py-2 rounded-lg text-indigo-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 3v18h18" />
+            <path d="m19 9-5 5-4-4-3 3" />
+          </svg>
+          <span>Stats</span>
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md bg-slate-900/90 border-indigo-500/30 p-0 backdrop-blur-sm shadow-xl">
+        <DialogHeader className="p-4 border-b border-indigo-500/20">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl">Game Statistics</DialogTitle>
+            <DialogClose className="rounded-full p-1.5 hover:bg-slate-800/70 transition-colors">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </DialogClose>
           </div>
-        ))}
-      </div>
-      
-      <div className="mt-8 bg-slate-800/40 rounded-xl p-4 border border-indigo-500/20">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-md font-medium text-white">Company Income</h3>
+          <DialogDescription className="text-slate-300">
+            Track your mining progress
+          </DialogDescription>
+        </DialogHeader>
+        
+        <ScrollArea className="h-[70vh] p-4">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {stats.map((stat, i) => (
+              <div key={i} className="bg-slate-800/60 p-3 rounded-lg flex flex-col">
+                <span className="text-xs text-slate-400">{stat.label}</span>
+                <span className="text-lg mt-1 font-medium text-indigo-300">{stat.value}</span>
+              </div>
+            ))}
+          </div>
           
-          <Dialog>
-            <DialogTrigger asChild>
-              <button className="p-2 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-slate-600/30">
-                <ShieldQuestion size={18} className="text-slate-300" />
-              </button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md bg-slate-900 border border-indigo-500/30">
-              <DialogHeader className="flex justify-between items-center">
-                <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
-                <DialogClose className="p-2 rounded-md hover:bg-slate-800 transition-colors">
-                  <X size={18} className="text-slate-400" />
-                </DialogClose>
-              </DialogHeader>
-              <ScrollArea className="h-[60vh] pr-4 mt-4">
-                <div className="pr-4">
-                  {Object.entries(
-                    allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
-                      if (!acc[stat.category]) acc[stat.category] = [];
-                      acc[stat.category].push(stat);
-                      return acc;
-                    }, {})
-                  ).map(([category, stats]) => (
-                    <div key={category} className="mb-6">
-                      <h3 className="text-md font-medium text-indigo-400 mb-2">{category}</h3>
-                      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50">
-                        <table className="w-full">
-                          <thead className="border-b border-slate-700/50">
-                            <tr>
-                              <th className="p-2 text-left text-xs text-slate-400">Name</th>
-                              <th className="p-2 text-right text-xs text-slate-400">Value</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(stats as any[]).map((stat, index) => (
-                              <tr key={index} className="border-t border-slate-700/30 first:border-0">
-                                <td className="p-3 text-left">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-lg">{stat.icon}</span>
-                                    <span className="text-slate-200">{stat.name}</span>
-                                  </div>
-                                </td>
-                                <td className="p-3 text-right font-medium text-slate-300">{stat.value}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-3 text-white">Resource Breakdown</h3>
+            {distribution.length > 0 ? (
+              <div className="space-y-2">
+                {distribution.map((item, i) => (
+                  <div key={i} className="flex items-center">
+                    <div className="w-1/3 text-sm text-slate-300 truncate">{item.name}</div>
+                    <div className="w-1/3">
+                      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-indigo-500 rounded-full"
+                          style={{ width: `${item.percentage}%` }}
+                        ></div>
                       </div>
                     </div>
-                  ))}
+                    <div className="w-1/3 text-right text-xs text-slate-400">
+                      {item.percentage}% (Lvl {item.level})
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Start collecting resources to see data</p>
+            )}
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-medium mb-3 text-white">Progress Over Time</h3>
+            {chartData.length > 1 ? (
+              <div className="h-64 relative">
+                <div className="absolute inset-0 flex flex-col">
+                  <div className="flex-1 border-b border-slate-700/50 relative">
+                    <span className="absolute right-0 top-0 text-xs text-slate-500">Max</span>
+                  </div>
+                  <div className="flex-1 relative">
+                    <span className="absolute right-0 bottom-0 text-xs text-slate-500">Min</span>
+                  </div>
                 </div>
-              </ScrollArea>
-            </DialogContent>
-          </Dialog>
-        </div>
-        
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={resourceData}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="time" 
-                tick={{ fill: '#94a3b8' }} 
-                tickLine={{ stroke: '#4b5563' }}
-                axisLine={{ stroke: '#4b5563' }}
-              />
-              <YAxis 
-                tickFormatter={formatYAxis} 
-                tick={{ fill: '#94a3b8' }} 
-                tickLine={{ stroke: '#4b5563' }}
-                axisLine={{ stroke: '#4b5563' }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: '8px' }} />
-              <Line 
-                type="monotone" 
-                dataKey="coins" 
-                name="Coins" 
-                stroke="#34d399" 
-                strokeWidth={2} 
-                dot={{ fill: '#34d399', r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="essence" 
-                name="Essence" 
-                stroke="#a78bfa" 
-                strokeWidth={2}
-                dot={{ fill: '#a78bfa', r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="text-center">
-            <p className="text-xs text-slate-400">Coins</p>
-            <p className="font-medium text-green-400">{formatNumber(state.coins)}</p>
+                <div className="absolute bottom-0 left-0 right-0 flex items-end h-56 gap-1">
+                  {chartData.map((point, i) => {
+                    const maxCoin = Math.max(...chartData.map(d => d.coins));
+                    const height = maxCoin ? (point.coins / maxCoin) * 100 : 0;
+                    
+                    return (
+                      <div key={i} className="flex flex-col items-center flex-1">
+                        <div 
+                          className="w-full bg-indigo-600/70 rounded-t"
+                          style={{ height: `${height}%` }}
+                        ></div>
+                        <span className="text-[9px] text-slate-500 rotate-90 mt-1 origin-top-left absolute -bottom-6 truncate">{point.time}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Keep playing to see your progress over time</p>
+            )}
           </div>
-          <div className="text-center">
-            <p className="text-xs text-slate-400">Essence</p>
-            <p className="font-medium text-purple-400">{formatNumber(state.essence)}</p>
-          </div>
-        </div>
-        
-        <p className="text-xs text-slate-400 mt-2 text-center">
-          {resourceData.length <= 1 
-            ? "Tracking resource changes over time. More data will appear soon..." 
-            : `Showing the last ${resourceData.length} data points. Updated every 30 seconds.`}
-        </p>
-      </div>
-    </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 };
 

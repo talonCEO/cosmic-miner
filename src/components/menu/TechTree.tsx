@@ -45,6 +45,20 @@ const TechTree: React.FC = () => {
     });
   };
 
+  // Filter abilities for each row to limit to 3 centered ones
+  const filterRowAbilities = (row: number, abilities: Ability[]): Ability[] => {
+    // For rows 1-3, limit to 3 abilities (centered)
+    if (row > 0 && row < 4) {
+      const sortedAbilities = [...abilities].sort((a, b) => a.column - b.column);
+      const centerIndex = Math.floor(sortedAbilities.length / 2);
+      return sortedAbilities.slice(
+        Math.max(0, centerIndex - 1), 
+        Math.min(sortedAbilities.length, centerIndex + 2)
+      );
+    }
+    return abilities;
+  };
+
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -65,15 +79,8 @@ const TechTree: React.FC = () => {
         <div className="relative flex flex-col gap-8 items-center">
           {/* Render abilities by row */}
           {Object.keys(abilitiesByRow).map((row) => {
-            // Get only center 3 abilities per row (max) to avoid overcrowding
-            let abilities = abilitiesByRow[parseInt(row)];
-            if (parseInt(row) > 0 && parseInt(row) < 4) {
-              // For rows 1-3, limit to 3 abilities max
-              const centerIndex = Math.floor(abilities.length / 2);
-              abilities = abilities
-                .sort((a, b) => a.column - b.column)
-                .slice(Math.max(0, centerIndex - 1), Math.min(abilities.length, centerIndex + 2));
-            }
+            // Filter abilities to show only center 3 per row max
+            let abilities = filterRowAbilities(parseInt(row), abilitiesByRow[parseInt(row)]);
             
             return (
               <div key={row} className="flex justify-center gap-6 relative w-full">

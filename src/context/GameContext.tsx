@@ -114,10 +114,10 @@ const updatedUpgradesList = upgradesList.map(upgrade => ({
 const initialAbilities: Ability[] = [
   {
     id: "ability-1",
-    name: "Element Focus",
-    description: "Increases base click power by 200%",
+    name: "Element Mastery",
+    description: "Increases base click power by 300% and unlocks cosmic potential",
     cost: 0,
-    icon: "🔥",
+    icon: "🌟",
     unlocked: true,
     requiredAbilities: [],
     row: 0,
@@ -126,8 +126,8 @@ const initialAbilities: Ability[] = [
   // Row 1
   {
     id: "ability-2",
-    name: "Faster Mining",
-    description: "Increases mining speed by 100%",
+    name: "Quantum Extraction",
+    description: "Increases mining speed by 150% and reveals hidden elements",
     cost: 3,
     icon: "⛏️",
     unlocked: false,
@@ -137,8 +137,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-3",
-    name: "Energy Control",
-    description: "Increases all production by 50%",
+    name: "Fusion Control",
+    description: "Increases all production by 75% and reduces upgrade costs by 5%",
     cost: 3,
     icon: "⚡",
     unlocked: false,
@@ -148,8 +148,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-4",
-    name: "Crystal Vision",
-    description: "Increases essence gain by 75%",
+    name: "Dimensional Shifting",
+    description: "Increases essence gain by 100% and allows time manipulation",
     cost: 3,
     icon: "💎",
     unlocked: false,
@@ -160,8 +160,8 @@ const initialAbilities: Ability[] = [
   // Row 2
   {
     id: "ability-5",
-    name: "Double Strike",
-    description: "Clicks have a 10% chance to hit twice",
+    name: "Critical Harvesting",
+    description: "Clicks have a 15% chance to generate 4x resources",
     cost: 5,
     icon: "🔨",
     unlocked: false,
@@ -171,8 +171,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-6",
-    name: "Faster Automation",
-    description: "Auto-click rate increased by 50%",
+    name: "Automated Amplification",
+    description: "Auto-click rate increased by 75% and generates 2% more coins",
     cost: 5,
     icon: "⚙️",
     unlocked: false,
@@ -182,8 +182,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-7",
-    name: "Elemental Mastery",
-    description: "Increases all elemental production by 100%",
+    name: "Cosmic Transmutation",
+    description: "Increases all elemental production by 150% and adds synergy bonuses",
     cost: 8,
     icon: "🌀",
     unlocked: false,
@@ -193,8 +193,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-8",
-    name: "Essence Flow",
-    description: "Gain a small amount of essence without prestiging",
+    name: "Essence Crystallization",
+    description: "Gain 0.5% of potential essence without prestiging every minute",
     cost: 5,
     icon: "✨",
     unlocked: false,
@@ -204,8 +204,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-9",
-    name: "Artifact Power",
-    description: "Increases all artifact effects by 25%",
+    name: "Relic Amplification",
+    description: "Increases all artifact effects by 50% and reveals hidden powers",
     cost: 5,
     icon: "🏺",
     unlocked: false,
@@ -216,8 +216,8 @@ const initialAbilities: Ability[] = [
   // Row 3
   {
     id: "ability-10",
-    name: "Asteroid Smash",
-    description: "Powerful click with 500% damage every 100 clicks",
+    name: "Meteor Bombardment",
+    description: "Every 50 clicks releases a cosmic meteor dealing 800% damage",
     cost: 10,
     icon: "☄️",
     unlocked: false,
@@ -227,8 +227,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-11",
-    name: "Resource Fusion",
-    description: "Merge resources to create 10% more output",
+    name: "Atomic Restructuring",
+    description: "Convert 25% of clicks to double-resource generation and increase global multiplier by 50%",
     cost: 10,
     icon: "🔄",
     unlocked: false,
@@ -238,8 +238,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-12",
-    name: "Galaxy Mind",
-    description: "Unlocks space-time manipulations, reduces all costs by 15%",
+    name: "Hyperdimensional Access",
+    description: "Manipulate space-time to reduce all costs by 25% and increase production speed by 100%",
     cost: 15,
     icon: "🌌",
     unlocked: false,
@@ -247,38 +247,95 @@ const initialAbilities: Ability[] = [
     row: 3,
     column: 2
   },
+  // Row 4 (new)
   {
-    id: "ability-13",
-    name: "Essence Fountain",
-    description: "Permanently increases essence gain by 150%",
-    cost: 10,
-    icon: "🌊",
+    id: "ability-16",
+    name: "Cosmic Magnetism",
+    description: "Passively attracts resources from nearby galaxies, adding 10% to all income",
+    cost: 12,
+    icon: "🧲",
     unlocked: false,
-    requiredAbilities: ["ability-7", "ability-8"],
-    row: 3,
+    requiredAbilities: ["ability-10"],
+    row: 4,
+    column: 0
+  },
+  {
+    id: "ability-17",
+    name: "Neutron Stabilization",
+    description: "Stabilizes unstable elements, increasing their value by 200%",
+    cost: 12,
+    icon: "⚛️",
+    unlocked: false,
+    requiredAbilities: ["ability-10", "ability-11"],
+    row: 4,
+    column: 1
+  },
+  {
+    id: "ability-18",
+    name: "Stellar Fusion",
+    description: "Harnesses the power of stars, multiplying all coin production by 3x",
+    cost: 20,
+    icon: "🌞",
+    unlocked: false,
+    requiredAbilities: ["ability-11", "ability-12"],
+    row: 4,
+    column: 2
+  },
+  {
+    id: "ability-19",
+    name: "Quantum Entanglement",
+    description: "Links mining operations across realities, making 35% of clicks hit twice",
+    cost: 12,
+    icon: "🔗",
+    unlocked: false,
+    requiredAbilities: ["ability-12"],
+    row: 4,
     column: 3
   },
+  // Row 5 (new)
   {
-    id: "ability-14",
-    name: "Artifact Resonance",
-    description: "Activates hidden powers in all artifacts",
-    cost: 10,
-    icon: "🔮",
+    id: "ability-20",
+    name: "Galactic Dominance",
+    description: "Control entire galaxies of resources, increasing global multiplier by 500%",
+    cost: 25,
+    icon: "🌌",
     unlocked: false,
-    requiredAbilities: ["ability-8", "ability-9"],
-    row: 3,
-    column: 4
+    requiredAbilities: ["ability-16", "ability-17"],
+    row: 5,
+    column: 0
   },
   {
-    id: "ability-15",
-    name: "Cosmic Collection",
-    description: "Automatically collects all resource types at a slow rate",
-    cost: 10,
-    icon: "🌟",
+    id: "ability-21",
+    name: "Cosmic Genesis",
+    description: "Create new elements from pure energy, adding 1000% to base click power",
+    cost: 25,
+    icon: "🪐",
     unlocked: false,
-    requiredAbilities: ["ability-9"],
-    row: 3,
-    column: 5
+    requiredAbilities: ["ability-17", "ability-18"],
+    row: 5,
+    column: 1
+  },
+  {
+    id: "ability-22",
+    name: "Universal Constant",
+    description: "Rewrite the laws of physics, making all upgrades 50% more effective",
+    cost: 30,
+    icon: "🔮",
+    unlocked: false,
+    requiredAbilities: ["ability-18", "ability-19"],
+    row: 5,
+    column: 2
+  },
+  {
+    id: "ability-23",
+    name: "Infinite Energy",
+    description: "Tap into the infinite energy of the universe, doubling all production and prestige rewards",
+    cost: 30,
+    icon: "∞",
+    unlocked: false,
+    requiredAbilities: ["ability-19"],
+    row: 5,
+    column: 3
   }
 ];
 
