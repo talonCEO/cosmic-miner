@@ -77,7 +77,8 @@ const SpaceBackground = () => {
       const angle = Math.PI / 4 + Math.random() * 0.5; // Downward angle
       const speed = 2 + Math.random() * 2;
       const size = 2 + Math.random() * 2;
-      const trail: {x: number, y: number, size: number, opacity: number}[] = [];
+      // Changed from const to let since we need to reassign it later
+      let trail: {x: number, y: number, size: number, opacity: number}[] = [];
       
       function drawShootingStar() {
         if (!ctx) return;

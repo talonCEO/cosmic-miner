@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -25,6 +24,7 @@ interface GameState {
   ownedManagers: string[];
   achievements: Achievement[];
   achievementsChecked: Record<string, boolean>;
+  managers: typeof managers;
 }
 
 // Upgrade interface
@@ -95,7 +95,8 @@ const initialState: GameState = {
   essence: 0,
   ownedManagers: [],
   achievements: createAchievements(),
-  achievementsChecked: {}
+  achievementsChecked: {},
+  managers: managers
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -193,7 +194,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (state.coinsPerSecond > 0) {
         newState = {
           ...newState,
-          coins: newState.coins + state.coinsPerSecond / 10, // Divide by 10 because we tick 10 times per second
+          coins: newState.coins + state.coinsPerSecond / 10,
           totalEarned: newState.totalEarned + state.coinsPerSecond / 10
         };
       }
@@ -256,7 +257,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         essence: state.essence + essenceReward,
         ownedManagers: state.ownedManagers,
         achievements: state.achievements,
-        achievementsChecked: state.achievementsChecked
+        achievementsChecked: state.achievementsChecked,
+        managers: state.managers
       };
     }
     case 'BUY_MANAGER': {
