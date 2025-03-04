@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Award, ArrowUp, ShoppingBag } from 'lucide-react';
+import { Award, GraduationCap, ShoppingBasket } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MenuType } from './types';
 
@@ -29,14 +29,14 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
           onClick={() => setMenuType("prestige")} 
           className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
         >
-          <ArrowUp size={20} />
+          <GraduationCap size={20} />
           <span>Prestige</span>
         </button>
         <button 
           onClick={() => setMenuType("shop")} 
           className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
         >
-          <ShoppingBag size={20} />
+          <ShoppingBasket size={20} />
           <span>Shop</span>
         </button>
         <DialogClose className="bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors mt-2">

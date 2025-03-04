@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress } from '@/utils/gameLogic';
@@ -9,7 +8,6 @@ import {
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
 
 const Upgrades: React.FC = () => {
   const { state, buyUpgrade, toggleAutoBuy } = useGame();
@@ -69,14 +67,15 @@ const Upgrades: React.FC = () => {
     <div className="w-full max-w-md mx-auto pb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-slate-100">Element Mining</h2>
-        <div className="flex items-center space-x-2 bg-slate-800/70 p-2 rounded-lg border border-indigo-500/30">
-          <span className="text-sm text-slate-300">Auto Buy</span>
-          <Switch 
-            checked={state.autoBuy} 
-            onCheckedChange={toggleAutoBuy}
-            className="data-[state=checked]:bg-indigo-600"
-          />
-        </div>
+        <button
+          onClick={toggleAutoBuy}
+          className={`text-sm px-3 py-1.5 rounded-lg border border-indigo-500/30 transition-all
+            ${state.autoBuy 
+              ? 'bg-indigo-600/60 text-white font-medium' 
+              : 'bg-slate-800/40 text-slate-400 opacity-70'}`}
+        >
+          Auto Buy
+        </button>
       </div>
       
       <div className="space-y-4">

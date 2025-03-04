@@ -5,6 +5,7 @@ import Upgrades from '@/components/Upgrades';
 import Managers from '@/components/Managers';
 import ArtifactsTab from '@/components/OtherOptions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartNoAxesCombined, Rocket, VenusMars, Telescope } from 'lucide-react';
 
 const GameTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState("stats");
@@ -12,10 +13,22 @@ const GameTabs: React.FC = () => {
   return (
     <Tabs defaultValue="stats" value={activeTab} onValueChange={setActiveTab} className="w-full mb-8">
       <TabsList className="grid grid-cols-4 mb-4 backdrop-blur-sm bg-slate-900/50 border border-indigo-500/20">
-        <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Statistics</TabsTrigger>
-        <TabsTrigger value="upgrades" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Upgrades</TabsTrigger>
-        <TabsTrigger value="managers" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Managers</TabsTrigger>
-        <TabsTrigger value="artifacts" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white">Artifacts</TabsTrigger>
+        <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white flex items-center justify-center gap-1">
+          <ChartNoAxesCombined size={18} />
+          <span>Statistics</span>
+        </TabsTrigger>
+        <TabsTrigger value="upgrades" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white flex items-center justify-center gap-1">
+          <Rocket size={18} />
+          <span>Upgrades</span>
+        </TabsTrigger>
+        <TabsTrigger value="managers" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white flex items-center justify-center gap-1">
+          <VenusMars size={18} />
+          <span>Managers</span>
+        </TabsTrigger>
+        <TabsTrigger value="artifacts" className="data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white flex items-center justify-center gap-1">
+          <Telescope size={18} />
+          <span>Artifacts</span>
+        </TabsTrigger>
       </TabsList>
       
       <TabsContent value="stats" className="animate-fade-in">

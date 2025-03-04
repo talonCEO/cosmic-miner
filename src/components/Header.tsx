@@ -61,9 +61,12 @@ const Header: React.FC = () => {
         </h1>
         
         <div className="flex items-center gap-4">
-          <div className="text-right flex items-center px-3 py-1.5">
-            <Sparkles size={16} className="text-purple-400 mr-1 animate-pulse" />
-            <p className="text-lg font-medium text-purple-300">{formatNumber(state.essence)}</p>
+          <div className="text-right flex flex-col items-end px-3 py-1.5">
+            <p className="text-sm text-slate-400">Essence</p>
+            <div className="flex items-center">
+              <Sparkles size={16} className="text-purple-400 mr-1 animate-pulse" />
+              <p className="text-lg font-medium text-purple-300">{formatNumber(state.essence)}</p>
+            </div>
           </div>
           
           <div className="h-10 w-px bg-indigo-500/20 mx-2"></div>
