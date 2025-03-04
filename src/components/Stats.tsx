@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ShieldQuestion, X } from 'lucide-react';
+import { ShieldQuestion } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
@@ -162,13 +163,10 @@ const Stats: React.FC = () => {
               </button>
             </DialogTrigger>
             <DialogContent className="max-w-md bg-slate-900 border border-indigo-500/30">
-              <DialogHeader className="flex justify-between items-center">
+              <DialogHeader className="flex justify-between items-center border-b border-indigo-500/30 pb-4 mb-2">
                 <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
-                <DialogClose className="p-2 rounded-md hover:bg-slate-800 transition-colors">
-                  <X size={18} className="text-slate-400" />
-                </DialogClose>
               </DialogHeader>
-              <ScrollArea className="h-[60vh] pr-4 mt-4">
+              <ScrollArea className="h-[60vh] pr-4">
                 <div className="pr-4">
                   {Object.entries(
                     allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
