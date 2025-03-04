@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -11,6 +10,19 @@ export interface Achievement {
   description: string;
   unlocked: boolean;
   checkCondition: (state: GameState) => boolean;
+}
+
+// Ability interface
+export interface Ability {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  icon: string;
+  unlocked: boolean;
+  requiredAbilities: string[];
+  row: number;
+  column: number;
 }
 
 // Game state interface
@@ -32,6 +44,8 @@ export interface GameState {
   artifacts: typeof artifacts;
   prestigeCount: number;
   incomeMultiplier: number;
+  skillPoints: number;
+  abilities: Ability[];
 }
 
 // Upgrade interface
@@ -69,7 +83,9 @@ type GameAction =
   | { type: 'BUY_MANAGER'; managerId: string }
   | { type: 'BUY_ARTIFACT'; artifactId: string }
   | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
-  | { type: 'CHECK_ACHIEVEMENTS' };
+  | { type: 'CHECK_ACHIEVEMENTS' }
+  | { type: 'UNLOCK_ABILITY'; abilityId: string }
+  | { type: 'ADD_SKILL_POINTS'; amount: number };
 
 // Create achievements based on upgrades
 const createAchievements = (): Achievement[] => {
@@ -94,6 +110,178 @@ const updatedUpgradesList = upgradesList.map(upgrade => ({
   coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 10
 }));
 
+// Initial abilities for the tech tree
+const initialAbilities: Ability[] = [
+  {
+    id: "ability-1",
+    name: "Element Focus",
+    description: "Increases base click power by 200%",
+    cost: 0,
+    icon: "🔥",
+    unlocked: true,
+    requiredAbilities: [],
+    row: 0,
+    column: 2
+  },
+  // Row 1
+  {
+    id: "ability-2",
+    name: "Faster Mining",
+    description: "Increases mining speed by 100%",
+    cost: 3,
+    icon: "⛏️",
+    unlocked: false,
+    requiredAbilities: ["ability-1"],
+    row: 1,
+    column: 0
+  },
+  {
+    id: "ability-3",
+    name: "Energy Control",
+    description: "Increases all production by 50%",
+    cost: 3,
+    icon: "⚡",
+    unlocked: false,
+    requiredAbilities: ["ability-1"],
+    row: 1,
+    column: 2
+  },
+  {
+    id: "ability-4",
+    name: "Crystal Vision",
+    description: "Increases essence gain by 75%",
+    cost: 3,
+    icon: "💎",
+    unlocked: false,
+    requiredAbilities: ["ability-1"],
+    row: 1,
+    column: 4
+  },
+  // Row 2
+  {
+    id: "ability-5",
+    name: "Double Strike",
+    description: "Clicks have a 10% chance to hit twice",
+    cost: 5,
+    icon: "🔨",
+    unlocked: false,
+    requiredAbilities: ["ability-2"],
+    row: 2,
+    column: 0
+  },
+  {
+    id: "ability-6",
+    name: "Faster Automation",
+    description: "Auto-click rate increased by 50%",
+    cost: 5,
+    icon: "⚙️",
+    unlocked: false,
+    requiredAbilities: ["ability-2", "ability-3"],
+    row: 2,
+    column: 1
+  },
+  {
+    id: "ability-7",
+    name: "Elemental Mastery",
+    description: "Increases all elemental production by 100%",
+    cost: 8,
+    icon: "🌀",
+    unlocked: false,
+    requiredAbilities: ["ability-3"],
+    row: 2,
+    column: 2
+  },
+  {
+    id: "ability-8",
+    name: "Essence Flow",
+    description: "Gain a small amount of essence without prestiging",
+    cost: 5,
+    icon: "✨",
+    unlocked: false,
+    requiredAbilities: ["ability-3", "ability-4"],
+    row: 2,
+    column: 3
+  },
+  {
+    id: "ability-9",
+    name: "Artifact Power",
+    description: "Increases all artifact effects by 25%",
+    cost: 5,
+    icon: "🏺",
+    unlocked: false,
+    requiredAbilities: ["ability-4"],
+    row: 2,
+    column: 4
+  },
+  // Row 3
+  {
+    id: "ability-10",
+    name: "Asteroid Smash",
+    description: "Powerful click with 500% damage every 100 clicks",
+    cost: 10,
+    icon: "☄️",
+    unlocked: false,
+    requiredAbilities: ["ability-5", "ability-6"],
+    row: 3,
+    column: 0
+  },
+  {
+    id: "ability-11",
+    name: "Resource Fusion",
+    description: "Merge resources to create 10% more output",
+    cost: 10,
+    icon: "🔄",
+    unlocked: false,
+    requiredAbilities: ["ability-6", "ability-7"],
+    row: 3,
+    column: 1
+  },
+  {
+    id: "ability-12",
+    name: "Galaxy Mind",
+    description: "Unlocks space-time manipulations, reduces all costs by 15%",
+    cost: 15,
+    icon: "🌌",
+    unlocked: false,
+    requiredAbilities: ["ability-7"],
+    row: 3,
+    column: 2
+  },
+  {
+    id: "ability-13",
+    name: "Essence Fountain",
+    description: "Permanently increases essence gain by 150%",
+    cost: 10,
+    icon: "🌊",
+    unlocked: false,
+    requiredAbilities: ["ability-7", "ability-8"],
+    row: 3,
+    column: 3
+  },
+  {
+    id: "ability-14",
+    name: "Artifact Resonance",
+    description: "Activates hidden powers in all artifacts",
+    cost: 10,
+    icon: "🔮",
+    unlocked: false,
+    requiredAbilities: ["ability-8", "ability-9"],
+    row: 3,
+    column: 4
+  },
+  {
+    id: "ability-15",
+    name: "Cosmic Collection",
+    description: "Automatically collects all resource types at a slow rate",
+    cost: 10,
+    icon: "🌟",
+    unlocked: false,
+    requiredAbilities: ["ability-9"],
+    row: 3,
+    column: 5
+  }
+];
+
 // Initial game state
 const initialState: GameState = {
   coins: 0,
@@ -112,7 +300,9 @@ const initialState: GameState = {
   managers: managers,
   artifacts: artifacts,
   prestigeCount: 0,
-  incomeMultiplier: 1.0
+  incomeMultiplier: 1.0,
+  skillPoints: 10,
+  abilities: initialAbilities
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -451,6 +641,43 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievementsChecked: newAchievementsChecked
       };
     }
+    case 'UNLOCK_ABILITY': {
+      const abilityIndex = state.abilities.findIndex(a => a.id === action.abilityId);
+      
+      if (abilityIndex === -1) return state;
+      
+      const ability = state.abilities[abilityIndex];
+      
+      // Check if ability is already unlocked
+      if (ability.unlocked) return state;
+      
+      // Check if user has enough skill points
+      if (state.skillPoints < ability.cost) return state;
+      
+      // Check if all required abilities are unlocked
+      const requiredAbilitiesUnlocked = ability.requiredAbilities.every(requiredId => {
+        const requiredAbility = state.abilities.find(a => a.id === requiredId);
+        return requiredAbility && requiredAbility.unlocked;
+      });
+      
+      if (!requiredAbilitiesUnlocked) return state;
+      
+      // Unlock the ability and deduct skill points
+      const newAbilities = [...state.abilities];
+      newAbilities[abilityIndex] = { ...newAbilities[abilityIndex], unlocked: true };
+      
+      return {
+        ...state,
+        skillPoints: state.skillPoints - ability.cost,
+        abilities: newAbilities
+      };
+    }
+    case 'ADD_SKILL_POINTS': {
+      return {
+        ...state,
+        skillPoints: state.skillPoints + action.amount
+      };
+    }
     default:
       return state;
   }
@@ -473,6 +700,8 @@ type GameContextType = {
   addCoins: (amount: number) => void;
   addEssence: (amount: number) => void;
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
+  unlockAbility: (abilityId: string) => void;
+  addSkillPoints: (amount: number) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -546,6 +775,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return getMaxPurchaseAmount(state, upgradeId);
   };
 
+  // Unlock ability
+  const unlockAbility = (abilityId: string) => {
+    dispatch({ type: 'UNLOCK_ABILITY', abilityId });
+  };
+  
+  // Add skill points
+  const addSkillPoints = (amount: number) => {
+    dispatch({ type: 'ADD_SKILL_POINTS', amount });
+  };
+
   // Set up the automatic tick for passive income and achievement checking
   useEffect(() => {
     const interval = setInterval(() => {
@@ -600,7 +839,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       unlockAchievement,
       addCoins,
       addEssence,
-      calculateMaxPurchaseAmount
+      calculateMaxPurchaseAmount,
+      unlockAbility,
+      addSkillPoints
     }}>
       {children}
     </GameContext.Provider>

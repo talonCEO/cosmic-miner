@@ -13,6 +13,7 @@ import MainMenu from './menu/MainMenu';
 import Achievements from './menu/Achievements';
 import Prestige from './menu/Prestige';
 import Shop from './menu/Shop';
+import TechTree from './menu/TechTree';
 
 const GameMenu: React.FC = () => {
   const { state, prestige, calculateEssenceReward, buyManager, buyArtifact } = useGame();
@@ -75,6 +76,10 @@ const GameMenu: React.FC = () => {
         
         {menuType === "achievements" && (
           <Achievements achievements={state.achievements} />
+        )}
+        
+        {menuType === "techTree" && (
+          <TechTree />
         )}
         
         {menuType === "prestige" && (
