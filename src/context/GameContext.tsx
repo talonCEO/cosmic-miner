@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -13,7 +14,7 @@ export interface Achievement {
 }
 
 // Game state interface
-interface GameState {
+export interface GameState {
   coins: number;
   coinsPerClick: number;
   coinsPerSecond: number;

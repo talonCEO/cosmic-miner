@@ -97,8 +97,10 @@ const SpaceBackground = () => {
         
         // Draw trail
         trail.forEach((point, index) => {
+          // Fix: Ensure the point size is always positive
+          const pointSize = Math.max(0.1, point.size * (1 - index / 10));
           ctx.beginPath();
-          ctx.arc(point.x, point.y, point.size * (1 - index / 10), 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 255, 255, ${point.opacity * (1 - index / 10)})`;
           ctx.fill();
           
