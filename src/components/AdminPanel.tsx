@@ -58,7 +58,7 @@ const AdminPanel: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 px-3 py-2 rounded-md border border-red-500/30 transition-colors">
+        <button className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 px-3 py-2 rounded-md border border-red-500/30 transition-colors shadow-lg pulse-animation">
           <ServerCog size={18} />
           <span className="font-medium">Admin Panel</span>
         </button>

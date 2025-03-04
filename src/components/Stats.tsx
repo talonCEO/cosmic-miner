@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -136,6 +137,9 @@ const Stats: React.FC = () => {
     <div className="w-full mb-8 max-w-md mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-white">Statistics</h2>
+        
+        {/* Admin Panel button - moved to the top level for visibility */}
+        <AdminPanel />
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -165,42 +169,44 @@ const Stats: React.FC = () => {
               <DialogHeader>
                 <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
               </DialogHeader>
-              <div className="mt-4">
-                {Object.entries(
-                  allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
-                    if (!acc[stat.category]) acc[stat.category] = [];
-                    acc[stat.category].push(stat);
-                    return acc;
-                  }, {})
-                ).map(([category, stats]) => (
-                  <div key={category} className="mb-6">
-                    <h3 className="text-md font-medium text-indigo-400 mb-2">{category}</h3>
-                    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50">
-                      <table className="w-full">
-                        <thead className="border-b border-slate-700/50">
-                          <tr>
-                            <th className="p-2 text-left text-xs text-slate-400">Name</th>
-                            <th className="p-2 text-right text-xs text-slate-400">Value</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(stats as any[]).map((stat, index) => (
-                            <tr key={index} className="border-t border-slate-700/30 first:border-0">
-                              <td className="p-3 text-left">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg">{stat.icon}</span>
-                                  <span className="text-slate-200">{stat.name}</span>
-                                </div>
-                              </td>
-                              <td className="p-3 text-right font-medium text-slate-300">{stat.value}</td>
+              <ScrollArea className="h-[60vh] pr-4 mt-4">
+                <div className="pr-4">
+                  {Object.entries(
+                    allGameStats.reduce((acc: { [key: string]: any[] }, stat) => {
+                      if (!acc[stat.category]) acc[stat.category] = [];
+                      acc[stat.category].push(stat);
+                      return acc;
+                    }, {})
+                  ).map(([category, stats]) => (
+                    <div key={category} className="mb-6">
+                      <h3 className="text-md font-medium text-indigo-400 mb-2">{category}</h3>
+                      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50">
+                        <table className="w-full">
+                          <thead className="border-b border-slate-700/50">
+                            <tr>
+                              <th className="p-2 text-left text-xs text-slate-400">Name</th>
+                              <th className="p-2 text-right text-xs text-slate-400">Value</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {(stats as any[]).map((stat, index) => (
+                              <tr key={index} className="border-t border-slate-700/30 first:border-0">
+                                <td className="p-3 text-left">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg">{stat.icon}</span>
+                                    <span className="text-slate-200">{stat.name}</span>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-right font-medium text-slate-300">{stat.value}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </ScrollArea>
             </DialogContent>
           </Dialog>
         </div>
