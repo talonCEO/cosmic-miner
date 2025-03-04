@@ -64,90 +64,100 @@ const TechTree: React.FC = () => {
         {/* Tech Tree Structure */}
         <div className="relative flex flex-col gap-8 items-center">
           {/* Render abilities by row */}
-          {Object.keys(abilitiesByRow).map((row) => (
-            <div key={row} className="flex justify-center gap-4 relative w-full">
-              {/* Connection lines to parent abilities */}
-              {parseInt(row) > 0 && (
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                  {abilitiesByRow[parseInt(row)].map(ability => {
-                    return ability.requiredAbilities.map(requiredId => {
-                      const requiredAbility = state.abilities.find(a => a.id === requiredId);
-                      if (!requiredAbility) return null;
-                      
-                      // Calculate connection line position based on column values
-                      // This is a simplified approach and might need adjustment based on actual layout
-                      return (
-                        <div 
-                          key={`${ability.id}-${requiredId}`}
-                          className="absolute transform -translate-y-8"
-                          style={{
-                            left: `${(ability.column * 20) + 10}%`,
-                            top: '0',
-                            height: '40px',
-                            width: '1px',
-                            background: ability.unlocked ? 'rgba(147, 197, 253, 0.8)' : 'rgba(147, 197, 253, 0.3)'
-                          }}
-                        >
-                          <ArrowDown 
-                            size={16} 
-                            className="absolute -bottom-2 -left-2"
+          {Object.keys(abilitiesByRow).map((row) => {
+            // Get only center 3 abilities per row (max) to avoid overcrowding
+            let abilities = abilitiesByRow[parseInt(row)];
+            if (parseInt(row) > 0 && parseInt(row) < 4) {
+              // For rows 1-3, limit to 3 abilities max
+              const centerIndex = Math.floor(abilities.length / 2);
+              abilities = abilities
+                .sort((a, b) => a.column - b.column)
+                .slice(Math.max(0, centerIndex - 1), Math.min(abilities.length, centerIndex + 2));
+            }
+            
+            return (
+              <div key={row} className="flex justify-center gap-6 relative w-full">
+                {/* Connection lines to parent abilities */}
+                {parseInt(row) > 0 && (
+                  <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                    {abilities.map(ability => {
+                      return ability.requiredAbilities.map(requiredId => {
+                        const requiredAbility = state.abilities.find(a => a.id === requiredId);
+                        if (!requiredAbility) return null;
+                        
+                        return (
+                          <div 
+                            key={`${ability.id}-${requiredId}`}
+                            className="absolute transform -translate-y-8"
                             style={{
-                              opacity: ability.unlocked ? 1 : 0.3,
-                              color: ability.unlocked ? 'rgb(147, 197, 253)' : 'rgb(147, 197, 253)'
+                              left: `${50 + (abilities.indexOf(ability) - 1) * 33}%`,
+                              top: '0',
+                              height: '40px',
+                              width: '1px',
+                              background: ability.unlocked ? 'rgba(147, 197, 253, 0.8)' : 'rgba(147, 197, 253, 0.3)'
                             }}
-                          />
-                        </div>
-                      );
-                    });
-                  })}
-                </div>
-              )}
-              
-              {/* Ability boxes */}
-              {abilitiesByRow[parseInt(row)].sort((a, b) => a.column - b.column).map(ability => (
-                <div 
-                  key={ability.id}
-                  style={{
-                    opacity: ability.unlocked ? 1 : 0.5,
-                    width: '18%',
-                    position: 'relative'
-                  }}
-                  className="flex flex-col items-center"
-                >
-                  <button
-                    onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
-                    disabled={!canUnlockAbility(ability)}
-                    className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative
-                      ${ability.unlocked 
-                        ? 'bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20' 
-                        : canUnlockAbility(ability)
-                          ? 'bg-green-700 border-green-400 shadow-lg shadow-green-500/20 cursor-pointer animate-pulse'
-                          : 'bg-gray-700 border-gray-500 cursor-not-allowed'
-                      }`}
-                  >
-                    <span className="text-2xl">{ability.icon}</span>
-                    {canUnlockAbility(ability) && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-xs text-white">+</span>
-                      </div>
-                    )}
-                  </button>
-                  <h3 className="text-sm mt-2 font-medium text-center">{ability.name}</h3>
-                  <p className="text-xs text-center text-slate-300 mt-1">{ability.description}</p>
-                  <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold
-                    ${ability.unlocked
-                      ? 'bg-indigo-900/50 text-indigo-200'
-                      : canUnlockAbility(ability)
-                        ? 'bg-green-800/50 text-green-200'
-                        : 'bg-gray-800/50 text-gray-300'
-                    }`}
-                  >
-                    {ability.unlocked ? 'Unlocked' : `${ability.cost} SP`}
+                          >
+                            <ArrowDown 
+                              size={16} 
+                              className="absolute -bottom-2 -left-2"
+                              style={{
+                                opacity: ability.unlocked ? 1 : 0.3,
+                                color: ability.unlocked ? 'rgb(147, 197, 253)' : 'rgb(147, 197, 253)'
+                              }}
+                            />
+                          </div>
+                        );
+                      });
+                    })}
                   </div>
-                </div>
-              ))}
-            </div>
-          ))}
+                )}
+                
+                {/* Ability boxes */}
+                {abilities.map((ability, idx) => (
+                  <div 
+                    key={ability.id}
+                    style={{
+                      opacity: ability.unlocked ? 1 : 0.5,
+                      width: '30%',
+                      position: 'relative'
+                    }}
+                    className="flex flex-col items-center"
+                  >
+                    <button
+                      onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
+                      disabled={!canUnlockAbility(ability)}
+                      className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative
+                        ${ability.unlocked 
+                          ? 'bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20' 
+                          : canUnlockAbility(ability)
+                            ? 'bg-green-700 border-green-400 shadow-lg shadow-green-500/20 cursor-pointer animate-pulse'
+                            : 'bg-gray-700 border-gray-500 cursor-not-allowed'
+                        }`}
+                    >
+                      <span className="text-2xl">{ability.icon}</span>
+                      {canUnlockAbility(ability) && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-white">+</span>
+                        </div>
+                      )}
+                    </button>
+                    <h3 className="text-sm mt-2 font-medium text-center">{ability.name}</h3>
+                    <p className="text-xs text-center text-slate-300 mt-1">{ability.description}</p>
+                    <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold
+                      ${ability.unlocked
+                        ? 'bg-indigo-900/50 text-indigo-200'
+                        : canUnlockAbility(ability)
+                          ? 'bg-green-800/50 text-green-200'
+                          : 'bg-gray-800/50 text-gray-300'
+                      }`}
+                    >
+                      {ability.unlocked ? 'Unlocked' : `${ability.cost} SP`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       </div>
       

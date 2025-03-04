@@ -3,7 +3,7 @@ import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Coins } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Header: React.FC = () => {
@@ -71,18 +71,12 @@ const Header: React.FC = () => {
           
           <div className="h-10 w-px bg-indigo-500/20 mx-2"></div>
           
-          <div className="text-right">
-            <p className="text-sm text-slate-400">Total Coins</p>
-            <p className="text-lg font-medium text-slate-200">{formatNumber(state.totalEarned)}</p>
-          </div>
-          
-          <div className="h-10 w-px bg-indigo-500/20 mx-2"></div>
-          
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end px-3 py-1.5">
             <p className="text-sm text-slate-400">Coins</p>
-            <p className="text-lg font-medium animate-fade-in text-slate-200">
-              {formatNumber(state.coins)}
-            </p>
+            <div className="flex items-center">
+              <Coins size={16} className="text-green-400 mr-1 animate-pulse" />
+              <p className="text-lg font-medium text-green-300">{formatNumber(state.coins)}</p>
+            </div>
           </div>
           
           <div className="ml-4">

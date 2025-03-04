@@ -5,7 +5,6 @@ import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
 import PowerupsManager from '@/components/PowerupsManager';
-import AdminPanel from '@/components/AdminPanel';
 
 const SpaceBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -138,10 +137,6 @@ const Index: React.FC = () => {
     <GameProvider>
       <div className="min-h-screen flex flex-col overflow-hidden relative">
         <SpaceBackground />
-        
-        <div className="fixed top-20 right-4 z-50">
-          <AdminPanel />
-        </div>
         
         <div className="relative z-10">
           <Header />

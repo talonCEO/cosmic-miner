@@ -1,14 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ShieldQuestion } from 'lucide-react';
+import { ShieldQuestion, X } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogClose
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminPanel from './AdminPanel';
@@ -77,10 +79,10 @@ const Stats: React.FC = () => {
   }, [state.totalEarned, resourceData, state.essence]);
   
   const stats = [
-    { label: 'Total Taps', value: formatNumber(state.totalClicks) },
-    { label: 'Total Earned', value: formatNumber(state.totalEarned) },
-    { label: 'Coins per Tap', value: formatNumber(state.coinsPerClick) },
-    { label: 'Coins per Second', value: formatNumber(state.coinsPerSecond) }
+    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1, 2) + 'x' },
+    { label: 'Coins Earned', value: formatNumber(state.totalEarned) },
+    { label: 'CPT (Coins Per Tap)', value: formatNumber(state.coinsPerClick) },
+    { label: 'CPS (Coins Per Sec)', value: formatNumber(state.coinsPerSecond) }
   ];
   
   const formatYAxis = (value: number) => {
@@ -121,7 +123,7 @@ const Stats: React.FC = () => {
   const allGameStats = [
     { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
     { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
-    { category: "Resources", icon: "💵", name: "Total Earned", value: formatNumber(state.totalEarned) },
+    { category: "Resources", icon: "💵", name: "Coins Earned", value: formatNumber(state.totalEarned) },
     { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(state.coinsPerClick) },
     { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(state.coinsPerSecond) },
     { category: "Production", icon: "⚡", name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
@@ -136,8 +138,6 @@ const Stats: React.FC = () => {
     <div className="w-full mb-8 max-w-md mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-white">Statistics</h2>
-        
-        <AdminPanel />
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -164,8 +164,11 @@ const Stats: React.FC = () => {
               </button>
             </DialogTrigger>
             <DialogContent className="max-w-md bg-slate-900 border border-indigo-500/30">
-              <DialogHeader>
+              <DialogHeader className="flex justify-between items-center">
                 <DialogTitle className="text-xl font-bold text-white">Game Statistics</DialogTitle>
+                <DialogClose className="p-2 rounded-md hover:bg-slate-800 transition-colors">
+                  <X size={18} className="text-slate-400" />
+                </DialogClose>
               </DialogHeader>
               <ScrollArea className="h-[60vh] pr-4 mt-4">
                 <div className="pr-4">
