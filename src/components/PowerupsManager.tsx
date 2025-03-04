@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PowerupObject from './PowerupObject';
 import { useToast } from "@/components/ui/use-toast";
@@ -35,7 +34,6 @@ const PowerupsManager: React.FC = () => {
   
   // Function to generate a random spawn time between 5 and 30 seconds (for testing, later can be 30-300)
   const getRandomSpawnTime = useCallback(() => {
-    // For testing purposes - shorter spawn times
     return Math.floor(Math.random() * (30 - 5 + 1) + 5) * 1000;
   }, []);
   
@@ -48,30 +46,32 @@ const PowerupsManager: React.FC = () => {
     };
   }, []);
   
+  // Function to get a random powerup type
+  const getRandomPowerupType = useCallback((): 'star' | 'orb' | 'cube' => {
+    const powerupTypes: ('star' | 'orb' | 'cube')[] = ['star', 'orb', 'cube'];
+    return powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+  }, []);
+  
   // Function to schedule next spawn after respawn timer
   const scheduleNextSpawn = useCallback(() => {
-    // Clear any existing timer
     if (spawnTimerRef.current) {
       clearTimeout(spawnTimerRef.current);
     }
     
-    // Wait minimum 30 seconds plus a random additional time
     const respawnTime = 30000 + getRandomSpawnTime();
     
     spawnTimerRef.current = setTimeout(() => {
       if (powerups.length === 0) {
-        const powerupTypes: ('star' | 'orb' | 'cube')[] = ['star', 'orb', 'cube'];
-        const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+        const randomType = getRandomPowerupType();
         spawnPowerup(randomType);
       }
     }, respawnTime);
     
-    console.log(`Next powerup scheduled in ${respawnTime / 1000} seconds`);
-  }, [getRandomSpawnTime, powerups.length]);
+    console.log(`Next powerup scheduled in ${respawnTime / 1000} seconds, type will be randomly selected on spawn`);
+  }, [getRandomSpawnTime, powerups.length, getRandomPowerupType]);
   
   // Function to spawn a powerup
   const spawnPowerup = useCallback((type: 'star' | 'orb' | 'cube') => {
-    // Only spawn if no powerups are currently on screen
     if (powerups.length === 0) {
       const position = getRandomPosition();
       const newPowerup: Powerup = {
@@ -87,24 +87,21 @@ const PowerupsManager: React.FC = () => {
   
   // Initialize powerup spawning
   useEffect(() => {
-    // Start immediate spawn for testing
     setTimeout(() => {
       if (powerups.length === 0) {
-        const powerupTypes: ('star' | 'orb' | 'cube')[] = ['star', 'orb', 'cube'];
-        const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+        const randomType = getRandomPowerupType();
         spawnPowerup(randomType);
       }
     }, 3000);
     
-    // Log to verify initialization
-    console.log("PowerupsManager initialized");
+    console.log("PowerupsManager initialized with random powerup selection");
     
     return () => {
       if (spawnTimerRef.current) {
         clearTimeout(spawnTimerRef.current);
       }
     };
-  }, [spawnPowerup]);
+  }, [spawnPowerup, getRandomPowerupType]);
   
   // Timer effect for countdown
   useEffect(() => {
@@ -127,27 +124,22 @@ const PowerupsManager: React.FC = () => {
   
   // Handle powerup click
   const handlePowerupClick = useCallback((id: number, type: 'star' | 'orb' | 'cube') => {
-    // Remove the powerup
     setPowerups([]);
     
-    // Set active timer
     setActiveTimer({
       type,
       timeLeft: 10,
       color: getPowerupColor(type)
     });
     
-    // Apply powerup effect based on type
     switch (type) {
       case 'star':
-        // Star gives bonus coins
         handleClick();
         handleClick();
         handleClick();
         break;
         
       case 'orb':
-        // Orb temporarily boosts clicking power
         handleClick();
         handleClick();
         handleClick();
@@ -156,7 +148,6 @@ const PowerupsManager: React.FC = () => {
         break;
         
       case 'cube':
-        // Cube gives random resources
         handleClick();
         handleClick();
         handleClick();
@@ -167,20 +158,17 @@ const PowerupsManager: React.FC = () => {
         break;
     }
     
-    // Schedule next spawn after respawn timer
     scheduleNextSpawn();
   }, [handleClick, scheduleNextSpawn, getPowerupColor]);
   
   // Handle powerup going off screen
   const handleOffScreen = useCallback((id: number) => {
     setPowerups([]);
-    // Schedule next spawn after respawn timer
     scheduleNextSpawn();
   }, [scheduleNextSpawn]);
   
   return (
     <>
-      {/* Timer display */}
       {activeTimer && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 text-2xl font-bold animate-pulse"
              style={{ color: activeTimer.color }}>
@@ -188,7 +176,6 @@ const PowerupsManager: React.FC = () => {
         </div>
       )}
       
-      {/* Powerups container */}
       <div className="powerups-container pointer-events-none absolute inset-0 z-10 overflow-hidden">
         {powerups.map(powerup => (
           <PowerupObject
