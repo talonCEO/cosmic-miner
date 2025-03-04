@@ -1,10 +1,10 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { Sparkles } from 'lucide-react';
 
-// Space debris/asteroid particle effect
+// Particle effect when clicking
 interface ParticleProps {
   x: number;
   y: number;
@@ -20,7 +20,6 @@ const Particle: React.FC<ParticleProps> = ({
   const randomSize = size || Math.floor(Math.random() * 4) + 2; // 2-5px
   const randomDuration = duration || (Math.random() * 0.5) + 0.5; // 0.5-1s
   const randomOpacity = (Math.random() * 0.5) + 0.5; // 0.5-1
-  const randomRotation = Math.random() * 360; // 0-360 degrees
   
   return (
     <div 
@@ -32,7 +31,6 @@ const Particle: React.FC<ParticleProps> = ({
         height: `${randomSize}px`, 
         backgroundColor: color,
         opacity: randomOpacity,
-        transform: `rotate(${randomRotation}deg)`,
         animation: `float-up ${randomDuration}s ease-out forwards`
       }}
       onAnimationEnd={onAnimationEnd}
@@ -66,7 +64,6 @@ const ClickArea: React.FC = () => {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const nextId = useRef(0);
   
   // Get asteroid color based on current coins
@@ -80,18 +77,6 @@ const ClickArea: React.FC = () => {
     if (coins >= 1000000) return "#FFC107"; // Gold asteroid
     return "#BA68C8"; // Default: rare element (purple)
   };
-  
-  // Slowly rotate asteroid for ambient animation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRotation(prev => ({
-        x: prev.x + 0.1,
-        y: prev.y + 0.2
-      }));
-    }, 100);
-    
-    return () => clearInterval(interval);
-  }, []);
   
   const handleAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Get click position relative to the container
@@ -169,7 +154,6 @@ const ClickArea: React.FC = () => {
             ${isAnimating ? 'animate-pulse-click' : ''}`}
           onClick={handleAreaClick}
           style={{
-            transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
             background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
             boxShadow: `0 0 20px 5px rgba(${getAsteroidColor() === '#FFC107' ? '255, 193, 7' : '186, 104, 200'}, 0.3)`,
           }}

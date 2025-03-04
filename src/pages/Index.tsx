@@ -6,7 +6,7 @@ import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
 
-// Cosmic background elements like stars and asteroids
+// Simplified space background with subtle particle effects
 const SpaceBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -17,36 +17,24 @@ const SpaceBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Create stars
-    const stars: {x: number, y: number, radius: number, opacity: number, speed: number}[] = [];
-    const asteroids: {x: number, y: number, radius: number, speed: number, rotation: number, rotationSpeed: number}[] = [];
+    // Create particles
+    const particles: {x: number, y: number, size: number, speed: number, color: string, opacity: number}[] = [];
     
-    // Create 200 stars with different properties
-    for (let i = 0; i < 200; i++) {
-      const radius = Math.random() * 2;
-      stars.push({
+    // Create 50 subtle particles
+    for (let i = 0; i < 50; i++) {
+      const size = Math.random() * 2 + 1;
+      particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: radius,
-        opacity: Math.random() * 0.8 + 0.2, // 0.2 to 1.0
-        speed: (Math.random() * 0.05) + 0.01
+        size: size,
+        speed: Math.random() * 0.3 + 0.1,
+        color: '#ffffff',
+        opacity: Math.random() * 0.4 + 0.1 // Very subtle opacity
       });
     }
     
-    // Create 5 distant asteroids
-    for (let i = 0; i < 5; i++) {
-      asteroids.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 3 + 1, // Small distant asteroids
-        speed: (Math.random() * 0.2) + 0.1,
-        rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() * 0.02) - 0.01
-      });
-    }
-    
-    // Draw stars on canvas
-    function drawStars() {
+    // Draw background and particles
+    function draw() {
       if (!ctx || !canvas) return;
       
       // Clear canvas
@@ -59,125 +47,84 @@ const SpaceBackground = () => {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Draw stars
-      stars.forEach(star => {
+      // Draw particles
+      particles.forEach(particle => {
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
         ctx.fill();
         
-        // Move star
-        star.y += star.speed;
+        // Move particle
+        particle.y += particle.speed;
         
-        // Wrap around when star goes off screen
-        if (star.y > canvas.height) {
-          star.y = 0;
-          star.x = Math.random() * canvas.width;
+        // Wrap around when particle goes off screen
+        if (particle.y > canvas.height) {
+          particle.y = -particle.size;
+          particle.x = Math.random() * canvas.width;
         }
       });
       
-      // Draw asteroids
-      asteroids.forEach(asteroid => {
-        ctx.save();
-        ctx.translate(asteroid.x, asteroid.y);
-        ctx.rotate(asteroid.rotation);
-        
-        // Draw asteroid as an irregular shape
-        ctx.beginPath();
-        ctx.moveTo(asteroid.radius, 0);
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2;
-          const randomRadius = asteroid.radius * (0.8 + Math.random() * 0.4);
-          const x = Math.cos(angle) * randomRadius;
-          const y = Math.sin(angle) * randomRadius;
-          ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = '#a0a0a0';
-        ctx.fill();
-        
-        ctx.restore();
-        
-        // Move and rotate asteroid
-        asteroid.y += asteroid.speed;
-        asteroid.rotation += asteroid.rotationSpeed;
-        
-        // Wrap around when asteroid goes off screen
-        if (asteroid.y > canvas.height) {
-          asteroid.y = -asteroid.radius * 2;
-          asteroid.x = Math.random() * canvas.width;
-        }
-      });
-      
-      // Occasionally shoot a comet
-      if (Math.random() < 0.002) {
-        createComet();
+      // Occasionally shoot a particle across the screen
+      if (Math.random() < 0.01) {
+        createShootingStar();
       }
     }
     
-    // Create a comet that shoots across the screen
-    function createComet() {
-      const startX = Math.random() * canvas.width;
-      const startY = -20;
-      const angle = (Math.PI / 4) + (Math.random() * Math.PI / 2); // Downward angle
-      const speed = 5 + Math.random() * 5;
-      const length = 30 + Math.random() * 50;
+    // Create a shooting star that moves across the screen
+    function createShootingStar() {
+      const x = Math.random() * canvas.width;
+      const y = -20;
+      const angle = Math.PI / 4 + Math.random() * 0.5; // Downward angle
+      const speed = 2 + Math.random() * 2;
+      const size = 2 + Math.random() * 2;
+      const trail: {x: number, y: number, size: number, opacity: number}[] = [];
       
-      function drawComet() {
-        if (!ctx || !canvas) return;
+      function drawShootingStar() {
+        if (!ctx) return;
         
         // Calculate current position
-        const x = startX + Math.cos(angle) * currentDistance;
-        const y = startY + Math.sin(angle) * currentDistance;
+        const newX = x + Math.cos(angle) * currentDistance;
+        const newY = y + Math.sin(angle) * currentDistance;
         
-        // Draw comet head
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'white';
-        ctx.fill();
+        // Add current position to trail
+        trail.push({
+          x: newX,
+          y: newY,
+          size: size,
+          opacity: 0.8
+        });
         
-        // Draw comet tail
-        const gradient = ctx.createLinearGradient(
-          x, y,
-          x - Math.cos(angle) * length, y - Math.sin(angle) * length
-        );
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        // Draw trail
+        trail.forEach((point, index) => {
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, point.size * (1 - index / 10), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${point.opacity * (1 - index / 10)})`;
+          ctx.fill();
+          
+          // Fade trail points
+          point.opacity -= 0.05;
+        });
         
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(
-          x - Math.cos(angle - 0.1) * length,
-          y - Math.sin(angle - 0.1) * length
-        );
-        ctx.lineTo(
-          x - Math.cos(angle + 0.1) * length,
-          y - Math.sin(angle + 0.1) * length
-        );
-        ctx.closePath();
-        ctx.fillStyle = gradient;
-        ctx.fill();
+        // Remove old trail points
+        trail = trail.filter(point => point.opacity > 0);
         
-        // Move comet
+        // Move shooting star
         currentDistance += speed;
         
-        // Continue animation until comet is off screen
-        if (y < canvas.height + length && x > -length && x < canvas.width + length) {
-          requestAnimationFrame(drawComet);
+        // Continue animation until shooting star is off screen
+        if (newY < canvas.height + size && newX > -size && newX < canvas.width + size && trail.length > 0) {
+          requestAnimationFrame(drawShootingStar);
         }
       }
       
       let currentDistance = 0;
-      drawComet();
+      drawShootingStar();
     }
     
     // Set canvas dimensions to match window
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      
-      // Redraw stars on resize
-      drawStars();
     };
     
     window.addEventListener('resize', handleResize);
@@ -185,7 +132,7 @@ const SpaceBackground = () => {
     
     // Animation loop
     function animate() {
-      drawStars();
+      draw();
       requestAnimationFrame(animate);
     }
     
@@ -209,7 +156,7 @@ const Index: React.FC = () => {
   return (
     <GameProvider>
       <div className="min-h-screen flex flex-col overflow-hidden relative">
-        {/* Space background with stars and effects */}
+        {/* Space background with subtle effects */}
         <SpaceBackground />
         
         {/* Header with glass effect for depth */}
@@ -238,4 +185,3 @@ const Index: React.FC = () => {
 };
 
 export default Index;
-

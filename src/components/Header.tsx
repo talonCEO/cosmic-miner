@@ -61,22 +61,21 @@ const Header: React.FC = () => {
         </h1>
         
         <div className="flex items-center gap-4">
-          <div className="text-right flex items-center px-3 py-1.5 bg-purple-900/30 rounded-full border border-purple-500/30 shadow-inner">
+          <div className="text-right flex items-center px-3 py-1.5">
             <Sparkles size={16} className="text-purple-400 mr-1 animate-pulse" />
-            <p className="text-sm text-purple-200">Essence</p>
-            <p className="text-lg font-medium ml-1 text-purple-300">{formatNumber(state.essence)}</p>
+            <p className="text-lg font-medium text-purple-300">{formatNumber(state.essence)}</p>
           </div>
           
           <div className="h-10 w-px bg-indigo-500/20 mx-2"></div>
           
-          <div className="text-right px-3 py-1.5 bg-slate-800/30 rounded-full border border-slate-500/30">
+          <div className="text-right">
             <p className="text-sm text-slate-400">Total Coins</p>
             <p className="text-lg font-medium text-slate-200">{formatNumber(state.totalEarned)}</p>
           </div>
           
           <div className="h-10 w-px bg-indigo-500/20 mx-2"></div>
           
-          <div className="text-right px-3 py-1.5 bg-slate-800/30 rounded-full border border-slate-500/30">
+          <div className="text-right">
             <p className="text-sm text-slate-400">Coins</p>
             <p className="text-lg font-medium animate-fade-in text-slate-200">
               {formatNumber(state.coins)}
