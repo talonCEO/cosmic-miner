@@ -64,13 +64,28 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				game: {
-					primary: '#f5f5f7',
-					secondary: '#e8e8ed',
-					accent: '#0066cc',
-					text: '#1d1d1f',
-					'text-secondary': '#86868b',
+					primary: '#f7f9fc',
+					secondary: '#e5e9f0',
+					accent: '#6366f1',
+					text: '#2e3440',
+					'text-secondary': '#4c566a',
 					'upgrade-bg': '#ffffff',
-					'upgrade-border': '#d2d2d7'
+					'upgrade-border': '#d8dee9'
+				},
+				// Mining theme colors
+				element: {
+					hydrogen: '#81D4FA',
+					carbon: '#424242',
+					oxygen: '#90CAF9',
+					silicon: '#BBDEFB',
+					aluminum: '#B0BEC5',
+					iron: '#CB8D73',
+					copper: '#D87F46',
+					silver: '#E0E0E0',
+					gold: '#FFC107',
+					platinum: '#E1E1E1',
+					uranium: '#26A69A',
+					rare: '#BA68C8'
 				}
 			},
 			borderRadius: {
@@ -110,6 +125,11 @@ export default {
 				'scale-in': {
 					'0%': { transform: 'scale(0.9)', opacity: '0' },
 					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'mining': {
+					'0%': { transform: 'rotate(-5deg)' },
+					'50%': { transform: 'rotate(5deg)' },
+					'100%': { transform: 'rotate(-5deg)' }
 				}
 			},
 			animation: {
@@ -120,7 +140,8 @@ export default {
 				'fade-in': 'fade-in 0.5s ease-out',
 				'slide-up': 'slide-up 0.5s ease-out',
 				'slide-down': 'slide-down 0.5s ease-out',
-				'scale-in': 'scale-in 0.3s ease-out'
+				'scale-in': 'scale-in 0.3s ease-out',
+				'mining': 'mining 0.5s ease-in-out infinite'
 			}
 		}
 	},

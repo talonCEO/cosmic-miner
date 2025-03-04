@@ -75,18 +75,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       if (state.coins < upgrade.cost || upgrade.level >= upgrade.maxLevel) return state;
       
-      // Calculate new stats with multiplier effects
-      let clickMultiplier = 1;
-      let secondMultiplier = 1;
-      
-      // Apply multiplier from this upgrade
-      if (upgrade.multiplierBonus > 0) {
-        clickMultiplier += upgrade.multiplierBonus;
-        secondMultiplier += upgrade.multiplierBonus;
-      }
-      
-      const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * clickMultiplier);
-      const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * secondMultiplier);
+      // Calculate new stats with any multiplier effects
+      const newCoinsPerClick = state.coinsPerClick + upgrade.coinsPerClickBonus;
+      const newCoinsPerSecond = state.coinsPerSecond + upgrade.coinsPerSecondBonus;
       
       // Update the upgrade
       const updatedUpgrade = {
