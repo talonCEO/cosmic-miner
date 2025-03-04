@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -87,7 +88,7 @@ const Stats: React.FC = () => {
   }, [state.totalEarned, resourceData, state.essence]);
   
   const stats = [
-    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1, 2) + 'x' },
+    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1) + 'x' },
     { label: 'Coins Earned', value: formatNumber(state.totalEarned) },
     { label: 'CPT (Coins Per Tap)', value: formatNumber(state.coinsPerClick) },
     { label: 'CPS (Coins Per Sec)', value: formatNumber(state.coinsPerSecond) }
