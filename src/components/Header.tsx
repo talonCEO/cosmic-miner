@@ -3,6 +3,7 @@ import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
+import { Sparkles } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { state } = useGame();
@@ -16,6 +17,14 @@ const Header: React.FC = () => {
         </h1>
         
         <div className="flex items-center gap-4">
+          <div className="text-right flex items-center">
+            <Sparkles size={16} className="text-purple-500 mr-1" />
+            <p className="text-sm text-game-text-secondary">Essence</p>
+            <p className="text-lg font-medium ml-1 text-purple-500">{formatNumber(state.essence)}</p>
+          </div>
+          
+          <div className="h-10 w-px bg-game-upgrade-border mx-2"></div>
+          
           <div className="text-right">
             <p className="text-sm text-game-text-secondary">Total Coins</p>
             <p className="text-lg font-medium">{formatNumber(state.totalEarned)}</p>

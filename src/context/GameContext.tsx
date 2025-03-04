@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 
@@ -11,6 +10,7 @@ interface GameState {
   totalClicks: number;
   totalEarned: number;
   autoBuy: boolean;
+  essence: number; // New essence currency
 }
 
 // Upgrade interface
@@ -40,7 +40,8 @@ type GameAction =
   | { type: 'ADD_COINS'; amount: number }
   | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
   | { type: 'TOGGLE_AUTO_BUY' }
-  | { type: 'TICK' };
+  | { type: 'TICK' }
+  | { type: 'PRESTIGE' }; // New prestige action
 
 // Initial game state
 const initialState: GameState = {
@@ -50,7 +51,8 @@ const initialState: GameState = {
   upgrades: upgradesList,
   totalClicks: 0,
   totalEarned: 0,
-  autoBuy: false
+  autoBuy: false,
+  essence: 0 // Initialize essence to 0
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -60,6 +62,11 @@ const calculateBulkCost = (baseCost: number, currentLevel: number, quantity: num
     totalCost += Math.floor(baseCost * Math.pow(1.15, currentLevel + i));
   }
   return totalCost;
+};
+
+// Helper function to calculate potential essence reward
+const calculateEssenceReward = (totalEarned: number): number => {
+  return Math.floor(totalEarned / 100000);
 };
 
 // Game reducer
@@ -197,6 +204,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       return newState;
     }
+    case 'PRESTIGE': {
+      const essenceReward = calculateEssenceReward(state.totalEarned);
+      
+      // Reset progress but keep essence and add reward
+      return {
+        ...initialState,
+        essence: state.essence + essenceReward
+      };
+    }
     default:
       return state;
   }
@@ -208,6 +224,8 @@ type GameContextType = {
   handleClick: () => void;
   buyUpgrade: (upgradeId: string, quantity?: number) => void;
   toggleAutoBuy: () => void;
+  prestige: () => void;  // New prestige function
+  calculateEssenceReward: (totalEarned: number) => number; // Expose the essence calculation
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -230,6 +248,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const toggleAutoBuy = () => {
     dispatch({ type: 'TOGGLE_AUTO_BUY' });
   };
+  
+  // Prestige function
+  const prestige = () => {
+    dispatch({ type: 'PRESTIGE' });
+  };
 
   // Set up the automatic tick for passive income
   useEffect(() => {
@@ -241,7 +264,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <GameContext.Provider value={{ state, handleClick, buyUpgrade, toggleAutoBuy }}>
+    <GameContext.Provider value={{ 
+      state, 
+      handleClick, 
+      buyUpgrade, 
+      toggleAutoBuy, 
+      prestige,
+      calculateEssenceReward
+    }}>
       {children}
     </GameContext.Provider>
   );
