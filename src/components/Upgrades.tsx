@@ -5,13 +5,13 @@ import { formatNumber, calculateTimeToSave, calculateUpgradeProgress } from '@/u
 import { 
   Atom, Battery, Bolt, Cpu, Database, Eye, FlaskConical, Flame, 
   Gem, Globe, Hammer, Lightbulb, Layers, Magnet, Monitor, Pickaxe, 
-  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote,
-  ToggleLeft, ToggleRight
+  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Upgrades: React.FC = () => {
-  const { state, buyUpgrade, toggleAutoBuy } = useGame();
+  const { state, buyUpgrade } = useGame();
   const { toast } = useToast();
   
   const iconMap: Record<string, React.ReactNode> = {
@@ -66,23 +66,9 @@ const Upgrades: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto pb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium text-center">Element Mining</h2>
-        
-        <button 
-          onClick={toggleAutoBuy}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
-          aria-label={state.autoBuy ? "Turn off auto buy" : "Turn on auto buy"}
-        >
-          <span>Auto Buy</span>
-          {state.autoBuy ? 
-            <ToggleRight className="text-indigo-500" size={24} /> : 
-            <ToggleLeft className="text-slate-400" size={24} />
-          }
-        </button>
-      </div>
+      <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Element Mining</h2>
       
-      <div className="space-y-3">
+      <div className="space-y-4">
         {sortedUpgrades.map((upgrade, index) => {
           const canAfford = state.coins >= upgrade.cost;
           const progress = calculateUpgradeProgress(upgrade.cost, state.coins);
@@ -92,70 +78,67 @@ const Upgrades: React.FC = () => {
           return (
             <div 
               key={upgrade.id}
-              className={`rounded-xl border p-4 transition-all duration-300 animate-scale-in
-                ${isMaxLevel ? 'bg-slate-700 border-slate-600 text-white' : 
-                  canAfford ? 'bg-white border-indigo-500 shadow-md hover:shadow-lg hover:translate-y-[-2px]' : 
-                  'bg-white border-slate-300 hover:shadow-sm'}`}
+              className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isMaxLevel ? 'border-slate-600' : canAfford ? 'border-indigo-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
+                ${!isMaxLevel ? (canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20' : '') : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div 
-                className="flex justify-between items-center mb-2 cursor-pointer"
-                onClick={() => !isMaxLevel && buyUpgrade(upgrade.id)}
-              >
-                <div className="flex items-center gap-2">
-                  <div className={`p-2 rounded-full ${canAfford ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                    {iconMap[upgrade.icon]}
-                  </div>
-                  <div>
-                    <h3 className="font-medium">{upgrade.name}</h3>
-                    <p className="text-xs text-slate-500">{upgrade.description}</p>
-                  </div>
+              <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
+                <div className={`flex items-center justify-center w-full h-full rounded-xl bg-indigo-900/50 text-indigo-300`}>
+                  {iconMap[upgrade.icon]}
                 </div>
-                <div className="text-right">
-                  <p className={`font-medium ${canAfford ? 'text-indigo-500' : ''}`}>
-                    {isMaxLevel ? 'MAX' : formatNumber(upgrade.cost)}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Level {upgrade.level}/{upgrade.maxLevel}
-                  </p>
-                </div>
-              </div>
+                <AvatarFallback className="bg-indigo-900/50 text-indigo-300 rounded-xl">
+                  {upgrade.name.substring(0, 2)}
+                </AvatarFallback>
+              </Avatar>
               
-              {!isMaxLevel && (
-                <>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 mb-1">
-                    <div 
-                      className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" 
-                      style={{ width: `${progress}%` }}
-                    ></div>
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-bold text-slate-100">{upgrade.name}</h3>
+                  <div className="text-right">
+                    <p className={`font-medium ${canAfford ? 'text-indigo-500' : 'text-slate-400'}`}>
+                      {isMaxLevel ? 'MAX' : formatNumber(upgrade.cost)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Level {upgrade.level}/{upgrade.maxLevel}
+                    </p>
                   </div>
-                  
-                  <div className="flex justify-between text-xs text-slate-500 mb-2">
-                    <span>
-                      {upgrade.coinsPerClickBonus > 0 && `+${formatNumber(upgrade.coinsPerClickBonus)} per tap`}
-                      {upgrade.coinsPerSecondBonus > 0 && (upgrade.coinsPerClickBonus > 0 ? `, ` : '')}
-                      {upgrade.coinsPerSecondBonus > 0 && `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec`}
-                    </span>
-                    {!canAfford && <span>{timeToSave}</span>}
-                  </div>
-                  
-                  <div className="flex gap-1 justify-end mt-1">
-                    {[5, 10, 50, 100].map(quantity => (
-                      <button
-                        key={`${upgrade.id}-${quantity}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleBulkPurchase(upgrade.id, quantity);
-                        }}
-                        className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-medium transition-colors"
-                        title={`Buy ${quantity}`}
-                      >
-                        {quantity}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+                </div>
+                <p className="text-sm text-slate-300 mt-1">{upgrade.description}</p>
+                
+                {!isMaxLevel && (
+                  <>
+                    <div className="w-full bg-slate-700/50 rounded-full h-1.5 my-2">
+                      <div 
+                        className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" 
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-xs mt-2">
+                      <span className="text-indigo-400">
+                        {upgrade.coinsPerSecondBonus > 0 && `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec`}
+                      </span>
+                      {!canAfford && <span className="text-slate-400">{timeToSave}</span>}
+                    </div>
+                    
+                    <div className="flex gap-1 justify-end mt-2">
+                      {[5, 10, 50, 100].map(quantity => (
+                        <button
+                          key={`${upgrade.id}-${quantity}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBulkPurchase(upgrade.id, quantity);
+                          }}
+                          className="px-2 py-0.5 bg-slate-700/50 hover:bg-slate-600/50 rounded text-xs font-medium transition-colors"
+                          title={`Buy ${quantity}`}
+                        >
+                          {quantity}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           );
         })}
@@ -167,12 +150,6 @@ const Upgrades: React.FC = () => {
           </div>
         )}
       </div>
-      
-      {unlockedUpgrades.length === 0 && (
-        <div className="text-center py-6 text-slate-500 animate-fade-in">
-          <p>Tap to mine elements from the earth!</p>
-        </div>
-      )}
     </div>
   );
 };

@@ -23,7 +23,7 @@ export const managers: Manager[] = [
     id: "manager-2",
     name: "Carbon Collector",
     description: "Specializes in organic compound synthesis",
-    bonus: "Automatically collects Carbon every 5 seconds",
+    bonus: "Increases Carbon production by 50%",
     requiredCoins: 5000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=carbon",
     cost: 2
@@ -32,7 +32,7 @@ export const managers: Manager[] = [
     id: "manager-3",
     name: "Oxygen Oracle",
     description: "Breathes life into your operations",
-    bonus: "Doubles Oxygen yield when active",
+    bonus: "Increases Oxygen production by 50%",
     requiredCoins: 10000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=oxygen",
     cost: 4
@@ -41,7 +41,7 @@ export const managers: Manager[] = [
     id: "manager-4",
     name: "Silicon Savant",
     description: "Tech wizard for electronic element mining",
-    bonus: "Reduces Silicon cost by 25%",
+    bonus: "Increases Silicon production by 50%",
     requiredCoins: 25000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=silicon",
     cost: 8
@@ -50,7 +50,7 @@ export const managers: Manager[] = [
     id: "manager-5",
     name: "Iron Forger",
     description: "Master of metallurgy and ferrous elements",
-    bonus: "Iron produces an additional 2% per level",
+    bonus: "Increases Iron production by 50%",
     requiredCoins: 50000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=iron",
     cost: 16
@@ -59,7 +59,7 @@ export const managers: Manager[] = [
     id: "manager-6",
     name: "Gold Prospector",
     description: "Has a nose for precious metals",
-    bonus: "10% chance to find bonus Gold with each tap",
+    bonus: "Increases Gold production by 50%",
     requiredCoins: 500000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gold",
     cost: 32
@@ -68,7 +68,7 @@ export const managers: Manager[] = [
     id: "manager-7",
     name: "Uranium Controller",
     description: "Handles radioactive elements with care",
-    bonus: "Uranium passive income +100%",
+    bonus: "Increases Uranium production by 50%",
     requiredCoins: 1000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=uranium",
     cost: 64
@@ -77,7 +77,7 @@ export const managers: Manager[] = [
     id: "manager-8",
     name: "Platinum Purifier",
     description: "Refines precious metals to perfect purity",
-    bonus: "All precious metals give 30% more coins",
+    bonus: "Increases Platinum production by 50%",
     requiredCoins: 10000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=platinum",
     cost: 128
@@ -86,7 +86,7 @@ export const managers: Manager[] = [
     id: "manager-9",
     name: "Exotic Matter Expert",
     description: "Specializes in theoretical elements",
-    bonus: "Unlocks special research options",
+    bonus: "Increases Exotic Matter production by 50%",
     requiredCoins: 100000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=exotic",
     cost: 256
@@ -95,7 +95,7 @@ export const managers: Manager[] = [
     id: "manager-10",
     name: "Antimatter Alchemist",
     description: "Transmutes the impossible",
-    bonus: "50% boost to all element production",
+    bonus: "Increases Antimatter production by 50%",
     requiredCoins: 500000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=antimatter",
     cost: 512
