@@ -2,6 +2,7 @@
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
+import GameMenu from '@/components/GameMenu';
 
 const Header: React.FC = () => {
   const { state } = useGame();
@@ -27,6 +28,10 @@ const Header: React.FC = () => {
             <p className="text-lg font-medium animate-fade-in">
               {formatNumber(state.coins)}
             </p>
+          </div>
+          
+          <div className="ml-4">
+            <GameMenu />
           </div>
         </div>
       </div>

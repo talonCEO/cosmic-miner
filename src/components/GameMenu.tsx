@@ -10,7 +10,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 
-type MenuType = "main" | "achievements" | "prestige" | "shop" | "none";
+export type MenuType = "main" | "achievements" | "prestige" | "shop" | "none";
 
 const GameMenu: React.FC = () => {
   const [menuType, setMenuType] = useState<MenuType>("none");
@@ -29,7 +29,7 @@ const GameMenu: React.FC = () => {
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
       <DialogTrigger asChild>
         <button 
-          className="fixed top-4 right-4 p-2 bg-indigo-500 text-white rounded-full shadow-md hover:bg-indigo-600 transition-colors z-20"
+          className="p-2 bg-indigo-500 text-white rounded-full shadow-md hover:bg-indigo-600 transition-colors"
           aria-label="Open menu"
         >
           <Menu size={20} />

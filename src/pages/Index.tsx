@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { GameProvider } from '@/context/GameContext';
 import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
-import Stats from '@/components/Stats';
-import Upgrades from '@/components/Upgrades';
-import GameMenu from '@/components/GameMenu';
+import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
 
 const BackgroundElements = () => {
@@ -72,8 +69,7 @@ const Index: React.FC = () => {
         <main className="flex-1 max-w-4xl mx-auto w-full px-4 relative z-10">
           <div className="py-4">
             <ClickArea />
-            <Stats />
-            <Upgrades />
+            <GameTabs />
           </div>
         </main>
         
@@ -81,9 +77,6 @@ const Index: React.FC = () => {
           <p>Mine elements from the periodic table! Discover all 50 rare elements!</p>
           <p className="text-xs mt-1">Auto-buy: purchases the cheapest available upgrade automatically</p>
         </footer>
-        
-        {/* Game Menu */}
-        <GameMenu />
         
         <Toaster />
       </div>
