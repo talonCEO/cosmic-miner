@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { upgradesList } from '@/utils/upgradesData';
 
 // Game state interface
 interface GameState {
@@ -22,8 +23,14 @@ export interface Upgrade {
   maxLevel: number;
   coinsPerClickBonus: number;
   coinsPerSecondBonus: number;
+  multiplierBonus: number;
   icon: string;
   unlocked: boolean;
+  unlocksAt?: {
+    upgradeId: string;
+    level: number;
+  };
+  category: string;
 }
 
 // Action types
@@ -33,68 +40,12 @@ type GameAction =
   | { type: 'BUY_UPGRADE'; upgradeId: string }
   | { type: 'TICK' };
 
-// Initial upgrades
-const initialUpgrades: Upgrade[] = [
-  {
-    id: 'click-power',
-    name: 'Tap Power',
-    description: 'Increase coins per tap',
-    cost: 10,
-    baseCost: 10,
-    level: 0,
-    maxLevel: 50,
-    coinsPerClickBonus: 1,
-    coinsPerSecondBonus: 0,
-    icon: 'finger-tap',
-    unlocked: true
-  },
-  {
-    id: 'auto-clicker',
-    name: 'Auto Tapper',
-    description: 'Automatically generate coins',
-    cost: 25,
-    baseCost: 25,
-    level: 0,
-    maxLevel: 50,
-    coinsPerClickBonus: 0,
-    coinsPerSecondBonus: 0.5,
-    icon: 'timer',
-    unlocked: true
-  },
-  {
-    id: 'efficiency',
-    name: 'Efficiency',
-    description: 'Boost all coin generation',
-    cost: 100,
-    baseCost: 100,
-    level: 0,
-    maxLevel: 20,
-    coinsPerClickBonus: 2,
-    coinsPerSecondBonus: 1,
-    icon: 'zap',
-    unlocked: false
-  },
-  {
-    id: 'multiplier',
-    name: 'Multiplier',
-    description: 'Multiply all coin generation',
-    cost: 500,
-    baseCost: 500,
-    level: 0,
-    maxLevel: 10,
-    coinsPerClickBonus: 5,
-    coinsPerSecondBonus: 2,
-    icon: 'percent',
-    unlocked: false
-  }
-];
-
 // Initial game state
 const initialState: GameState = {
   coins: 0,
   coinsPerClick: 1,
   coinsPerSecond: 0,
-  upgrades: initialUpgrades,
+  upgrades: upgradesList,
   totalClicks: 0,
   totalEarned: 0
 };
@@ -124,9 +75,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       if (state.coins < upgrade.cost || upgrade.level >= upgrade.maxLevel) return state;
       
-      // Calculate new stats
-      const newCoinsPerClick = state.coinsPerClick + upgrade.coinsPerClickBonus;
-      const newCoinsPerSecond = state.coinsPerSecond + upgrade.coinsPerSecondBonus;
+      // Calculate new stats with multiplier effects
+      let clickMultiplier = 1;
+      let secondMultiplier = 1;
+      
+      // Apply multiplier from this upgrade
+      if (upgrade.multiplierBonus > 0) {
+        clickMultiplier += upgrade.multiplierBonus;
+        secondMultiplier += upgrade.multiplierBonus;
+      }
+      
+      const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * clickMultiplier);
+      const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * secondMultiplier);
       
       // Update the upgrade
       const updatedUpgrade = {
@@ -139,20 +99,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const newUpgrades = [...state.upgrades];
       newUpgrades[upgradeIndex] = updatedUpgrade;
       
-      // Unlock next upgrade if needed
-      if (upgrade.id === 'click-power' && upgrade.level === 4 && !state.upgrades.find(u => u.id === 'efficiency')?.unlocked) {
-        const efficiencyIndex = newUpgrades.findIndex(u => u.id === 'efficiency');
-        if (efficiencyIndex !== -1) {
-          newUpgrades[efficiencyIndex] = { ...newUpgrades[efficiencyIndex], unlocked: true };
+      // Check for unlocks based on this upgrade purchase
+      state.upgrades.forEach((u, index) => {
+        if (!u.unlocked && u.unlocksAt && 
+            u.unlocksAt.upgradeId === upgrade.id && 
+            updatedUpgrade.level >= u.unlocksAt.level) {
+          newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
         }
-      }
-      
-      if (upgrade.id === 'auto-clicker' && upgrade.level === 9 && !state.upgrades.find(u => u.id === 'multiplier')?.unlocked) {
-        const multiplierIndex = newUpgrades.findIndex(u => u.id === 'multiplier');
-        if (multiplierIndex !== -1) {
-          newUpgrades[multiplierIndex] = { ...newUpgrades[multiplierIndex], unlocked: true };
-        }
-      }
+      });
       
       return {
         ...state,

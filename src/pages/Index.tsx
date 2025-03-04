@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import Stats from '@/components/Stats';
 import Upgrades from '@/components/Upgrades';
+import { Toaster } from "@/components/ui/toaster";
 
 const Index: React.FC = () => {
   return (
@@ -21,8 +22,10 @@ const Index: React.FC = () => {
         </main>
         
         <footer className="py-4 text-center text-sm text-game-text-secondary">
-          <p>Tap for joy. Tap for fun.</p>
+          <p>Tap for joy. Tap for fun. Unlock all 50+ upgrades!</p>
         </footer>
+        
+        <Toaster />
       </div>
     </GameProvider>
   );
