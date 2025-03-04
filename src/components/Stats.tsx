@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -13,7 +12,6 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import AdminPanel from './AdminPanel';
 
 const Stats: React.FC = () => {
   const { state } = useGame();
@@ -79,7 +77,7 @@ const Stats: React.FC = () => {
   }, [state.totalEarned, resourceData, state.essence]);
   
   const stats = [
-    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1, 2) + 'x' },
+    { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1) + 'x' },
     { label: 'Coins Earned', value: formatNumber(state.totalEarned) },
     { label: 'CPT (Coins Per Tap)', value: formatNumber(state.coinsPerClick) },
     { label: 'CPS (Coins Per Sec)', value: formatNumber(state.coinsPerSecond) }
