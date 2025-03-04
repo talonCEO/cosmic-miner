@@ -6,11 +6,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Atom, Battery, Bolt, Cpu, Database, Eye, FlaskConical, Flame, 
   Gem, Globe, Hammer, Lightbulb, Layers, Magnet, Monitor, Pickaxe, 
-  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote 
+  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote,
+  Plus, ToggleLeft, ToggleRight
 } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 
 const Upgrades: React.FC = () => {
-  const { state, buyUpgrade } = useGame();
+  const { state, buyUpgrade, toggleAutoBuy } = useGame();
+  const { toast } = useToast();
   
   // Map of upgrade IDs to their icon components
   const iconMap: Record<string, React.ReactNode> = {
@@ -46,9 +49,48 @@ const Upgrades: React.FC = () => {
   // Sort upgrades by cost (ascending)
   const sortedUpgrades = [...unlockedUpgrades].sort((a, b) => a.baseCost - b.baseCost);
 
+  // Handle bulk purchase with notification
+  const handleBulkPurchase = (upgradeId: string, quantity: number) => {
+    const upgrade = state.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade) return;
+    
+    // Current level before purchase
+    const beforeLevel = upgrade.level;
+    
+    // Attempt to buy
+    buyUpgrade(upgradeId, quantity);
+    
+    // Check if purchase was successful by comparing levels
+    setTimeout(() => {
+      const afterUpgrade = state.upgrades.find(u => u.id === upgradeId);
+      if (afterUpgrade && afterUpgrade.level > beforeLevel) {
+        toast({
+          title: `Purchased ${afterUpgrade.level - beforeLevel}x ${upgrade.name}`,
+          description: `Now at level ${afterUpgrade.level}/${afterUpgrade.maxLevel}`,
+          duration: 3000,
+        });
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full max-w-md mx-auto pb-8">
-      <h2 className="text-lg font-medium mb-4 text-center">Element Mining</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-medium text-center">Element Mining</h2>
+        
+        {/* Auto Buy Toggle */}
+        <button 
+          onClick={toggleAutoBuy}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+          aria-label={state.autoBuy ? "Turn off auto buy" : "Turn on auto buy"}
+        >
+          <span>Auto Buy</span>
+          {state.autoBuy ? 
+            <ToggleRight className="text-indigo-500" size={24} /> : 
+            <ToggleLeft className="text-slate-400" size={24} />
+          }
+        </button>
+      </div>
       
       <ScrollArea className="h-[400px] pr-4">
         <div className="space-y-3">
@@ -63,12 +105,14 @@ const Upgrades: React.FC = () => {
                 key={upgrade.id}
                 className={`rounded-xl border p-4 transition-all duration-300 animate-scale-in
                   ${isMaxLevel ? 'bg-slate-700 border-slate-600 text-white' : 
-                    canAfford ? 'bg-white border-indigo-500 shadow-md cursor-pointer hover:shadow-lg hover:translate-y-[-2px]' : 
-                    'bg-white border-slate-300 cursor-pointer hover:shadow-sm'}`}
-                onClick={() => !isMaxLevel && buyUpgrade(upgrade.id)}
+                    canAfford ? 'bg-white border-indigo-500 shadow-md hover:shadow-lg hover:translate-y-[-2px]' : 
+                    'bg-white border-slate-300 hover:shadow-sm'}`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex justify-between items-center mb-2">
+                <div 
+                  className="flex justify-between items-center mb-2 cursor-pointer"
+                  onClick={() => !isMaxLevel && buyUpgrade(upgrade.id)}
+                >
                   <div className="flex items-center gap-2">
                     <div className={`p-2 rounded-full ${canAfford ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
                       {iconMap[upgrade.icon]}
@@ -99,13 +143,31 @@ const Upgrades: React.FC = () => {
                     </div>
                     
                     {/* Bonus and time to save */}
-                    <div className="flex justify-between text-xs text-slate-500">
+                    <div className="flex justify-between text-xs text-slate-500 mb-2">
                       <span>
                         {upgrade.coinsPerClickBonus > 0 && `+${formatNumber(upgrade.coinsPerClickBonus)} per tap`}
                         {upgrade.coinsPerSecondBonus > 0 && (upgrade.coinsPerClickBonus > 0 ? `, ` : '')}
                         {upgrade.coinsPerSecondBonus > 0 && `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec`}
                       </span>
                       {!canAfford && <span>{timeToSave}</span>}
+                    </div>
+                    
+                    {/* Bulk purchase buttons */}
+                    <div className="flex gap-1 justify-end mt-1">
+                      {[5, 10, 50, 100].map(quantity => (
+                        <button
+                          key={`${upgrade.id}-${quantity}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBulkPurchase(upgrade.id, quantity);
+                          }}
+                          className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-medium transition-colors"
+                          title={`Buy ${quantity}`}
+                        >
+                          <Plus size={10} />
+                          {quantity}
+                        </button>
+                      ))}
                     </div>
                   </>
                 )}

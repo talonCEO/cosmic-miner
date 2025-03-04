@@ -10,6 +10,7 @@ interface GameState {
   upgrades: Upgrade[];
   totalClicks: number;
   totalEarned: number;
+  autoBuy: boolean;
 }
 
 // Upgrade interface
@@ -37,7 +38,8 @@ export interface Upgrade {
 type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_COINS'; amount: number }
-  | { type: 'BUY_UPGRADE'; upgradeId: string }
+  | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
+  | { type: 'TOGGLE_AUTO_BUY' }
   | { type: 'TICK' };
 
 // Initial game state
@@ -47,7 +49,17 @@ const initialState: GameState = {
   coinsPerSecond: 0,
   upgrades: upgradesList,
   totalClicks: 0,
-  totalEarned: 0
+  totalEarned: 0,
+  autoBuy: false
+};
+
+// Helper function to calculate the total cost of buying multiple upgrades
+const calculateBulkCost = (baseCost: number, currentLevel: number, quantity: number): number => {
+  let totalCost = 0;
+  for (let i = 0; i < quantity; i++) {
+    totalCost += Math.floor(baseCost * Math.pow(1.15, currentLevel + i));
+  }
+  return totalCost;
 };
 
 // Game reducer
@@ -72,18 +84,31 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (upgradeIndex === -1) return state;
       
       const upgrade = state.upgrades[upgradeIndex];
+      const quantity = action.quantity || 1;
       
-      if (state.coins < upgrade.cost || upgrade.level >= upgrade.maxLevel) return state;
+      if (upgrade.level >= upgrade.maxLevel) return state;
       
-      // Calculate new stats with any multiplier effects
-      const newCoinsPerClick = state.coinsPerClick + upgrade.coinsPerClickBonus;
-      const newCoinsPerSecond = state.coinsPerSecond + upgrade.coinsPerSecondBonus;
+      // Calculate how many levels we can buy (up to requested quantity)
+      const maxPossibleQuantity = Math.min(
+        quantity, 
+        upgrade.maxLevel - upgrade.level
+      );
+      
+      // Calculate total cost for bulk purchase
+      const totalCost = calculateBulkCost(upgrade.baseCost, upgrade.level, maxPossibleQuantity);
+      
+      // Check if player can afford it
+      if (state.coins < totalCost) return state;
+      
+      // Calculate new stats with all purchased levels
+      const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * maxPossibleQuantity);
+      const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * maxPossibleQuantity);
       
       // Update the upgrade
       const updatedUpgrade = {
         ...upgrade,
-        level: upgrade.level + 1,
-        cost: Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.level + 1))
+        level: upgrade.level + maxPossibleQuantity,
+        cost: Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.level + maxPossibleQuantity))
       };
       
       // Create a new upgrades array
@@ -101,21 +126,77 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       return {
         ...state,
-        coins: state.coins - upgrade.cost,
+        coins: state.coins - totalCost,
         coinsPerClick: newCoinsPerClick,
         coinsPerSecond: newCoinsPerSecond,
         upgrades: newUpgrades
       };
     }
-    case 'TICK':
+    case 'TOGGLE_AUTO_BUY':
+      return {
+        ...state,
+        autoBuy: !state.autoBuy
+      };
+    case 'TICK': {
+      let newState = { ...state };
+      
       if (state.coinsPerSecond > 0) {
-        return {
-          ...state,
-          coins: state.coins + state.coinsPerSecond / 10, // Divide by 10 because we tick 10 times per second
-          totalEarned: state.totalEarned + state.coinsPerSecond / 10
+        newState = {
+          ...newState,
+          coins: newState.coins + state.coinsPerSecond / 10, // Divide by 10 because we tick 10 times per second
+          totalEarned: newState.totalEarned + state.coinsPerSecond / 10
         };
       }
-      return state;
+      
+      // Auto-buy logic
+      if (newState.autoBuy) {
+        // Find the cheapest affordable and unlocked upgrade
+        const affordableUpgrades = newState.upgrades
+          .filter(u => u.unlocked && u.level < u.maxLevel && newState.coins >= u.cost)
+          .sort((a, b) => a.cost - b.cost);
+        
+        if (affordableUpgrades.length > 0) {
+          const cheapestUpgrade = affordableUpgrades[0];
+          
+          // Execute the purchase
+          const upgradeIndex = newState.upgrades.findIndex(u => u.id === cheapestUpgrade.id);
+          
+          // Calculate new stats
+          const newCoinsPerClick = newState.coinsPerClick + cheapestUpgrade.coinsPerClickBonus;
+          const newCoinsPerSecond = newState.coinsPerSecond + cheapestUpgrade.coinsPerSecondBonus;
+          
+          // Update the upgrade
+          const updatedUpgrade = {
+            ...cheapestUpgrade,
+            level: cheapestUpgrade.level + 1,
+            cost: Math.floor(cheapestUpgrade.baseCost * Math.pow(1.15, cheapestUpgrade.level + 1))
+          };
+          
+          // Create a new upgrades array
+          const newUpgrades = [...newState.upgrades];
+          newUpgrades[upgradeIndex] = updatedUpgrade;
+          
+          // Check for unlocks based on this upgrade purchase
+          newState.upgrades.forEach((u, index) => {
+            if (!u.unlocked && u.unlocksAt && 
+                u.unlocksAt.upgradeId === cheapestUpgrade.id && 
+                updatedUpgrade.level >= u.unlocksAt.level) {
+              newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
+            }
+          });
+          
+          newState = {
+            ...newState,
+            coins: newState.coins - cheapestUpgrade.cost,
+            coinsPerClick: newCoinsPerClick,
+            coinsPerSecond: newCoinsPerSecond,
+            upgrades: newUpgrades
+          };
+        }
+      }
+      
+      return newState;
+    }
     default:
       return state;
   }
@@ -125,7 +206,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 type GameContextType = {
   state: GameState;
   handleClick: () => void;
-  buyUpgrade: (upgradeId: string) => void;
+  buyUpgrade: (upgradeId: string, quantity?: number) => void;
+  toggleAutoBuy: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -140,8 +222,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Buy upgrade
-  const buyUpgrade = (upgradeId: string) => {
-    dispatch({ type: 'BUY_UPGRADE', upgradeId });
+  const buyUpgrade = (upgradeId: string, quantity: number = 1) => {
+    dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
+  };
+
+  // Toggle auto-buy
+  const toggleAutoBuy = () => {
+    dispatch({ type: 'TOGGLE_AUTO_BUY' });
   };
 
   // Set up the automatic tick for passive income
@@ -154,7 +241,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <GameContext.Provider value={{ state, handleClick, buyUpgrade }}>
+    <GameContext.Provider value={{ state, handleClick, buyUpgrade, toggleAutoBuy }}>
       {children}
     </GameContext.Provider>
   );

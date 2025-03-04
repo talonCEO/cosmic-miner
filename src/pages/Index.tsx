@@ -78,6 +78,7 @@ const Index: React.FC = () => {
         
         <footer className="py-4 text-center text-sm text-slate-500 relative z-10">
           <p>Mine elements from the periodic table! Discover all 50 rare elements!</p>
+          <p className="text-xs mt-1">Auto-buy: purchases the cheapest available upgrade automatically</p>
         </footer>
         
         <Toaster />
