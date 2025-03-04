@@ -4,6 +4,7 @@ import { Droplet, ArrowDown } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/components/ui/use-toast';
+import { Ability } from './types';
 
 const TechTree: React.FC = () => {
   const { state, unlockAbility } = useGame();
