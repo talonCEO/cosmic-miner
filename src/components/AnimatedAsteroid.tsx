@@ -13,40 +13,35 @@ const ASTEROID_SIZE = 350;
 const BASE_POINTS = 18; // More points for smoother shape
 const BASE_RADIUS = 150;
 
-// Create dust particle component
-const DustParticle: React.FC<{
+// Create glowing orb component
+const GlowingOrb: React.FC<{
   index: number;
-  total: number;
-  radius: number;
-}> = ({ index, total, radius }) => {
-  // Create particles in a circle with some random offset
-  const angle = (index / total) * Math.PI * 2;
-  const randomOffset = Math.random() * 20 - 10;
-  const distance = radius + randomOffset;
-  const x = Math.cos(angle) * distance;
-  const y = Math.sin(angle) * distance;
-  
-  const initialDelay = Math.random() * 2;
+}> = ({ index }) => {
+  const angle = (index / 12) * Math.PI * 2;
+  const radius = 170 + Math.random() * 30;
+  const baseX = Math.cos(angle) * radius;
+  const baseY = Math.sin(angle) * radius;
   
   return (
     <motion.div
-      className="absolute rounded-full bg-white/30"
+      className="absolute rounded-full bg-white"
       style={{
-        width: Math.random() * 3 + 1,
-        height: Math.random() * 3 + 1,
-        x: x,
-        y: y,
+        width: 2 + Math.random() * 4,
+        height: 2 + Math.random() * 4,
+        x: baseX,
+        y: baseY,
+        boxShadow: "0 0 8px 2px rgba(255, 255, 255, 0.4)"
       }}
-      initial={{ opacity: 0.1 }}
       animate={{
-        opacity: [0.1, 0.5, 0.1],
-        x: [x, x + Math.random() * 20 - 10, x],
-        y: [y, y + Math.random() * 20 - 10, y],
+        y: [baseY - 15, baseY + 15, baseY - 15],
+        opacity: [0.2, 0.7, 0.2],
+        scale: [1, 1.5, 1],
       }}
       transition={{
         duration: 3 + Math.random() * 2,
         repeat: Infinity,
-        delay: initialDelay,
+        delay: Math.random() * 2,
+        ease: "easeInOut"
       }}
     />
   );
@@ -105,40 +100,6 @@ const AsteroidFragment: React.FC<{
         />
       </svg>
     </motion.div>
-  );
-};
-
-// Create glowing orb component
-const GlowingOrb: React.FC<{
-  index: number;
-}> = ({ index }) => {
-  const angle = (index / 12) * Math.PI * 2;
-  const radius = 170 + Math.random() * 30;
-  const baseX = Math.cos(angle) * radius;
-  const baseY = Math.sin(angle) * radius;
-  
-  return (
-    <motion.div
-      className="absolute rounded-full bg-white"
-      style={{
-        width: 2 + Math.random() * 4,
-        height: 2 + Math.random() * 4,
-        x: baseX,
-        y: baseY,
-        boxShadow: "0 0 8px 2px rgba(255, 255, 255, 0.4)"
-      }}
-      animate={{
-        y: [baseY - 15, baseY + 15, baseY - 15],
-        opacity: [0.2, 0.7, 0.2],
-        scale: [1, 1.5, 1],
-      }}
-      transition={{
-        duration: 3 + Math.random() * 2,
-        repeat: Infinity,
-        delay: Math.random() * 2,
-        ease: "easeInOut"
-      }}
-    />
   );
 };
 
@@ -495,13 +456,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
         />
       </motion.div>
       
-      {/* Dust particles */}
-      <div className="absolute w-full h-full pointer-events-none">
-        {Array.from({ length: 24 }).map((_, i) => (
-          <DustParticle key={`dust-${i}`} index={i} total={24} radius={180} />
-        ))}
-      </div>
-      
       {/* Glowing orbs */}
       <div className="absolute w-full h-full pointer-events-none flex items-center justify-center">
         {Array.from({ length: 12 }).map((_, i) => (
@@ -528,4 +482,3 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
 };
 
 export default AnimatedAsteroid;
-

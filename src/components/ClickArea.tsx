@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
@@ -48,7 +49,7 @@ interface ClickEffectProps {
 const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }) => {
   return (
     <div 
-      className="click-effect text-purple-400 font-medium text-shadow-glow"
+      className="click-effect text-green-400 font-medium text-shadow-glow"
       style={{ left: x, top: y }}
       onAnimationEnd={onAnimationEnd}
     >
@@ -86,11 +87,12 @@ const ClickArea: React.FC = () => {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
       
+      // Change particle colors from white/gray to yellow
       const colors = [
-        "#a0a0a0",
-        "#ffffff",
-        "#c0c0c0",
-        "#808080"
+        "#FFD700", // Gold
+        "#FFFF00", // Yellow
+        "#FFEC8B", // Light Yellow
+        "#FFC125"  // Goldenrod
       ];
       
       const color = colors[Math.floor(Math.random() * colors.length)];
