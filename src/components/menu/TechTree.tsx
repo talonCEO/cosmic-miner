@@ -63,7 +63,7 @@ const TechTree: React.FC = () => {
             <span className="text-blue-300 font-semibold text-xl">{state.skillPoints} Skill Points</span>
           </div>
           
-          {/* Tech Tree Structure */}
+          {/* Tech Tree Structure - No arrows at all */}
           <div className="relative flex flex-col gap-16 items-center pb-8">
             {/* Render abilities by row */}
             {Object.keys(abilitiesByRow).sort((a, b) => Number(a) - Number(b)).map((rowKey) => {
@@ -72,38 +72,6 @@ const TechTree: React.FC = () => {
               
               return (
                 <div key={rowKey} className="relative w-full">
-                  {/* Connection lines to parent abilities */}
-                  {rowNum > 1 && abilities.map((ability) => {
-                    if (ability.column !== 2) return null; // Only show arrows for the center column
-                    
-                    return ability.requiredAbilities.map(requiredId => {
-                      const requiredAbility = state.abilities.find(a => a.id === requiredId);
-                      if (!requiredAbility) return null;
-                      
-                      return (
-                        <div 
-                          key={`${ability.id}-${requiredId}`}
-                          className={`absolute left-1/2 top-0 w-0.5 h-16 -translate-y-full
-                            ${ability.unlocked ? 'bg-indigo-400' : 'bg-indigo-400/30'}`}
-                          style={{
-                            transform: `translateX(${(ability.column - 1) * 220}px) translateY(-100%)`,
-                          }}
-                        >
-                          <div 
-                            className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-0 h-0"
-                            style={{
-                              borderLeft: '6px solid transparent',
-                              borderRight: '6px solid transparent',
-                              borderTop: ability.unlocked 
-                                ? '6px solid rgba(129, 140, 248, 1)' 
-                                : '6px solid rgba(129, 140, 248, 0.3)',
-                            }}
-                          />
-                        </div>
-                      );
-                    });
-                  })}
-                  
                   {/* Ability boxes - 3 abilities per row maximum */}
                   <div className="flex justify-center gap-16 mt-10">
                     {abilities.map((ability) => (

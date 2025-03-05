@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Gem } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from '@/components/ui/use-toast';
 
 interface PrestigeProps {
   potentialEssenceReward: number;
@@ -9,6 +10,19 @@ interface PrestigeProps {
 }
 
 const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward, handlePrestige }) => {
+  const { toast } = useToast();
+  
+  const onPrestige = () => {
+    handlePrestige();
+    
+    // Show a notification when prestige happens
+    toast({
+      title: "Prestige Complete!",
+      description: `Gained ${potentialEssenceReward} essence from prestige`,
+      variant: "default",
+    });
+  };
+  
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -34,7 +48,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward, handlePrest
         </p>
         
         <button
-          onClick={handlePrestige}
+          onClick={onPrestige}
           className="bg-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-purple-700 transition-colors w-full"
           disabled={potentialEssenceReward === 0}
         >

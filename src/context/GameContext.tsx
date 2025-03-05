@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -813,6 +812,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (achievement && !achievement.unlocked) {
           dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
           showSkillPointNotification(`Hired ${manager.name}`);
+          
+          toast({
+            title: `Manager Hired!`,
+            description: `${manager.name} has joined your team`,
+            variant: "default",
+          });
         }
       }
     }, 100);
@@ -832,6 +837,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (achievement && !achievement.unlocked) {
           dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
           showSkillPointNotification(`Discovered ${artifact.name}`);
+          
+          toast({
+            title: `Artifact Discovered!`,
+            description: `${artifact.name} has been added to your collection`,
+            variant: "default",
+          });
         }
       }
     }, 100);
