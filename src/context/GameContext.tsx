@@ -314,7 +314,7 @@ const initialState: GameState = {
   artifacts: artifacts,
   prestigeCount: 0,
   incomeMultiplier: 1.0,
-  skillPoints: 0,
+  skillPoints: 11110,
   abilities: initialAbilities
 };
 
