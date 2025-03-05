@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Droplet, ArrowDown } from 'lucide-react';
+import { Droplet } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -18,20 +19,6 @@ const TechTree: React.FC = () => {
     acc[ability.row].push(ability);
     return acc;
   }, {} as Record<number, Ability[]>);
-
-  // Limit each row to a maximum of 3 abilities
-  Object.keys(abilitiesByRow).forEach(row => {
-    if (abilitiesByRow[parseInt(row)].length > 3) {
-      // Sort by column to ensure we keep the center abilities
-      const abilities = [...abilitiesByRow[parseInt(row)]].sort((a, b) => a.column - b.column);
-      // Get the middle 3 abilities
-      const middleIndex = Math.floor(abilities.length / 2);
-      abilitiesByRow[parseInt(row)] = abilities.slice(
-        Math.max(0, middleIndex - 1),
-        Math.min(abilities.length, middleIndex + 2)
-      );
-    }
-  });
 
   // Check if an ability can be unlocked
   const canUnlockAbility = (ability: Ability): boolean => {
@@ -59,6 +46,28 @@ const TechTree: React.FC = () => {
     });
   };
 
+  // Get the position of an ability in its row
+  const getAbilityPosition = (ability: Ability, rowAbilities: Ability[]): number => {
+    const sortedAbilities = [...rowAbilities].sort((a, b) => a.column - b.column);
+    return sortedAbilities.findIndex(a => a.id === ability.id);
+  };
+
+  // Calculate arrow positions
+  const getArrowPosition = (sourceAbility: Ability, targetAbility: Ability, sourceRowAbilities: Ability[], targetRowAbilities: Ability[]): { left: string } => {
+    const sourcePos = getAbilityPosition(sourceAbility, sourceRowAbilities);
+    const targetPos = getAbilityPosition(targetAbility, targetRowAbilities);
+    
+    const sourceCount = sourceRowAbilities.length;
+    const targetCount = targetRowAbilities.length;
+    
+    // Calculate percentage positions
+    const sourcePercent = sourceCount === 1 ? 50 : (sourcePos * 100) / (sourceCount - 1);
+    const targetPercent = targetCount === 1 ? 50 : (targetPos * 100) / (targetCount - 1);
+    
+    // Use the target ability's position for the arrow
+    return { left: `${targetPercent}%` };
+  };
+
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -68,7 +77,7 @@ const TechTree: React.FC = () => {
         </DialogDescription>
       </DialogHeader>
       
-      <ScrollArea className="h-[70vh]">
+      <ScrollArea className="h-[60vh]">
         <div className="flex flex-col p-4">
           {/* Skill Points Display */}
           <div className="mb-6 flex items-center justify-center gap-2 bg-blue-600/20 p-3 rounded-lg border border-blue-500/30">
@@ -77,56 +86,66 @@ const TechTree: React.FC = () => {
           </div>
           
           {/* Tech Tree Structure */}
-          <div className="relative flex flex-col gap-8 items-center">
+          <div className="relative flex flex-col gap-12 items-center pb-8">
             {/* Render abilities by row */}
-            {Object.keys(abilitiesByRow).map((row) => {
-              const abilities = abilitiesByRow[parseInt(row)];
+            {Object.keys(abilitiesByRow).map((rowKey, rowIndex) => {
+              const rowNum = parseInt(rowKey);
+              const abilities = abilitiesByRow[rowNum];
+              const prevRowAbilities = rowNum > 0 ? abilitiesByRow[rowNum - 1] || [] : [];
               
               return (
-                <div key={row} className="flex justify-center gap-6 relative w-full">
+                <div key={rowKey} className="flex justify-around gap-8 relative w-full">
                   {/* Connection lines to parent abilities */}
-                  {parseInt(row) > 0 && (
-                    <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                      {abilities.map(ability => {
-                        return ability.requiredAbilities.map(requiredId => {
-                          const requiredAbility = state.abilities.find(a => a.id === requiredId);
-                          if (!requiredAbility) return null;
-                          
-                          return (
-                            <div 
-                              key={`${ability.id}-${requiredId}`}
-                              className="absolute transform -translate-y-8"
-                              style={{
-                                left: `${50 + (abilities.indexOf(ability) - 1) * 33}%`,
-                                top: '0',
-                                height: '40px',
-                                width: '1px',
-                                background: ability.unlocked ? 'rgba(147, 197, 253, 0.8)' : 'rgba(147, 197, 253, 0.3)'
-                              }}
-                            >
-                              <ArrowDown 
-                                size={16} 
-                                className="absolute -bottom-2 -left-2"
-                                style={{
-                                  opacity: ability.unlocked ? 1 : 0.3,
-                                  color: ability.unlocked ? 'rgb(147, 197, 253)' : 'rgb(147, 197, 253)'
-                                }}
-                              />
-                            </div>
-                          );
-                        });
-                      })}
-                    </div>
-                  )}
+                  {rowNum > 0 && abilities.map((ability) => {
+                    return ability.requiredAbilities.map(requiredId => {
+                      const requiredAbility = state.abilities.find(a => a.id === requiredId);
+                      if (!requiredAbility || !prevRowAbilities.includes(requiredAbility)) return null;
+                      
+                      const arrowPosition = getArrowPosition(
+                        requiredAbility, 
+                        ability, 
+                        prevRowAbilities, 
+                        abilities
+                      );
+                      
+                      return (
+                        <div 
+                          key={`${ability.id}-${requiredId}`}
+                          className="absolute"
+                          style={{
+                            left: arrowPosition.left,
+                            top: '-32px',
+                            height: '30px',
+                            width: '2px',
+                            background: ability.unlocked ? 'rgba(147, 197, 253, 0.8)' : 'rgba(147, 197, 253, 0.3)',
+                            transform: 'translateX(-50%)'
+                          }}
+                        >
+                          <div 
+                            className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-0 h-0"
+                            style={{
+                              borderLeft: '6px solid transparent',
+                              borderRight: '6px solid transparent',
+                              borderTop: ability.unlocked 
+                                ? '6px solid rgba(147, 197, 253, 0.8)' 
+                                : '6px solid rgba(147, 197, 253, 0.3)',
+                            }}
+                          />
+                        </div>
+                      );
+                    });
+                  })}
                   
                   {/* Ability boxes */}
-                  {abilities.map((ability, idx) => (
+                  {abilities.map((ability) => (
                     <div 
                       key={ability.id}
                       style={{
                         opacity: ability.unlocked ? 1 : 0.5,
-                        width: '30%',
-                        position: 'relative'
+                        flex: '1',
+                        maxWidth: '180px',
+                        position: 'relative',
+                        zIndex: 1 // Ensure abilities appear above arrows
                       }}
                       className="flex flex-col items-center"
                     >

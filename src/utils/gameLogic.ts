@@ -46,3 +46,23 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
     y: centerY + distance * Math.sin(angle)
   };
 };
+
+/**
+ * Calculate essence reward with logarithmic scaling
+ * As total coins earned increases, the rate of essence gain slows down
+ */
+export const calculateEssenceReward = (totalCoins: number): number => {
+  // Base calculation: 1 essence per 100,000 coins
+  const baseEssence = totalCoins / 100000;
+  
+  // Apply logarithmic scaling to slow down essence gain as total coins increases
+  // Formula: baseEssence / (1 + ln(totalCoins / 1000000 + 1))
+  // This makes essence gain slower as totalCoins increases
+  const scalingFactor = 1 + Math.log(totalCoins / 1000000 + 1);
+  
+  // Calculate essence with scaling applied
+  const scaledEssence = baseEssence / scalingFactor;
+  
+  // Ensure a minimum amount of essence (prevent it from getting too small)
+  return Math.max(Math.floor(scaledEssence), 0);
+};
