@@ -1,8 +1,11 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+
+import React, { createContext, useContext, useReducer, useEffect, ReactNode, useState } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem } from 'lucide-react';
+import { shouldEarnSkillPointFromUpgrade, getUpgradeMilestones } from '@/utils/gameLogic';
+import SkillPointNotification from '@/components/SkillPointNotification';
 
 // Achievement interface
 export interface Achievement {
@@ -86,11 +89,13 @@ type GameAction =
   | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
   | { type: 'CHECK_ACHIEVEMENTS' }
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
-  | { type: 'ADD_SKILL_POINTS'; amount: number };
+  | { type: 'ADD_SKILL_POINTS'; amount: number }
+  | { type: 'SHOW_SKILL_POINT_NOTIFICATION' };
 
-// Create achievements based on upgrades
+// Create achievements based on upgrades, managers and artifacts
 const createAchievements = (): Achievement[] => {
-  const achievementsList: Achievement[] = upgradesList.map(upgrade => ({
+  // Upgrade mastery achievements
+  const upgradeAchievements: Achievement[] = upgradesList.map(upgrade => ({
     id: `${upgrade.id}-mastery`,
     name: `${upgrade.name} Mastery`,
     description: `Reach level 1000 with ${upgrade.name}`,
@@ -101,7 +106,29 @@ const createAchievements = (): Achievement[] => {
     }
   }));
 
-  return achievementsList;
+  // Manager collection achievements
+  const managerAchievements: Achievement[] = managers.filter(m => m.id !== "manager-default").map(manager => ({
+    id: `${manager.id}-acquired`,
+    name: `Hired: ${manager.name}`,
+    description: `Hire the ${manager.name} manager`,
+    unlocked: false,
+    checkCondition: (state: GameState) => {
+      return state.ownedManagers.includes(manager.id);
+    }
+  }));
+
+  // Artifact collection achievements
+  const artifactAchievements: Achievement[] = artifacts.filter(a => a.id !== "artifact-default").map(artifact => ({
+    id: `${artifact.id}-acquired`,
+    name: `Discovered: ${artifact.name}`,
+    description: `Acquire the ${artifact.name} artifact`,
+    unlocked: false,
+    checkCondition: (state: GameState) => {
+      return state.ownedArtifacts.includes(artifact.id);
+    }
+  }));
+
+  return [...upgradeAchievements, ...managerAchievements, ...artifactAchievements];
 };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
@@ -335,8 +362,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'CLICK': {
       const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
       
-      // Base click value is 2.5x higher and includes 30% of coins per second
-      const baseClickValue = state.coinsPerClick * 2.5; 
+      // Base click value is equivalent to total upgrades coinsPerClick plus 1, 
+      // and includes 30% of coins per second
+      const baseClickValue = state.coinsPerClick + 1; 
       const coinsPerSecondBonus = state.coinsPerSecond * 0.3;
       const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * (state.incomeMultiplier || 1) * clickMultiplier;
       
@@ -378,13 +406,26 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       if (state.coins < totalCost) return state;
       
+      const previousLevel = upgrade.level;
+      const newLevel = upgrade.level + maxPossibleQuantity;
+      
+      const milestones = getUpgradeMilestones();
+      let skillPointsEarned = 0;
+      
+      // Check each milestone to see if it was passed
+      for (const milestone of milestones) {
+        if (previousLevel < milestone && newLevel >= milestone) {
+          skillPointsEarned++;
+        }
+      }
+      
       const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * maxPossibleQuantity);
       const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * maxPossibleQuantity);
       
       const updatedUpgrade = {
         ...upgrade,
-        level: upgrade.level + maxPossibleQuantity,
-        cost: Math.floor(upgrade.baseCost * Math.pow(1.07, upgrade.level + maxPossibleQuantity) * costReduction)
+        level: newLevel,
+        cost: Math.floor(upgrade.baseCost * Math.pow(1.07, newLevel) * costReduction)
       };
       
       const newUpgrades = [...state.upgrades];
@@ -398,13 +439,23 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
       });
       
-      return {
+      let newState = {
         ...state,
         coins: state.coins - totalCost,
         coinsPerClick: newCoinsPerClick,
         coinsPerSecond: newCoinsPerSecond,
         upgrades: newUpgrades
       };
+      
+      // Add skill points if milestones were reached
+      if (skillPointsEarned > 0) {
+        newState = {
+          ...newState,
+          skillPoints: newState.skillPoints + skillPointsEarned
+        };
+      }
+      
+      return newState;
     }
     case 'TOGGLE_AUTO_BUY':
       return {
@@ -424,9 +475,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'TICK': {
       let newState = { ...state };
       
-      // Process passive income (adjusted by multiplier and reduced by 50%)
+      // Process passive income (equal to sum of all upgrade bonuses)
       if (state.coinsPerSecond > 0) {
-        const passiveAmount = (state.coinsPerSecond / 10) * (state.incomeMultiplier || 1) * 0.5;
+        const passiveAmount = (state.coinsPerSecond / 10) * (state.incomeMultiplier || 1);
         newState = {
           ...newState,
           coins: newState.coins + passiveAmount,
@@ -434,11 +485,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
       
-      // Process auto tap if enabled (double tap income)
+      // Process auto tap if enabled (with full tap income)
       if (newState.autoTap) {
         const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
-        // Double tap income
-        const baseClickValue = newState.coinsPerClick * 2.5;
+        const baseClickValue = newState.coinsPerClick + 1;
         const coinsPerSecondBonus = newState.coinsPerSecond * 0.3;
         const autoTapAmount = (baseClickValue + coinsPerSecondBonus) * (newState.incomeMultiplier || 1) * clickMultiplier;
         
@@ -509,7 +559,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievementsChecked: state.achievementsChecked,
         managers: state.managers,
         artifacts: state.artifacts,
-        prestigeCount: state.prestigeCount + 1
+        prestigeCount: state.prestigeCount + 1,
+        skillPoints: state.skillPoints, // Keep skill points after prestige
+        abilities: state.abilities, // Keep unlocked abilities after prestige
       };
     }
     case 'BUY_MANAGER': {
@@ -519,10 +571,20 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         return state;
       }
       
+      // Check if this is a new manager (for achievement)
+      const isNewManager = !state.ownedManagers.includes(action.managerId);
+      let skillPointsEarned = 0;
+      
+      if (isNewManager) {
+        // Award a skill point for acquiring a new manager
+        skillPointsEarned = 1;
+      }
+      
       return {
         ...state,
         essence: state.essence - manager.cost,
-        ownedManagers: [...state.ownedManagers, action.managerId]
+        ownedManagers: [...state.ownedManagers, action.managerId],
+        skillPoints: state.skillPoints + skillPointsEarned
       };
     }
     case 'BUY_ARTIFACT': {
@@ -532,10 +594,20 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         return state;
       }
       
+      // Check if this is a new artifact (for achievement)
+      const isNewArtifact = !state.ownedArtifacts.includes(action.artifactId);
+      let skillPointsEarned = 0;
+      
+      if (isNewArtifact) {
+        // Award a skill point for acquiring a new artifact
+        skillPointsEarned = 1;
+      }
+      
       return {
         ...state,
         essence: state.essence - artifact.cost,
-        ownedArtifacts: [...state.ownedArtifacts, action.artifactId]
+        ownedArtifacts: [...state.ownedArtifacts, action.artifactId],
+        skillPoints: state.skillPoints + skillPointsEarned
       };
     }
     case 'UNLOCK_ACHIEVEMENT': {
@@ -551,13 +623,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         unlocked: true
       };
       
+      // Award a skill point for unlocking an achievement
       return {
         ...state,
         achievements: newAchievements,
         achievementsChecked: {
           ...state.achievementsChecked,
           [action.achievementId]: true
-        }
+        },
+        skillPoints: state.skillPoints + 1 // Add skill point for achievement
       };
     }
     case 'CHECK_ACHIEVEMENTS': {
@@ -578,10 +652,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         newAchievementsChecked[achievement.id] = true;
       });
       
+      // Award skill points for unlocking achievements
       return {
         ...state,
         achievements: newAchievements,
-        achievementsChecked: newAchievementsChecked
+        achievementsChecked: newAchievementsChecked,
+        skillPoints: state.skillPoints + unlockableAchievements.length
       };
     }
     case 'UNLOCK_ABILITY': {
@@ -621,6 +697,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         skillPoints: state.skillPoints + action.amount
       };
     }
+    case 'SHOW_SKILL_POINT_NOTIFICATION': {
+      // This action doesn't change state, just triggers the notification
+      return state;
+    }
     default:
       return state;
   }
@@ -645,6 +725,7 @@ type GameContextType = {
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   unlockAbility: (abilityId: string) => void;
   addSkillPoints: (amount: number) => void;
+  showSkillPointNotification: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -652,6 +733,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 // Create provider component
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [showNotification, setShowNotification] = useState(false);
 
   // Handle click action
   const handleClick = () => {
@@ -660,7 +742,32 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Buy upgrade
   const buyUpgrade = (upgradeId: string, quantity: number = 1) => {
+    const upgrade = state.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade) return;
+    
+    const previousLevel = upgrade.level;
+    
     dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
+    
+    // Check for skill point milestones
+    setTimeout(() => {
+      const updatedUpgrade = state.upgrades.find(u => u.id === upgradeId);
+      if (!updatedUpgrade) return;
+      
+      const milestones = getUpgradeMilestones();
+      let earnedSkillPoint = false;
+      
+      for (const milestone of milestones) {
+        if (previousLevel < milestone && updatedUpgrade.level >= milestone) {
+          earnedSkillPoint = true;
+          break;
+        }
+      }
+      
+      if (earnedSkillPoint) {
+        showSkillPointNotification();
+      }
+    }, 100);
   };
 
   // Toggle auto-buy
@@ -696,21 +803,40 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Buy manager
   const buyManager = (managerId: string) => {
     dispatch({ type: 'BUY_MANAGER', managerId });
+    // Check if this would trigger skill point award
+    if (!state.ownedManagers.includes(managerId)) {
+      showSkillPointNotification();
+    }
   };
   
   // Buy artifact
   const buyArtifact = (artifactId: string) => {
     dispatch({ type: 'BUY_ARTIFACT', artifactId });
+    // Check if this would trigger skill point award
+    if (!state.ownedArtifacts.includes(artifactId)) {
+      showSkillPointNotification();
+    }
   };
   
   // Check achievements
   const checkAchievements = () => {
+    const previousUnlocked = state.achievements.filter(a => a.unlocked).length;
+    
     dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+    
+    // After checking, see if any new achievements were unlocked
+    setTimeout(() => {
+      const currentUnlocked = state.achievements.filter(a => a.unlocked).length;
+      if (currentUnlocked > previousUnlocked) {
+        showSkillPointNotification();
+      }
+    }, 100);
   };
   
   // Unlock specific achievement
   const unlockAchievement = (achievementId: string) => {
     dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
+    showSkillPointNotification();
   };
   
   // Calculate maximum affordable purchases
@@ -726,6 +852,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Add skill points
   const addSkillPoints = (amount: number) => {
     dispatch({ type: 'ADD_SKILL_POINTS', amount });
+    showSkillPointNotification();
+  };
+  
+  // Show skill point notification
+  const showSkillPointNotification = () => {
+    setShowNotification(true);
+  };
+  
+  // Hide skill point notification
+  const hideNotification = () => {
+    setShowNotification(false);
   };
 
   // Set up the automatic tick for passive income and achievement checking
@@ -767,27 +904,36 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [state.achievements]);
 
   return (
-    <GameContext.Provider value={{ 
-      state, 
-      handleClick, 
-      buyUpgrade, 
-      toggleAutoBuy,
-      toggleAutoTap,
-      setIncomeMultiplier,
-      prestige,
-      calculateEssenceReward: (totalEarned: number) => calculateEssenceReward(totalEarned, state.ownedArtifacts),
-      buyManager,
-      buyArtifact,
-      checkAchievements,
-      unlockAchievement,
-      addCoins,
-      addEssence,
-      calculateMaxPurchaseAmount,
-      unlockAbility,
-      addSkillPoints
-    }}>
-      {children}
-    </GameContext.Provider>
+    <>
+      <GameContext.Provider value={{ 
+        state, 
+        handleClick, 
+        buyUpgrade, 
+        toggleAutoBuy,
+        toggleAutoTap,
+        setIncomeMultiplier,
+        prestige,
+        calculateEssenceReward: (totalEarned: number) => calculateEssenceReward(totalEarned, state.ownedArtifacts),
+        buyManager,
+        buyArtifact,
+        checkAchievements,
+        unlockAchievement,
+        addCoins,
+        addEssence,
+        calculateMaxPurchaseAmount,
+        unlockAbility,
+        addSkillPoints,
+        showSkillPointNotification
+      }}>
+        {children}
+        {showNotification && (
+          <SkillPointNotification 
+            show={showNotification} 
+            onComplete={hideNotification} 
+          />
+        )}
+      </GameContext.Provider>
+    </>
   );
 };
 
