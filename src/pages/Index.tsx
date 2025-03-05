@@ -4,7 +4,6 @@ import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
-import ShootingStarManager from '@/components/ShootingStarManager';
 
 const SpaceBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,7 +17,6 @@ const SpaceBackground = () => {
     
     const particles: {x: number, y: number, size: number, speed: number, color: string, opacity: number}[] = [];
     
-    // More stars to ensure full coverage
     for (let i = 0; i < 150; i++) {
       const size = Math.random() * 2 + 1;
       particles.push({
@@ -61,7 +59,6 @@ const SpaceBackground = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       
-      // Redraw stars on resize to ensure full coverage
       particles.length = 0;
       for (let i = 0; i < 150; i++) {
         const size = Math.random() * 2 + 1;
@@ -104,7 +101,6 @@ const Index: React.FC = () => {
     <GameProvider>
       <div className="min-h-screen flex flex-col overflow-hidden relative">
         <SpaceBackground />
-        <ShootingStarManager />
         
         <div className="relative z-10">
           <Header />
