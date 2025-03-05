@@ -74,6 +74,8 @@ const TechTree: React.FC = () => {
                 <div key={rowKey} className="relative w-full">
                   {/* Connection lines to parent abilities */}
                   {rowNum > 1 && abilities.map((ability) => {
+                    if (ability.column !== 2) return null; // Only show arrows for the center column
+                    
                     return ability.requiredAbilities.map(requiredId => {
                       const requiredAbility = state.abilities.find(a => a.id === requiredId);
                       if (!requiredAbility) return null;

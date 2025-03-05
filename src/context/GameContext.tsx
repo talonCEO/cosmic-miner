@@ -719,8 +719,8 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 // Create the Skill Point notification component
 const SkillPointNotification: React.FC<{ message: string }> = ({ message }) => {
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
-      <div className="bg-indigo-900/80 border border-indigo-400 shadow-lg px-4 py-2 rounded-lg flex items-center gap-2">
+    <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
+      <div className="bg-indigo-900/80 border border-blue-400 shadow-lg px-4 py-2 rounded-lg flex items-center gap-2">
         <div className="animate-pulse">
           <Gem className="text-blue-400" size={20} />
         </div>
@@ -914,6 +914,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           description: `${achievement.name}: ${achievement.description}`,
           variant: "default",
         });
+        
+        // Also show the skill point notification
+        showSkillPointNotification(`Achievement: ${achievement.name}`);
       });
     }
     
