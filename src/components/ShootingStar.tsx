@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface ShootingStarProps {
   x: number;
@@ -7,17 +7,40 @@ interface ShootingStarProps {
 
 const ShootingStar: React.FC<ShootingStarProps> = ({ x }) => {
   const [position, setPosition] = useState({ x, y: -10 });
+  const rafRef = useRef<number | null>(null);
+  const lastUpdateTimeRef = useRef<number>(Date.now());
+  // Random size between 0.4% and 1.1% of current size (which is 3px)
+  const size = useRef(0.03 * (Math.random() * 0.7 + 0.4)).current; // 0.012px to 0.033px
   
-  // Move the star downward at a constant slow speed
+  // Use requestAnimationFrame for smoother animation
   useEffect(() => {
-    const moveInterval = setInterval(() => {
-      setPosition(prev => ({
-        x: prev.x,
-        y: prev.y + 0.5 // Slow downward movement
-      }));
-    }, 16); // ~60fps
+    const updatePosition = (timestamp: number) => {
+      const now = Date.now();
+      const deltaTime = now - lastUpdateTimeRef.current;
+      
+      // Ensure consistent movement speed regardless of frame rate
+      if (deltaTime > 0) {
+        const pixelsPerMillisecond = 0.5 / 16; // Original speed: 0.5px per 16ms
+        const deltaY = pixelsPerMillisecond * deltaTime;
+        
+        setPosition(prev => ({
+          x: prev.x,
+          y: prev.y + deltaY
+        }));
+        
+        lastUpdateTimeRef.current = now;
+      }
+      
+      rafRef.current = requestAnimationFrame(updatePosition);
+    };
     
-    return () => clearInterval(moveInterval);
+    rafRef.current = requestAnimationFrame(updatePosition);
+    
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
   }, []);
   
   return (
@@ -25,14 +48,15 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ x }) => {
       className="absolute z-10"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
-        transition: 'transform 0.05s linear',
       }}
     >
-      {/* Main star body */}
+      {/* Main star body with adjusted size */}
       <div 
-        className="w-3 h-3 rounded-full bg-white"
+        className="rounded-full bg-white"
         style={{
-          boxShadow: '0 0 8px 2px rgba(255, 255, 255, 0.7)',
+          width: `${size}rem`,
+          height: `${size}rem`,
+          boxShadow: `0 0 ${size * 2.5}px ${size * 0.5}px rgba(255, 255, 255, 0.7)`,
         }}
       />
     </div>
