@@ -3,51 +3,50 @@ import React, { useEffect, useState } from 'react';
 import ShootingStar from './ShootingStar';
 
 const ShootingStarManager: React.FC = () => {
-  const [stars, setStars] = useState<{id: number, timestamp: number}[]>([]);
+  const [stars, setStars] = useState<{id: number, x: number}[]>([]);
   const [nextId, setNextId] = useState(0);
-  const [canSpawn, setCanSpawn] = useState(true);
   
-  // Manage star spawning
+  // Spawn new stars at random intervals
   useEffect(() => {
-    // Try to spawn a new star every 333ms (3x faster than 1 second) if conditions are met
-    const spawnInterval = setInterval(() => {
-      if (canSpawn && stars.length < 20) { // Increased maximum to 20
-        // Add a new star
-        setStars(prev => [...prev, { id: nextId, timestamp: Date.now() }]);
-        setNextId(prev => prev + 1);
-        
-        // Set cooldown between spawns
-        setCanSpawn(false);
-        setTimeout(() => {
-          setCanSpawn(true);
-        }, 3333); // ~3.3 second delay between spawns
-      }
-    }, 333);
+    const spawnStar = () => {
+      const windowWidth = window.innerWidth;
+      // Random position along the top of the screen
+      const x = Math.random() * windowWidth;
+      
+      // Add a new star
+      setStars(prev => [...prev, { id: nextId, x }]);
+      setNextId(prev => prev + 1);
+      
+      // Schedule next spawn (between 3-15 seconds)
+      const nextSpawnTime = 3000 + Math.random() * 12000;
+      setTimeout(spawnStar, nextSpawnTime);
+    };
     
-    return () => clearInterval(spawnInterval);
-  }, [canSpawn, stars, nextId]);
+    // Start the first spawn
+    const initialDelay = 1000 + Math.random() * 2000;
+    const timeout = setTimeout(spawnStar, initialDelay);
+    
+    return () => clearTimeout(timeout);
+  }, [nextId]);
   
-  // Check for stars that have been alive for too long (20 seconds)
+  // Remove stars after 30 seconds
   useEffect(() => {
-    const checkAgeInterval = setInterval(() => {
-      const now = Date.now();
-      setStars(prev => prev.filter(star => now - star.timestamp < 20000)); // Remove stars older than 20 seconds
-    }, 1000); // Check every second
+    if (stars.length === 0) return;
     
-    return () => clearInterval(checkAgeInterval);
-  }, []);
-  
-  const handleStarComplete = (id: number) => {
-    setStars(prev => prev.filter(star => star.id !== id));
-  };
+    const timer = setTimeout(() => {
+      // Remove the oldest star
+      setStars(prev => prev.slice(1));
+    }, 30000);
+    
+    return () => clearTimeout(timer);
+  }, [stars]);
   
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
       {stars.map(star => (
         <ShootingStar 
-          key={star.id} 
-          id={star.id}
-          onComplete={() => handleStarComplete(star.id)} 
+          key={star.id}
+          x={star.x}
         />
       ))}
     </div>
