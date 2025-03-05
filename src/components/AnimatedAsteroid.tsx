@@ -34,7 +34,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       const elapsed = timestamp - lastTimestamp;
       
       // Update rotation (MUCH slower - about 2 degrees per second)
-      setRotation(prev => (prev + (elapsed * 0.002)) % 360);
+      setRotation(prev => (prev + (elapsed * 0.0001)) % 360);
       lastTimestamp = timestamp;
       
       // Clear canvas
