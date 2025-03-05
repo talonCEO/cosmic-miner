@@ -1,5 +1,5 @@
 
-export type MenuType = "main" | "achievements" | "prestige" | "shop" | "techTree" | "none";
+export type MenuType = "main" | "achievements" | "prestige" | "shop" | "techTree" | "planets" | "none";
 
 // Define the Ability type used in TechTree component
 export interface Ability {

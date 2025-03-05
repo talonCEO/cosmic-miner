@@ -14,6 +14,7 @@ import Achievements from './menu/Achievements';
 import Prestige from './menu/Prestige';
 import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
+import Planets from './menu/Planets';
 
 const GameMenu: React.FC = () => {
   const { state, prestige, calculateEssenceReward, buyManager, buyArtifact } = useGame();
@@ -99,6 +100,10 @@ const GameMenu: React.FC = () => {
             onBuyManager={handleBuyManager}
             onBuyArtifact={handleBuyArtifact}
           />
+        )}
+        
+        {menuType === "planets" && (
+          <Planets />
         )}
       </DialogContent>
     </Dialog>
