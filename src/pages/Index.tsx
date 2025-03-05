@@ -1,10 +1,10 @@
-
 import React, { useEffect, useRef } from 'react';
 import { GameProvider } from '@/context/GameContext';
 import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
+import ShootingStarManager from '@/components/ShootingStarManager';
 
 const SpaceBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,57 +55,9 @@ const SpaceBackground = () => {
           particle.x = Math.random() * canvas.width;
         }
       });
-      
-      if (Math.random() < 0.01) {
-        createShootingStar();
-      }
     }
     
-    function createShootingStar() {
-      const x = Math.random() * canvas.width;
-      const y = -20;
-      const angle = Math.PI / 4 + Math.random() * 0.5;
-      const speed = 2 + Math.random() * 2;
-      const size = 2 + Math.random() * 2;
-      let trail: {x: number, y: number, size: number, opacity: number}[] = [];
-      
-      function drawShootingStar() {
-        if (!ctx) return;
-        
-        const newX = x + Math.cos(angle) * currentDistance;
-        const newY = y + Math.sin(angle) * currentDistance;
-        
-        trail.push({
-          x: newX,
-          y: newY,
-          size: size,
-          opacity: 0.8
-        });
-        
-        trail.forEach((point, index) => {
-          const pointSize = Math.max(0.1, point.size * (1 - index / 10));
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${point.opacity * (1 - index / 10)})`;
-          ctx.fill();
-          
-          point.opacity -= 0.05;
-        });
-        
-        trail = trail.filter(point => point.opacity > 0);
-        
-        currentDistance += speed;
-        
-        if (newY < canvas.height + size && newX > -size && newX < canvas.width + size && trail.length > 0) {
-          requestAnimationFrame(drawShootingStar);
-        }
-      }
-      
-      let currentDistance = 0;
-      drawShootingStar();
-    }
-    
-    const handleResize = () => {
+    function handleResize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       
@@ -122,7 +74,7 @@ const SpaceBackground = () => {
           opacity: Math.random() * 0.4 + 0.1
         });
       }
-    };
+    }
     
     window.addEventListener('resize', handleResize);
     handleResize();
@@ -152,6 +104,7 @@ const Index: React.FC = () => {
     <GameProvider>
       <div className="min-h-screen flex flex-col overflow-hidden relative">
         <SpaceBackground />
+        <ShootingStarManager />
         
         <div className="relative z-10">
           <Header />
