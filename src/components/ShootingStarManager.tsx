@@ -32,7 +32,7 @@ const ShootingStarManager: React.FC = () => {
   };
   
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
       {stars.map(star => (
         <ShootingStar 
           key={star.id} 

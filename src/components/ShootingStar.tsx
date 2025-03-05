@@ -54,10 +54,10 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
     // Normalize direction vector
     const magnitude = Math.sqrt(dx * dx + dy * dy);
     
-    // Apply random velocity reduction (20-33% of current value)
-    const velocityFactor = 0.2 + (Math.random() * 0.13); // Between 20% and 33%
-    dx = (dx / magnitude) * velocityFactor * 5; // Scale speed
-    dy = (dy / magnitude) * velocityFactor * 5;
+    // Apply a consistent speed factor - removed random reduction
+    const speedFactor = 0.25; // Consistent speed of 25% 
+    dx = (dx / magnitude) * speedFactor * 5; // Scale speed
+    dy = (dy / magnitude) * speedFactor * 5;
     
     setPosition({ x, y });
     setDirection({ x: dx, y: dy });
@@ -82,10 +82,13 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
     return () => clearInterval(moveInterval);
   }, [direction]);
   
+  // Calculate the angle based on direction for proper trail alignment
+  const trailAngle = Math.atan2(direction.y, direction.x) * (180 / Math.PI);
+  
   return (
     <div 
       ref={starRef}
-      className="absolute z-0"
+      className="absolute z-10" // z-10 to be behind UI elements but in front of canvas
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         transition: 'transform 0.05s linear',
@@ -99,20 +102,30 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
         }}
       />
       
-      {/* Particle trail */}
-      {[...Array(8)].map((_, i) => (
-        <div 
-          key={i}
-          className="absolute w-2 h-2 rounded-full"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            left: -4 - (i * 4),
-            top: 1,
-            opacity: 0.8 - (i * 0.1),
-            transform: `scale(${1 - (i * 0.1)})`,
-          }}
-        />
-      ))}
+      {/* Particle trail - aligned opposite to movement direction */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(-50%, -50%) rotate(${trailAngle + 180}deg)`,
+          transformOrigin: 'center',
+        }}
+      >
+        {[...Array(8)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute w-2 h-2 rounded-full"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              left: 4 + (i * 4), // Now moving away from the star body
+              top: 0,
+              opacity: 0.8 - (i * 0.1),
+              transform: `scale(${1 - (i * 0.1)})`,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
