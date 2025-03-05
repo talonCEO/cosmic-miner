@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 
@@ -34,8 +33,8 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       if (!lastTimestamp) lastTimestamp = timestamp;
       const elapsed = timestamp - lastTimestamp;
       
-      // Update rotation (about 10 degrees per second)
-      setRotation(prev => (prev + (elapsed * 0.01)) % 360);
+      // Update rotation (MUCH slower - about 2 degrees per second)
+      setRotation(prev => (prev + (elapsed * 0.002)) % 360);
       lastTimestamp = timestamp;
       
       // Clear canvas
