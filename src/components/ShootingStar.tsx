@@ -54,33 +54,43 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
     // Normalize direction vector
     const magnitude = Math.sqrt(dx * dx + dy * dy);
     
-    // Apply a consistent speed factor - removed random reduction
+    // Apply a consistent speed factor
     const speedFactor = 0.25; // Consistent speed of 25% 
     dx = (dx / magnitude) * speedFactor * 5; // Scale speed
     dy = (dy / magnitude) * speedFactor * 5;
     
     setPosition({ x, y });
     setDirection({ x: dx, y: dy });
-    
-    // Remove star after 10 seconds
-    const timer = setTimeout(() => {
-      onComplete();
-    }, 10000);
-    
-    return () => clearTimeout(timer);
   }, [onComplete]);
   
-  // Move the star according to its direction
+  // Move the star according to its direction and check if it's offscreen
   useEffect(() => {
     const moveInterval = setInterval(() => {
-      setPosition(prev => ({
-        x: prev.x + direction.x,
-        y: prev.y + direction.y
-      }));
+      setPosition(prev => {
+        const newX = prev.x + direction.x;
+        const newY = prev.y + direction.y;
+        
+        // Check if the star has gone off-screen
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        if (
+          newX < -100 || 
+          newX > windowWidth + 100 || 
+          newY < -100 || 
+          newY > windowHeight + 100
+        ) {
+          // Star is off-screen, trigger removal
+          clearInterval(moveInterval);
+          onComplete();
+        }
+        
+        return { x: newX, y: newY };
+      });
     }, 16); // ~60fps
     
     return () => clearInterval(moveInterval);
-  }, [direction]);
+  }, [direction, onComplete]);
   
   // Calculate the angle based on direction for proper trail alignment
   const trailAngle = Math.atan2(direction.y, direction.x) * (180 / Math.PI);
@@ -102,7 +112,7 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
         }}
       />
       
-      {/* Particle trail - aligned opposite to movement direction */}
+      {/* Particle trail - aligned opposite to movement direction with 25% increased size */}
       <div 
         style={{
           position: 'absolute',
@@ -115,10 +125,12 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
         {[...Array(8)].map((_, i) => (
           <div 
             key={i}
-            className="absolute w-2 h-2 rounded-full"
+            className="absolute rounded-full"
             style={{
+              width: 2.5 + 'px', // 25% larger than original 2px
+              height: 2.5 + 'px', // 25% larger than original 2px
               backgroundColor: 'rgba(255, 255, 255, 0.7)',
-              left: 4 + (i * 4), // Now moving away from the star body
+              left: 5 + (i * 5), // 25% increase from 4 to 5
               top: 0,
               opacity: 0.8 - (i * 0.1),
               transform: `scale(${1 - (i * 0.1)})`,
