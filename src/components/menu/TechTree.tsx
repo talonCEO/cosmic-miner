@@ -72,18 +72,15 @@ const TechTree: React.FC = () => {
               
               return (
                 <div key={rowKey} className="relative w-full">
-                  {/* Tier Label - Moved up to be in line with arrows, except for tier 1 */}
+                  {/* Tier Label */}
                   <div className="absolute left-0 top-0 h-full flex items-center">
-                    <div className={`text-4xl font-bold opacity-25 text-slate-500 ${rowNum !== 1 ? '-translate-y-8' : ''}`}>
+                    <div className="text-4xl font-bold opacity-25 text-slate-500">
                       Tier {rowNum}
                     </div>
                   </div>
                   
                   {/* Connection lines to parent abilities */}
                   {rowNum > 1 && abilities.map((ability) => {
-                    // Only show connection line for the middle ability (column 2)
-                    if (ability.column !== 2) return null;
-                    
                     return ability.requiredAbilities.map(requiredId => {
                       const requiredAbility = state.abilities.find(a => a.id === requiredId);
                       if (!requiredAbility) return null;
@@ -94,7 +91,7 @@ const TechTree: React.FC = () => {
                           className={`absolute left-1/2 top-0 w-0.5 h-16 -translate-y-full
                             ${ability.unlocked ? 'bg-indigo-400' : 'bg-indigo-400/30'}`}
                           style={{
-                            transform: `translateX(0) translateY(-100%)`,
+                            transform: `translateX(${(ability.column - 1) * 220}px) translateY(-100%)`,
                           }}
                         >
                           <div 

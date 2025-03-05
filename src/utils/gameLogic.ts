@@ -48,26 +48,21 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
 };
 
 /**
- * Calculate essence reward with progressive scaling
- * For every 10 essence, the cost doubles
+ * Calculate essence reward with logarithmic scaling
+ * As total coins earned increases, the rate of essence gain slows down
  */
 export const calculateEssenceReward = (totalCoins: number): number => {
-  let totalEssence = 0;
-  let remainingCoins = totalCoins;
-  let currentCostPerEssence = 100000;
-  let currentBracket = 0;
+  // Base calculation: 1 essence per 100,000 coins
+  const baseEssence = totalCoins / 100000;
   
-  while (remainingCoins >= currentCostPerEssence) {
-    const essenceInBracket = Math.min(10, Math.floor(remainingCoins / currentCostPerEssence));
-    
-    if (essenceInBracket <= 0) break;
-    
-    totalEssence += essenceInBracket;
-    remainingCoins -= essenceInBracket * currentCostPerEssence;
-    
-    currentBracket++;
-    currentCostPerEssence = 100000 * Math.pow(2, currentBracket);
-  }
+  // Apply logarithmic scaling to slow down essence gain as total coins increases
+  // Formula: baseEssence / (1 + ln(totalCoins / 1000000 + 1))
+  // This makes essence gain slower as totalCoins increases
+  const scalingFactor = 1 + Math.log(totalCoins / 1000000 + 1);
   
-  return Math.floor(totalEssence);
+  // Calculate essence with scaling applied
+  const scaledEssence = baseEssence / scalingFactor;
+  
+  // Ensure a minimum amount of essence (prevent it from getting too small)
+  return Math.max(Math.floor(scaledEssence), 0);
 };

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Award, GraduationCap, ShoppingBasket, Network, Globe } from 'lucide-react';
+import { Award, GraduationCap, ShoppingBasket, Network } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MenuType } from './types';
@@ -47,13 +47,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
           >
             <ShoppingBasket size={20} />
             <span>Shop</span>
-          </button>
-          <button 
-            onClick={() => setMenuType("planets")} 
-            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <Globe size={20} />
-            <span>Planets</span>
           </button>
         </div>
       </ScrollArea>
