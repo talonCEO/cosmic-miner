@@ -142,53 +142,18 @@ const GlowingOrb: React.FC<{
   );
 };
 
-// Create spark component
-const Spark: React.FC<{
-  triggerTime: number;
-}> = ({ triggerTime }) => {
-  const controls = useAnimation();
-  
-  useEffect(() => {
-    if (triggerTime > 0) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 40 + Math.random() * 60;
-      const targetX = Math.cos(angle) * distance;
-      const targetY = Math.sin(angle) * distance;
-      
-      controls.start({
-        x: [0, targetX],
-        y: [0, targetY],
-        opacity: [1, 0],
-        scale: [1, 0],
-        transition: { 
-          duration: 0.8,
-          ease: "easeOut"
-        }
-      });
-    }
-  }, [triggerTime, controls]);
-  
-  return (
-    <motion.div
-      className="absolute rounded-full bg-amber-300"
-      style={{
-        width: 3,
-        height: 3,
-        boxShadow: "0 0 6px 3px rgba(255, 200, 50, 0.7)",
-        filter: "blur(0.5px)"
-      }}
-      initial={{ opacity: 0 }}
-      animate={controls}
-    />
-  );
-};
-
 // Define a CraterType interface
 interface CraterType {
   x: number;
   y: number;
   size: number;
 }
+
+// Helper function to check if craters overlap
+const cratersOverlap = (crater1: CraterType, crater2: CraterType): boolean => {
+  const distance = Math.sqrt(Math.pow(crater1.x - crater2.x, 2) + Math.pow(crater1.y - crater2.y, 2));
+  return distance < (crater1.size + crater2.size);
+};
 
 const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimating }) => {
   const { state } = useGame();
@@ -217,24 +182,44 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   
   // Fragment ejection state
   const [fragmentTrigger, setFragmentTrigger] = useState(0);
-  const [sparkTrigger, setSparkTrigger] = useState(0);
   
-  // Crater states - fixed to not use hooks outside component body
-  const craters = useRef<CraterType[]>([]);
-  const [activeCrater, setActiveCrater] = useState<number | null>(null);
+  // Crater states - fixed to use proper React patterns
+  const [craters, setCraters] = useState<CraterType[]>([]);
   
   // Initialize craters
   useEffect(() => {
     const craterCount = 10;
-    craters.current = Array.from({ length: craterCount }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * BASE_RADIUS * 0.7;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance;
-      const size = Math.random() * 20 + 10;
+    const tempCraters: CraterType[] = [];
+    
+    // Generate craters that don't overlap
+    for (let i = 0; i < craterCount; i++) {
+      let attempts = 0;
+      let validCrater = false;
+      let newCrater: CraterType;
       
-      return { x, y, size };
-    });
+      while (!validCrater && attempts < 50) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * BASE_RADIUS * 0.7;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        const size = Math.random() * 20 + 10;
+        
+        newCrater = { x, y, size };
+        
+        // Check if this crater overlaps with any existing craters
+        validCrater = !tempCraters.some(existingCrater => 
+          cratersOverlap(newCrater, existingCrater)
+        );
+        
+        attempts++;
+      }
+      
+      if (validCrater) {
+        tempCraters.push(newCrater);
+      }
+    }
+    
+    setCraters(tempCraters);
   }, []);
   
   // Generate asteroid path points
@@ -344,32 +329,13 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       setFragmentTrigger(prev => prev + 1);
     }, 10000);
     
-    // Recurring spark effects
-    const sparkInterval = setInterval(() => {
-      setSparkTrigger(prev => prev + 1);
-    }, 3000);
-    
     // Clean up all animations
     return () => {
       clearInterval(wobbleInterval);
       clearInterval(shadowInterval);
       clearInterval(fragmentInterval);
-      clearInterval(sparkInterval);
     };
   }, []);
-  
-  // Animate craters randomly
-  useInterval(() => {
-    if (craters.current.length > 0) {
-      const randomIndex = Math.floor(Math.random() * craters.current.length);
-      setActiveCrater(randomIndex);
-      
-      // Reset after animation
-      setTimeout(() => {
-        setActiveCrater(null);
-      }, 800);
-    }
-  }, 2000);
   
   // Draw the asteroid on canvas
   useEffect(() => {
@@ -433,15 +399,12 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     
-    // Draw craters
-    craters.current.forEach((crater, index) => {
-      const isActive = index === activeCrater;
-      const scale = isActive ? 1.3 : 1;
-      
+    // Draw craters with 50% opacity
+    craters.forEach((crater) => {
       // Draw darker crater base
       ctx.beginPath();
-      ctx.arc(crater.x, crater.y, crater.size * scale, 0, Math.PI * 2);
-      ctx.fillStyle = isActive ? 'rgba(40, 40, 40, 0.9)' : 'rgba(30, 30, 30, 0.9)';
+      ctx.arc(crater.x, crater.y, crater.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(30, 30, 30, 0.5)'; // 50% opacity
       ctx.fill();
       
       // Draw crater highlight
@@ -449,17 +412,17 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       ctx.arc(
         crater.x - crater.size * 0.3,
         crater.y - crater.size * 0.3,
-        crater.size * 0.7 * scale,
+        crater.size * 0.7,
         0,
         Math.PI * 2
       );
-      ctx.fillStyle = isActive ? 'rgba(140, 140, 140, 0.4)' : 'rgba(120, 120, 120, 0.4)';
+      ctx.fillStyle = 'rgba(120, 120, 120, 0.5)'; // 50% opacity
       ctx.fill();
       
       // Draw crater inner shadow
       ctx.beginPath();
-      ctx.arc(crater.x, crater.y, crater.size * 0.8 * scale, 0, Math.PI * 2);
-      ctx.fillStyle = isActive ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.2)';
+      ctx.arc(crater.x, crater.y, crater.size * 0.8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // 50% opacity
       ctx.fill();
     });
     
@@ -477,7 +440,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     }
     
     ctx.restore();
-  }, [shadowOffsetX, shadowOffsetY, activeCrater]);
+  }, [shadowOffsetX, shadowOffsetY, craters]);
   
   // Handle click animation
   useEffect(() => {
@@ -497,11 +460,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
           });
         }
       });
-      
-      // Trigger several sparks
-      setSparkTrigger(prev => prev + 1);
-      setTimeout(() => setSparkTrigger(prev => prev + 1), 50);
-      setTimeout(() => setSparkTrigger(prev => prev + 1), 100);
     }
   }, [isAnimating]);
   
@@ -558,13 +516,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
         ))}
       </div>
       
-      {/* Impact sparks */}
-      <div className="absolute w-full h-full pointer-events-none flex items-center justify-center">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <Spark key={`spark-${i}`} triggerTime={sparkTrigger} />
-        ))}
-      </div>
-      
       {/* Background particles */}
       <div className="absolute w-4 h-4 rounded-full bg-white/15 animate-ping"
            style={{ top: '-10%', left: '20%', animationDuration: '3s' }}></div>
@@ -577,3 +528,4 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
 };
 
 export default AnimatedAsteroid;
+
