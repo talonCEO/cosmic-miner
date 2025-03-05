@@ -65,21 +65,13 @@ const ClickArea: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
   
-  // Get asteroid color based on current coins
-  const getAsteroidColor = () => {
-    // Grey with gradient
-    return "#8E9196"; 
-  };
-  
   const handleAreaClick = () => {
-    // Get click position relative to the container
     if (!containerRef.current) return;
     
     const rect = containerRef.current.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    // Add numeric value effect
     const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
     
     setClickEffects(prev => [
@@ -87,22 +79,18 @@ const ClickArea: React.FC = () => {
       { id: nextId.current++, x: effectX, y: effectY }
     ]);
     
-    // Add particle effects - space debris from asteroid
     const particleCount = Math.min(10 + Math.floor(state.coinsPerClick / 100), 20);
     const newParticles = [];
-    const asteroidColor = getAsteroidColor();
     
-    // Create diverse space debris
     for (let i = 0; i < particleCount; i++) {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
-      const size = Math.random() * 5 + 2; // Varied sizes for debris
+      const size = Math.random() * 5 + 2;
       
-      // Mix of colors for richer debris effect
       const colors = [
-        asteroidColor, 
-        "#ffffff", // Some white sparkles
-        "#c0c0c0", // Silver
-        "#808080"  // Gray
+        "#a0a0a0",
+        "#ffffff",
+        "#c0c0c0",
+        "#808080"
       ];
       
       const color = colors[Math.floor(Math.random() * colors.length)];
@@ -118,15 +106,12 @@ const ClickArea: React.FC = () => {
     
     setParticles(prev => [...prev, ...newParticles]);
     
-    // Trigger click handler
     handleClick();
     
-    // Add button animation
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150);
   };
   
-  // Remove effects after animation
   const removeClickEffect = (id: number) => {
     setClickEffects(prev => prev.filter(effect => effect.id !== id));
   };
@@ -141,28 +126,13 @@ const ClickArea: React.FC = () => {
         ref={containerRef}
         className="relative w-64 h-64 mb-5 flex items-center justify-center select-none"
       >
-        <div 
-          className="absolute w-64 h-64 rounded-full cursor-pointer"
-          style={{
-            background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
-            animation: 'opacity-pulse 3s infinite alternate',
-            opacity: '0.9',
-          }}
-          onClick={handleAreaClick}
-        ></div>
-        
-        {/* Animated asteroid without overlayed text */}
-        <div 
-          className="w-64 h-64 rounded-full cursor-pointer"
-          onClick={handleAreaClick}
-        >
+        <div className="w-64 h-64 rounded-full cursor-pointer">
           <AnimatedAsteroid 
             onClick={handleAreaClick}
             isAnimating={isAnimating}
           />
         </div>
         
-        {/* Click effects rendering */}
         {clickEffects.map(effect => (
           <ClickEffect 
             key={effect.id}
@@ -173,7 +143,6 @@ const ClickArea: React.FC = () => {
           />
         ))}
         
-        {/* Particle effects rendering */}
         {particles.map(particle => (
           <Particle
             key={particle.id}
@@ -186,7 +155,6 @@ const ClickArea: React.FC = () => {
         ))}
       </div>
       
-      {/* Passive income indicator */}
       {state.coinsPerSecond > 0 && (
         <div className="text-center mb-8 animate-slide-up">
           <p className="text-sm text-white text-shadow-sm">

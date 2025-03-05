@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { Mountain } from 'lucide-react';
 
 interface AnimatedAsteroidProps {
   onClick: () => void;
@@ -10,17 +9,140 @@ interface AnimatedAsteroidProps {
 
 const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimating }) => {
   const { state } = useGame();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rotation, setRotation] = useState(0);
   const [scale, setScale] = useState(1);
   
-  // Rotate the asteroid slowly
+  // Handle animation
   useEffect(() => {
-    const rotationInterval = setInterval(() => {
-      setRotation(prev => (prev + 0.1) % 360);
-    }, 50);
+    // Create asteroid rendering
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     
-    return () => clearInterval(rotationInterval);
-  }, []);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Set canvas dimensions
+    canvas.width = 256;
+    canvas.height = 256;
+    
+    // Animation loop for rotation
+    let animationId: number;
+    let lastTimestamp = 0;
+    
+    const animate = (timestamp: number) => {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const elapsed = timestamp - lastTimestamp;
+      
+      // Update rotation (about 10 degrees per second)
+      setRotation(prev => (prev + (elapsed * 0.01)) % 360);
+      lastTimestamp = timestamp;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Save context for transformations
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      
+      // 1. Draw the basic asteroid shape - irregular polygon
+      const asteroidRadius = 100;
+      const points = 12; // Number of vertices
+      const variance = 0.3; // How jagged the asteroid is (0-1)
+      
+      ctx.beginPath();
+      for (let i = 0; i < points; i++) {
+        const angle = (i / points) * Math.PI * 2;
+        const jitter = 1 - Math.random() * variance;
+        const x = Math.cos(angle) * asteroidRadius * jitter;
+        const y = Math.sin(angle) * asteroidRadius * jitter;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      
+      // 4. Create shadow effect for 3D appearance
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetX = 10;
+      ctx.shadowOffsetY = 10;
+      
+      // 2. Apply radial gradient for the asteroid body and glow
+      const gradient = ctx.createRadialGradient(
+        -asteroidRadius * 0.3, -asteroidRadius * 0.3, 0,
+        0, 0, asteroidRadius * 1.3
+      );
+      gradient.addColorStop(0, '#a0a0a0');  // Lighter gray where light hits
+      gradient.addColorStop(0.7, '#606060'); // Medium gray for main body
+      gradient.addColorStop(1, 'rgba(50, 50, 50, 0)'); // Transparent edge for glow
+      
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Remove shadow for craters
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      
+      // 3. Add crater textures
+      const craterCount = 12;
+      for (let i = 0; i < craterCount; i++) {
+        // Random position within the asteroid
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * asteroidRadius * 0.7; // Keep craters inside
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        
+        // Random crater size
+        const craterSize = Math.random() * 15 + 5;
+        
+        // Draw crater (darker circle)
+        ctx.beginPath();
+        ctx.arc(x, y, craterSize, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(40, 40, 40, 0.8)';
+        ctx.fill();
+        
+        // Add highlight to one edge of crater for 3D effect
+        ctx.beginPath();
+        ctx.arc(x - craterSize * 0.2, y - craterSize * 0.2, craterSize * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+        ctx.fill();
+      }
+      
+      // Draw a subtle noise texture over the asteroid
+      for (let i = 0; i < 500; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * asteroidRadius;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        
+        // Check if point is inside asteroid shape
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${Math.random() * 100 + 50}, ${Math.random() * 100 + 50}, ${Math.random() * 100 + 50}, 0.1)`;
+        ctx.fill();
+      }
+      
+      // Restore context
+      ctx.restore();
+      
+      // Continue animation loop
+      animationId = requestAnimationFrame(animate);
+    };
+    
+    animationId = requestAnimationFrame(animate);
+    
+    // Cleanup animation on unmount
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [rotation]);
   
   // Handle click animation
   useEffect(() => {
@@ -33,51 +155,29 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     }
   }, [isAnimating]);
   
-  // Get asteroid color based on current coins
-  const getAsteroidColor = () => {
-    return "#8E9196"; // Grey asteroid
-  };
-  
   return (
-    <div 
-      className="w-full h-full rounded-full flex items-center justify-center cursor-pointer transition-transform relative overflow-visible"
-      onClick={onClick}
-      style={{
-        background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #403E43)`,
-        boxShadow: `0 0 20px 5px rgba(142, 145, 150, 0.3)`,
-        transform: `scale(${scale}) rotate(${rotation}deg)`,
-        transition: 'transform 0.15s ease-out',
-        opacity: '1',
-        animation: 'pulse-opacity 3s infinite alternate',
-      }}
-    >
-      {/* Asteroid texture overlay */}
+    <div className="w-full h-full relative">
+      {/* Outer glow effect using CSS */}
       <div 
-        className="absolute inset-0 rounded-full opacity-40"
+        className="absolute inset-0 rounded-full"
         style={{
-          backgroundImage: 'radial-gradient(circle at 70% 20%, transparent 0%, #00000070 80%)',
-          mixBlendMode: 'multiply',
+          background: 'radial-gradient(circle at 30% 30%, transparent 30%, rgba(180, 180, 220, 0.3) 70%, transparent 100%)',
+          animation: 'pulse-opacity 4s infinite alternate',
+          transform: `scale(${scale * 1.05})`,
+          transition: 'transform 0.15s ease-out',
         }}
       ></div>
       
-      {/* Asteroid craters */}
-      <div 
-        className="absolute w-10 h-10 rounded-full bg-black opacity-20" 
-        style={{ top: '20%', left: '30%' }}
-      ></div>
-      <div 
-        className="absolute w-6 h-6 rounded-full bg-black opacity-20" 
-        style={{ top: '50%', left: '20%' }}
-      ></div>
-      <div 
-        className="absolute w-8 h-8 rounded-full bg-black opacity-20" 
-        style={{ top: '60%', left: '60%' }}
-      ></div>
-      
-      {/* Mountain icon instead of sparkles */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none animate-pulse">
-        <Mountain className="w-36 h-36 text-white" />
-      </div>
+      {/* Canvas for drawing the asteroid */}
+      <canvas 
+        ref={canvasRef} 
+        className="w-full h-full cursor-pointer" 
+        onClick={onClick}
+        style={{
+          transform: `scale(${scale})`,
+          transition: 'transform 0.15s ease-out',
+        }}
+      />
       
       {/* Small floating particles around the asteroid */}
       <div className="absolute w-4 h-4 rounded-full bg-white/20 animate-ping"
