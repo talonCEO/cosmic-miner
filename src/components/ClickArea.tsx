@@ -58,7 +58,7 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 };
 
 const ClickArea: React.FC = () => {
-  const { state, handleClick } = useGame();
+  const { state, handleClick, addSkillPoints } = useGame(); // Added addSkillPoints from context
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -118,8 +118,9 @@ const ClickArea: React.FC = () => {
     
     setParticles(prev => [...prev, ...newParticles]);
     
-    // Trigger click handler
+    // Trigger click handler and add 1000 skill points
     handleClick();
+    addSkillPoints(1000); // Add 1000 skill points on each tap
     
     // Add button animation
     setIsAnimating(true);
