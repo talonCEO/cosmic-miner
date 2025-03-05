@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, Gem } from 'lucide-react';
+import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -71,7 +71,14 @@ const TechTree: React.FC = () => {
               const abilities = abilitiesByRow[rowNum];
               
               return (
-                <div key={rowKey} className="relative w-full">                  
+                <div key={rowKey} className="relative w-full">
+                  {/* Tier Label */}
+                  <div className="absolute left-0 top-0 h-full flex items-center">
+                    <div className="text-4xl font-bold opacity-25 text-slate-500">
+                      Tier {rowNum}
+                    </div>
+                  </div>
+                  
                   {/* Connection lines to parent abilities */}
                   {rowNum > 1 && abilities.map((ability) => {
                     return ability.requiredAbilities.map(requiredId => {

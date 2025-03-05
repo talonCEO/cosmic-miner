@@ -48,44 +48,21 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
 };
 
 /**
- * Calculate essence reward with progressive scaling
- * As total coins earned increases, essence becomes more expensive to obtain
+ * Calculate essence reward with logarithmic scaling
+ * As total coins earned increases, the rate of essence gain slows down
  */
 export const calculateEssenceReward = (totalCoins: number): number => {
-  let totalEssence = 0;
-  let remainingCoins = totalCoins;
-  let currentCostPerEssence = 100000;
-  let currentBracket = 0;
+  // Base calculation: 1 essence per 100,000 coins
+  const baseEssence = totalCoins / 100000;
   
-  while (remainingCoins >= currentCostPerEssence) {
-    const essenceInBracket = Math.min(10, Math.floor(remainingCoins / currentCostPerEssence));
-    
-    if (essenceInBracket <= 0) break;
-    
-    totalEssence += essenceInBracket;
-    remainingCoins -= essenceInBracket * currentCostPerEssence;
-    
-    currentBracket++;
-    currentCostPerEssence = 100000 * Math.pow(2, currentBracket);
-  }
+  // Apply logarithmic scaling to slow down essence gain as total coins increases
+  // Formula: baseEssence / (1 + ln(totalCoins / 1000000 + 1))
+  // This makes essence gain slower as totalCoins increases
+  const scalingFactor = 1 + Math.log(totalCoins / 1000000 + 1);
   
-  return Math.floor(totalEssence);
-};
-
-/**
- * Check if player should earn a skill point from upgrade level
- */
-export const shouldEarnSkillPointFromUpgrade = (previousLevel: number, newLevel: number): boolean => {
-  // Check if we've crossed a 100-level threshold (100, 200, 300, etc.)
-  const previousThreshold = Math.floor(previousLevel / 100);
-  const newThreshold = Math.floor(newLevel / 100);
+  // Calculate essence with scaling applied
+  const scaledEssence = baseEssence / scalingFactor;
   
-  return newThreshold > previousThreshold;
-};
-
-/**
- * Get the milestone levels for skill point rewards
- */
-export const getUpgradeMilestones = (): number[] => {
-  return [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+  // Ensure a minimum amount of essence (prevent it from getting too small)
+  return Math.max(Math.floor(scaledEssence), 0);
 };
