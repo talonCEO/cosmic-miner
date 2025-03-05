@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
-import { formatNumber } from '@/utils/gameLogic';
 import { Sparkles } from 'lucide-react';
 
 interface AnimatedAsteroidProps {
@@ -48,13 +47,15 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   
   return (
     <div 
-      className="w-48 h-48 rounded-full flex items-center justify-center cursor-pointer transition-transform relative overflow-visible"
+      className="w-full h-full rounded-full flex items-center justify-center cursor-pointer transition-transform relative overflow-visible"
       onClick={onClick}
       style={{
         background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
         boxShadow: `0 0 20px 5px rgba(${getAsteroidColor() === '#FFC107' ? '255, 193, 7' : '186, 104, 200'}, 0.3)`,
         transform: `scale(${scale}) rotate(${rotation}deg)`,
         transition: 'transform 0.15s ease-out',
+        opacity: '1',
+        animation: 'pulse-opacity 3s infinite alternate',
       }}
     >
       {/* Asteroid texture overlay */}
@@ -92,13 +93,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
            style={{ bottom: '10%', right: '-5%', animationDuration: '4s' }}></div>
       <div className="absolute w-2 h-2 rounded-full bg-white/20 animate-ping"
            style={{ top: '30%', right: '-8%', animationDuration: '5s' }}></div>
-      
-      <div className="text-center z-10 p-4 rounded-full backdrop-blur-sm bg-opacity-20 bg-black">
-        <p className="text-3xl font-semibold mb-2 text-white text-shadow-glow">{formatNumber(state.coins)}</p>
-        <p className="text-sm text-white text-shadow-sm">
-          +{formatNumber(state.coinsPerClick)} per tap
-        </p>
-      </div>
     </div>
   );
 };

@@ -148,11 +148,26 @@ const ClickArea: React.FC = () => {
         ref={containerRef}
         className="relative w-64 h-64 mb-5 flex items-center justify-center select-none"
       >
-        {/* Animated asteroid */}
-        <AnimatedAsteroid 
+        <div 
+          className="absolute w-64 h-64 rounded-full cursor-pointer"
+          style={{
+            background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
+            animation: 'opacity-pulse 3s infinite alternate',
+            opacity: '0.2',
+          }}
           onClick={handleAreaClick}
-          isAnimating={isAnimating}
-        />
+        ></div>
+        
+        {/* Animated asteroid without overlayed text */}
+        <div 
+          className="w-64 h-64 rounded-full cursor-pointer"
+          onClick={handleAreaClick}
+        >
+          <AnimatedAsteroid 
+            onClick={handleAreaClick}
+            isAnimating={isAnimating}
+          />
+        </div>
         
         {/* Click effects rendering */}
         {clickEffects.map(effect => (

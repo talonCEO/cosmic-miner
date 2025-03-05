@@ -94,6 +94,24 @@
   }
 }
 
+@keyframes pulse-opacity {
+  0% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes opacity-pulse {
+  0% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
 .pulse-animation {
   animation: pulse-animation 2s infinite;
 }

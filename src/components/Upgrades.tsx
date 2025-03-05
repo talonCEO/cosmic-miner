@@ -143,7 +143,7 @@ const Upgrades: React.FC = () => {
                     </div>
                     
                     <div className="flex gap-1 justify-end mt-2">
-                      {[5, 10, 50, 100].map(quantity => (
+                      {[1, 10, 50, 100].map(quantity => (
                         <button
                           key={`${upgrade.id}-${quantity}`}
                           onClick={(e) => {
