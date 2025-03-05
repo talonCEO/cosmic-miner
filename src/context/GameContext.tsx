@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
+import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem } from 'lucide-react';
 
 // Achievement interface
 export interface Achievement {
@@ -18,7 +19,7 @@ export interface Ability {
   name: string;
   description: string;
   cost: number;
-  icon: string;
+  icon: React.ReactNode;
   unlocked: boolean;
   requiredAbilities: string[];
   row: number;
@@ -103,238 +104,98 @@ const createAchievements = (): Achievement[] => {
   return achievementsList;
 };
 
-// Updated upgrades with increased maxLevel
+// Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
   maxLevel: 1000,
-  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 10
+  cost: upgrade.baseCost * 1.5, // 50% increase in cost
+  baseCost: upgrade.baseCost * 1.5, // 50% increase in base cost
+  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 0.5 // 50% decrease to passive income
 }));
 
-// Initial abilities for the tech tree with improved effects
+// Initial abilities for the tech tree - redesigned with new tiers
 const initialAbilities: Ability[] = [
+  // Tier 1 (row 1) - Center ability (unlocked by default)
   {
     id: "ability-1",
-    name: "Element Focus",
-    description: "Increases base click power by 300%",
+    name: "Cosmic Awakening",
+    description: "Your first connection to the cosmic energy, unlocking your potential for growth.",
     cost: 0,
-    icon: "🔥",
+    icon: <Star className="text-yellow-300" size={24} />,
     unlocked: true,
     requiredAbilities: [],
-    row: 0,
+    row: 1,
     column: 2
   },
-  // Row 1
+  
+  // Tier 2 (row 2) - Three abilities requiring Tier 1
   {
     id: "ability-2",
-    name: "Hypersonic Mining",
-    description: "Increases mining speed by 150% and click power by 25%",
+    name: "Energy Conversion",
+    description: "Convert cosmic energy directly into mining power, increasing tap value by 50%.",
     cost: 3,
-    icon: "⛏️",
+    icon: <Zap className="text-blue-300" size={24} />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
-    row: 1,
-    column: 0
+    row: 2,
+    column: 1
   },
   {
     id: "ability-3",
-    name: "Quantum Energy Control",
-    description: "Increases all production by 75% and unlocks energy conversion",
+    name: "Neural Enhancement",
+    description: "Improve your mental capabilities, increasing all production by 25%.",
     cost: 3,
-    icon: "⚡",
+    icon: <Brain className="text-purple-300" size={24} />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
-    row: 1,
+    row: 2,
     column: 2
   },
   {
     id: "ability-4",
-    name: "Crystal Resonance",
-    description: "Increases essence gain by 100% and adds a chance to find rare elements",
+    name: "Protective Field",
+    description: "Generate a protective field that reduces upgrade costs by 10%.",
     cost: 3,
-    icon: "💎",
+    icon: <Shield className="text-green-300" size={24} />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
-    row: 1,
-    column: 4
+    row: 2,
+    column: 3
   },
-  // Row 2
+  
+  // Tier 3 (row 3) - Three abilities requiring Tier 2
   {
     id: "ability-5",
-    name: "Supernova Strike",
-    description: "Clicks have a 25% chance to hit with 5x power",
+    name: "Precision Strike",
+    description: "Your taps have a 10% chance to hit for 5x normal damage.",
     cost: 5,
-    icon: "💥",
+    icon: <TargetIcon className="text-red-300" size={24} />,
     unlocked: false,
     requiredAbilities: ["ability-2"],
-    row: 2,
-    column: 0
+    row: 3,
+    column: 1
   },
   {
     id: "ability-6",
-    name: "Warp Drive Automation",
-    description: "Auto-click rate increased by 100% and 10% chance for critical hits",
+    name: "Wealth Magnetism",
+    description: "Attract cosmic wealth, increasing all coin gains by 30%.",
     cost: 5,
-    icon: "⚙️",
+    icon: <HandCoins className="text-amber-300" size={24} />,
     unlocked: false,
-    requiredAbilities: ["ability-2", "ability-3"],
-    row: 2,
-    column: 1
+    requiredAbilities: ["ability-3"],
+    row: 3,
+    column: 2
   },
   {
     id: "ability-7",
-    name: "Elemental Fusion Mastery",
-    description: "Increases all elemental production by 200% and reduces cost scaling by 5%",
-    cost: 8,
-    icon: "🌀",
-    unlocked: false,
-    requiredAbilities: ["ability-3"],
-    row: 2,
-    column: 2
-  },
-  {
-    id: "ability-8",
-    name: "Essence Amplification",
-    description: "Gain 2% of potential essence without prestiging every minute",
+    name: "Achievement Hunter",
+    description: "Gain 1 skill point for each achievement you complete.",
     cost: 5,
-    icon: "✨",
-    unlocked: false,
-    requiredAbilities: ["ability-3", "ability-4"],
-    row: 2,
-    column: 3
-  },
-  {
-    id: "ability-9",
-    name: "Artifact Resonant Field",
-    description: "Increases all artifact effects by a stacking 50% and unlocks hidden powers",
-    cost: 5,
-    icon: "🏺",
+    icon: <Trophy className="text-yellow-300" size={24} />,
     unlocked: false,
     requiredAbilities: ["ability-4"],
-    row: 2,
-    column: 4
-  },
-  // Row 3
-  {
-    id: "ability-10",
-    name: "Asteroid Impact Protocol",
-    description: "Every 50 clicks triggers a cosmic impact with 1000% damage and AoE effect",
-    cost: 10,
-    icon: "☄️",
-    unlocked: false,
-    requiredAbilities: ["ability-5", "ability-6"],
-    row: 3,
-    column: 0
-  },
-  {
-    id: "ability-11",
-    name: "Molecular Transmutation",
-    description: "Merge resources to create 25% more output and 5% chance of element duplication",
-    cost: 10,
-    icon: "🔄",
-    unlocked: false,
-    requiredAbilities: ["ability-6", "ability-7"],
-    row: 3,
-    column: 1
-  },
-  {
-    id: "ability-12",
-    name: "Galactic Intelligence Network",
-    description: "Space-time manipulation reduces all costs by 30% and increases global speed by 20%",
-    cost: 15,
-    icon: "🌌",
-    unlocked: false,
-    requiredAbilities: ["ability-7"],
-    row: 3,
-    column: 2
-  },
-  {
-    id: "ability-13",
-    name: "Essence Cascade Generator",
-    description: "Permanently increases essence gain by 250% and adds 2 free skill points per prestige",
-    cost: 10,
-    icon: "🌊",
-    unlocked: false,
-    requiredAbilities: ["ability-7", "ability-8"],
     row: 3,
     column: 3
-  },
-  {
-    id: "ability-14",
-    name: "Cosmic Artifact Symphony",
-    description: "Activates hidden artifact synergies multiplying their effects by 2x when combined",
-    cost: 10,
-    icon: "🔮",
-    unlocked: false,
-    requiredAbilities: ["ability-8", "ability-9"],
-    row: 3,
-    column: 4
-  },
-  {
-    id: "ability-15",
-    name: "Interstellar Collection Matrix",
-    description: "Automatically collects all resource types at 15% rate and 5% chance for bonus resources",
-    cost: 10,
-    icon: "🌟",
-    unlocked: false,
-    requiredAbilities: ["ability-9"],
-    row: 3,
-    column: 5
-  },
-  // New Row 4 abilities
-  {
-    id: "ability-16",
-    name: "Dimensional Pocket Mining",
-    description: "Mining operations occur in parallel dimensions, doubling all click rewards",
-    cost: 15,
-    icon: "🌐",
-    unlocked: false,
-    requiredAbilities: ["ability-10", "ability-11"],
-    row: 4,
-    column: 0
-  },
-  {
-    id: "ability-17",
-    name: "Hypermatter Accelerator",
-    description: "Each upgrade level provides exponentially increasing bonuses (+5% per 10 levels)",
-    cost: 20,
-    icon: "⚛️",
-    unlocked: false,
-    requiredAbilities: ["ability-11", "ability-12"],
-    row: 4,
-    column: 1
-  },
-  {
-    id: "ability-18",
-    name: "Black Hole Synthesis",
-    description: "Creates a singularity that multiplies all income by 3x but consumes 5% per minute",
-    cost: 25,
-    icon: "🕳️",
-    unlocked: false,
-    requiredAbilities: ["ability-12"],
-    row: 4, 
-    column: 2
-  },
-  {
-    id: "ability-19",
-    name: "Essence Immortality",
-    description: "Retains 15% of your production capacity after prestige",
-    cost: 20,
-    icon: "♾️",
-    unlocked: false,
-    requiredAbilities: ["ability-13", "ability-14"],
-    row: 4,
-    column: 3
-  },
-  {
-    id: "ability-20",
-    name: "Universe in a Bottle",
-    description: "Compresses cosmic forces allowing all artifacts to be active simultaneously",
-    cost: 30,
-    icon: "🧪",
-    unlocked: false,
-    requiredAbilities: ["ability-14", "ability-15"],
-    row: 4,
-    column: 4
   }
 ];
 
@@ -370,18 +231,35 @@ const calculateBulkCost = (baseCost: number, currentLevel: number, quantity: num
   return totalCost;
 };
 
-// Helper function to calculate potential essence reward
+// Helper function to calculate potential essence reward with progressive scaling
 const calculateEssenceReward = (totalEarned: number, ownedArtifacts: string[]): number => {
-  let essenceMultiplier = 1;
+  let baseEssenceMultiplier = 1;
   
   if (ownedArtifacts.includes("artifact-3")) { // Element Scanner
-    essenceMultiplier += 1.25;
+    baseEssenceMultiplier += 1.25;
   }
   if (ownedArtifacts.includes("artifact-8")) { // Quantum Microscope
-    essenceMultiplier += 2.25;
+    baseEssenceMultiplier += 2.25;
   }
   
-  return Math.floor((totalEarned / 100000) * essenceMultiplier);
+  let totalEssence = 0;
+  let remainingCoins = totalEarned;
+  let currentCostPerEssence = 100000;
+  let currentBracket = 0;
+  
+  while (remainingCoins >= currentCostPerEssence) {
+    const essenceInBracket = Math.min(10, Math.floor(remainingCoins / currentCostPerEssence));
+    
+    if (essenceInBracket <= 0) break;
+    
+    totalEssence += essenceInBracket;
+    remainingCoins -= essenceInBracket * currentCostPerEssence;
+    
+    currentBracket++;
+    currentCostPerEssence = 100000 * Math.pow(2, currentBracket);
+  }
+  
+  return Math.floor(totalEssence * baseEssenceMultiplier);
 };
 
 // Helper function to calculate upgrade cost reduction from artifacts
@@ -546,9 +424,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'TICK': {
       let newState = { ...state };
       
-      // Process passive income (adjusted by multiplier)
+      // Process passive income (adjusted by multiplier and reduced by 50%)
       if (state.coinsPerSecond > 0) {
-        const passiveAmount = (state.coinsPerSecond / 10) * (state.incomeMultiplier || 1);
+        const passiveAmount = (state.coinsPerSecond / 10) * (state.incomeMultiplier || 1) * 0.5;
         newState = {
           ...newState,
           coins: newState.coins + passiveAmount,
@@ -556,10 +434,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
       
-      // Process auto tap if enabled
+      // Process auto tap if enabled (double tap income)
       if (newState.autoTap) {
         const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
-        const autoTapAmount = newState.coinsPerClick * (newState.incomeMultiplier || 1) * clickMultiplier;
+        // Double tap income
+        const baseClickValue = newState.coinsPerClick * 2.5;
+        const coinsPerSecondBonus = newState.coinsPerSecond * 0.3;
+        const autoTapAmount = (baseClickValue + coinsPerSecondBonus) * (newState.incomeMultiplier || 1) * clickMultiplier;
+        
         newState = {
           ...newState,
           coins: newState.coins + autoTapAmount,

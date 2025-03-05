@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Droplet } from 'lucide-react';
+import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -56,61 +56,42 @@ const TechTree: React.FC = () => {
       </DialogHeader>
       
       <ScrollArea className="h-[60vh]">
-        <div className="flex flex-col p-4">
+        <div className="flex flex-col p-4 relative">
           {/* Skill Points Display */}
           <div className="mb-6 flex items-center justify-center gap-2 bg-blue-600/20 p-3 rounded-lg border border-blue-500/30">
-            <Droplet className="text-blue-400" size={24} />
+            <Gem className="text-blue-400" size={24} />
             <span className="text-blue-300 font-semibold text-xl">{state.skillPoints} Skill Points</span>
           </div>
           
           {/* Tech Tree Structure */}
           <div className="relative flex flex-col gap-16 items-center pb-8">
             {/* Render abilities by row */}
-            {Object.keys(abilitiesByRow).map((rowKey) => {
+            {Object.keys(abilitiesByRow).sort((a, b) => Number(a) - Number(b)).map((rowKey) => {
               const rowNum = parseInt(rowKey);
               const abilities = abilitiesByRow[rowNum];
               
               return (
                 <div key={rowKey} className="relative w-full">
+                  {/* Tier Label */}
+                  <div className="absolute left-0 top-0 h-full flex items-center">
+                    <div className="text-4xl font-bold opacity-25 text-slate-500">
+                      Tier {rowNum}
+                    </div>
+                  </div>
+                  
                   {/* Connection lines to parent abilities */}
-                  {rowNum > 0 && abilities.map((ability) => {
+                  {rowNum > 1 && abilities.map((ability) => {
                     return ability.requiredAbilities.map(requiredId => {
                       const requiredAbility = state.abilities.find(a => a.id === requiredId);
                       if (!requiredAbility) return null;
                       
-                      const parentRow = requiredAbility.row;
-                      const parentAbilities = abilitiesByRow[parentRow];
-                      if (!parentAbilities) return null;
-                      
-                      const parentIndex = parentAbilities.findIndex(a => a.id === requiredId);
-                      const currentIndex = abilities.findIndex(a => a.id === ability.id);
-                      
-                      // Calculate position based on the grid layout
-                      const parentPosition = parentIndex % 3;
-                      const currentPosition = currentIndex % 3;
-                      
-                      const TOTAL_POSITIONS = 3; // Max abilities per row
-                      
-                      // Calculate percentage positions
-                      const parentPercent = (parentPosition * 100) / (TOTAL_POSITIONS - 1);
-                      const currentPercent = (currentPosition * 100) / (TOTAL_POSITIONS - 1);
-                      
-                      // Angle of the line
-                      const angle = Math.atan2(-16, (currentPercent - parentPercent) * 2);
-                      const length = Math.sqrt(16 * 16 + Math.pow((currentPercent - parentPercent) * 2, 2));
-                      
                       return (
                         <div 
                           key={`${ability.id}-${requiredId}`}
-                          className="absolute"
+                          className={`absolute left-1/2 top-0 w-0.5 h-16 -translate-y-full
+                            ${ability.unlocked ? 'bg-indigo-400' : 'bg-indigo-400/30'}`}
                           style={{
-                            left: `${16.7 + (currentPosition * 33.3)}%`,
-                            top: '-16px',
-                            width: '2px',
-                            height: '30px',
-                            background: ability.unlocked ? 'rgba(147, 197, 253, 0.8)' : 'rgba(147, 197, 253, 0.3)',
-                            transformOrigin: 'top center',
-                            transform: 'translateX(-50%)'
+                            transform: `translateX(${(ability.column - 1) * 220}px) translateY(-100%)`,
                           }}
                         >
                           <div 
@@ -119,8 +100,8 @@ const TechTree: React.FC = () => {
                               borderLeft: '6px solid transparent',
                               borderRight: '6px solid transparent',
                               borderTop: ability.unlocked 
-                                ? '6px solid rgba(147, 197, 253, 0.8)' 
-                                : '6px solid rgba(147, 197, 253, 0.3)',
+                                ? '6px solid rgba(129, 140, 248, 1)' 
+                                : '6px solid rgba(129, 140, 248, 0.3)',
                             }}
                           />
                         </div>
@@ -129,7 +110,7 @@ const TechTree: React.FC = () => {
                   })}
                   
                   {/* Ability boxes - 3 abilities per row maximum */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="flex justify-center gap-16 mt-10">
                     {abilities.map((ability) => (
                       <div 
                         key={ability.id}
@@ -147,7 +128,7 @@ const TechTree: React.FC = () => {
                                 : 'bg-gray-700 border-gray-500 cursor-not-allowed'
                             }`}
                         >
-                          <span className="text-2xl">{ability.icon}</span>
+                          {ability.icon}
                           {canUnlockAbility(ability) && (
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                               <span className="text-xs text-white">+</span>
@@ -155,7 +136,7 @@ const TechTree: React.FC = () => {
                           )}
                         </button>
                         <h3 className="text-sm mt-2 font-medium text-center">{ability.name}</h3>
-                        <p className="text-xs text-center text-slate-300 mt-1">{ability.description}</p>
+                        <p className="text-xs text-center text-slate-300 mt-1 max-w-48">{ability.description}</p>
                         <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold
                           ${ability.unlocked
                             ? 'bg-indigo-900/50 text-indigo-200'

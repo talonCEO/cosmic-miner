@@ -30,8 +30,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward, handlePrest
         <div className="border-t border-indigo-500/20 w-full my-2"></div>
         
         <p className="text-sm text-slate-400 mb-4 text-center">
-          Your potential essence reward is calculated based on your total coins earned this prestige. 
-          For every 100,000 coins earned, you receive 1 essence.
+          Essence reward scales based on your total coins earned. The more essence you earn, the more coins you'll need for additional essence.
         </p>
         
         <button

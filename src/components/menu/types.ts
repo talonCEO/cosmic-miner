@@ -7,7 +7,7 @@ export interface Ability {
   name: string;
   description: string;
   cost: number;
-  icon: string;
+  icon: React.ReactNode;
   unlocked: boolean;
   requiredAbilities: string[];
   row: number;
