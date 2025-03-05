@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
-import { Sparkles } from 'lucide-react';
+import { Mountain } from 'lucide-react';
 
 interface AnimatedAsteroidProps {
   onClick: () => void;
@@ -35,14 +35,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   
   // Get asteroid color based on current coins
   const getAsteroidColor = () => {
-    const coins = state.coins;
-    if (coins < 100) return "#81D4FA"; // Blue asteroid
-    if (coins < 1000) return "#424242"; // Carbon asteroid
-    if (coins < 10000) return "#90CAF9"; // Ice asteroid
-    if (coins < 100000) return "#CB8D73"; // Iron asteroid
-    if (coins < 1000000) return "#D87F46"; // Copper asteroid
-    if (coins >= 1000000) return "#FFC107"; // Gold asteroid
-    return "#BA68C8"; // Default: rare element (purple)
+    return "#8E9196"; // Grey asteroid
   };
   
   return (
@@ -50,8 +43,8 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       className="w-full h-full rounded-full flex items-center justify-center cursor-pointer transition-transform relative overflow-visible"
       onClick={onClick}
       style={{
-        background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
-        boxShadow: `0 0 20px 5px rgba(${getAsteroidColor() === '#FFC107' ? '255, 193, 7' : '186, 104, 200'}, 0.3)`,
+        background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #403E43)`,
+        boxShadow: `0 0 20px 5px rgba(142, 145, 150, 0.3)`,
         transform: `scale(${scale}) rotate(${rotation}deg)`,
         transition: 'transform 0.15s ease-out',
         opacity: '1',
@@ -81,9 +74,9 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
         style={{ top: '60%', left: '60%' }}
       ></div>
       
-      {/* Subtle sparkle effect */}
+      {/* Mountain icon instead of sparkles */}
       <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none animate-pulse">
-        <Sparkles className="w-36 h-36 text-white" />
+        <Mountain className="w-36 h-36 text-white" />
       </div>
       
       {/* Small floating particles around the asteroid */}

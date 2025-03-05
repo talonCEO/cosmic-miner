@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,19 +97,19 @@
 
 @keyframes pulse-opacity {
   0% {
-    opacity: 0.1;
+    opacity: 0.01;
   }
   100% {
-    opacity: 0.3;
+    opacity: 0.1;
   }
 }
 
 @keyframes opacity-pulse {
   0% {
-    opacity: 0.1;
+    opacity: 0.01;
   }
   100% {
-    opacity: 0.3;
+    opacity: 0.1;
   }
 }
 
@@ -141,3 +142,4 @@
 .perspective-800 {
   perspective: 800px;
 }
+

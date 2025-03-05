@@ -1,10 +1,10 @@
+
 import React, { useEffect, useRef } from 'react';
 import { GameProvider } from '@/context/GameContext';
 import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
-import PowerupsManager from '@/components/PowerupsManager';
 
 const SpaceBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,7 +18,8 @@ const SpaceBackground = () => {
     
     const particles: {x: number, y: number, size: number, speed: number, color: string, opacity: number}[] = [];
     
-    for (let i = 0; i < 50; i++) {
+    // More stars to ensure full coverage
+    for (let i = 0; i < 150; i++) {
       const size = Math.random() * 2 + 1;
       particles.push({
         x: Math.random() * canvas.width,
@@ -107,6 +108,20 @@ const SpaceBackground = () => {
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      
+      // Redraw stars on resize to ensure full coverage
+      particles.length = 0;
+      for (let i = 0; i < 150; i++) {
+        const size = Math.random() * 2 + 1;
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: size,
+          speed: Math.random() * 0.3 + 0.1,
+          color: '#ffffff',
+          opacity: Math.random() * 0.4 + 0.1
+        });
+      }
     };
     
     window.addEventListener('resize', handleResize);
@@ -141,8 +156,6 @@ const Index: React.FC = () => {
         <div className="relative z-10">
           <Header />
         </div>
-        
-        <PowerupsManager />
         
         <main className="flex-1 max-w-4xl mx-auto w-full px-4 relative z-10">
           <div className="py-4">

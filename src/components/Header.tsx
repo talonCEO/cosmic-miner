@@ -37,7 +37,7 @@ const Header: React.FC = () => {
   }, [state.achievements, toast]);
   
   return (
-    <header className="w-full py-4 px-6 backdrop-blur-sm bg-slate-900/50 border-b border-indigo-500/20 sticky top-0 z-30 mb-6 shadow-lg">
+    <header className="w-full py-4 px-6 sticky top-0 z-30 mb-6">
       <div className="flex flex-col max-w-4xl mx-auto">
         <div className="flex justify-between items-center w-full">
           <h1 className="text-xl font-medium flex items-center">

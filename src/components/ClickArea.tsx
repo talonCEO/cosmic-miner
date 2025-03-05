@@ -68,14 +68,8 @@ const ClickArea: React.FC = () => {
   
   // Get asteroid color based on current coins
   const getAsteroidColor = () => {
-    const coins = state.coins;
-    if (coins < 100) return "#81D4FA"; // Blue asteroid
-    if (coins < 1000) return "#424242"; // Carbon asteroid
-    if (coins < 10000) return "#90CAF9"; // Ice asteroid
-    if (coins < 100000) return "#CB8D73"; // Iron asteroid
-    if (coins < 1000000) return "#D87F46"; // Copper asteroid
-    if (coins >= 1000000) return "#FFC107"; // Gold asteroid
-    return "#BA68C8"; // Default: rare element (purple)
+    // Grey with gradient
+    return "#8E9196"; 
   };
   
   const handleAreaClick = () => {
@@ -153,7 +147,7 @@ const ClickArea: React.FC = () => {
           style={{
             background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
             animation: 'opacity-pulse 3s infinite alternate',
-            opacity: '0.2',
+            opacity: '0.01',
           }}
           onClick={handleAreaClick}
         ></div>
