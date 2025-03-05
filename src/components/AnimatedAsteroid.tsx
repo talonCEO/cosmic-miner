@@ -15,7 +15,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   // Slower rotation animation (15% of original speed)
   useEffect(() => {
     const originalSpeed = 0.001;
-    const rotationSpeed = originalSpeed * 0.15; // 15% of original speed
+    const rotationSpeed = originalSpeed * 0.01; // 15% of original speed
     let animationFrameId: number;
     let lastTime = 0;
     
