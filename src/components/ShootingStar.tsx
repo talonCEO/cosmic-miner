@@ -1,6 +1,5 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Mountain } from 'lucide-react';
 
 interface ShootingStarProps {
   onComplete: () => void;
@@ -11,7 +10,6 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
   const starRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [direction, setDirection] = useState({ x: 0, y: 0 });
-  const [rotation, setRotation] = useState(0);
   
   // Generate random starting position and direction on mount
   useEffect(() => {
@@ -72,15 +70,6 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
     return () => clearTimeout(timer);
   }, [onComplete]);
   
-  // Slowly rotate the star
-  useEffect(() => {
-    const rotationInterval = setInterval(() => {
-      setRotation(prev => (prev + 0.5) % 360);
-    }, 50);
-    
-    return () => clearInterval(rotationInterval);
-  }, []);
-  
   // Move the star according to its direction
   useEffect(() => {
     const moveInterval = setInterval(() => {
@@ -96,65 +85,34 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
   return (
     <div 
       ref={starRef}
-      className="absolute z-0 rounded-full"
+      className="absolute z-0"
       style={{
-        width: '25px',
-        height: '25px',
-        transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg)`,
+        transform: `translate(${position.x}px, ${position.y}px)`,
         transition: 'transform 0.05s linear',
-        background: `radial-gradient(circle at 30% 30%, #8E9196, #403E43)`,
-        boxShadow: `0 0 10px 2px rgba(142, 145, 150, 0.5)`,
-        opacity: '0.9',
-        animation: 'pulse-opacity 2s infinite alternate',
       }}
     >
-      {/* Star texture overlay */}
+      {/* Main star body */}
       <div 
-        className="absolute inset-0 rounded-full opacity-40"
+        className="w-4 h-4 rounded-full bg-white"
         style={{
-          backgroundImage: 'radial-gradient(circle at 70% 20%, transparent 0%, #00000070 80%)',
-          mixBlendMode: 'multiply',
+          boxShadow: '0 0 8px 2px rgba(255, 255, 255, 0.7)',
         }}
-      ></div>
+      />
       
-      {/* Small craters */}
-      <div 
-        className="absolute w-1 h-1 rounded-full bg-black opacity-20" 
-        style={{ top: '20%', left: '30%' }}
-      ></div>
-      <div 
-        className="absolute w-1 h-1 rounded-full bg-black opacity-20" 
-        style={{ top: '60%', left: '60%' }}
-      ></div>
-      
-      {/* Mountain icon */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-        <Mountain className="w-4 h-4 text-white" />
-      </div>
-      
-      {/* Trail effect */}
-      <div className="absolute w-20 h-2 bg-gradient-to-r from-white/50 to-transparent"
-           style={{ 
-             top: '45%', 
-             right: '90%',
-             transform: `rotate(${rotation}deg)` 
-           }}></div>
-           
-      {/* Particle effects */}
-      <div className="particle-container">
-        {[...Array(5)].map((_, i) => (
-          <div 
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-white/70 animate-twinkle"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              opacity: Math.random() * 0.5 + 0.3
-            }}
-          />
-        ))}
-      </div>
+      {/* Particle trail */}
+      {[...Array(8)].map((_, i) => (
+        <div 
+          key={i}
+          className="absolute w-2 h-2 rounded-full"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            left: -4 - (i * 4),
+            top: 1,
+            opacity: 0.8 - (i * 0.1),
+            transform: `scale(${1 - (i * 0.1)})`,
+          }}
+        />
+      ))}
     </div>
   );
 };
