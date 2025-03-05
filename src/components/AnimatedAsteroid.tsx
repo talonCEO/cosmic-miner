@@ -15,7 +15,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   
   // Stable rotation animation
   useEffect(() => {
-    const rotationSpeed = 0.1; // Very slow rotation speed
+    const rotationSpeed = 0.01; // Very slow rotation speed
     let animationFrameId: number;
     let lastTime = 0;
     
@@ -50,8 +50,8 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     if (!ctx) return;
     
     // Set canvas dimensions
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 350;
+    canvas.height = 350;
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -62,9 +62,9 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     ctx.rotate((rotation * Math.PI) / 180);
     
     // 1. Draw the basic asteroid shape - irregular polygon
-    const asteroidRadius = 100;
+    const asteroidRadius = 150;
     const points = 12; // Number of vertices
-    const variance = 0.3; // How jagged the asteroid is (0-1)
+    const variance = 0.2; // How jagged the asteroid is (0-1)
     
     ctx.beginPath();
     for (let i = 0; i < points; i++) {
@@ -106,7 +106,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     ctx.shadowOffsetY = 0;
     
     // 3. Add crater textures
-    const craterCount = 12;
+    const craterCount = 8;
     for (let i = 0; i < craterCount; i++) {
       // Random position within the asteroid
       const angle = Math.random() * Math.PI * 2;
