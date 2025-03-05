@@ -23,7 +23,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       if (!lastTime) lastTime = time;
       const deltaTime = time - lastTime;
       
-      if (deltaTime > 50) {
+      if (deltaTime > 250) {
         setRotation(prev => (prev + rotationSpeed) % 360);
         lastTime = time;
       }
