@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
@@ -147,7 +146,7 @@ const ClickArea: React.FC = () => {
           style={{
             background: `radial-gradient(circle at 30% 30%, ${getAsteroidColor()}, #1a1a2e)`,
             animation: 'opacity-pulse 3s infinite alternate',
-            opacity: '0.01',
+            opacity: '0.9',
           }}
           onClick={handleAreaClick}
         ></div>
