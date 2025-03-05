@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
-import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem } from 'lucide-react';
+import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 // Achievement interface
@@ -145,7 +145,7 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-1",
     name: "Cosmic Awakening",
-    description: "Your first connection to the cosmic energy, unlocking your potential for growth.",
+    description: "Your first connection to the cosmic energy, increasing tap value by 10% and passive income by 5%.",
     cost: 0,
     icon: <Star className="text-yellow-300" size={24} />,
     unlocked: true,
@@ -158,7 +158,7 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-2",
     name: "Energy Conversion",
-    description: "Convert cosmic energy directly into mining power, increasing tap value by 50%.",
+    description: "Convert cosmic energy into mining power, boosting tap value by 50% and critical hit chance by 5%.",
     cost: 3,
     icon: <Zap className="text-blue-300" size={24} />,
     unlocked: false,
@@ -169,7 +169,7 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-3",
     name: "Neural Enhancement",
-    description: "Improve your mental capabilities, increasing all production by 25%.",
+    description: "Improve mental capabilities, increasing all production by 35% and reducing upgrade costs by 5%.",
     cost: 3,
     icon: <Brain className="text-purple-300" size={24} />,
     unlocked: false,
@@ -180,7 +180,7 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-4",
     name: "Protective Field",
-    description: "Generate a protective field that reduces upgrade costs by 10%.",
+    description: "Generate a protective field reducing upgrade costs by 15% and increasing passive income by 20%.",
     cost: 3,
     icon: <Shield className="text-green-300" size={24} />,
     unlocked: false,
@@ -193,7 +193,7 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-5",
     name: "Precision Strike",
-    description: "Your taps have a 10% chance to hit for 5x normal damage.",
+    description: "Your taps have a 15% chance to hit for 5x normal damage and increase passive income by 10%.",
     cost: 5,
     icon: <TargetIcon className="text-red-300" size={24} />,
     unlocked: false,
@@ -204,7 +204,7 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-6",
     name: "Wealth Magnetism",
-    description: "Attract cosmic wealth, increasing all coin gains by 30%.",
+    description: "Attract cosmic wealth, increasing all coin gains by 40% and passive income by 25%.",
     cost: 5,
     icon: <HandCoins className="text-amber-300" size={24} />,
     unlocked: false,
@@ -215,12 +215,82 @@ const initialAbilities: Ability[] = [
   {
     id: "ability-7",
     name: "Achievement Hunter",
-    description: "Gain 1 skill point for each achievement you complete.",
+    description: "Gain 2 skill points for each achievement and increase global income multiplier by 15%.",
     cost: 5,
     icon: <Trophy className="text-yellow-300" size={24} />,
     unlocked: false,
     requiredAbilities: ["ability-4"],
     row: 3,
+    column: 3
+  },
+  
+  // Tier 4 (row 4) - Three abilities requiring Tier 3
+  {
+    id: "ability-8",
+    name: "Lightning Strikes",
+    description: "Harness cosmic lightning, boosting tap value by 80% and passive income by 50%.",
+    cost: 8,
+    icon: <CloudLightning className="text-blue-300" size={24} />,
+    unlocked: false,
+    requiredAbilities: ["ability-5"],
+    row: 4,
+    column: 1
+  },
+  {
+    id: "ability-9",
+    name: "Stellar Efficiency",
+    description: "Optimize resource usage, reducing all upgrade costs by 25% and boosting passive income by 60%.",
+    cost: 8,
+    icon: <Gauge className="text-green-300" size={24} />,
+    unlocked: false,
+    requiredAbilities: ["ability-6"],
+    row: 4,
+    column: 2
+  },
+  {
+    id: "ability-10",
+    name: "Cosmic Navigator",
+    description: "Map the galaxy, increasing global income multiplier by 50% and critical hit chance by 15%.",
+    cost: 8,
+    icon: <Compass className="text-purple-300" size={24} />,
+    unlocked: false,
+    requiredAbilities: ["ability-7"],
+    row: 4,
+    column: 3
+  },
+  
+  // Tier 5 (row 5) - Three abilities requiring Tier 4
+  {
+    id: "ability-11",
+    name: "Supernova Burst",
+    description: "Channel explosive cosmic energy, boosting tap value by 120% and all coin gains by 75%.",
+    cost: 12,
+    icon: <Sparkles className="text-yellow-300" size={24} />,
+    unlocked: false,
+    requiredAbilities: ["ability-8"],
+    row: 5,
+    column: 1
+  },
+  {
+    id: "ability-12",
+    name: "Quantum Mastery",
+    description: "Master quantum mechanics, reducing all upgrade costs by 40% and doubling passive income.",
+    cost: 12,
+    icon: <Rocket className="text-blue-300" size={24} />,
+    unlocked: false,
+    requiredAbilities: ["ability-9"],
+    row: 5,
+    column: 2
+  },
+  {
+    id: "ability-13",
+    name: "Cosmic Dominion",
+    description: "Achieve dominion over cosmic forces, increasing global income multiplier by 100% and all production by 80%.",
+    cost: 12,
+    icon: <Gem className="text-purple-300" size={24} />,
+    unlocked: false,
+    requiredAbilities: ["ability-10"],
+    row: 5,
     column: 3
   }
 ];

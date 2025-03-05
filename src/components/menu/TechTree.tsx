@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem } from 'lucide-react';
+import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Sparkles, Rocket, Gauge, Compass, Flower, Flame } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Ability } from './types';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -58,12 +58,17 @@ const TechTree: React.FC = () => {
       <ScrollArea className="h-[60vh]">
         <div className="flex flex-col p-4 relative">
           {/* Skill Points Display */}
-          <div className="mb-6 flex items-center justify-center gap-2 bg-blue-600/20 p-3 rounded-lg border border-blue-500/30">
-            <Gem className="text-blue-400" size={24} />
-            <span className="text-blue-300 font-semibold text-xl">{state.skillPoints} Skill Points</span>
+          <div className="mb-6 flex flex-col items-center justify-center gap-2 bg-blue-600/20 p-3 rounded-lg border border-blue-500/30">
+            <div className="flex items-center gap-2">
+              <Gem className="text-blue-400" size={24} />
+              <span className="text-blue-300 font-semibold text-xl">{state.skillPoints} Skill Points</span>
+            </div>
+            <p className="text-xs text-blue-300 mt-1 text-center">
+              Skill Points are earned from unlocking achievements, hiring managers, discovering artifacts, and reaching upgrade milestones.
+            </p>
           </div>
           
-          {/* Tech Tree Structure - No arrows at all */}
+          {/* Tech Tree Structure */}
           <div className="relative flex flex-col gap-16 items-center pb-8">
             {/* Render abilities by row */}
             {Object.keys(abilitiesByRow).sort((a, b) => Number(a) - Number(b)).map((rowKey) => {
