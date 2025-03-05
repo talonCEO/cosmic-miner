@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { motion, useAnimation, useMotionValue, useTransform, animate } from 'framer-motion';
@@ -144,7 +143,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   // Fragment ejection state
   const [fragmentTrigger, setFragmentTrigger] = useState(0);
   
-  // Crater states - fixed to use proper React patterns
+  // Crater states
   const [craters, setCraters] = useState<CraterType[]>([]);
   
   // Initialize craters
@@ -156,7 +155,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     for (let i = 0; i < craterCount; i++) {
       let attempts = 0;
       let validCrater = false;
-      let newCrater: CraterType;
+      let newCrater: CraterType = { x: 0, y: 0, size: 0 };
       
       while (!validCrater && attempts < 50) {
         const angle = Math.random() * Math.PI * 2;
