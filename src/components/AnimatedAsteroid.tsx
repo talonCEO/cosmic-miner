@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { motion, useAnimation, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useInterval } from '@/hooks/useInterval';
@@ -183,6 +183,13 @@ const Spark: React.FC<{
   );
 };
 
+// Define a CraterType interface
+interface CraterType {
+  x: number;
+  y: number;
+  size: number;
+}
+
 const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimating }) => {
   const { state } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -209,16 +216,26 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   const glowScale = useTransform(glowRadius, radius => radius);
   
   // Fragment ejection state
-  const [fragmentTrigger, setFragmentTrigger] = React.useState(0);
-  const [sparkTrigger, setSparkTrigger] = React.useState(0);
+  const [fragmentTrigger, setFragmentTrigger] = useState(0);
+  const [sparkTrigger, setSparkTrigger] = useState(0);
   
-  // Crater states
-  const craters = useRef<Array<{
-    x: number;
-    y: number;
-    size: number;
-    animation: ReturnType<typeof useAnimation>;
-  }>>([]);
+  // Crater states - fixed to not use hooks outside component body
+  const craters = useRef<CraterType[]>([]);
+  const [activeCrater, setActiveCrater] = useState<number | null>(null);
+  
+  // Initialize craters
+  useEffect(() => {
+    const craterCount = 10;
+    craters.current = Array.from({ length: craterCount }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * BASE_RADIUS * 0.7;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
+      const size = Math.random() * 20 + 10;
+      
+      return { x, y, size };
+    });
+  }, []);
   
   // Generate asteroid path points
   const generateAsteroidPoints = () => {
@@ -244,7 +261,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   
   // Start all the animations
   useEffect(() => {
-    // Slow continuous rotation
+    // Slow continuous rotation - MUCH slower rotation (360 degrees over 3 minutes)
     animate(rotation, 360, {
       duration: 180, // 3 minutes for a full rotation
       repeat: Infinity,
@@ -322,23 +339,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     shadowAnimation();
     const shadowInterval = setInterval(shadowAnimation, 7000);
     
-    // Initialize craters
-    const craterCount = 10;
-    craters.current = Array.from({ length: craterCount }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * BASE_RADIUS * 0.7;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance;
-      const size = Math.random() * 20 + 10;
-      
-      return {
-        x,
-        y,
-        size,
-        animation: useAnimation(),
-      };
-    });
-    
     // Recurring fragments ejection
     const fragmentInterval = setInterval(() => {
       setFragmentTrigger(prev => prev + 1);
@@ -360,20 +360,14 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   
   // Animate craters randomly
   useInterval(() => {
-    const randomCrater = craters.current[
-      Math.floor(Math.random() * craters.current.length)
-    ];
-    
-    if (randomCrater?.animation) {
-      randomCrater.animation.start({
-        scale: [1, 1.3, 1],
-        opacity: [0.8, 1, 0.8],
-        transition: {
-          duration: 0.8,
-          ease: "easeInOut",
-          times: [0, 0.5, 1],
-        },
-      });
+    if (craters.current.length > 0) {
+      const randomIndex = Math.floor(Math.random() * craters.current.length);
+      setActiveCrater(randomIndex);
+      
+      // Reset after animation
+      setTimeout(() => {
+        setActiveCrater(null);
+      }, 800);
     }
   }, 2000);
   
@@ -440,11 +434,14 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     ctx.shadowOffsetY = 0;
     
     // Draw craters
-    craters.current.forEach(crater => {
+    craters.current.forEach((crater, index) => {
+      const isActive = index === activeCrater;
+      const scale = isActive ? 1.3 : 1;
+      
       // Draw darker crater base
       ctx.beginPath();
-      ctx.arc(crater.x, crater.y, crater.size, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(30, 30, 30, 0.9)';
+      ctx.arc(crater.x, crater.y, crater.size * scale, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? 'rgba(40, 40, 40, 0.9)' : 'rgba(30, 30, 30, 0.9)';
       ctx.fill();
       
       // Draw crater highlight
@@ -452,17 +449,17 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       ctx.arc(
         crater.x - crater.size * 0.3,
         crater.y - crater.size * 0.3,
-        crater.size * 0.7,
+        crater.size * 0.7 * scale,
         0,
         Math.PI * 2
       );
-      ctx.fillStyle = 'rgba(120, 120, 120, 0.4)';
+      ctx.fillStyle = isActive ? 'rgba(140, 140, 140, 0.4)' : 'rgba(120, 120, 120, 0.4)';
       ctx.fill();
       
       // Draw crater inner shadow
       ctx.beginPath();
-      ctx.arc(crater.x, crater.y, crater.size * 0.8, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.arc(crater.x, crater.y, crater.size * 0.8 * scale, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.2)';
       ctx.fill();
     });
     
@@ -480,7 +477,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     }
     
     ctx.restore();
-  }, [shadowOffsetX, shadowOffsetY]);
+  }, [shadowOffsetX, shadowOffsetY, activeCrater]);
   
   // Handle click animation
   useEffect(() => {
