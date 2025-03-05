@@ -72,13 +72,6 @@ const TechTree: React.FC = () => {
               
               return (
                 <div key={rowKey} className="relative w-full">
-                  {/* Tier Label */}
-                  <div className="absolute left-0 top-0 h-full flex items-center">
-                    <div className="text-4xl font-bold opacity-25 text-slate-500">
-                      Tier {rowNum}
-                    </div>
-                  </div>
-                  
                   {/* Connection lines to parent abilities */}
                   {rowNum > 1 && abilities.map((ability) => {
                     return ability.requiredAbilities.map(requiredId => {
