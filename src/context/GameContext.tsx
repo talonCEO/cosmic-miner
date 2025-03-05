@@ -456,12 +456,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
       const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
-      const baseClickAmount = state.coinsPerClick * (state.incomeMultiplier || 1) * clickMultiplier;
+      
+      // Base click value is 2.5x higher and includes 30% of coins per second
+      const baseClickValue = state.coinsPerClick * 2.5; 
+      const coinsPerSecondBonus = state.coinsPerSecond * 0.3;
+      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * (state.incomeMultiplier || 1) * clickMultiplier;
+      
       return {
         ...state,
-        coins: state.coins + baseClickAmount,
+        coins: state.coins + totalClickAmount,
         totalClicks: state.totalClicks + 1,
-        totalEarned: state.totalEarned + baseClickAmount
+        totalEarned: state.totalEarned + totalClickAmount
       };
     }
     case 'ADD_COINS':

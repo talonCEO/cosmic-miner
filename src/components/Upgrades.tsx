@@ -74,6 +74,14 @@ const Upgrades: React.FC = () => {
     }
   };
 
+  // Handle clicking the upgrade card to buy 1 of that upgrade
+  const handleUpgradeClick = (upgradeId: string) => {
+    const upgrade = state.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade || upgrade.level >= upgrade.maxLevel || state.coins < upgrade.cost) return;
+    
+    handleBulkPurchase(upgradeId, 1);
+  };
+
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <div className="flex justify-between items-center mb-4">
@@ -99,8 +107,11 @@ const Upgrades: React.FC = () => {
           return (
             <div 
               key={upgrade.id}
-              className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isMaxLevel ? 'border-slate-600' : canAfford ? 'border-indigo-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
-                ${!isMaxLevel ? (canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20' : '') : ''}`}
+              onClick={() => handleUpgradeClick(upgrade.id)}
+              className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border 
+                ${isMaxLevel ? 'border-slate-600' : canAfford ? 'border-indigo-500/40' : 'border-slate-700/40'} 
+                p-4 flex items-start gap-4 transition-all
+                ${!isMaxLevel ? (canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20 cursor-pointer' : '') : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">

@@ -20,12 +20,12 @@ const createElementUpgrade = (
   id: `element-${id}`,
   name: `${element} (${symbol})`,
   description,
-  cost: baseCost,
-  baseCost,
+  cost: baseCost * 1.5, // 50% increase in cost
+  baseCost: baseCost * 1.5, // 50% increase in base cost
   level: 0,
-  maxLevel: 1000, // Changed from 10 to 1000
+  maxLevel: 1000,
   coinsPerClickBonus: clickValue,
-  coinsPerSecondBonus: passiveValue * 2.5, // Reduced by 75% (was * 10)
+  coinsPerSecondBonus: passiveValue * 2.5,
   multiplierBonus: 0,
   icon,
   unlocked: id === 1, // Only the first element is unlocked by default

@@ -46,28 +46,6 @@ const TechTree: React.FC = () => {
     });
   };
 
-  // Get the position of an ability in its row
-  const getAbilityPosition = (ability: Ability, rowAbilities: Ability[]): number => {
-    const sortedAbilities = [...rowAbilities].sort((a, b) => a.column - b.column);
-    return sortedAbilities.findIndex(a => a.id === ability.id);
-  };
-
-  // Calculate arrow positions
-  const getArrowPosition = (sourceAbility: Ability, targetAbility: Ability, sourceRowAbilities: Ability[], targetRowAbilities: Ability[]): { left: string } => {
-    const sourcePos = getAbilityPosition(sourceAbility, sourceRowAbilities);
-    const targetPos = getAbilityPosition(targetAbility, targetRowAbilities);
-    
-    const sourceCount = sourceRowAbilities.length;
-    const targetCount = targetRowAbilities.length;
-    
-    // Calculate percentage positions
-    const sourcePercent = sourceCount === 1 ? 50 : (sourcePos * 100) / (sourceCount - 1);
-    const targetPercent = targetCount === 1 ? 50 : (targetPos * 100) / (targetCount - 1);
-    
-    // Use the target ability's position for the arrow
-    return { left: `${targetPercent}%` };
-  };
-
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -86,38 +64,52 @@ const TechTree: React.FC = () => {
           </div>
           
           {/* Tech Tree Structure */}
-          <div className="relative flex flex-col gap-12 items-center pb-8">
+          <div className="relative flex flex-col gap-16 items-center pb-8">
             {/* Render abilities by row */}
-            {Object.keys(abilitiesByRow).map((rowKey, rowIndex) => {
+            {Object.keys(abilitiesByRow).map((rowKey) => {
               const rowNum = parseInt(rowKey);
               const abilities = abilitiesByRow[rowNum];
-              const prevRowAbilities = rowNum > 0 ? abilitiesByRow[rowNum - 1] || [] : [];
               
               return (
-                <div key={rowKey} className="flex justify-around gap-8 relative w-full">
+                <div key={rowKey} className="relative w-full">
                   {/* Connection lines to parent abilities */}
                   {rowNum > 0 && abilities.map((ability) => {
                     return ability.requiredAbilities.map(requiredId => {
                       const requiredAbility = state.abilities.find(a => a.id === requiredId);
-                      if (!requiredAbility || !prevRowAbilities.includes(requiredAbility)) return null;
+                      if (!requiredAbility) return null;
                       
-                      const arrowPosition = getArrowPosition(
-                        requiredAbility, 
-                        ability, 
-                        prevRowAbilities, 
-                        abilities
-                      );
+                      const parentRow = requiredAbility.row;
+                      const parentAbilities = abilitiesByRow[parentRow];
+                      if (!parentAbilities) return null;
+                      
+                      const parentIndex = parentAbilities.findIndex(a => a.id === requiredId);
+                      const currentIndex = abilities.findIndex(a => a.id === ability.id);
+                      
+                      // Calculate position based on the grid layout
+                      const parentPosition = parentIndex % 3;
+                      const currentPosition = currentIndex % 3;
+                      
+                      const TOTAL_POSITIONS = 3; // Max abilities per row
+                      
+                      // Calculate percentage positions
+                      const parentPercent = (parentPosition * 100) / (TOTAL_POSITIONS - 1);
+                      const currentPercent = (currentPosition * 100) / (TOTAL_POSITIONS - 1);
+                      
+                      // Angle of the line
+                      const angle = Math.atan2(-16, (currentPercent - parentPercent) * 2);
+                      const length = Math.sqrt(16 * 16 + Math.pow((currentPercent - parentPercent) * 2, 2));
                       
                       return (
                         <div 
                           key={`${ability.id}-${requiredId}`}
                           className="absolute"
                           style={{
-                            left: arrowPosition.left,
-                            top: '-32px',
-                            height: '30px',
+                            left: `${16.7 + (currentPosition * 33.3)}%`,
+                            top: '-16px',
                             width: '2px',
+                            height: '30px',
                             background: ability.unlocked ? 'rgba(147, 197, 253, 0.8)' : 'rgba(147, 197, 253, 0.3)',
+                            transformOrigin: 'top center',
                             transform: 'translateX(-50%)'
                           }}
                         >
@@ -136,51 +128,47 @@ const TechTree: React.FC = () => {
                     });
                   })}
                   
-                  {/* Ability boxes */}
-                  {abilities.map((ability) => (
-                    <div 
-                      key={ability.id}
-                      style={{
-                        opacity: ability.unlocked ? 1 : 0.5,
-                        flex: '1',
-                        maxWidth: '180px',
-                        position: 'relative',
-                        zIndex: 1 // Ensure abilities appear above arrows
-                      }}
-                      className="flex flex-col items-center"
-                    >
-                      <button
-                        onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
-                        disabled={!canUnlockAbility(ability)}
-                        className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative
-                          ${ability.unlocked 
-                            ? 'bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20' 
+                  {/* Ability boxes - 3 abilities per row maximum */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {abilities.map((ability) => (
+                      <div 
+                        key={ability.id}
+                        style={{ opacity: ability.unlocked ? 1 : 0.5 }}
+                        className="flex flex-col items-center"
+                      >
+                        <button
+                          onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
+                          disabled={!canUnlockAbility(ability)}
+                          className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative
+                            ${ability.unlocked 
+                              ? 'bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20' 
+                              : canUnlockAbility(ability)
+                                ? 'bg-green-700 border-green-400 shadow-lg shadow-green-500/20 cursor-pointer animate-pulse'
+                                : 'bg-gray-700 border-gray-500 cursor-not-allowed'
+                            }`}
+                        >
+                          <span className="text-2xl">{ability.icon}</span>
+                          {canUnlockAbility(ability) && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                              <span className="text-xs text-white">+</span>
+                            </div>
+                          )}
+                        </button>
+                        <h3 className="text-sm mt-2 font-medium text-center">{ability.name}</h3>
+                        <p className="text-xs text-center text-slate-300 mt-1">{ability.description}</p>
+                        <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold
+                          ${ability.unlocked
+                            ? 'bg-indigo-900/50 text-indigo-200'
                             : canUnlockAbility(ability)
-                              ? 'bg-green-700 border-green-400 shadow-lg shadow-green-500/20 cursor-pointer animate-pulse'
-                              : 'bg-gray-700 border-gray-500 cursor-not-allowed'
+                              ? 'bg-green-800/50 text-green-200'
+                              : 'bg-gray-800/50 text-gray-300'
                           }`}
-                      >
-                        <span className="text-2xl">{ability.icon}</span>
-                        {canUnlockAbility(ability) && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                            <span className="text-xs text-white">+</span>
-                          </div>
-                        )}
-                      </button>
-                      <h3 className="text-sm mt-2 font-medium text-center">{ability.name}</h3>
-                      <p className="text-xs text-center text-slate-300 mt-1">{ability.description}</p>
-                      <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold
-                        ${ability.unlocked
-                          ? 'bg-indigo-900/50 text-indigo-200'
-                          : canUnlockAbility(ability)
-                            ? 'bg-green-800/50 text-green-200'
-                            : 'bg-gray-800/50 text-gray-300'
-                        }`}
-                      >
-                        {ability.unlocked ? 'Unlocked' : `${ability.cost} SP`}
+                        >
+                          {ability.unlocked ? 'Unlocked' : `${ability.cost} SP`}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               );
             })}

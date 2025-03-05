@@ -27,7 +27,7 @@ export const artifacts: Artifact[] = [
     description: "Advanced computational device using quantum mechanics",
     bonus: "Increases all production by 10%",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=computer",
-    cost: 25,
+    cost: 1,
     effect: {
       type: "production",
       value: 0.1
@@ -39,7 +39,7 @@ export const artifacts: Artifact[] = [
     description: "Propulsion system for interstellar mining",
     bonus: "1.5x tap multiplier",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=rocket",
-    cost: 50,
+    cost: 2,
     effect: {
       type: "tap",
       value: 1.5
@@ -51,7 +51,7 @@ export const artifacts: Artifact[] = [
     description: "High precision detection of rare elements",
     bonus: "125% more essence from prestiging",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=scanner",
-    cost: 100,
+    cost: 4,
     effect: {
       type: "essence",
       value: 1.25
@@ -63,7 +63,7 @@ export const artifacts: Artifact[] = [
     description: "Network of deep space observation instruments",
     bonus: "Reduces upgrade costs by 10%",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=telescope",
-    cost: 200,
+    cost: 8,
     effect: {
       type: "cost",
       value: 0.1
@@ -75,7 +75,7 @@ export const artifacts: Artifact[] = [
     description: "Focus crystal that amplifies mining energy",
     bonus: "Start with 100,000 coins after each prestige",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gem",
-    cost: 400,
+    cost: 16,
     effect: {
       type: "startingCoins",
       value: 100000
@@ -87,7 +87,7 @@ export const artifacts: Artifact[] = [
     description: "Channels cosmic energy into a powerful beam",
     bonus: "Increases all production by 25%",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=wand",
-    cost: 800,
+    cost: 32,
     effect: {
       type: "production",
       value: 0.25
@@ -99,7 +99,7 @@ export const artifacts: Artifact[] = [
     description: "Contains rare element transmutation formulae",
     bonus: "2.5x tap multiplier",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=flask",
-    cost: 1600,
+    cost: 64,
     effect: {
       type: "tap",
       value: 2.5
@@ -111,7 +111,7 @@ export const artifacts: Artifact[] = [
     description: "Views matter at the subatomic level",
     bonus: "225% more essence from prestiging",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=microscope",
-    cost: 3200,
+    cost: 128,
     effect: {
       type: "essence",
       value: 2.25
@@ -123,7 +123,7 @@ export const artifacts: Artifact[] = [
     description: "Orbital array of mining assistance devices",
     bonus: "Reduces upgrade costs by 25%",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=satellite",
-    cost: 6400,
+    cost: 256,
     effect: {
       type: "cost",
       value: 0.25
@@ -135,7 +135,7 @@ export const artifacts: Artifact[] = [
     description: "The heart of an extinct alien civilization",
     bonus: "Start with 1,000,000 coins after each prestige",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=core",
-    cost: 12800,
+    cost: 512,
     effect: {
       type: "startingCoins",
       value: 1000000
