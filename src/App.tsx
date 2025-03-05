@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { GameProvider } from "@/context/GameContext";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,9 @@ const AnimatedRoutes = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Index />
+              <GameProvider>
+                <Index />
+              </GameProvider>
             </motion.div>
           } 
         />

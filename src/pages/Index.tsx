@@ -1,5 +1,5 @@
+
 import React, { useEffect, useRef } from 'react';
-import { GameProvider } from '@/context/GameContext';
 import Header from '@/components/Header';
 import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
@@ -98,31 +98,29 @@ const SpaceBackground = () => {
 
 const Index: React.FC = () => {
   return (
-    <GameProvider>
-      <div className="min-h-screen flex flex-col overflow-hidden relative">
-        <SpaceBackground />
-        
-        <div className="relative z-10">
-          <Header />
-        </div>
-        
-        <main className="flex-1 max-w-4xl mx-auto w-full px-4 relative z-10">
-          <div className="py-4">
-            <ClickArea />
-            <div className="backdrop-blur-sm bg-opacity-20 bg-slate-900 rounded-xl p-4 shadow-2xl border border-indigo-500/20">
-              <GameTabs />
-            </div>
-          </div>
-        </main>
-        
-        <footer className="py-4 text-center text-sm text-slate-300 relative z-10 backdrop-blur-sm">
-          <p>Mine elements from asteroids across the galaxy! Discover all 50 rare elements!</p>
-          <p className="text-xs mt-1">Auto-buy: purchases the cheapest available upgrade automatically</p>
-        </footer>
-        
-        <Toaster />
+    <div className="min-h-screen flex flex-col overflow-hidden relative">
+      <SpaceBackground />
+      
+      <div className="relative z-10">
+        <Header />
       </div>
-    </GameProvider>
+      
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 relative z-10">
+        <div className="py-4">
+          <ClickArea />
+          <div className="backdrop-blur-sm bg-opacity-20 bg-slate-900 rounded-xl p-4 shadow-2xl border border-indigo-500/20">
+            <GameTabs />
+          </div>
+        </div>
+      </main>
+      
+      <footer className="py-4 text-center text-sm text-slate-300 relative z-10 backdrop-blur-sm">
+        <p>Mine elements from asteroids across the galaxy! Discover all 50 rare elements!</p>
+        <p className="text-xs mt-1">Auto-buy: purchases the cheapest available upgrade automatically</p>
+      </footer>
+      
+      <Toaster />
+    </div>
   );
 };
 
