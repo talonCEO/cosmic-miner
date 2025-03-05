@@ -55,8 +55,11 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
     
     // Normalize direction vector
     const magnitude = Math.sqrt(dx * dx + dy * dy);
-    dx = dx / magnitude * 5; // Scale speed
-    dy = dy / magnitude * 5;
+    
+    // Apply random velocity reduction (20-33% of current value)
+    const velocityFactor = 0.2 + (Math.random() * 0.13); // Between 20% and 33%
+    dx = (dx / magnitude) * velocityFactor * 5; // Scale speed
+    dy = (dy / magnitude) * velocityFactor * 5;
     
     setPosition({ x, y });
     setDirection({ x: dx, y: dy });
@@ -130,13 +133,28 @@ const ShootingStar: React.FC<ShootingStarProps> = ({ onComplete, id }) => {
       </div>
       
       {/* Trail effect */}
-      <div className="absolute w-20 h-2 bg-gradient-to-r from-white/50 to-transparent rotate-180"
+      <div className="absolute w-20 h-2 bg-gradient-to-r from-white/50 to-transparent"
            style={{ 
              top: '45%', 
-             right: '90%', 
-             transformOrigin: 'right center',
+             right: '90%',
              transform: `rotate(${rotation}deg)` 
            }}></div>
+           
+      {/* Particle effects */}
+      <div className="particle-container">
+        {[...Array(5)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-white/70 animate-twinkle"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              opacity: Math.random() * 0.5 + 0.3
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };

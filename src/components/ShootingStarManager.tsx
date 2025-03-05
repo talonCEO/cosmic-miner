@@ -9,20 +9,20 @@ const ShootingStarManager: React.FC = () => {
   
   // Manage star spawning
   useEffect(() => {
-    // Try to spawn a new star every second if conditions are met
+    // Try to spawn a new star every 333ms (3x faster than 1 second) if conditions are met
     const spawnInterval = setInterval(() => {
-      if (canSpawn && stars.length < 2) {
+      if (canSpawn && stars.length < 4) { // Increased maximum to 4
         // Add a new star
         setStars(prev => [...prev, { id: nextId, timestamp: Date.now() }]);
         setNextId(prev => prev + 1);
         
-        // Set cooldown between spawns
+        // Set cooldown between spawns - reduced from 10s to 3.33s to triple the spawn speed
         setCanSpawn(false);
         setTimeout(() => {
           setCanSpawn(true);
-        }, 10000); // 10 second delay between spawns
+        }, 3333); // ~3.3 second delay between spawns (10000 / 3)
       }
-    }, 1000);
+    }, 333); // 3x faster than 1 second
     
     return () => clearInterval(spawnInterval);
   }, [canSpawn, stars, nextId]);
