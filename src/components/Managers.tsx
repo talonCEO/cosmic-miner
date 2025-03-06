@@ -6,6 +6,18 @@ import { managers } from '@/utils/managersData';
 import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
 
+/**
+ * Managers Component
+ * 
+ * Displays all managers available in the game, both owned and unowned.
+ * For owned managers, displays their perks that can be unlocked with skill points.
+ * 
+ * Managers provide special bonuses that affect gameplay in various ways:
+ * - Element production boosts
+ * - Passive income increases
+ * - Automation of specific game mechanics
+ * - Cost reductions
+ */
 const Managers: React.FC = () => {
   const { state, unlockPerk } = useGame();
   
@@ -22,12 +34,8 @@ const Managers: React.FC = () => {
               key={manager.id}
               className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-indigo-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
                 ${!isOwned ? 'opacity-50' : 'hover:shadow-md hover:shadow-indigo-500/20'}`}
-              style={{ 
-                animationDelay: `${index * 0.1}s`,
-                transform: `translateY(${isOwned ? '0' : '0'}px)`,
-                transition: 'all 0.3s ease'
-              }}
             >
+              {/* Manager Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
                 <AvatarImage src={manager.avatar} alt={manager.name} />
                 <AvatarFallback className="bg-indigo-900/50 text-indigo-300 rounded-xl">
@@ -35,6 +43,7 @@ const Managers: React.FC = () => {
                 </AvatarFallback>
               </Avatar>
               
+              {/* Manager Info */}
               <div className="flex-1">
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-slate-100">{manager.name}</h3>
@@ -45,6 +54,7 @@ const Managers: React.FC = () => {
                 </p>
               </div>
               
+              {/* Perk Buttons - Only shown for owned managers */}
               {isOwned && manager.perks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {manager.perks.map(perk => (

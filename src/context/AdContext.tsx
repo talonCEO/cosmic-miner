@@ -91,12 +91,14 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [adNotificationStartTime, setAdNotificationStartTime] = useState(0);
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   
+  // Configuration values
   const adBoostMultiplier = 2; // x2 income boost
   const adBoostDuration = 10 * 60; // 10 minutes in seconds
   const minAdInterval = 5 * 60; // 5 minutes minimum between ad offers
   const maxAdInterval = 15 * 60; // 15 minutes maximum between ad offers
-  const cooldownPeriod = 60; // 60 seconds minimum between ads (changed from 2 minutes)
+  const cooldownPeriod = 60; // 60 seconds minimum between ads
   const adNotificationDuration = 60; // 1 minute auto-dismiss
+  const initialAdDelay = 90; // Delay first ad by 90 seconds (1.5 minutes)
   
   // Initialize AdMob when component mounts
   useEffect(() => {
@@ -105,9 +107,9 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       loadInterstitialAd()
         .then(() => setIsAdLoaded(true))
         .catch(err => console.error('Failed to load initial ad', err));
-        
-      // Show first ad notification quickly for testing purposes
-      setNextAdTime(Date.now() + 5000); // Show first ad after 5 seconds
+      
+      // Show first ad notification after initial delay (1-2 minutes)
+      setNextAdTime(Date.now() + initialAdDelay * 1000); 
     });
   }, []);
 

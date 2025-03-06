@@ -1,17 +1,37 @@
-export interface Manager {
-  id: string;
-  name: string;
-  description: string;
-  bonus: string;
-  requiredCoins: number;
-  avatar: string;
-  cost: number;
-  boosts?: string[];
-  perks?: Perk[];
-}
 
 import { Perk } from './types';
 
+/**
+ * Manager Interface
+ * 
+ * Defines the structure for manager objects that can be hired to boost production
+ * and provide special abilities.
+ */
+export interface Manager {
+  id: string;                // Unique identifier
+  name: string;              // Display name
+  description: string;       // Describes manager role
+  bonus: string;             // Description of the manager's passive bonus
+  requiredCoins: number;     // Coins needed to unlock (visibility threshold)
+  avatar: string;            // URL to avatar image
+  cost: number;              // Essence cost to hire
+  boosts?: string[];         // IDs of elements this manager boosts
+  perks?: Perk[];           // Unlockable perks using skill points
+}
+
+/**
+ * Managers Data
+ * 
+ * Each manager:
+ * 1. Has a unique ID and persona
+ * 2. Provides passive bonuses to specific elements
+ * 3. Can have up to 3 unlockable perks (costing 3, 6, and 12 skill points)
+ * 4. Affects game mechanics through different effects:
+ *    - production: Increases element production rate
+ *    - passive: Increases passive income
+ *    - allProduction: Increases all production
+ *    - cost: Reduces upgrade costs
+ */
 export const managers: Manager[] = [
   {
     id: "manager-default",

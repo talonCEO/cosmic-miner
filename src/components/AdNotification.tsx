@@ -4,6 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
 import { X, Plus, PlayCircle } from 'lucide-react';
 
+/**
+ * AdNotification Component
+ * 
+ * Displays ad-related notifications and boost status indicators:
+ * 1. An offer to watch an ad for income boost
+ * 2. Active boost indicator showing remaining time
+ * 
+ * Both elements have smooth animations for entry/exit and attention-grabbing effects.
+ */
 const AdNotification: React.FC = () => {
   const { 
     showAdNotification,
@@ -29,7 +38,7 @@ const AdNotification: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
+            exit={{ opacity: 0, x: -50, transition: { duration: 0.5 } }}
             transition={{ duration: 0.3 }}
             className="fixed left-4 top-[11vh] -translate-y-1/2 z-[999]"
           >
@@ -106,7 +115,7 @@ const AdNotification: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            exit={{ opacity: 0, y: 20, transition: { duration: 0.5 } }}
             transition={{ duration: 0.3 }}
             className="fixed bottom-4 left-4 z-50"
           >

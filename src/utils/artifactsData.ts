@@ -1,19 +1,40 @@
-export interface Artifact {
-  id: string;
-  name: string;
-  description: string;
-  bonus: string;
-  avatar: string;
-  cost: number;
-  effect?: {
-    type: string;
-    value: number;
-  };
-  perks?: Perk[];
-}
 
 import { Perk } from './types';
 
+/**
+ * Artifact Interface
+ * 
+ * Defines the structure for artifact objects that can be acquired to provide
+ * special bonuses and effects.
+ */
+export interface Artifact {
+  id: string;              // Unique identifier
+  name: string;            // Display name
+  description: string;     // Describes what the artifact is
+  bonus: string;           // Description of the artifact's passive bonus
+  avatar: string;          // URL to avatar image
+  cost: number;            // Essence cost to acquire
+  effect?: {               // Gameplay effect (automatically applied when owned)
+    type: string;          // Type of effect (production, tap, essence, cost, startingCoins)
+    value: number;         // Magnitude of effect
+  };
+  perks?: Perk[];         // Unlockable perks using skill points
+}
+
+/**
+ * Artifacts Data
+ * 
+ * Each artifact:
+ * 1. Has a unique ID and appearance
+ * 2. Provides passive bonuses to game mechanics
+ * 3. Can have up to 3 unlockable perks (costing 3, 6, and 12 skill points)
+ * 4. Affects game mechanics through different effects:
+ *    - production: Increases element production rate
+ *    - tap: Increases value of manual taps
+ *    - essence: Increases essence gained from prestige
+ *    - cost: Reduces upgrade costs
+ *    - startingCoins: Provides starting coins after prestige
+ */
 export const artifacts: Artifact[] = [
   {
     id: "artifact-default",
