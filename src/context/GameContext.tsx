@@ -785,24 +785,9 @@ type GameContextType = {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Create the Skill Point notification component
-const SkillPointNotification: React.FC<{ message: string }> = ({ message }) => {
-  return (
-    <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
-      <div className="bg-indigo-900/80 border border-blue-400 shadow-lg px-4 py-2 rounded-lg flex items-center gap-2">
-        <div className="animate-pulse">
-          <Gem className="text-blue-400" size={20} />
-        </div>
-        <span className="text-blue-200 font-medium">{message}</span>
-      </div>
-    </div>
-  );
-};
-
 // Create provider component
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  const [skillPointNotification, setSkillPointNotification] = React.useState<string | null>(null);
   const { toast } = useToast();
 
   // Handle click action
@@ -858,16 +843,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'PRESTIGE' });
   };
   
-  // Show skill point notification
-  const showSkillPointNotification = (reason: string) => {
-    setSkillPointNotification(`+1 Skill Point: ${reason}`);
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-      setSkillPointNotification(null);
-    }, 3000);
-  };
-  
   // Buy manager
   const buyManager = (managerId: string) => {
     dispatch({ type: 'BUY_MANAGER', managerId });
@@ -881,7 +856,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         if (achievement && !achievement.unlocked) {
           dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
-          showSkillPointNotification(`Hired ${manager.name}`);
           
           toast({
             title: `Manager Hired!`,
@@ -906,7 +880,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         if (achievement && !achievement.unlocked) {
           dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
-          showSkillPointNotification(`Discovered ${artifact.name}`);
           
           toast({
             title: `Artifact Discovered!`,
@@ -924,29 +897,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     dispatch({ type: 'CHECK_ACHIEVEMENTS' });
     
-    // Check if new achievements were unlocked
+    // Check if new achievements were unlocked - but don't show notifications
     setTimeout(() => {
       const newAchievementCount = state.achievements.filter(a => a.unlocked).length;
-      if (newAchievementCount > prevAchievementCount) {
-        const newAchievements = state.achievements.filter(a => a.unlocked).slice(prevAchievementCount);
-        if (newAchievements.length > 0) {
-          showSkillPointNotification(`New Achievement${newAchievements.length > 1 ? 's' : ''}`);
-        }
-      }
     }, 100);
   };
   
   // Unlock specific achievement
   const unlockAchievement = (achievementId: string) => {
     dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
-    
-    // Show notification
-    setTimeout(() => {
-      const achievement = state.achievements.find(a => a.id === achievementId);
-      if (achievement && achievement.unlocked) {
-        showSkillPointNotification(`Achievement: ${achievement.name}`);
-      }
-    }, 100);
   };
   
   // Calculate maximum affordable purchases
@@ -995,9 +954,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           description: `${achievement.name}: ${achievement.description}`,
           variant: "default",
         });
-        
-        // Also show the skill point notification
-        showSkillPointNotification(`Achievement: ${achievement.name}`);
       });
     }
     
@@ -1024,7 +980,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       unlockAbility,
       addSkillPoints
     }}>
-      {skillPointNotification && <SkillPointNotification message={skillPointNotification} />}
       {children}
     </GameContext.Provider>
   );

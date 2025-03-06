@@ -95,7 +95,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const adBoostDuration = 10 * 60; // 10 minutes in seconds
   const minAdInterval = 5 * 60; // 5 minutes minimum between ad offers
   const maxAdInterval = 15 * 60; // 15 minutes maximum between ad offers
-  const cooldownPeriod = 2 * 60; // 2 minutes cooldown after watching ad
+  const cooldownPeriod = 60; // 60 seconds minimum between ads (changed from 2 minutes)
   const adNotificationDuration = 60; // 1 minute auto-dismiss
   
   // Initialize AdMob when component mounts
@@ -153,8 +153,6 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setAdBoostActive(false);
         // Reset the income multiplier
         setIncomeMultiplier(1.0);
-        
-        // Don't show toast for boost expiration
       }
     }
   }, 1000);
@@ -199,18 +197,12 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         // Update income multiplier - directly modify income multiplier
         setIncomeMultiplier(adBoostMultiplier);
         
-        // Toast only shown when boost is activated
-        toast({
-          title: "Boost Activated!",
-          description: `Your income is boosted x${adBoostMultiplier} for 10 minutes!`,
-        });
+        // No toast notification when boost is activated
       }
     } catch (error) {
       console.error("Error showing ad:", error);
-      toast({
-        title: "Ad Error",
-        description: "There was a problem displaying the ad. Please try again later.",
-      });
+      
+      // No toast notification on error either
       
       // Still set next ad time to avoid spamming error
       const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
