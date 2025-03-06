@@ -69,7 +69,7 @@ const TechTree: React.FC = () => {
           </div>
           
           {/* Tech Tree Structure */}
-          <div className="relative flex flex-col gap-8 items-center pb-8">
+          <div className="relative flex flex-col gap-4 items-center pb-8">
             {/* Render abilities by row */}
             {Object.keys(abilitiesByRow).sort((a, b) => Number(a) - Number(b)).map((rowKey) => {
               const rowNum = parseInt(rowKey);
