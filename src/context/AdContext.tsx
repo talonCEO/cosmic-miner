@@ -125,7 +125,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const now = Date.now();
     
     // Check if it's time to show a new ad notification
-    if (!showAdNotification && now >= nextAdTime && now - lastAdWatchedTime >= cooldownPeriod * 1000) {
+    if (!showAdNotification && now >= nextAdTime && now - lastAdWatchedTime >= cooldownPeriod * 1000 && !adBoostActive) {
       setShowAdNotification(true);
       setAdNotificationStartTime(now);
       console.log('Showing ad notification');
@@ -151,19 +151,22 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       // If boost just ended, reset multiplier
       if (adBoostTimeRemaining === 1) {
         setAdBoostActive(false);
-        // Reset the income multiplier to its base value
-        setIncomeMultiplier(state.incomeMultiplier / adBoostMultiplier);
+        // Reset the income multiplier
+        setIncomeMultiplier(1.0);
         
-        toast({
-          title: "Boost Expired",
-          description: "Your ad boost has expired. Watch another ad for more boost time!",
-        });
+        // Don't show toast for boost expiration
       }
     }
   }, 1000);
   
   // Handle watching an ad
   const handleWatchAd = async () => {
+    // Don't do anything if boost is already active
+    if (adBoostActive) {
+      setShowAdNotification(false);
+      return;
+    }
+    
     setShowAdNotification(false);
     
     try {
@@ -193,9 +196,10 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setAdBoostActive(true);
         setAdBoostTimeRemaining(adBoostDuration);
         
-        // Update income multiplier
-        setIncomeMultiplier(state.incomeMultiplier * adBoostMultiplier);
+        // Update income multiplier - directly modify income multiplier
+        setIncomeMultiplier(adBoostMultiplier);
         
+        // Toast only shown when boost is activated
         toast({
           title: "Boost Activated!",
           description: `Your income is boosted x${adBoostMultiplier} for 10 minutes!`,
