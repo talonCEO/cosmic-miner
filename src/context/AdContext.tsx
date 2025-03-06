@@ -105,6 +105,9 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       loadInterstitialAd()
         .then(() => setIsAdLoaded(true))
         .catch(err => console.error('Failed to load initial ad', err));
+        
+      // Show first ad notification quickly for testing purposes
+      setNextAdTime(Date.now() + 5000); // Show first ad after 5 seconds
     });
   }, []);
 
@@ -125,6 +128,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     if (!showAdNotification && now >= nextAdTime && now - lastAdWatchedTime >= cooldownPeriod * 1000) {
       setShowAdNotification(true);
       setAdNotificationStartTime(now);
+      console.log('Showing ad notification');
       
       // If we don't have an ad loaded, try to load one
       if (!isAdLoaded) {
@@ -137,6 +141,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     // Check if current notification needs to be auto-dismissed
     if (showAdNotification && now - adNotificationStartTime >= adNotificationDuration * 1000) {
       dismissAdNotification();
+      console.log('Auto-dismissing ad notification');
     }
     
     // Update boost timer if active
