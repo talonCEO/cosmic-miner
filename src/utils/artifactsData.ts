@@ -1,4 +1,3 @@
-
 export interface Artifact {
   id: string;
   name: string;
@@ -9,8 +8,11 @@ export interface Artifact {
   effect?: {
     type: string;
     value: number;
-  }
+  };
+  perks?: Perk[];
 }
+
+import { Perk } from './types';
 
 export const artifacts: Artifact[] = [
   {
@@ -19,7 +21,36 @@ export const artifacts: Artifact[] = [
     description: "Just a regular rock you found on your first day",
     bonus: "Provides absolutely no benefit whatsoever",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=rock",
-    cost: 0
+    cost: 0,
+    perks: [
+      {
+        id: "artifact-default-perk-1",
+        name: "Lucky Rock",
+        description: "The rock might be lucky after all, increasing tap value by 5%",
+        cost: 3,
+        icon: "🍀",
+        unlocked: false,
+        effect: { type: "tap", value: 0.05 }
+      },
+      {
+        id: "artifact-default-perk-2",
+        name: "Polished Surface",
+        description: "A polished rock reflects cosmic energy, increasing production by 10%",
+        cost: 6,
+        icon: "✨",
+        unlocked: false,
+        effect: { type: "production", value: 0.1 }
+      },
+      {
+        id: "artifact-default-perk-3",
+        name: "Ancient Power",
+        description: "The rock contains ancient energy, reducing upgrade costs by 5%",
+        cost: 12,
+        icon: "🔮",
+        unlocked: false,
+        effect: { type: "cost", value: 0.05 }
+      }
+    ]
   },
   {
     id: "artifact-1",

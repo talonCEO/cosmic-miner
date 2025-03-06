@@ -48,6 +48,7 @@ export interface GameState {
   incomeMultiplier: number;
   skillPoints: number;
   abilities: Ability[];
+  unlockedPerks: string[];
 }
 
 // Upgrade interface
@@ -88,7 +89,8 @@ type GameAction =
   | { type: 'CHECK_ACHIEVEMENTS' }
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
   | { type: 'ADD_SKILL_POINTS'; amount: number }
-  | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string };
+  | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
+  | { type: 'UNLOCK_PERK'; perkId: string; parentId: string };
 
 // Create achievements based on upgrades and other collectibles
 const createAchievements = (): Achievement[] => {
@@ -315,7 +317,8 @@ const initialState: GameState = {
   prestigeCount: 0,
   incomeMultiplier: 1.0,
   skillPoints: 0,
-  abilities: initialAbilities
+  abilities: initialAbilities,
+  unlockedPerks: []
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -751,6 +754,61 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         abilities: newAbilities
       };
     }
+    case 'UNLOCK_PERK': {
+      // Find the parent (manager or artifact) and the perk
+      let parent;
+      let parentCollection;
+      
+      const manager = state.managers.find(m => m.id === action.parentId);
+      if (manager && manager.perks) {
+        parent = manager;
+        parentCollection = 'managers';
+      } else {
+        const artifact = state.artifacts.find(a => a.id === action.parentId);
+        if (artifact && artifact.perks) {
+          parent = artifact;
+          parentCollection = 'artifacts';
+        }
+      }
+      
+      if (!parent || !parent.perks) return state;
+      
+      const perk = parent.perks.find(p => p.id === action.perkId);
+      if (!perk || perk.unlocked || state.skillPoints < perk.cost) return state;
+      
+      // Create updated collections
+      const updatedCollections = {
+        managers: [...state.managers],
+        artifacts: [...state.artifacts]
+      };
+      
+      // Find and update the specific perk
+      const parentIndex = updatedCollections[parentCollection].findIndex(item => item.id === action.parentId);
+      if (parentIndex === -1) return state;
+      
+      const updatedParent = {...updatedCollections[parentCollection][parentIndex]};
+      if (!updatedParent.perks) return state;
+      
+      const perkIndex = updatedParent.perks.findIndex(p => p.id === action.perkId);
+      if (perkIndex === -1) return state;
+      
+      // Update the perk to be unlocked
+      updatedParent.perks = [...updatedParent.perks];
+      updatedParent.perks[perkIndex] = {
+        ...updatedParent.perks[perkIndex],
+        unlocked: true
+      };
+      
+      // Update the parent in the collection
+      updatedCollections[parentCollection][parentIndex] = updatedParent;
+      
+      return {
+        ...state,
+        skillPoints: state.skillPoints - perk.cost,
+        unlockedPerks: [...state.unlockedPerks, action.perkId],
+        [parentCollection]: updatedCollections[parentCollection]
+      };
+    }
     case 'ADD_SKILL_POINTS': {
       return {
         ...state,
@@ -781,6 +839,7 @@ type GameContextType = {
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   unlockAbility: (abilityId: string) => void;
   addSkillPoints: (amount: number) => void;
+  unlockPerk: (perkId: string, parentId: string) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -928,6 +987,49 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'ADD_SKILL_POINTS', amount });
   };
 
+  // Unlock perk
+  const unlockPerk = (perkId: string, parentId: string) => {
+    dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+    
+    // Show a toast notification
+    setTimeout(() => {
+      // Find the perk
+      let perkName = "";
+      
+      // Check managers
+      for (const manager of state.managers) {
+        if (manager.perks) {
+          const perk = manager.perks.find(p => p.id === perkId);
+          if (perk) {
+            perkName = `${manager.name}'s ${perk.name}`;
+            break;
+          }
+        }
+      }
+      
+      // Check artifacts
+      if (!perkName) {
+        for (const artifact of state.artifacts) {
+          if (artifact.perks) {
+            const perk = artifact.perks.find(p => p.id === perkId);
+            if (perk) {
+              perkName = `${artifact.name}'s ${perk.name}`;
+              break;
+            }
+          }
+        }
+      }
+      
+      if (perkName) {
+        toast({
+          title: "Perk Unlocked!",
+          description: perkName,
+          variant: "default",
+        });
+      }
+    }, 100);
+  };
+
   // Set up the automatic tick for passive income and achievement checking
   useEffect(() => {
     const interval = setInterval(() => {
@@ -983,7 +1085,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addEssence,
       calculateMaxPurchaseAmount,
       unlockAbility,
-      addSkillPoints
+      addSkillPoints,
+      unlockPerk
     }}>
       {children}
     </GameContext.Provider>
@@ -998,4 +1101,3 @@ export const useGame = (): GameContextType => {
   }
   return context;
 };
-

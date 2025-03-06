@@ -1,4 +1,3 @@
-
 export interface Manager {
   id: string;
   name: string;
@@ -7,8 +6,11 @@ export interface Manager {
   requiredCoins: number;
   avatar: string;
   cost: number;
-  boosts?: string[]; // Array of element IDs that this manager boosts
+  boosts?: string[];
+  perks?: Perk[];
 }
+
+import { Perk } from './types';
 
 export const managers: Manager[] = [
   {
@@ -18,7 +20,36 @@ export const managers: Manager[] = [
     bonus: "+10% can-do attitude (purely cosmetic)",
     requiredCoins: 0,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=steve",
-    cost: 0
+    cost: 0,
+    perks: [
+      {
+        id: "manager-default-perk-1",
+        name: "Enthusiasm",
+        description: "Steve works with more enthusiasm, increasing production by 5%",
+        cost: 3,
+        icon: "💪",
+        unlocked: false,
+        effect: { type: "production", value: 0.05 }
+      },
+      {
+        id: "manager-default-perk-2",
+        name: "Coffee Break",
+        description: "Coffee breaks boost efficiency, increasing passive income by 10%",
+        cost: 6,
+        icon: "☕",
+        unlocked: false,
+        effect: { type: "passive", value: 0.1 }
+      },
+      {
+        id: "manager-default-perk-3", 
+        name: "Overtime Work",
+        description: "Steve works overtime, increasing all production by 15%",
+        cost: 12,
+        icon: "🕒",
+        unlocked: false,
+        effect: { type: "allProduction", value: 0.15 }
+      }
+    ]
   },
   {
     id: "manager-1",

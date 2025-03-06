@@ -4,9 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
 import { managers } from '@/utils/managersData';
 import { formatNumber } from '@/utils/gameLogic';
+import PerkButton from './PerkButton';
 
 const Managers: React.FC = () => {
-  const { state } = useGame();
+  const { state, unlockPerk } = useGame();
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -43,6 +44,19 @@ const Managers: React.FC = () => {
                   {manager.bonus}
                 </p>
               </div>
+              
+              {isOwned && manager.perks && (
+                <div className="flex flex-col items-center justify-center ml-auto">
+                  {manager.perks.map(perk => (
+                    <PerkButton 
+                      key={perk.id}
+                      perk={perk}
+                      parentId={manager.id}
+                      onUnlock={unlockPerk}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}

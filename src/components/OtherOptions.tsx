@@ -2,9 +2,10 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
+import PerkButton from './PerkButton';
 
 const ArtifactsTab: React.FC = () => {
-  const { state } = useGame();
+  const { state, unlockPerk } = useGame();
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -41,6 +42,19 @@ const ArtifactsTab: React.FC = () => {
                   {artifact.bonus}
                 </p>
               </div>
+              
+              {isOwned && artifact.perks && (
+                <div className="flex flex-col items-center justify-center ml-auto">
+                  {artifact.perks.map(perk => (
+                    <PerkButton 
+                      key={perk.id}
+                      perk={perk}
+                      parentId={artifact.id}
+                      onUnlock={unlockPerk}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
