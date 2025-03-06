@@ -808,7 +808,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTimeout(() => {
       const updatedUpgrade = state.upgrades.find(u => u.id === upgradeId);
       if (updatedUpgrade && checkUpgradeMilestone(oldLevel, updatedUpgrade.level)) {
-        showSkillPointNotification(`${updatedUpgrade.name} Level ${Math.floor(updatedUpgrade.level/100)*100} Reached!`);
+        const milestoneLevel = Math.floor(updatedUpgrade.level/100)*100;
+        toast({
+          title: "Level Milestone Reached!",
+          description: `${updatedUpgrade.name} Level ${milestoneLevel}`,
+          variant: "default",
+        });
       }
     }, 100);
   };
@@ -993,3 +998,4 @@ export const useGame = (): GameContextType => {
   }
   return context;
 };
+
