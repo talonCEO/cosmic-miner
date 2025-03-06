@@ -262,37 +262,9 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     
     scaleAnimation();
     
-    // Floating shadow animation
-    const shadowAnimation = () => {
-      animate(shadowOffsetX, Math.random() * 10 + 10, {
-        duration: 7,
-        ease: "easeInOut",
-        type: "spring",
-        stiffness: 20,
-        damping: 20,
-      });
-      
-      animate(shadowOffsetY, Math.random() * 10 + 10, {
-        duration: 7,
-        ease: "easeInOut",
-        type: "spring",
-        stiffness: 20,
-        damping: 20,
-      });
-    };
-    
-    shadowAnimation();
-    const shadowInterval = setInterval(shadowAnimation, 7000);
-    
-    // Recurring fragments ejection
-    const fragmentInterval = setInterval(() => {
-      setFragmentTrigger(prev => prev + 1);
-    }, 10000);
-    
     // Clean up all animations
     return () => {
       clearInterval(wobbleInterval);
-      clearInterval(shadowInterval);
       clearInterval(fragmentInterval);
     };
   }, []);
