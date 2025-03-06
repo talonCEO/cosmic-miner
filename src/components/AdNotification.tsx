@@ -31,7 +31,7 @@ const AdNotification: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
-            className="fixed left-4 top-[20vh] -translate-y-1/2 z-[999]"
+            className="fixed left-4 top-[8vh] -translate-y-1/2 z-[999]"
           >
             <motion.div 
               className="bg-indigo-900/80 backdrop-blur-sm border border-yellow-400 rounded-lg shadow-lg overflow-hidden"
