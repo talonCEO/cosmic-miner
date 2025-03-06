@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { motion, useAnimation, useMotionValue, useTransform, animate } from 'framer-motion';
@@ -46,62 +47,6 @@ const GlowingOrb: React.FC<{
   );
 };
 
-// Create fragment component
-const AsteroidFragment: React.FC<{
-  triggerTime: number;
-}> = ({ triggerTime }) => {
-  const controls = useAnimation();
-  
-  useEffect(() => {
-    if (triggerTime > 0) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 80 + Math.random() * 40;
-      const targetX = Math.cos(angle) * distance;
-      const targetY = Math.sin(angle) * distance;
-      
-      controls.start({
-        x: [0, targetX, 0],
-        y: [0, targetY, 0],
-        rotate: [0, Math.random() * 180 - 90, 0],
-        opacity: [0, 0.8, 0],
-        scale: [0.1, 0.3 + Math.random() * 0.2, 0.1],
-        transition: { 
-          duration: 2 + Math.random(),
-          times: [0, 0.4, 1],
-          ease: "easeInOut"
-        }
-      });
-    }
-  }, [triggerTime, controls]);
-  
-  // Random fragment shape
-  const points = Array.from({ length: 6 + Math.floor(Math.random() * 4) }, (_, i) => {
-    const angle = (i / 8) * Math.PI * 2;
-    const radius = 10 + Math.random() * 10;
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-    return `${x},${y}`;
-  }).join(' ');
-  
-  return (
-    <motion.div
-      className="absolute"
-      style={{ originX: "center", originY: "center" }}
-      animate={controls}
-    >
-      <svg width="30" height="30" viewBox="-15 -15 30 30">
-        <motion.polygon
-          points={points}
-          className="fill-slate-600"
-          style={{
-            filter: "drop-shadow(0 0 2px rgba(0,0,0,0.5))"
-          }}
-        />
-      </svg>
-    </motion.div>
-  );
-};
-
 // Define a CraterType interface
 interface CraterType {
   x: number;
@@ -139,9 +84,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
   );
   const scaleTransform = useTransform(scale, value => `scale(${value})`);
   const glowScale = useTransform(glowRadius, radius => radius);
-  
-  // Fragment ejection state
-  const [fragmentTrigger, setFragmentTrigger] = useState(0);
   
   // Crater states
   const [craters, setCraters] = useState<CraterType[]>([]);
@@ -265,7 +207,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     // Clean up all animations
     return () => {
       clearInterval(wobbleInterval);
-      clearInterval(fragmentInterval);
     };
   }, []);
   
@@ -433,21 +374,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
           <GlowingOrb key={`orb-${i}`} index={i} />
         ))}
       </div>
-      
-      {/* Flying fragments */}
-      <div className="absolute w-full h-full pointer-events-none flex items-center justify-center">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <AsteroidFragment key={`fragment-${i}`} triggerTime={fragmentTrigger} />
-        ))}
-      </div>
-      
-      {/* Background particles */}
-      <div className="absolute w-4 h-4 rounded-full bg-white/15 animate-ping"
-           style={{ top: '-10%', left: '20%', animationDuration: '3s' }}></div>
-      <div className="absolute w-3 h-3 rounded-full bg-white/15 animate-ping"
-           style={{ bottom: '10%', right: '-5%', animationDuration: '4s' }}></div>
-      <div className="absolute w-2 h-2 rounded-full bg-white/15 animate-ping"
-           style={{ top: '30%', right: '-8%', animationDuration: '5s' }}></div>
     </div>
   );
 };

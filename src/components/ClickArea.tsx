@@ -87,7 +87,7 @@ const ClickArea: React.FC = () => {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
       
-      // Change particle colors from white/gray to yellow
+      // Yellow sparkle colors
       const colors = [
         "#FFD700", // Gold
         "#FFFF00", // Yellow
