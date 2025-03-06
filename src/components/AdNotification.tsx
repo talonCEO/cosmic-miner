@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
 import { X, Plus, PlayCircle } from 'lucide-react';
@@ -14,8 +14,6 @@ const AdNotification: React.FC = () => {
     dismissAdNotification
   } = useAd();
   
-  const [isHovered, setIsHovered] = useState(false);
-  
   // Format time remaining as mm:ss
   const formatTimeRemaining = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -29,13 +27,11 @@ const AdNotification: React.FC = () => {
       <AnimatePresence>
         {showAdNotification && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-20 right-4 z-50"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="fixed left-4 top-1/2 -translate-y-1/2 z-[999]"
           >
             <motion.div 
               className="bg-indigo-900/80 backdrop-blur-sm border border-yellow-400 rounded-lg shadow-lg overflow-hidden"
