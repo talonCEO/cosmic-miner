@@ -1,13 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Perk } from '@/utils/types';
 import { useGame } from '@/context/GameContext';
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,16 +16,13 @@ const PerkButton: React.FC<PerkButtonProps> = ({ perk, parentId, onUnlock }) => 
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTimer, setTooltipTimer] = useState<NodeJS.Timeout | null>(null);
 
-  // Function to handle showing tooltip and setting auto-hide timer
   const handleShowTooltip = () => {
-    // Clear any existing timer
     if (tooltipTimer) {
       clearTimeout(tooltipTimer);
     }
     
     setShowTooltip(true);
     
-    // Set timer to hide tooltip after 8 seconds
     const timer = setTimeout(() => {
       setShowTooltip(false);
     }, 8000);
@@ -40,7 +30,6 @@ const PerkButton: React.FC<PerkButtonProps> = ({ perk, parentId, onUnlock }) => 
     setTooltipTimer(timer);
   };
 
-  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (tooltipTimer) {
@@ -74,15 +63,14 @@ const PerkButton: React.FC<PerkButtonProps> = ({ perk, parentId, onUnlock }) => 
         )}
       </button>
       
-      {/* Custom tooltip with animation */}
       <AnimatePresence>
         {showTooltip && (
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3 }}
-            className="absolute left-0 top-0 -translate-x-[calc(100%+8px)] z-50 w-[200px]"
+            className="absolute right-0 bottom-full -translate-x-full mb-2 z-50 w-[200px]"
           >
             <div className="bg-slate-800 text-slate-100 p-2 rounded-md shadow-lg border border-slate-700 text-xs">
               <div className="font-bold">{perk.name}</div>
