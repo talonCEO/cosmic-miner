@@ -79,7 +79,35 @@ export const managers: Manager[] = [
     requiredCoins: 1000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=hydrogen",
     cost: 1,
-    boosts: ["element-1", "element-2"]
+    perks: [
+  {
+    "id": "manager-default-perk-1",
+    "name": "Turbo Focus",
+    "description": "A surge of concentration amplifies production by 5%.",
+    "cost": 3,
+    "icon": "🚀",
+    "unlocked": false,
+    "effect": { "type": "production", "value": 0.05 }
+  },
+  {
+    "id": "manager-default-perk-2",
+    "name": "Quantum Brew",
+    "description": "A hyper-caffeinated formula enhances efficiency, increasing passive income by 10%.",
+    "cost": 6,
+    "icon": "⚡☕",
+    "unlocked": false,
+    "effect": { "type": "passive", "value": 0.1 }
+  },
+  {
+    "id": "manager-default-perk-3",
+    "name": "Hyper Shift",
+    "description": "Time bends to allow extra work, increasing all production by 15%.",
+    "cost": 12,
+    "icon": "⏳⚙️",
+    "unlocked": false,
+    "effect": { "type": "allProduction", "value": 0.15 }
+  }
+]
   },
   {
     id: "manager-2",
