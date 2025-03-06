@@ -5,6 +5,7 @@ import ClickArea from '@/components/ClickArea';
 import GameTabs from '@/components/GameTabs';
 import { Toaster } from "@/components/ui/toaster";
 import SkiaBackground from '@/components/SkiaBackground';
+import AdNotification from '@/components/AdNotification';
 
 const Index: React.FC = () => {
   return (
@@ -29,6 +30,7 @@ const Index: React.FC = () => {
         <p className="text-xs mt-1">Auto-buy: purchases the cheapest available upgrade automatically</p>
       </footer>
       
+      <AdNotification />
       <Toaster />
     </div>
   );

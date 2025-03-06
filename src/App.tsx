@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { GameProvider } from "@/context/GameContext";
+import { AdProvider } from "@/context/AdContext";
 
 const queryClient = new QueryClient();
 
@@ -28,7 +29,9 @@ const AnimatedRoutes = () => {
               transition={{ duration: 0.3 }}
             >
               <GameProvider>
-                <Index />
+                <AdProvider>
+                  <Index />
+                </AdProvider>
               </GameProvider>
             </motion.div>
           } 
