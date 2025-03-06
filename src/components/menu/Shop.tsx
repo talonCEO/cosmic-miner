@@ -8,6 +8,7 @@ import ArtifactShopItem from './ArtifactShopItem';
 import { Manager } from '@/utils/managersData';
 import { GameState } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ManagerAbility, ArtifactAbility } from '@/utils/types';
 
 interface ShopProps {
   essence: number;
@@ -15,8 +16,13 @@ interface ShopProps {
   artifacts: GameState['artifacts'];
   ownedManagers: string[];
   ownedArtifacts: string[];
+  managerAbilities: ManagerAbility[];
+  artifactAbilities: ArtifactAbility[];
+  skillPoints: number;
   onBuyManager: (managerId: string, name: string) => void;
   onBuyArtifact: (artifactId: string, name: string) => void;
+  onUnlockManagerAbility: (abilityId: string) => void;
+  onUnlockArtifactAbility: (abilityId: string) => void;
 }
 
 const Shop: React.FC<ShopProps> = ({ 
@@ -24,9 +30,14 @@ const Shop: React.FC<ShopProps> = ({
   managers, 
   artifacts, 
   ownedManagers, 
-  ownedArtifacts, 
+  ownedArtifacts,
+  managerAbilities,
+  artifactAbilities,
+  skillPoints,
   onBuyManager, 
-  onBuyArtifact 
+  onBuyArtifact,
+  onUnlockManagerAbility,
+  onUnlockArtifactAbility
 }) => {
   return (
     <>
@@ -36,9 +47,15 @@ const Shop: React.FC<ShopProps> = ({
       
       <ScrollArea className="h-[60vh]">
         <div className="p-4">
-          <div className="flex items-center mb-4 bg-indigo-900/30 rounded-lg p-2">
-            <Sparkles size={16} className="text-purple-400 mr-1" />
-            <p className="font-medium text-purple-300">{formatNumber(essence)} Essence Available</p>
+          <div className="flex items-center justify-between mb-4 bg-indigo-900/30 rounded-lg p-2">
+            <div className="flex items-center">
+              <Sparkles size={16} className="text-purple-400 mr-1" />
+              <p className="font-medium text-purple-300">{formatNumber(essence)} Essence Available</p>
+            </div>
+            <div className="flex items-center">
+              <Sparkles size={16} className="text-yellow-300 mr-1" />
+              <p className="font-medium text-yellow-300">{skillPoints} Skill Points</p>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-3">
@@ -47,6 +64,7 @@ const Shop: React.FC<ShopProps> = ({
               {managers.map(manager => {
                 const isOwned = ownedManagers.includes(manager.id);
                 const canAfford = essence >= manager.cost;
+                const managerSpecificAbilities = managerAbilities.filter(a => a.managerId === manager.id);
                 
                 return (
                   <ShopItem
@@ -60,6 +78,9 @@ const Shop: React.FC<ShopProps> = ({
                     isOwned={isOwned}
                     canAfford={canAfford}
                     onBuy={() => onBuyManager(manager.id, manager.name)}
+                    abilities={managerSpecificAbilities}
+                    skillPoints={skillPoints}
+                    onUnlockAbility={onUnlockManagerAbility}
                   />
                 );
               })}
@@ -70,6 +91,7 @@ const Shop: React.FC<ShopProps> = ({
               {artifacts.map(artifact => {
                 const isOwned = ownedArtifacts.includes(artifact.id);
                 const canAfford = essence >= artifact.cost;
+                const artifactSpecificAbilities = artifactAbilities.filter(a => a.artifactId === artifact.id);
                 
                 return (
                   <ArtifactShopItem
@@ -83,6 +105,9 @@ const Shop: React.FC<ShopProps> = ({
                     isOwned={isOwned}
                     canAfford={canAfford}
                     onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
+                    abilities={artifactSpecificAbilities}
+                    skillPoints={skillPoints}
+                    onUnlockAbility={onUnlockArtifactAbility}
                   />
                 );
               })}

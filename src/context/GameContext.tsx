@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
-import { managers } from '@/utils/managersData';
-import { artifacts } from '@/utils/artifactsData';
+import { managers, managerAbilities } from '@/utils/managersData';
+import { artifacts, artifactAbilities } from '@/utils/artifactsData';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { ManagerAbility, ArtifactAbility } from '@/utils/types';
 
 // Achievement interface
 export interface Achievement {
@@ -48,6 +49,8 @@ export interface GameState {
   incomeMultiplier: number;
   skillPoints: number;
   abilities: Ability[];
+  managerAbilities: ManagerAbility[];
+  artifactAbilities: ArtifactAbility[];
 }
 
 // Upgrade interface
@@ -88,7 +91,8 @@ type GameAction =
   | { type: 'CHECK_ACHIEVEMENTS' }
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
   | { type: 'ADD_SKILL_POINTS'; amount: number }
-  | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string };
+  | { type: 'UNLOCK_MANAGER_ABILITY'; abilityId: string }
+  | { type: 'UNLOCK_ARTIFACT_ABILITY'; abilityId: string };
 
 // Create achievements based on upgrades and other collectibles
 const createAchievements = (): Achievement[] => {
@@ -315,7 +319,9 @@ const initialState: GameState = {
   prestigeCount: 0,
   incomeMultiplier: 1.0,
   skillPoints: 0,
-  abilities: initialAbilities
+  abilities: initialAbilities,
+  managerAbilities: managerAbilities,
+  artifactAbilities: artifactAbilities
 };
 
 // Helper function to calculate the total cost of buying multiple upgrades
@@ -751,6 +757,60 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         abilities: newAbilities
       };
     }
+    case 'UNLOCK_MANAGER_ABILITY': {
+      const abilityIndex = state.managerAbilities.findIndex(a => a.id === action.abilityId);
+      
+      if (abilityIndex === -1) return state;
+      
+      const ability = state.managerAbilities[abilityIndex];
+      
+      // Check if ability is already unlocked
+      if (ability.unlocked) return state;
+      
+      // Check if user has enough skill points
+      if (state.skillPoints < ability.cost) return state;
+      
+      // Check if the manager for this ability is owned
+      const isManagerOwned = state.ownedManagers.includes(ability.managerId);
+      if (!isManagerOwned) return state;
+      
+      // Unlock the ability and deduct skill points
+      const newManagerAbilities = [...state.managerAbilities];
+      newManagerAbilities[abilityIndex] = { ...newManagerAbilities[abilityIndex], unlocked: true };
+      
+      return {
+        ...state,
+        skillPoints: state.skillPoints - ability.cost,
+        managerAbilities: newManagerAbilities
+      };
+    }
+    case 'UNLOCK_ARTIFACT_ABILITY': {
+      const abilityIndex = state.artifactAbilities.findIndex(a => a.id === action.abilityId);
+      
+      if (abilityIndex === -1) return state;
+      
+      const ability = state.artifactAbilities[abilityIndex];
+      
+      // Check if ability is already unlocked
+      if (ability.unlocked) return state;
+      
+      // Check if user has enough skill points
+      if (state.skillPoints < ability.cost) return state;
+      
+      // Check if the artifact for this ability is owned
+      const isArtifactOwned = state.ownedArtifacts.includes(ability.artifactId);
+      if (!isArtifactOwned) return state;
+      
+      // Unlock the ability and deduct skill points
+      const newArtifactAbilities = [...state.artifactAbilities];
+      newArtifactAbilities[abilityIndex] = { ...newArtifactAbilities[abilityIndex], unlocked: true };
+      
+      return {
+        ...state,
+        skillPoints: state.skillPoints - ability.cost,
+        artifactAbilities: newArtifactAbilities
+      };
+    }
     case 'ADD_SKILL_POINTS': {
       return {
         ...state,
@@ -781,6 +841,8 @@ type GameContextType = {
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   unlockAbility: (abilityId: string) => void;
   addSkillPoints: (amount: number) => void;
+  unlockManagerAbility: (abilityId: string) => void;
+  unlockArtifactAbility: (abilityId: string) => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -928,6 +990,52 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'ADD_SKILL_POINTS', amount });
   };
 
+  // Unlock manager ability
+  const unlockManagerAbility = (abilityId: string) => {
+    const ability = state.managerAbilities.find(a => a.id === abilityId);
+    if (!ability) return;
+    
+    if (state.skillPoints < ability.cost) {
+      toast({
+        title: "Not Enough Skill Points",
+        description: `You need ${ability.cost} skill points to unlock this ability.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    dispatch({ type: 'UNLOCK_MANAGER_ABILITY', abilityId });
+    
+    toast({
+      title: "Manager Ability Unlocked!",
+      description: `${ability.name}: ${ability.description}`,
+      variant: "default",
+    });
+  };
+  
+  // Unlock artifact ability
+  const unlockArtifactAbility = (abilityId: string) => {
+    const ability = state.artifactAbilities.find(a => a.id === abilityId);
+    if (!ability) return;
+    
+    if (state.skillPoints < ability.cost) {
+      toast({
+        title: "Not Enough Skill Points",
+        description: `You need ${ability.cost} skill points to unlock this ability.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    dispatch({ type: 'UNLOCK_ARTIFACT_ABILITY', abilityId });
+    
+    toast({
+      title: "Artifact Ability Unlocked!",
+      description: `${ability.name}: ${ability.description}`,
+      variant: "default",
+    });
+  };
+
   // Set up the automatic tick for passive income and achievement checking
   useEffect(() => {
     const interval = setInterval(() => {
@@ -983,7 +1091,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addEssence,
       calculateMaxPurchaseAmount,
       unlockAbility,
-      addSkillPoints
+      addSkillPoints,
+      unlockManagerAbility,
+      unlockArtifactAbility
     }}>
       {children}
     </GameContext.Provider>
@@ -998,4 +1108,3 @@ export const useGame = (): GameContextType => {
   }
   return context;
 };
-
