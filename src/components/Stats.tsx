@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateClickMultiplier } from '@/utils/gameLogic';
@@ -94,19 +95,57 @@ const Stats: React.FC = () => {
   }, [state.totalEarned, resourceData, state.essence]);
   
   const calculateActualCoinsPerTap = () => {
+    // Get tap multiplier from tap power upgrade
     const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
     const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
     
     const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
     
-    const baseClickValue = state.coinsPerClick * 0.35;
+    // Match exact formula used in the CLICK action in GameContext
+    const baseClickValue = state.coinsPerClick;
     const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
     
-    return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
+    // Apply all ability boosts that affect tap income
+    let tapIncomeMultiplier = 1;
+    if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
+      tapIncomeMultiplier += 0.5; // Quantum Vibration Enhancer: +50% tap power
+    }
+    if (state.abilities.find(a => a.id === "ability-5" && a.unlocked)) {
+      // Not applying random critical chance here, just showing average value
+    }
+    if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
+      tapIncomeMultiplier += 0.85; // Plasma Discharge Excavator: +85% tap value
+    }
+    if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
+      tapIncomeMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
+    }
+    
+    return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier * tapIncomeMultiplier;
   };
   
   const calculateActualCoinsPerSecond = () => {
-    return state.coinsPerSecond * state.incomeMultiplier;
+    // Apply all ability boosts that affect passive income
+    let passiveIncomeMultiplier = 1;
+    if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
+      passiveIncomeMultiplier += 0.25; // Quantum Vibration Enhancer: +25% passive income
+    }
+    if (state.abilities.find(a => a.id === "ability-4" && a.unlocked)) {
+      passiveIncomeMultiplier += 0.2; // Graviton Shield Generator: +20% passive income
+    }
+    if (state.abilities.find(a => a.id === "ability-6" && a.unlocked)) {
+      passiveIncomeMultiplier += 0.3; // Dark Matter Attractor: +30% passive income
+    }
+    if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
+      passiveIncomeMultiplier += 0.55; // Plasma Discharge Excavator: +55% passive income
+    }
+    if (state.abilities.find(a => a.id === "ability-9" && a.unlocked)) {
+      passiveIncomeMultiplier += 0.65; // Nano-Bot Mining Swarm: +65% passive income
+    }
+    if (state.abilities.find(a => a.id === "ability-12" && a.unlocked)) {
+      passiveIncomeMultiplier += 1.0; // Quantum Tunneling Drill: doubles passive income
+    }
+    
+    return state.coinsPerSecond * state.incomeMultiplier * passiveIncomeMultiplier;
   };
 
   const stats = [
@@ -146,6 +185,23 @@ const Stats: React.FC = () => {
     }
     if (state.ownedArtifacts.includes("artifact-6")) {
       multiplier += 0.25;
+    }
+    
+    // Add ability bonuses to the overall multiplier
+    if (state.abilities.find(a => a.id === "ability-3" && a.unlocked)) {
+      multiplier += 0.4; // Neural Mining Matrix: +40% all income
+    }
+    if (state.abilities.find(a => a.id === "ability-6" && a.unlocked)) {
+      multiplier += 0.45; // Dark Matter Attractor: +45% all income
+    }
+    if (state.abilities.find(a => a.id === "ability-10" && a.unlocked)) {
+      multiplier += 0.55; // Interstellar Navigation AI: +55% global income
+    }
+    if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
+      multiplier += 0.8; // Supernova Core Extractor: +80% all income
+    }
+    if (state.abilities.find(a => a.id === "ability-13" && a.unlocked)) {
+      multiplier += 1.0; // Cosmic Singularity Engine: +100% all income
     }
     
     return multiplier.toFixed(2);

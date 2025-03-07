@@ -66,6 +66,35 @@ const ClickArea: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
   
+  const calculateClickValue = () => {
+    // Get tap multiplier from tap power upgrade
+    const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
+    const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
+    
+    // Calculate click multiplier from artifacts
+    const clickMultiplier = state.ownedArtifacts.includes("artifact-2") ? 1.5 : 1;  // Space Rocket
+    const extraMultiplier = state.ownedArtifacts.includes("artifact-7") ? 1.5 : 0;  // Molecular Flask
+    const artifactMultiplier = clickMultiplier + extraMultiplier;
+    
+    // Apply base value and bonuses
+    const baseClickValue = state.coinsPerClick; 
+    const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
+    
+    // Apply tech tree ability bonuses
+    let abilityTapMultiplier = 1;
+    if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
+      abilityTapMultiplier += 0.5; // Quantum Vibration Enhancer: +50% tap power
+    }
+    if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
+      abilityTapMultiplier += 0.85; // Plasma Discharge Excavator: +85% tap value
+    }
+    if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
+      abilityTapMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
+    }
+    
+    return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * artifactMultiplier * tapBoostMultiplier * abilityTapMultiplier;
+  };
+  
   const handleAreaClick = () => {
     if (!containerRef.current) return;
     
@@ -140,7 +169,7 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={state.coinsPerClick}
+            value={calculateClickValue()}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}

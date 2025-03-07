@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList, UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -305,7 +304,34 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // Base click value now includes only 5% of coins per second (reduced synergy)
       const baseClickValue = state.coinsPerClick; // Now using full coinsPerClick
       const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Kept this the same
-      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
+      
+      // Apply ability boosts to tap value
+      let abilityTapMultiplier = 1;
+      if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
+        abilityTapMultiplier += 0.5; // Quantum Vibration Enhancer: +50% tap power
+      }
+      if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
+        abilityTapMultiplier += 0.85; // Plasma Discharge Excavator: +85% tap value
+      }
+      if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
+        abilityTapMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
+      }
+      
+      // Add ability-5 (Laser-Guided Extraction) critical hit chance
+      let criticalMultiplier = 1;
+      if (state.abilities.find(a => a.id === "ability-5" && a.unlocked)) {
+        // 15% chance of critical strike for 5x normal mining yield
+        if (Math.random() < 0.15) {
+          criticalMultiplier = 5;
+        }
+      }
+      
+      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * 
+                               state.incomeMultiplier * 
+                               clickMultiplier * 
+                               tapBoostMultiplier * 
+                               abilityTapMultiplier *
+                               criticalMultiplier;
       
       return {
         ...state,
@@ -331,7 +357,25 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (upgradeIndex === -1) return state;
       
       const upgrade = state.upgrades[upgradeIndex];
-      const costReduction = calculateCostReduction(state.ownedArtifacts);
+      let costReduction = calculateCostReduction(state.ownedArtifacts);
+      
+      // Apply ability cost reduction effects
+      if (state.abilities.find(a => a.id === "ability-3" && a.unlocked)) {
+        costReduction -= 0.05; // Neural Mining Matrix: 5% cost reduction
+      }
+      if (state.abilities.find(a => a.id === "ability-4" && a.unlocked)) {
+        costReduction -= 0.15; // Graviton Shield Generator: 15% cost reduction
+      }
+      if (state.abilities.find(a => a.id === "ability-9" && a.unlocked)) {
+        costReduction -= 0.30; // Nano-Bot Mining Swarm: 30% cost reduction
+      }
+      if (state.abilities.find(a => a.id === "ability-12" && a.unlocked)) {
+        costReduction -= 0.45; // Quantum Tunneling Drill: 45% cost reduction
+      }
+      
+      // Ensure cost reduction doesn't go below 50%
+      costReduction = Math.max(0.5, costReduction);
+      
       const quantity = action.quantity || 1;
       
       if (upgrade.level >= upgrade.maxLevel) return state;
@@ -426,8 +470,29 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       // Process passive income with smoother curve
       if (state.coinsPerSecond > 0) {
+        // Apply ability boosts to passive income
+        let passiveIncomeMultiplier = 1;
+        if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
+          passiveIncomeMultiplier += 0.25; // Quantum Vibration Enhancer: +25% passive income
+        }
+        if (state.abilities.find(a => a.id === "ability-4" && a.unlocked)) {
+          passiveIncomeMultiplier += 0.2; // Graviton Shield Generator: +20% passive income
+        }
+        if (state.abilities.find(a => a.id === "ability-6" && a.unlocked)) {
+          passiveIncomeMultiplier += 0.3; // Dark Matter Attractor: +30% passive income
+        }
+        if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
+          passiveIncomeMultiplier += 0.55; // Plasma Discharge Excavator: +55% passive income
+        }
+        if (state.abilities.find(a => a.id === "ability-9" && a.unlocked)) {
+          passiveIncomeMultiplier += 0.65; // Nano-Bot Mining Swarm: +65% passive income
+        }
+        if (state.abilities.find(a => a.id === "ability-12" && a.unlocked)) {
+          passiveIncomeMultiplier += 1.0; // Quantum Tunneling Drill: doubles passive income
+        }
+        
         // Passive income is now stronger relative to clicking
-        const passiveAmount = (state.coinsPerSecond / 10) * state.incomeMultiplier;
+        const passiveAmount = (state.coinsPerSecond / 10) * state.incomeMultiplier * passiveIncomeMultiplier;
         newState = {
           ...newState,
           coins: newState.coins + passiveAmount,
@@ -457,7 +522,24 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       // Process auto buy
       if (newState.autoBuy) {
-        const costReduction = calculateCostReduction(state.ownedArtifacts);
+        let costReduction = calculateCostReduction(state.ownedArtifacts);
+        
+        // Apply ability cost reduction effects
+        if (state.abilities.find(a => a.id === "ability-3" && a.unlocked)) {
+          costReduction -= 0.05; // Neural Mining Matrix: 5% cost reduction
+        }
+        if (state.abilities.find(a => a.id === "ability-4" && a.unlocked)) {
+          costReduction -= 0.15; // Graviton Shield Generator: 15% cost reduction
+        }
+        if (state.abilities.find(a => a.id === "ability-9" && a.unlocked)) {
+          costReduction -= 0.30; // Nano-Bot Mining Swarm: 30% cost reduction
+        }
+        if (state.abilities.find(a => a.id === "ability-12" && a.unlocked)) {
+          costReduction -= 0.45; // Quantum Tunneling Drill: 45% cost reduction
+        }
+        
+        // Ensure cost reduction doesn't go below 50%
+        costReduction = Math.max(0.5, costReduction);
         
         // Find upgrades with best ROI (Return on Investment)
         const affordableUpgrades = newState.upgrades
@@ -530,6 +612,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
       if (state.ownedArtifacts.includes("artifact-8")) { // Quantum Microscope
         essenceReward = Math.floor(essenceReward * 1.5);
+      }
+      
+      // Apply ability bonuses for essence rewards
+      if (state.abilities.find(a => a.id === "ability-7" && a.unlocked)) {
+        essenceReward = Math.floor(essenceReward * 1.15); // Galactic Achievement Scanner: +15% essence
+      }
+      if (state.abilities.find(a => a.id === "ability-10" && a.unlocked)) {
+        essenceReward = Math.floor(essenceReward * 1.2); // Interstellar Navigation AI: +20% essence rewards
+      }
+      if (state.abilities.find(a => a.id === "ability-13" && a.unlocked)) {
+        essenceReward = Math.floor(essenceReward * 1.35); // Cosmic Singularity Engine: +35% essence gain
       }
       
       // Ensure at least some reward if they've made significant progress
@@ -731,7 +824,34 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // Base click value now includes only 5% of coins per second
       const baseClickValue = state.coinsPerClick; // Now using full coinsPerClick
       const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Kept this the same
-      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
+      
+      // Apply ability boosts to tap value
+      let abilityTapMultiplier = 1;
+      if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
+        abilityTapMultiplier += 0.5; // Quantum Vibration Enhancer: +50% tap power
+      }
+      if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
+        abilityTapMultiplier += 0.85; // Plasma Discharge Excavator: +85% tap value
+      }
+      if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
+        abilityTapMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
+      }
+      
+      // Add ability-5 (Laser-Guided Extraction) critical hit chance
+      let criticalMultiplier = 1;
+      if (state.abilities.find(a => a.id === "ability-5" && a.unlocked)) {
+        // 15% chance of critical strike for 5x normal mining yield
+        if (Math.random() < 0.15) {
+          criticalMultiplier = 5;
+        }
+      }
+      
+      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * 
+                              state.incomeMultiplier * 
+                              clickMultiplier * 
+                              tapBoostMultiplier *
+                              abilityTapMultiplier *
+                              criticalMultiplier;
       
       return {
         ...state,
@@ -825,7 +945,20 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   // Calculate potential essence reward for prestige
   const calculatePotentialEssenceReward = (): number => {
-    return gameMechanics.calculatePotentialEssenceReward(state.totalEarned, state.ownedArtifacts);
+    let essenceReward = gameMechanics.calculatePotentialEssenceReward(state.totalEarned, state.ownedArtifacts);
+    
+    // Apply ability bonuses for essence rewards
+    if (state.abilities.find(a => a.id === "ability-7" && a.unlocked)) {
+      essenceReward = Math.floor(essenceReward * 1.15); // Galactic Achievement Scanner: +15% essence
+    }
+    if (state.abilities.find(a => a.id === "ability-10" && a.unlocked)) {
+      essenceReward = Math.floor(essenceReward * 1.2); // Interstellar Navigation AI: +20% essence rewards
+    }
+    if (state.abilities.find(a => a.id === "ability-13" && a.unlocked)) {
+      essenceReward = Math.floor(essenceReward * 1.35); // Cosmic Singularity Engine: +35% essence gain
+    }
+    
+    return essenceReward;
   };
   
   // Game actions
