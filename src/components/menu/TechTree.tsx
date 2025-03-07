@@ -46,14 +46,16 @@ const TechTree: React.FC = () => {
   // Render circuit-like pathways (straight lines)
   const renderCircuitPathways = () => {
     const paths: JSX.Element[] = [];
-    const getNodePosition = (abilityId: string) => {
+    const getNodePosition = (abilityId: string, isStart: boolean = true) => {
       const node = treeRef.current?.querySelector(`[data-ability-id="${abilityId}"]`);
       if (!node) return null;
       const rect = node.getBoundingClientRect();
       const containerRect = treeRef.current?.getBoundingClientRect();
       return {
         x: rect.left - (containerRect?.left || 0) + rect.width / 2,
-        y: rect.top - (containerRect?.top || 0) + rect.height / 2, // Center of button for lines
+        y: isStart
+          ? rect.top - (containerRect?.top || 0) // Start at top of button
+          : rect.bottom - (containerRect?.top || 0), // End at bottom of button
       };
     };
 
@@ -63,8 +65,8 @@ const TechTree: React.FC = () => {
     row1Abilities.forEach((row1Ability) => {
       row2Abilities.forEach((row2Ability) => {
         if (row2Ability.requiredAbilities.includes(row1Ability.id) || Math.abs(row1Abilities.indexOf(row1Ability) - row2Abilities.indexOf(row2Ability)) <= 1) {
-          const start = getNodePosition(row1Ability.id);
-          const end = getNodePosition(row2Ability.id);
+          const start = getNodePosition(row1Ability.id, true);
+          const end = getNodePosition(row2Ability.id, false);
           if (start && end && row1Ability.unlocked && row2Ability.unlocked) {
             paths.push(
               <path
@@ -72,7 +74,7 @@ const TechTree: React.FC = () => {
                 d={`M${start.x},${start.y} L${end.x},${end.y}`}
                 stroke="url(#circuitGradient)"
                 strokeWidth="2"
-                opacity="0.4" // Lowered opacity
+                opacity="0.4"
                 fill="none"
                 className="animate-flow"
               />
@@ -89,18 +91,18 @@ const TechTree: React.FC = () => {
       currentRowAbilities.forEach((currentAbility, currentIndex) => {
         nextRowAbilities.forEach((nextAbility, nextIndex) => {
           if (nextAbility.requiredAbilities.includes(currentAbility.id) || Math.abs(currentIndex - nextIndex) <= 1) {
-            const start = getNodePosition(currentAbility.id);
-            const end = getNodePosition(nextAbility.id);
+            const start = getNodePosition(currentAbility.id, true);
+            const end = getNodePosition(nextAbility.id, false);
             if (start && end && currentAbility.unlocked && nextAbility.unlocked) {
               paths.push(
                 <path
                   key={`${currentAbility.id}-${nextAbility.id}`}
                   d={`M${start.x},${start.y} L${end.x},${end.y}`}
-                stroke="url(#circuitGradient)"
-                strokeWidth="2"
-                opacity="0.4" // Lowered opacity
-                fill="none"
-                className="animate-flow"
+                  stroke="url(#circuitGradient)"
+                  strokeWidth="2"
+                  opacity="0.4"
+                  fill="none"
+                  className="animate-flow"
                 />
               );
             }
@@ -141,13 +143,13 @@ const TechTree: React.FC = () => {
               </linearGradient>
             </defs>
             {renderCircuitPathways()}
-            {/* Glowing node effects, positioned under icon */}
+            {/* Glowing node effects, positioned at top of button */}
             {Object.values(abilitiesByRow).flat().map((ability) => {
               const pos = treeRef.current?.querySelector(`[data-ability-id="${ability.id}"]`)?.getBoundingClientRect();
               const containerRect = treeRef.current?.getBoundingClientRect();
               if (pos && containerRect && ability.unlocked) {
                 const x = pos.left - containerRect.left + pos.width / 2;
-                const y = pos.top - containerRect.top + pos.height / 2 - 32; // Move up slightly under icon
+                const y = pos.top - containerRect.top; // Top of button
                 return (
                   <circle
                     key={`glow-${ability.id}`}
@@ -155,7 +157,7 @@ const TechTree: React.FC = () => {
                     cy={y}
                     r="4"
                     fill="#22D3EE"
-                    opacity="0.2" // Lowered opacity
+                    opacity="0.2"
                     className="animate-pulse"
                   />
                 );
@@ -249,6 +251,9 @@ const TechTree: React.FC = () => {
       `}</style>
     </>
   );
+};
+
+export default TechTree;
 };
 
 export default TechTree;
