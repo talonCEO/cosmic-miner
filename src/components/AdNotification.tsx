@@ -75,7 +75,7 @@ const AdNotification: React.FC = () => {
                 </div>
                 
                 <div className="flex-1">
-                  <div className="text-yellow-300 font-semibold text-xs md:text-sm">Watch Ad</div>
+                  <div className="text-yellow-300 font-semibold text-xs md:text-sm">Claim Now</div>
                   <div className="text-blue-200 text-[10px] md:text-xs flex items-center gap-1">
                     <Plus className="h-3 w-3" /> {adBoostMultiplier}x Income for 10min
                   </div>
