@@ -5,6 +5,7 @@ import { useGame } from '@/context/GameContext';
 import { managers } from '@/utils/managersData';
 import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
+import { useBoostManager } from '@/hooks/useBoostManager';
 
 /**
  * Managers Component
@@ -20,28 +21,9 @@ import PerkButton from './PerkButton';
  */
 const Managers: React.FC = () => {
   const { state, unlockPerk } = useGame();
+  const { getElementName, getHighestUnlockedPerkValue } = useBoostManager();
   
-  // Helper function to get element name from element ID
-  const getElementName = (elementId: string): string => {
-    const element = state.upgrades.find(u => u.id === elementId);
-    return element ? element.name : elementId;
-  };
-  
-  // Function to get the most powerful unlocked perk
-  const getHighestUnlockedPerkValue = (managerId: string) => {
-    const manager = state.managers.find(m => m.id === managerId);
-    if (!manager || !manager.perks) return null;
-    
-    const unlockedPerks = manager.perks.filter(p => p.unlocked);
-    if (unlockedPerks.length === 0) return null;
-    
-    // Return the highest value perk
-    return unlockedPerks.reduce((prev, current) => 
-      prev.effect.value > current.effect.value ? prev : current
-    );
-  };
-
-  // Handle unlocking a perk
+  // Handle unlocking a perk without showing a toast
   const handleUnlockPerk = (perkId: string, parentId: string) => {
     unlockPerk(perkId, parentId);
   };
@@ -73,11 +55,14 @@ const Managers: React.FC = () => {
           // Show perks for all managers except the default one, regardless of ownership
           const shouldShowPerks = manager.perks && manager.id !== "manager-default";
           
+          // Calculate opacity based on ownership
+          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-50';
+          
           return (
             <div 
               key={manager.id}
               className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-indigo-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
-                ${!isOwned ? 'opacity-50' : 'hover:shadow-md hover:shadow-indigo-500/20'}`}
+                ${isOwned ? 'hover:shadow-md hover:shadow-indigo-500/20' : itemOpacity}`}
             >
               {/* Manager Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">

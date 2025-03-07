@@ -1,8 +1,8 @@
-
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import AnimatedAsteroid from './AnimatedAsteroid';
+import { useBoostManager } from '@/hooks/useBoostManager';
 
 // Particle effect when clicking
 interface ParticleProps {
@@ -60,6 +60,7 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 
 const ClickArea: React.FC = () => {
   const { state, click } = useGame();
+  const { calculateTapMultiplier, calculateCriticalStats } = useBoostManager();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,59 +72,27 @@ const ClickArea: React.FC = () => {
     const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
     const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
     
-    // Calculate click multiplier from artifacts
-    const clickMultiplier = state.ownedArtifacts.includes("artifact-2") ? 1.5 : 1;  // Space Rocket
-    let extraMultiplier = 0;
-    
-    // Check for Space Rocket perks
-    const rocketArtifact = state.artifacts.find(a => a.id === "artifact-2");
-    if (rocketArtifact && rocketArtifact.perks) {
-      const unlockedPerks = rocketArtifact.perks.filter(p => p.unlocked);
-      if (unlockedPerks.length > 0) {
-        // Use the highest unlocked perk value
-        const highestPerk = unlockedPerks.reduce((prev, current) => 
-          prev.effect.value > current.effect.value ? prev : current
-        );
-        extraMultiplier = highestPerk.effect.value - 1.5; // Subtract base value
-      }
-    }
-    
-    // Check for Molecular Flask and its perks
-    if (state.ownedArtifacts.includes("artifact-7")) {
-      extraMultiplier += 2.5; // Molecular Flask base bonus
-      
-      const flaskArtifact = state.artifacts.find(a => a.id === "artifact-7");
-      if (flaskArtifact && flaskArtifact.perks) {
-        const unlockedPerks = flaskArtifact.perks.filter(p => p.unlocked);
-        if (unlockedPerks.length > 0) {
-          // Use the highest unlocked perk value
-          const highestPerk = unlockedPerks.reduce((prev, current) => 
-            prev.effect.value > current.effect.value ? prev : current
-          );
-          extraMultiplier = highestPerk.effect.value - 1; // Use highest value instead
-        }
-      }
-    }
-    
-    const artifactMultiplier = clickMultiplier + extraMultiplier;
+    // Use our centralized boost manager to get tap multiplier
+    const artifactMultiplier = calculateTapMultiplier();
     
     // Apply base value and bonuses
     const baseClickValue = state.coinsPerClick; 
     const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
     
-    // Apply tech tree ability bonuses
-    let abilityTapMultiplier = 1;
-    if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
-      abilityTapMultiplier += 0.5; // Quantum Vibration Enhancer: +50% tap power
-    }
-    if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
-      abilityTapMultiplier += 0.85; // Plasma Discharge Excavator: +85% tap value
-    }
-    if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
-      abilityTapMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
+    // Get critical hit data
+    const { critChance, critMultiplier } = calculateCriticalStats();
+    
+    // Determine if this is a critical hit
+    let isCritical = false;
+    if (critChance > 0 && Math.random() < critChance) {
+      isCritical = true;
     }
     
-    return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * artifactMultiplier * tapBoostMultiplier * abilityTapMultiplier;
+    return (baseClickValue + coinsPerSecondBonus) * 
+           state.incomeMultiplier * 
+           artifactMultiplier * 
+           tapBoostMultiplier * 
+           (isCritical ? critMultiplier : 1);
   };
   
   const handleAreaClick = () => {

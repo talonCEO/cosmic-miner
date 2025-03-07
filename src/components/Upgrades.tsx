@@ -1,4 +1,5 @@
 
+// NOTE: This file is quite large (237 lines). Consider refactoring into smaller components.
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress, isGoodValue } from '@/utils/gameLogic';

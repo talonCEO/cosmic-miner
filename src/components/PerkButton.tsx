@@ -4,7 +4,6 @@ import { Perk } from '@/utils/types';
 import { useGame } from '@/context/GameContext';
 import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
 import {
   Tooltip,
   TooltipContent,
@@ -55,7 +54,7 @@ const PerkButton: React.FC<PerkButtonProps> = ({
   const handleClick = () => {
     if (canUnlock) {
       onUnlock(perk.id, parentId);
-      toast.success(`Unlocked: ${perk.name}`);
+      // Toast notification removed as requested
     } else {
       handleShowTooltip();
       // Removed the toast.error notifications for unowned items or insufficient skill points

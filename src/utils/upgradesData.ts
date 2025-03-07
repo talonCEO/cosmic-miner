@@ -62,12 +62,12 @@ const createTapPowerUpgrade = (): Upgrade => {
   return {
     id: 'tap-power-1',
     name: 'Tap Power',
-    description: 'Improves active mining efficiency meaning you earn more while on the job. Each level increases your tap power by 10%.',
+    description: 'Improves active mining efficiency meaning you earn more while on the job. Each level increases your tap power by 5%.',
     cost: 100,
     baseCost: 100,
     level: 0,
     maxLevel: 1000,
-    coinsPerClickBonus: 0.1, // This is a multiplier now, not a flat value
+    coinsPerClickBonus: 0.05, // Changed from 0.1 (10%) to 0.05 (5%)
     coinsPerSecondBonus: 0,
     multiplierBonus: 0,
     icon: 'hand',
