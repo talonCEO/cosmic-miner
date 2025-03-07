@@ -93,7 +93,8 @@ type GameAction =
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
   | { type: 'ADD_SKILL_POINTS'; amount: number }
   | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
-  | { type: 'UNLOCK_PERK'; perkId: string; parentId: string };
+  | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
+  | { type: 'HANDLE_CLICK'; };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -700,6 +701,22 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         skillPoints: state.skillPoints + action.amount
       };
     }
+    case 'HANDLE_CLICK': {
+      // Calculate base click value
+      const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
+      
+      // Base click value also includes 10% of coins per second (synergy)
+      const baseClickValue = state.coinsPerClick;
+      const coinsPerSecondBonus = state.coinsPerSecond * 0.1;
+      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier;
+      
+      return {
+        ...state,
+        coins: state.coins + totalClickAmount,
+        totalClicks: state.totalClicks + 1,
+        totalEarned: state.totalEarned + totalClickAmount
+      };
+    }
     default:
       return state;
   }
@@ -723,6 +740,7 @@ interface GameContextType {
   checkAchievements: () => void;
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   calculatePotentialEssenceReward: () => number;
+  handleClick: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -798,6 +816,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
   const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
   const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
   
   // Show interstitial ad on prestige
   const prestige = async () => {
@@ -841,7 +860,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     unlockPerk,
     checkAchievements,
     calculateMaxPurchaseAmount,
-    calculatePotentialEssenceReward
+    calculatePotentialEssenceReward,
+    handleClick
   };
   
   return (
