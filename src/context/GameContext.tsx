@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList, UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -768,6 +767,8 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+export const gameContextHolder: { current: GameContextType | null } = { current: null };
+
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const { toast } = useToast();
@@ -886,6 +887,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     calculatePotentialEssenceReward,
     handleClick
   };
+
+  // Store context in the global holder to break circular dependency
+  gameContextHolder.current = contextValue;
   
   return (
     <GameContext.Provider value={contextValue}>
@@ -896,8 +900,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useGame = (): GameContextType => {
   const context = useContext(GameContext);
+  
+  // If we don't have a context from the provider, try to use the holder
   if (context === undefined) {
+    if (gameContextHolder.current) {
+      return gameContextHolder.current;
+    }
     throw new Error('useGame must be used within a GameProvider');
   }
+  
   return context;
 };
