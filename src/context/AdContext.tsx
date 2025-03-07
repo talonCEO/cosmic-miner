@@ -3,70 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useGame } from './GameContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useInterval } from '@/hooks/useInterval';
-
-// Real AdMob interstitial ad implementation
-const adUnitId = "ca-app-pub-3940256099942544/6300978111"; // Test AdMob ID
-
-// Initialize AdMob
-const initializeAdMob = (): Promise<void> => {
-  return new Promise((resolve) => {
-    if (typeof window.admob === 'undefined') {
-      console.log('AdMob not available - creating mock implementation');
-      // Create mock implementation if AdMob is not available (for development)
-      window.admob = {
-        interstitial: {
-          load: (options: any, callback: Function) => {
-            console.log('Mock: Loading interstitial ad', options);
-            setTimeout(() => callback(null), 500);
-          },
-          show: (callback: Function) => {
-            console.log('Mock: Showing interstitial ad');
-            setTimeout(() => callback(null), 1000);
-          }
-        }
-      };
-    }
-    console.log('AdMob initialized');
-    resolve();
-  });
-};
-
-// Load an interstitial ad
-const loadInterstitialAd = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    console.log('Loading interstitial ad...');
-    window.admob.interstitial.load(
-      { id: adUnitId },
-      (err: any) => {
-        if (err) {
-          console.error('Failed to load interstitial ad', err);
-          reject(err);
-        } else {
-          console.log('Interstitial ad loaded successfully');
-          resolve();
-        }
-      }
-    );
-  });
-};
-
-// Show the loaded interstitial ad
-const showInterstitialAd = (): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    console.log('Showing interstitial ad...');
-    window.admob.interstitial.show(
-      (err: any) => {
-        if (err) {
-          console.error('Failed to show interstitial ad', err);
-          reject(err);
-          return;
-        }
-        console.log('Interstitial ad shown successfully');
-        resolve(true);
-      }
-    );
-  });
-};
+import { adMobService } from '@/services/AdMobService';
 
 interface AdContextType {
   showAdNotification: boolean;
@@ -102,15 +39,38 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
   // Initialize AdMob when component mounts
   useEffect(() => {
-    initializeAdMob().then(() => {
-      // Pre-load an ad after initialization
-      loadInterstitialAd()
-        .then(() => setIsAdLoaded(true))
-        .catch(err => console.error('Failed to load initial ad', err));
-      
-      // Show first ad notification after initial delay (1-2 minutes)
-      setNextAdTime(Date.now() + initialAdDelay * 1000); 
-    });
+    const initAds = async () => {
+      try {
+        await adMobService.initialize();
+        // Pre-load an ad after initialization
+        const adLoaded = await adMobService.loadInterstitialAd();
+        setIsAdLoaded(adLoaded);
+        
+        // Set up event listeners
+        adMobService.setupAdEventListeners(
+          () => setIsAdLoaded(true),
+          () => setIsAdLoaded(false),
+          () => {
+            // Ad was watched successfully, apply boost
+            setAdBoostActive(true);
+            setAdBoostTimeRemaining(adBoostDuration);
+            setIncomeMultiplier(adBoostMultiplier);
+          }
+        );
+        
+        // Show first ad notification after initial delay
+        setNextAdTime(Date.now() + initialAdDelay * 1000); 
+      } catch (error) {
+        console.error('Error initializing ads:', error);
+      }
+    };
+    
+    initAds();
+    
+    // Cleanup event listeners when component unmounts
+    return () => {
+      adMobService.removeAllListeners();
+    };
   }, []);
 
   // Function to show ad notification at random intervals
@@ -134,8 +94,8 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       
       // If we don't have an ad loaded, try to load one
       if (!isAdLoaded) {
-        loadInterstitialAd()
-          .then(() => setIsAdLoaded(true))
+        adMobService.loadInterstitialAd()
+          .then(success => setIsAdLoaded(success))
           .catch(err => console.error('Failed to load ad', err));
       }
     }
@@ -172,41 +132,34 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     try {
       if (!isAdLoaded) {
         // Try to load the ad if not already loaded
-        await loadInterstitialAd();
+        const adLoaded = await adMobService.loadInterstitialAd();
+        setIsAdLoaded(adLoaded);
+        if (!adLoaded) {
+          throw new Error("Failed to load ad");
+        }
       }
       
       // Show the ad
-      const adCompleted = await showInterstitialAd();
+      const adCompleted = await adMobService.showInterstitialAd();
       setIsAdLoaded(false); // Ad was shown, so we need to load a new one
       
       // Load the next ad immediately
-      loadInterstitialAd()
-        .then(() => setIsAdLoaded(true))
+      adMobService.loadInterstitialAd()
+        .then(success => setIsAdLoaded(success))
         .catch(err => console.error('Failed to load next ad', err));
       
-      if (adCompleted) {
-        // Update last watched time
-        setLastAdWatchedTime(Date.now());
-        
-        // Set next random ad time
-        const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
-        setNextAdTime(Date.now() + nextDelay * 1000);
-        
-        // Apply boost
-        setAdBoostActive(true);
-        setAdBoostTimeRemaining(adBoostDuration);
-        
-        // Update income multiplier - directly modify income multiplier
-        setIncomeMultiplier(adBoostMultiplier);
-        
-        // No toast notification when boost is activated
-      }
+      // Update last watched time
+      setLastAdWatchedTime(Date.now());
+      
+      // Set next random ad time
+      const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+      setNextAdTime(Date.now() + nextDelay * 1000);
+      
+      // Apply boost will happen via event listener callback when ad is dismissed
     } catch (error) {
       console.error("Error showing ad:", error);
       
-      // No toast notification on error either
-      
-      // Still set next ad time to avoid spamming error
+      // Set next ad time to avoid spamming error
       const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
       setNextAdTime(Date.now() + nextDelay * 1000);
     }
@@ -242,15 +195,3 @@ export const useAd = (): AdContextType => {
   }
   return context;
 };
-
-// Add the type definition for admob global to avoid TypeScript errors
-declare global {
-  interface Window {
-    admob?: {
-      interstitial: {
-        load: (options: any, callback: (err: any) => void) => void;
-        show: (callback: (err: any) => void) => void;
-      }
-    }
-  }
-}
