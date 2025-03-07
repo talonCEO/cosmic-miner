@@ -8,7 +8,7 @@ type ListenerFunction = (...args: any[]) => void;
 
 // Interface to track listeners with their event name and function reference
 interface TrackedListener {
-  eventName: InterstitialAdPluginEvents;
+  eventName: string;
   listenerFn: ListenerFunction;
 }
 
@@ -67,7 +67,7 @@ class AdMobService {
   }
 
   // Helper method to add a listener and track it
-  private addTrackedListener(eventName: InterstitialAdPluginEvents, listenerFn: ListenerFunction): void {
+  private addTrackedListener(eventName: string, listenerFn: ListenerFunction): void {
     // Add to the AdMob plugin
     AdMob.addListener(eventName, listenerFn);
     
@@ -114,12 +114,11 @@ class AdMobService {
         return;
       }
       
-      // The AdMob plugin doesn't support removeListener directly, so we'll track which listeners 
-      // have been removed in our internal array
+      // Unfortunately, the AdMob plugin doesn't provide a direct way to remove specific listeners
+      // So we'll log the cleanup action and clear our tracking array
       console.log(`Cleaning up ${this.listeners.length} ad listeners`);
       
-      // Instead of removing, we'll create new listeners that do nothing to effectively "replace" the old ones
-      // This is a workaround since the actual removeListener API doesn't exist
+      // Clear our internal tracking array
       this.listeners = [];
       
       console.log('All ad listeners marked for cleanup');
