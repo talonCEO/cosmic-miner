@@ -43,6 +43,9 @@ const TechTree: React.FC = () => {
     });
   };
 
+  // Check if any ability in Row 2 is unlocked
+  const isRow2Unlocked = (abilitiesByRow[2] || []).some(ability => ability.unlocked);
+
   // Render circuit-like pathways (straight lines)
   const renderCircuitPathways = () => {
     const paths: JSX.Element[] = [];
@@ -72,7 +75,7 @@ const TechTree: React.FC = () => {
                 d={`M${start.x},${start.y} L${end.x},${end.y}`}
                 stroke="url(#circuitGradient)"
                 strokeWidth="2"
-                opacity="0.4" // Lowered opacity
+                opacity="0.4"
                 fill="none"
                 className="animate-flow"
               />
@@ -96,11 +99,11 @@ const TechTree: React.FC = () => {
                 <path
                   key={`${currentAbility.id}-${nextAbility.id}`}
                   d={`M${start.x},${start.y} L${end.x},${end.y}`}
-                stroke="url(#circuitGradient)"
-                strokeWidth="2"
-                opacity="0.4" // Lowered opacity
-                fill="none"
-                className="animate-flow"
+                  stroke="url(#circuitGradient)"
+                  strokeWidth="2"
+                  opacity="0.4"
+                  fill="none"
+                  className="animate-flow"
                 />
               );
             }
@@ -145,7 +148,9 @@ const TechTree: React.FC = () => {
             {Object.values(abilitiesByRow).flat().map((ability) => {
               const pos = treeRef.current?.querySelector(`[data-ability-id="${ability.id}"]`)?.getBoundingClientRect();
               const containerRect = treeRef.current?.getBoundingClientRect();
-              if (pos && containerRect && ability.unlocked) {
+              // Only show circle if ability is unlocked and (for Row 1) Row 2 has an unlock
+              const shouldShowCircle = ability.unlocked && (ability.row !== 1 || isRow2Unlocked);
+              if (pos && containerRect && shouldShowCircle) {
                 const x = pos.left - containerRect.left + pos.width / 2;
                 const y = pos.top - containerRect.top + pos.height / 2 - 8; // Move up slightly under icon
                 return (
@@ -155,7 +160,7 @@ const TechTree: React.FC = () => {
                     cy={y}
                     r="4"
                     fill="#22D3EE"
-                    opacity="0.2" // Lowered opacity
+                    opacity="0.2"
                     className="animate-pulse"
                   />
                 );
