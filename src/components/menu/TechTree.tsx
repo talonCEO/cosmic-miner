@@ -43,8 +43,8 @@ const TechTree: React.FC = () => {
     });
   };
 
-  // Render pathway lines
-  const renderPathways = () => {
+  // Render circuit-like pathways
+  const renderCircuitPathways = () => {
     const paths: JSX.Element[] = [];
     const getNodePosition = (abilityId: string) => {
       const node = treeRef.current?.querySelector(`[data-ability-id="${abilityId}"]`);
@@ -57,49 +57,50 @@ const TechTree: React.FC = () => {
       };
     };
 
-    // Row 1 (center) to Row 2 (center)
-    const row1Center = abilitiesByRow[1]?.[Math.floor(abilitiesByRow[1].length / 2)];
-    const row2Center = abilitiesByRow[2]?.[Math.floor(abilitiesByRow[2].length / 2)];
-    if (row1Center && row2Center) {
-      const start = getNodePosition(row1Center.id);
-      const end = getNodePosition(row2Center.id);
-      if (start && end) {
-        paths.push(
-          <path
-            key="row1-to-row2"
-            d={`M${start.x},${start.y} L${end.x},${end.y}`}
-            stroke="#A5B4FC" // Soft indigo
-            strokeWidth="1.5"
-            strokeDasharray="4 4"
-            opacity="0.3"
-            fill="none"
-            className="animate-pulse-slow"
-          />
-        );
-      }
-    }
+    // Connect Row 1 to Row 2 freely
+    const row1Abilities = abilitiesByRow[1] || [];
+    const row2Abilities = abilitiesByRow[2] || [];
+    row1Abilities.forEach((row1Ability) => {
+      row2Abilities.forEach((row2Ability) => {
+        if (row2Ability.requiredAbilities.includes(row1Ability.id) || Math.abs(row1Abilities.indexOf(row1Ability) - row2Abilities.indexOf(row2Ability)) <= 1) {
+          const start = getNodePosition(row1Ability.id);
+          const end = getNodePosition(row2Ability.id);
+          if (start && end) {
+            paths.push(
+              <path
+                key={`${row1Ability.id}-${row2Ability.id}`}
+                d={`M${start.x},${start.y} C${start.x + 50},${start.y + 50} ${end.x - 50},${end.y - 50} ${end.x},${end.y}`}
+                stroke="url(#circuitGradient)"
+                strokeWidth="2"
+                opacity="0.4"
+                fill="none"
+                className="animate-flow"
+              />
+            );
+          }
+        }
+      });
+    });
 
-    // Row 2 downward branching
+    // Connect subsequent rows
     for (let row = 2; row < 5; row++) {
       const currentRowAbilities = abilitiesByRow[row] || [];
       const nextRowAbilities = abilitiesByRow[row + 1] || [];
-      currentRowAbilities.forEach((currentAbility, index) => {
-        nextRowAbilities.forEach((nextAbility, nextIndex) => {
-          // Simple branching logic: connect to closest or same-index ability
-          if (Math.abs(index - nextIndex) <= 1 || nextAbility.requiredAbilities.includes(currentAbility.id)) {
+      currentRowAbilities.forEach((currentAbility) => {
+        nextRowAbilities.forEach((nextAbility) => {
+          if (nextAbility.requiredAbilities.includes(currentAbility.id) || Math.abs(currentRowAbilities.indexOf(currentAbility) - nextRowAbilities.indexOf(nextAbility)) <= 1) {
             const start = getNodePosition(currentAbility.id);
             const end = getNodePosition(nextAbility.id);
             if (start && end) {
               paths.push(
                 <path
                   key={`${currentAbility.id}-${nextAbility.id}`}
-                  d={`M${start.x},${start.y} Q${start.x},${(start.y + end.y) / 2} ${end.x},${end.y}`}
-                  stroke="#A5B4FC"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
-                  opacity="0.3"
+                  d={`M${start.x},${start.y} C${start.x + 50},${start.y + 50} ${end.x - 50},${end.y - 50} ${end.x},${end.y}`}
+                  stroke="url(#circuitGradient)"
+                  strokeWidth="2"
+                  opacity="0.4"
                   fill="none"
-                  className="animate-pulse-slow"
+                  className="animate-flow"
                 />
               );
             }
@@ -125,16 +126,22 @@ const TechTree: React.FC = () => {
           className="flex flex-col p-4 relative"
           ref={treeRef}
           style={{
-            background: 'radial-gradient(circle at center, rgba(55, 65, 81, 0.9) 0%, rgba(17, 24, 39, 1) 70%)',
+            background: '#1F2937 url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 20 20\'%3E%3Cpath fill=\'none\' stroke=\'rgba(75,85,99,0.2)\' stroke-width=\'1\' d=\'M0 10h20M10 0v20\'/%3E%3C/svg%3E") repeat',
           }}
         >
-          {/* SVG for Pathways */}
+          {/* SVG for Circuit Pathways */}
           <svg
             className="absolute top-0 left-0 w-full h-full pointer-events-none"
             style={{ zIndex: 1 }}
           >
-            {renderPathways()}
-            {/* Star-like dots at ability nodes */}
+            <defs>
+              <linearGradient id="circuitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: '#06B6D4', stopOpacity: 0.8 }} />
+                <stop offset="100%" style={{ stopColor: '#22D3EE', stopOpacity: 0.8 }} />
+              </linearGradient>
+            </defs>
+            {renderCircuitPathways()}
+            {/* Glowing node effects */}
             {Object.values(abilitiesByRow).flat().map((ability) => {
               const pos = treeRef.current?.querySelector(`[data-ability-id="${ability.id}"]`)?.getBoundingClientRect();
               const containerRect = treeRef.current?.getBoundingClientRect();
@@ -143,12 +150,13 @@ const TechTree: React.FC = () => {
                 const y = pos.top - containerRect.top + pos.height / 2;
                 return (
                   <circle
-                    key={`dot-${ability.id}`}
+                    key={`glow-${ability.id}`}
                     cx={x}
                     cy={y}
-                    r="2"
-                    fill="#A5B4FC"
-                    opacity="0.5"
+                    r="10"
+                    fill="#22D3EE"
+                    opacity={ability.unlocked ? 0.3 : canUnlockAbility(ability) ? 0.2 : 0.1}
+                    className="animate-pulse"
                   />
                 );
               }
@@ -231,12 +239,12 @@ const TechTree: React.FC = () => {
 
       {/* Custom CSS for animation */}
       <style jsx>{`
-        .animate-pulse-slow {
-          animation: pulse 4s infinite ease-in-out;
+        .animate-flow {
+          animation: flow 3s infinite linear;
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
+        @keyframes flow {
+          0% { stroke-dashoffset: 0; }
+          100% { stroke-dashoffset: -20; }
         }
       `}</style>
     </>
