@@ -81,6 +81,7 @@ export const calculateEssenceReward = (totalCoins: number): number => {
 /**
  * Calculate cost for the next level of an upgrade
  * Uses a compounding interest formula common in idle games
+ * Default 15% growth rate per level - this is a balanced value for most idle games
  */
 export const calculateUpgradeCost = (baseCost: number, level: number, growthRate: number = 1.15): number => {
   return Math.floor(baseCost * Math.pow(growthRate, level));
@@ -89,6 +90,7 @@ export const calculateUpgradeCost = (baseCost: number, level: number, growthRate
 /**
  * Calculate bulk purchase cost for multiple levels of an upgrade
  * Uses the sum of geometric series formula
+ * Default 15% growth rate per level
  */
 export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.15): number => {
   // Sum of geometric series: a * (1 - r^n) / (1 - r)
@@ -99,13 +101,15 @@ export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number
 
 /**
  * Calculate maximum affordable quantity of an upgrade
+ * Default 15% growth rate per level
  */
 export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number = 1.15): number => {
   // Solve for n in: coins = baseCost * growthRate^currentLevel * (1 - growthRate^n) / (1 - growthRate)
   // Simplified to: growthRate^n = 1 - (coins * (1 - growthRate)) / (baseCost * growthRate^currentLevel)
   
   const a = baseCost * Math.pow(growthRate, currentLevel);
-  const rightSide = 1 - (coins * (1 - growthRate)) / a;
+  const term = (coins * (1 - growthRate)) / a;
+  const rightSide = 1 - term;
   
   // Handle edge cases
   if (rightSide <= 0) {
@@ -115,4 +119,26 @@ export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, 
   
   // Calculate the quantity: n = log(rightSide) / log(growthRate)
   return Math.floor(Math.log(rightSide) / Math.log(growthRate));
+};
+
+/**
+ * Evaluate if an upgrade is a good value (worth buying)
+ * Based on Return on Investment (ROI) calculation
+ */
+export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean => {
+  if (coinsPerSecondBonus <= 0) return false;
+  
+  // Calculate how many seconds it would take to earn back the investment
+  const paybackPeriod = cost / coinsPerSecondBonus;
+  
+  // If it pays for itself in less than 100 seconds, it's a good value
+  return paybackPeriod < 100;
+};
+
+/**
+ * Calculate total production bonus from abilities and perks
+ * Useful for applying multiple bonuses multiplicatively
+ */
+export const calculateProductionMultiplier = (baseMultiplier: number, bonuses: number[]): number => {
+  return bonuses.reduce((total, bonus) => total * (1 + bonus), baseMultiplier);
 };

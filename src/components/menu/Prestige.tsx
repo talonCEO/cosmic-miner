@@ -57,7 +57,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward, handlePrest
         
         {potentialEssenceReward === 0 && (
           <p className="text-xs text-red-400 mt-2 text-center">
-            You need at least 100,000 total coins to earn essence.
+            You need at least 1,000,000 total coins to earn essence.
           </p>
         )}
       </div>
