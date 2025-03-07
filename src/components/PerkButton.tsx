@@ -54,10 +54,10 @@ const PerkButton: React.FC<PerkButtonProps> = ({
   const handleClick = () => {
     if (canUnlock) {
       onUnlock(perk.id, parentId);
-      // Toast notification removed as requested
+      // No toast notification
     } else {
       handleShowTooltip();
-      // Removed the toast.error notifications for unowned items or insufficient skill points
+      // No toast notification for insufficient skill points either
     }
   };
   

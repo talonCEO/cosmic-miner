@@ -1,5 +1,6 @@
+
 import { useGame } from '@/context/GameContext';
-import { Perk } from '@/utils/types';
+import { Perk, Artifact } from '@/utils/types';
 
 /**
  * useBoostManager Hook
@@ -430,4 +431,3 @@ export const useBoostManager = () => {
     calculateCriticalStats
   };
 };
-

@@ -37,14 +37,15 @@ const ArtifactsTab: React.FC = () => {
           // Get the actual effect description based on the artifact's effect type and highest perk
           const effectDescription = formatEffectDescription(artifact, highestPerk);
           
-          // Calculate opacity based on ownership
-          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-50';
+          // Calculate opacity based on ownership and unlocked perks
+          const hasUnlockedPerks = isOwned && artifact.perks && artifact.perks.some(p => p.unlocked);
+          const itemOpacity = isOwned && hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
           
           return (
             <div 
               key={artifact.id}
               className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-purple-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
-                ${isOwned ? 'hover:shadow-md hover:shadow-purple-500/20' : itemOpacity}`}
+                ${isOwned ? 'hover:shadow-md hover:shadow-purple-500/20' : ''} ${itemOpacity}`}
             >
               {/* Artifact Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">

@@ -60,7 +60,11 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 
 const ClickArea: React.FC = () => {
   const { state, click } = useGame();
-  const { calculateTapMultiplier, calculateCriticalStats } = useBoostManager();
+  const { 
+    calculateTapMultiplier, 
+    calculateCriticalStats,
+    calculateGlobalIncomeMultiplier 
+  } = useBoostManager();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,8 +76,11 @@ const ClickArea: React.FC = () => {
     const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
     const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
     
-    // Use our centralized boost manager to get tap multiplier
+    // Use our centralized boost manager to get tap multiplier from artifacts and abilities
     const artifactMultiplier = calculateTapMultiplier();
+    
+    // Get global income multiplier that applies to all income sources
+    const globalMultiplier = calculateGlobalIncomeMultiplier();
     
     // Apply base value and bonuses
     const baseClickValue = state.coinsPerClick; 
@@ -88,10 +95,12 @@ const ClickArea: React.FC = () => {
       isCritical = true;
     }
     
+    // Apply all multipliers together
     return (baseClickValue + coinsPerSecondBonus) * 
            state.incomeMultiplier * 
            artifactMultiplier * 
-           tapBoostMultiplier * 
+           tapBoostMultiplier *
+           globalMultiplier *
            (isCritical ? critMultiplier : 1);
   };
   
