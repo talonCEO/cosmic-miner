@@ -46,17 +46,17 @@ const TechTree: React.FC = () => {
   // Check if any ability in Row 2 is unlocked
   const isRow2Unlocked = (abilitiesByRow[2] || []).some(ability => ability.unlocked);
 
-  // Render circuit-like pathways (straight lines)
+  // Render circuit-like pathways with traveling glow
   const renderCircuitPathways = () => {
     const paths: JSX.Element[] = [];
     const getNodePosition = (abilityId: string) => {
       const node = treeRef.current?.querySelector(`[data-ability-id="${abilityId}"]`);
       if (!node) return null;
       const rect = node.getBoundingClientRect();
-      const containerRect = treeRef.current?.getBoundingClientRect();
+      const containerRect = treeRef.current?.getBoundingRectangl();
       return {
         x: rect.left - (containerRect?.left || 0) + rect.width / 2,
-        y: rect.top - (containerRect?.top || 0) + rect.height / 2, // Center of button for lines
+        y: rect.top - (containerRect?.top || 0) + rect.height / 2,
       };
     };
 
@@ -70,15 +70,34 @@ const TechTree: React.FC = () => {
           const end = getNodePosition(row2Ability.id);
           if (start && end && row1Ability.unlocked && row2Ability.unlocked) {
             paths.push(
-              <path
-                key={`${row1Ability.id}-${row2Ability.id}`}
-                d={`M${start.x},${start.y} L${end.x},${end.y}`}
-                stroke="url(#circuitGradient)"
-                strokeWidth="2"
-                opacity="0.4"
-                fill="none"
-                className="animate-flow"
-              />
+              <g key={`${row1Ability.id}-${row2Ability.id}`}>
+                <path
+                  d={`M${start.x},${start.y} L${end.x},${end.y}`}
+                  stroke="url(#circuitGradient)"
+                  strokeWidth="2"
+                  opacity="0.4"
+                  fill="none"
+                  className="animate-flow"
+                />
+                {/* Traveling glow particle */}
+                <circle
+                  cx={start.x}
+                  cy={start.y}
+                  r="6"
+                  fill="url(#circuitGradient)"
+                  filter="url(#blurGlow)"
+                  className="animate-travel"
+                >
+                  <animateMotion
+                    dur="2s"
+                    repeatCount="indefinite"
+                    path={`M${start.x},${start.y} L${end.x},${end.y}`}
+                    keyPoints="0;1;0"
+                    keyTimes="0;0.5;1"
+                    calcMode="linear"
+                  />
+                </circle>
+              </g>
             );
           }
         }
@@ -96,15 +115,34 @@ const TechTree: React.FC = () => {
             const end = getNodePosition(nextAbility.id);
             if (start && end && currentAbility.unlocked && nextAbility.unlocked) {
               paths.push(
-                <path
-                  key={`${currentAbility.id}-${nextAbility.id}`}
-                  d={`M${start.x},${start.y} L${end.x},${end.y}`}
-                  stroke="url(#circuitGradient)"
-                  strokeWidth="2"
-                  opacity="0.4"
-                  fill="none"
-                  className="animate-flow"
-                />
+                <g key={`${currentAbility.id}-${nextAbility.id}`}>
+                  <path
+                    d={`M${start.x},${start.y} L${end.x},${end.y}`}
+                    stroke="url(#circuitGradient)"
+                    strokeWidth="2"
+                    opacity="0.4"
+                    fill="none"
+                    className="animate-flow"
+                  />
+                  {/* Traveling glow particle */}
+                  <circle
+                    cx={start.x}
+                    cy={start.y}
+                    r="6"
+                    fill="url(#circuitGradient)"
+                    filter="url(#blurGlow)"
+                    className="animate-travel"
+                  >
+                    <animateMotion
+                      dur="2s"
+                      repeatCount="indefinite"
+                      path={`M${start.x},${start.y} L${end.x},${end.y}`}
+                      keyPoints="0;1;0"
+                      keyTimes="0;0.5;1"
+                      calcMode="linear"
+                    />
+                  </circle>
+                </g>
               );
             }
           }
@@ -142,17 +180,23 @@ const TechTree: React.FC = () => {
                 <stop offset="0%" style={{ stopColor: '#06B6D4', stopOpacity: 0.8 }} />
                 <stop offset="100%" style={{ stopColor: '#22D3EE', stopOpacity: 0.8 }} />
               </linearGradient>
+              {/* Blur filter for neon glow */}
+              <filter id="blurGlow">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+                <feComponentTransfer>
+                  <feFuncA type="linear" slope="1.5" />
+                </feComponentTransfer>
+              </filter>
             </defs>
             {renderCircuitPathways()}
             {/* Glowing node effects, positioned under icon */}
             {Object.values(abilitiesByRow).flat().map((ability) => {
               const pos = treeRef.current?.querySelector(`[data-ability-id="${ability.id}"]`)?.getBoundingClientRect();
               const containerRect = treeRef.current?.getBoundingClientRect();
-              // Only show circle if ability is unlocked and (for Row 1) Row 2 has an unlock
               const shouldShowCircle = ability.unlocked && (ability.row !== 1 || isRow2Unlocked);
               if (pos && containerRect && shouldShowCircle) {
                 const x = pos.left - containerRect.left + pos.width / 2;
-                const y = pos.top - containerRect.top + pos.height / 2 - 8; // Move up slightly under icon
+                const y = pos.top - containerRect.top + pos.height / 2 - 8;
                 return (
                   <circle
                     key={`glow-${ability.id}`}
@@ -242,7 +286,7 @@ const TechTree: React.FC = () => {
         </DialogClose>
       </div>
 
-      {/* Custom CSS for animation */}
+      {/* Custom CSS for animations */}
       <style jsx>{`
         .animate-flow {
           animation: flow 3s infinite linear;
@@ -250,6 +294,13 @@ const TechTree: React.FC = () => {
         @keyframes flow {
           0% { stroke-dashoffset: 0; }
           100% { stroke-dashoffset: -20; }
+        }
+        .animate-travel {
+          animation: glowPulse 1s infinite alternate;
+        }
+        @keyframes glowPulse {
+          0% { opacity: 0.6; }
+          100% { opacity: 0.9; }
         }
       `}</style>
     </>
