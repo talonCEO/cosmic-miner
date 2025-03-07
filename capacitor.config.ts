@@ -2,8 +2,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.yourusername.clickgame', // REPLACE with your unique app ID
-  appName: 'Cosmic Miner', // REPLACE with your game name
+  appId: 'com.yourusername.cosmic.miner', // REPLACE with your unique app ID
+  appName: 'Cosmic Miner', // You can keep or change this game name
   webDir: 'dist',
   server: {
     // For development only - remove for production build
@@ -16,7 +16,8 @@ const config: CapacitorConfig = {
     },
     // Add AdMob configuration
     AdMob: {
-      androidAppId: 'ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY', // REPLACE with your AdMob app ID
+      // Replace with your actual AdMob app ID
+      androidAppId: 'ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY', 
     }
   }
 };
