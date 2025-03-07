@@ -3,7 +3,8 @@ import { Upgrade } from '@/context/GameContext';
 
 // Categories
 export const UPGRADE_CATEGORIES = {
-  ELEMENT: 'element'
+  ELEMENT: 'element',
+  TAP: 'tap'
 };
 
 /**
@@ -53,6 +54,25 @@ const createElementUpgrade = (
     unlocked: id === 1, // Only the first element is unlocked by default
     unlocksAt: id > 1 ? { upgradeId: `element-${id-1}`, level: 1 } : undefined,
     category: UPGRADE_CATEGORIES.ELEMENT
+  };
+};
+
+// Create Tap Power upgrade
+const createTapPowerUpgrade = (): Upgrade => {
+  return {
+    id: 'tap-power-1',
+    name: 'Tap Power',
+    description: 'Improves active mining efficiency meaning you earn more while on the job. Each level increases your tap power by 10%.',
+    cost: 100,
+    baseCost: 100,
+    level: 0,
+    maxLevel: 1000,
+    coinsPerClickBonus: 0.1, // This is a multiplier now, not a flat value
+    coinsPerSecondBonus: 0,
+    multiplierBonus: 0,
+    icon: 'hand',
+    unlocked: true, // Available from the start
+    category: UPGRADE_CATEGORIES.TAP
   };
 };
 
@@ -116,5 +136,8 @@ export const upgradesList: Upgrade[] = [
   createElementUpgrade(47, 'Berkelium', 'Bk', 150000000000000000000000000, 4500000, 4000000, 'Synthetic element with no stable isotopes', 'test-tube'),
   createElementUpgrade(48, 'Californium', 'Cf', 500000000000000000000000000, 7000000, 6000000, 'Used in neutron moisture gauges', 'test-tube'),
   createElementUpgrade(49, 'Antimatter', 'AM', 1500000000000000000000000000, 12000000, 10000000, 'The ultimate power source', 'atom'),
-  createElementUpgrade(50, 'Exotic Matter', 'XM', 5000000000000000000000000000, 20000000, 18000000, 'Theoretical matter with unique properties', 'sparkles')
+  createElementUpgrade(50, 'Exotic Matter', 'XM', 5000000000000000000000000000, 20000000, 18000000, 'Theoretical matter with unique properties', 'sparkles'),
+  
+  // Add Tap Power as the last upgrade
+  createTapPowerUpgrade()
 ];

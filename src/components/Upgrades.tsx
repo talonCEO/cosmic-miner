@@ -5,10 +5,11 @@ import { formatNumber, calculateTimeToSave, calculateUpgradeProgress, isGoodValu
 import { 
   Atom, Battery, Bolt, Cpu, Database, Eye, FlaskConical, Flame, 
   Gem, Globe, Hammer, Lightbulb, Layers, Magnet, Monitor, Pickaxe, 
-  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote
+  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote, Hand
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 
 const Upgrades: React.FC = () => {
   const { state, buyUpgrade, toggleAutoBuy, calculateMaxPurchaseAmount } = useGame();
@@ -38,11 +39,22 @@ const Upgrades: React.FC = () => {
     'lightbulb': <Lightbulb size={20} />,
     'banknote': <Banknote size={20} />,
     'database': <Database size={20} />,
-    'test-tube': <TestTube size={20} />
+    'test-tube': <TestTube size={20} />,
+    'hand': <Hand size={20} />
   };
   
+  // Get all unlocked upgrades
   const unlockedUpgrades = state.upgrades.filter(upgrade => upgrade.unlocked);
-  const sortedUpgrades = [...unlockedUpgrades].sort((a, b) => a.baseCost - b.baseCost);
+  
+  // Split the upgrades into categories for ordering
+  const elementUpgrades = unlockedUpgrades.filter(u => u.category === UPGRADE_CATEGORIES.ELEMENT);
+  const tapUpgrades = unlockedUpgrades.filter(u => u.category === UPGRADE_CATEGORIES.TAP);
+  
+  // Sort the element upgrades by base cost
+  const sortedElementUpgrades = [...elementUpgrades].sort((a, b) => a.baseCost - b.baseCost);
+  
+  // Combine them with tap upgrades at the end
+  const sortedUpgrades = [...sortedElementUpgrades, ...tapUpgrades];
 
   const handleBulkPurchase = (upgradeId: string, quantity: number) => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
@@ -103,8 +115,24 @@ const Upgrades: React.FC = () => {
           const timeToSave = calculateTimeToSave(upgrade.cost, state.coins, state.coinsPerSecond);
           const isMaxLevel = upgrade.level >= upgrade.maxLevel;
           
-          const profitPerSecond = upgrade.coinsPerSecondBonus;
-          const isUpgradeGoodValue = isGoodValue(upgrade.cost, profitPerSecond);
+          // Determine if it's the Tap Power upgrade for special styling
+          const isTapUpgrade = upgrade.category === UPGRADE_CATEGORIES.TAP;
+          
+          // Calculate value indicator
+          let profitPerSecond = upgrade.coinsPerSecondBonus;
+          let isUpgradeGoodValue = isGoodValue(upgrade.cost, profitPerSecond);
+          
+          // Special UI for tap upgrades
+          let upgradeDescription = upgrade.description;
+          let bonusText = "";
+          
+          if (isTapUpgrade) {
+            const tapMultiplier = (upgrade.level * upgrade.coinsPerClickBonus) * 100;
+            bonusText = `+${tapMultiplier.toFixed(0)}% tap power`;
+            isUpgradeGoodValue = true; // Always show tap upgrades as good value
+          } else {
+            bonusText = upgrade.coinsPerSecondBonus > 0 ? `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec` : '';
+          }
           
           return (
             <div 
@@ -115,24 +143,25 @@ const Upgrades: React.FC = () => {
                   ? (isUpgradeGoodValue ? 'border-green-500/40' : 'border-indigo-500/40') 
                   : 'border-slate-700/40'} 
                 p-4 flex items-start gap-4 transition-all
+                ${isTapUpgrade ? 'bg-slate-800/60 border-amber-500/40' : ''}
                 ${!isMaxLevel ? (canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20 cursor-pointer' : '') : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
-                <div className={`flex items-center justify-center w-full h-full rounded-xl bg-indigo-900/50 text-indigo-300`}>
+              <Avatar className={`h-16 w-16 rounded-xl border-2 ${isTapUpgrade ? 'border-amber-500/50' : 'border-indigo-500/30'} shadow-lg ${isTapUpgrade ? 'shadow-amber-500/20' : 'shadow-indigo-500/10'}`}>
+                <div className={`flex items-center justify-center w-full h-full rounded-xl ${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'}`}>
                   {iconMap[upgrade.icon]}
                 </div>
-                <AvatarFallback className="bg-indigo-900/50 text-indigo-300 rounded-xl">
+                <AvatarFallback className={`${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'} rounded-xl`}>
                   {upgrade.name.substring(0, 2)}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1">
                 <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-slate-100">{upgrade.name}</h3>
+                  <h3 className={`font-bold ${isTapUpgrade ? 'text-amber-100' : 'text-slate-100'}`}>{upgrade.name}</h3>
                   <div className="text-right">
                     <p className={`font-medium ${canAfford 
-                      ? (isUpgradeGoodValue ? 'text-green-500' : 'text-indigo-500') 
+                      ? (isTapUpgrade ? 'text-amber-500' : (isUpgradeGoodValue ? 'text-green-500' : 'text-indigo-500')) 
                       : 'text-slate-400'}`}>
                       {isMaxLevel ? 'MAX' : formatNumber(upgrade.cost)}
                     </p>
@@ -141,22 +170,22 @@ const Upgrades: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-300 mt-1">{upgrade.description}</p>
+                <p className="text-sm text-slate-300 mt-1">{upgradeDescription}</p>
                 
                 {!isMaxLevel && (
                   <>
                     <div className="w-full bg-slate-700/50 rounded-full h-1.5 my-2">
                       <div 
                         className={`h-1.5 rounded-full transition-all duration-300 ${
-                          isUpgradeGoodValue ? 'bg-green-500' : 'bg-indigo-500'
+                          isTapUpgrade ? 'bg-amber-500' : (isUpgradeGoodValue ? 'bg-green-500' : 'bg-indigo-500')
                         }`}
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
                     
                     <div className="flex justify-between items-center text-xs mt-2">
-                      <span className={isUpgradeGoodValue ? 'text-green-400' : 'text-indigo-400'}>
-                        {upgrade.coinsPerSecondBonus > 0 && `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec`}
+                      <span className={isTapUpgrade ? 'text-amber-400' : (isUpgradeGoodValue ? 'text-green-400' : 'text-indigo-400')}>
+                        {bonusText}
                       </span>
                       {!canAfford && <span className="text-slate-400">{timeToSave}</span>}
                     </div>
@@ -180,7 +209,7 @@ const Upgrades: React.FC = () => {
                           e.stopPropagation();
                           handleMaxPurchase(upgrade.id);
                         }}
-                        className="px-2 py-0.5 bg-indigo-700/50 hover:bg-indigo-600/50 rounded text-xs font-medium transition-colors"
+                        className={`px-2 py-0.5 ${isTapUpgrade ? 'bg-amber-700/50 hover:bg-amber-600/50' : 'bg-indigo-700/50 hover:bg-indigo-600/50'} rounded text-xs font-medium transition-colors`}
                         title="Buy maximum affordable amount"
                       >
                         MAX

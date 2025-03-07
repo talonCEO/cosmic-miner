@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
@@ -79,7 +80,7 @@ const ClickArea: React.FC = () => {
       { id: nextId.current++, x: effectX, y: effectY }
     ]);
     
-    const particleCount = Math.min(10 + Math.floor(state.coinsPerClick / 100), 20);
+    const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
     const newParticles = [];
     
     for (let i = 0; i < particleCount; i++) {

@@ -294,13 +294,17 @@ const initialState: GameState = {
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
-      // Calculate base click value
+      // Get tap multiplier from tap power upgrade
+      const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
+      const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
+      
+      // Base click value is now weaker (35% of previous) but scales with tap power upgrade
       const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
       
-      // Base click value also includes 10% of coins per second (synergy)
-      const baseClickValue = state.coinsPerClick;
-      const coinsPerSecondBonus = state.coinsPerSecond * 0.1;
-      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier;
+      // Base click value now includes only 5% of coins per second (reduced synergy)
+      const baseClickValue = state.coinsPerClick * 0.35; // Reduced to 35% of original value
+      const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Reduced from 10% to 5%
+      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
       
       return {
         ...state,
@@ -352,9 +356,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // Check if the upgrade has crossed a 100-level milestone
       const shouldAwardSkillPoint = checkUpgradeMilestone(oldLevel, newLevel);
       
-      // Updated calculation of bonuses - more impactful
-      const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * maxPossibleQuantity);
-      const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * maxPossibleQuantity);
+      // Handle different upgrade types
+      let newCoinsPerClick = state.coinsPerClick;
+      let newCoinsPerSecond = state.coinsPerSecond;
+      
+      if (upgrade.category === UPGRADE_CATEGORIES.TAP) {
+        // For tap upgrades, we don't add directly to coinsPerClick
+        // Instead, we just update the level and the multiplier effect is applied during click
+      } else {
+        // For normal upgrades, apply the bonuses directly
+        newCoinsPerClick += upgrade.coinsPerClickBonus * maxPossibleQuantity;
+        newCoinsPerSecond += upgrade.coinsPerSecondBonus * maxPossibleQuantity;
+      }
       
       const updatedUpgrade = {
         ...upgrade,
@@ -412,6 +425,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       // Process passive income with smoother curve
       if (state.coinsPerSecond > 0) {
+        // Passive income is now stronger relative to clicking
         const passiveAmount = (state.coinsPerSecond / 10) * state.incomeMultiplier;
         newState = {
           ...newState,
@@ -422,11 +436,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       // Process auto tap if enabled
       if (newState.autoTap) {
+        // Get tap multiplier from tap power upgrade
+        const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
+        const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
+        
         const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
-        // Auto tap is 50% as effective as manual clicks
-        const baseClickValue = newState.coinsPerClick;
-        const coinsPerSecondBonus = newState.coinsPerSecond * 0.1;
-        const autoTapAmount = (baseClickValue + coinsPerSecondBonus) * newState.incomeMultiplier * clickMultiplier * 0.5;
+        // Auto tap is 40% as effective as manual clicks (reduced from 50%)
+        const baseClickValue = newState.coinsPerClick * 0.35; // Same reduction as manual clicks
+        const coinsPerSecondBonus = newState.coinsPerSecond * 0.05; // Same reduction as manual clicks
+        const autoTapAmount = (baseClickValue + coinsPerSecondBonus) * newState.incomeMultiplier * clickMultiplier * 0.4 * tapBoostMultiplier;
         
         newState = {
           ...newState,
@@ -702,13 +720,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     }
     case 'HANDLE_CLICK': {
-      // Calculate base click value
+      // Get tap multiplier from tap power upgrade
+      const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
+      const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
+      
+      // Base click value is now weaker but scales with tap power upgrade
       const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
       
-      // Base click value also includes 10% of coins per second (synergy)
-      const baseClickValue = state.coinsPerClick;
-      const coinsPerSecondBonus = state.coinsPerSecond * 0.1;
-      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier;
+      // Base click value now includes only 5% of coins per second (reduced synergy)
+      const baseClickValue = state.coinsPerClick * 0.35; // Reduced to 35% of original value
+      const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Reduced from 10% to 5%
+      const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
       
       return {
         ...state,
