@@ -4,16 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
 import { X, Plus, PlayCircle, Clock, Zap, MousePointerClick } from 'lucide-react';
 
-/**
- * AdNotification Component
- * 
- * Displays ad-related notifications and boost status indicators:
- * 1. An offer to watch an ad for one of three possible boosts
- * 2. Active boost indicator showing remaining time
- * 
- * Both elements have smooth animations for entry/exit and attention-grabbing effects.
- * Optimized for both web and mobile displays.
- */
 const AdNotification: React.FC = () => {
   const { 
     showAdNotification,

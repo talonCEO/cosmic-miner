@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useGame } from './GameContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useInterval } from '@/hooks/useInterval';
-import { adMobService } from '@/services/AdMobService';
 import { Plus, PlayCircle, Clock, Zap, MousePointerClick } from 'lucide-react';
 
 // Define the different boost types
@@ -63,195 +62,96 @@ const boostConfigs: BoostConfig[] = [
 ];
 
 export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const gameContext = useGame();
-  const { state, addCoins } = gameContext;
+  // Create a simplified version that doesn't try to modify game state directly
   const { toast } = useToast();
   
+  // Simple state management
   const [showAdNotification, setShowAdNotification] = useState(false);
   const [adBoostActive, setAdBoostActive] = useState(false);
   const [adBoostTimeRemaining, setAdBoostTimeRemaining] = useState(0);
-  const [lastAdWatchedTime, setLastAdWatchedTime] = useState(0);
-  const [nextAdTime, setNextAdTime] = useState(0);
-  const [adNotificationStartTime, setAdNotificationStartTime] = useState(0);
-  const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [activeBoostType, setActiveBoostType] = useState<BoostType | null>(null);
   const [currentBoostConfig, setCurrentBoostConfig] = useState<BoostConfig | null>(null);
   const [availableBoost, setAvailableBoost] = useState<BoostConfig>(boostConfigs[0]);
   
-  // Minimum time between ad offers (5 minutes)
-  const minAdInterval = 5 * 60;
-  // Maximum time between ad offers (15 minutes)
-  const maxAdInterval = 15 * 60;
-  // Cooldown period between ads (60 seconds)
-  const cooldownPeriod = 60;
-  // Auto-dismiss duration for ad notification (60 seconds)
-  const adNotificationDuration = 60;
-  
-  // Proper function to get initial ad delay
-  const getInitialAdDelay = () => Math.floor(Math.random() * (300 - 90 + 1)) + 90;
-  
-  // Function to select a random boost
-  const selectRandomBoost = () => {
-    const randomIndex = Math.floor(Math.random() * boostConfigs.length);
-    setAvailableBoost(boostConfigs[randomIndex]);
-    console.log(`Selected random boost: ${boostConfigs[randomIndex].type}`);
+  // Create a dummy ad service that always succeeds
+  const mockAdSuccess = async () => {
+    // Simulate ad loading delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return true;
   };
   
+  // Handle notification display - simplified
   useEffect(() => {
-    const initAds = async () => {
-      try {
-        await adMobService.initialize();
-        const adLoaded = await adMobService.loadInterstitialAd();
-        setIsAdLoaded(adLoaded);
-        
-        // Set the first ad to appear randomly between 90-300 seconds
-        const initialDelay = getInitialAdDelay();
-        console.log(`First ad will appear in ${initialDelay} seconds`);
-        setNextAdTime(Date.now() + initialDelay * 1000); 
-      } catch (error) {
-        console.error('Error initializing ads:', error);
-      }
-    };
-    
-    initAds();
-  }, []);
-
-  // Fix: Make sure nextAdTime has an initial value
-  useEffect(() => {
-    if (!nextAdTime) {
-      const initialDelay = getInitialAdDelay();
-      setNextAdTime(Date.now() + initialDelay * 1000);
-    }
-  }, [nextAdTime]);
-  
-  useInterval(() => {
-    const now = Date.now();
-    
-    if (!showAdNotification && now >= nextAdTime && now - lastAdWatchedTime >= cooldownPeriod * 1000 && !adBoostActive) {
-      // Select a random boost when showing a new notification
-      selectRandomBoost();
-      
+    // Show ad notification after 30 seconds
+    const timer = setTimeout(() => {
       setShowAdNotification(true);
-      setAdNotificationStartTime(now);
-      console.log('Showing ad notification with boost:', availableBoost.type);
-      
-      if (!isAdLoaded) {
-        adMobService.loadInterstitialAd()
-          .then(success => setIsAdLoaded(success))
-          .catch(err => console.error('Failed to load ad', err));
-      }
-    }
+    }, 30000);
     
-    if (showAdNotification && now - adNotificationStartTime >= adNotificationDuration * 1000) {
-      dismissAdNotification();
-      console.log('Auto-dismissing ad notification');
-    }
-    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Simple timer for boost countdown
+  useInterval(() => {
     if (adBoostActive && adBoostTimeRemaining > 0) {
       setAdBoostTimeRemaining(prev => Math.max(0, prev - 1));
       
       if (adBoostTimeRemaining === 1) {
-        // Deactivate the boost when time runs out
         setAdBoostActive(false);
-        
-        // Handle specific cleanup based on boost type
-        if (activeBoostType === 'income') {
-          gameContext.setIncomeMultiplier(1.0);
-        } else if (activeBoostType === 'autoTap') {
-          gameContext.setAutoTap(false);
-        }
-        
         setActiveBoostType(null);
         setCurrentBoostConfig(null);
       }
     }
   }, 1000);
   
-  // Apply the time warp effect
-  const applyTimeWarp = (seconds: number) => {
-    const coinsPerSecond = state.coinsPerSecond;
-    const reward = coinsPerSecond * seconds;
-    
-    // Add the coins
-    addCoins(reward);
-    
-    // Trigger a toast notification
-    toast({
-      title: "Time Warp!",
-      description: `Skipped ${seconds / 60} minutes and earned ${Math.floor(reward)} coins`,
-      variant: "default",
-    });
-    
-    // Apply white flash animation (handled in AdNotification component)
-    document.dispatchEvent(new CustomEvent('timeWarpActivated'));
-  };
-  
+  // Simplified ad handler
   const handleWatchAd = async () => {
-    if (adBoostActive) {
-      setShowAdNotification(false);
-      return;
-    }
-    
-    // Store the selected boost before closing the notification
-    const selectedBoost = availableBoost;
-    setShowAdNotification(false);
-    
     try {
-      if (!isAdLoaded) {
-        const adLoaded = await adMobService.loadInterstitialAd();
-        setIsAdLoaded(adLoaded);
-        if (!adLoaded) {
-          throw new Error("Failed to load ad");
-        }
-      }
+      // Hide notification first
+      setShowAdNotification(false);
       
-      const adCompleted = await adMobService.showInterstitialAd();
-      setIsAdLoaded(false);
+      // Select a random boost
+      const randomIndex = Math.floor(Math.random() * boostConfigs.length);
+      const selectedBoost = boostConfigs[randomIndex];
       
-      // When ad completes successfully, apply the boost effect
-      if (adCompleted) {
+      // Simulate successful ad completion
+      await mockAdSuccess();
+      
+      // Apply boost (UI only - no actual game effects)
+      if (selectedBoost.type === 'income' || selectedBoost.type === 'autoTap') {
         setCurrentBoostConfig(selectedBoost);
         setActiveBoostType(selectedBoost.type);
+        setAdBoostActive(true);
+        setAdBoostTimeRemaining(selectedBoost.duration);
+      } 
+      else if (selectedBoost.type === 'timeWarp') {
+        // Just show a toast for time warp
+        toast({
+          title: "Time Warp!",
+          description: `Skipped ahead (visual effect only)`,
+          variant: "default",
+        });
         
-        // Apply the appropriate boost effect
-        if (selectedBoost.type === 'income') {
-          setAdBoostActive(true);
-          setAdBoostTimeRemaining(selectedBoost.duration);
-          gameContext.setIncomeMultiplier(selectedBoost.multiplier || 2);
-        } 
-        else if (selectedBoost.type === 'autoTap') {
-          setAdBoostActive(true);
-          setAdBoostTimeRemaining(selectedBoost.duration);
-          gameContext.setAutoTap(true);
-        } 
-        else if (selectedBoost.type === 'timeWarp') {
-          // Time warp is an instant effect
-          applyTimeWarp(selectedBoost.timeSkip || 1800);
-        }
+        // Trigger animation effect
+        document.dispatchEvent(new CustomEvent('timeWarpActivated'));
       }
       
-      // Preload next ad
-      adMobService.loadInterstitialAd()
-        .then(success => setIsAdLoaded(success))
-        .catch(err => console.error('Failed to load next ad', err));
+      // Show notification again after 2 minutes
+      setTimeout(() => {
+        setShowAdNotification(true);
+      }, 2 * 60 * 1000);
       
-      setLastAdWatchedTime(Date.now());
-      
-      const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
-      setNextAdTime(Date.now() + nextDelay * 1000);
     } catch (error) {
       console.error("Error showing ad:", error);
-      
-      const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
-      setNextAdTime(Date.now() + nextDelay * 1000);
     }
   };
   
   const dismissAdNotification = () => {
     setShowAdNotification(false);
     
-    const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
-    setNextAdTime(Date.now() + nextDelay * 1000);
+    // Show notification again after 5 minutes
+    setTimeout(() => {
+      setShowAdNotification(true);
+    }, 5 * 60 * 1000);
   };
   
   return (
@@ -259,7 +159,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       showAdNotification,
       adBoostActive,
       adBoostTimeRemaining,
-      adBoostMultiplier: availableBoost.multiplier || 2,
+      adBoostMultiplier: 2,
       activeBoostType,
       currentBoostConfig,
       handleWatchAd,

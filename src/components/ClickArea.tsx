@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { useAd } from '@/context/AdContext';
@@ -66,36 +67,8 @@ const ClickArea: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
-  const autoTapIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Handle auto tap functionality with improved logic
-  useEffect(() => {
-    // Clear any existing interval first
-    if (autoTapIntervalRef.current) {
-      clearInterval(autoTapIntervalRef.current);
-      autoTapIntervalRef.current = null;
-    }
-    
-    // Set up auto tap if active
-    const isAutoTapActive = activeBoostType === 'autoTap';
-    if (isAutoTapActive) {
-      console.log("Starting auto tap interval");
-      const autoTapInterval = 1000 / 5; // 5 times per second
-      
-      autoTapIntervalRef.current = setInterval(() => {
-        simulateClick();
-      }, autoTapInterval);
-    }
-    
-    // Cleanup on unmount or when dependency changes
-    return () => {
-      if (autoTapIntervalRef.current) {
-        clearInterval(autoTapIntervalRef.current);
-        autoTapIntervalRef.current = null;
-      }
-    };
-  }, [activeBoostType]); // Only dependency is activeBoostType
-  
+  // Simplified click simulation
   const simulateClick = () => {
     if (!containerRef.current) return;
     
@@ -145,7 +118,7 @@ const ClickArea: React.FC = () => {
   };
   
   const handleAreaClick = () => {
-    // If auto tap is active, disable manual clicking
+    // Disable manual clicking if auto tap is active
     if (activeBoostType === 'autoTap') return;
     
     simulateClick();

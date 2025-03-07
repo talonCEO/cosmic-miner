@@ -1,51 +1,40 @@
 
-import { AdMob, AdOptions } from '@capacitor-community/admob';
-
-// Simple AdMobService that doesn't try to track listeners or handle complex event types
+// Simplified mock AdMobService that doesn't try to use real AdMob
 class AdMobService {
-  // Test ad IDs - replace with your real IDs in production
-  private interstitialAdId = 'ca-app-pub-3940256099942544/1033173712'; // Test ID
   private initialized = false;
 
-  // Initialize AdMob
+  // Initialize AdMob (mock)
   async initialize(): Promise<void> {
     if (!this.initialized) {
       try {
-        await AdMob.initialize();
-        console.log('AdMob initialized successfully');
+        console.log('Mock AdMob initialized successfully');
         this.initialized = true;
       } catch (error) {
-        console.error('Failed to initialize AdMob:', error);
+        console.error('Failed to initialize mock AdMob:', error);
       }
     }
   }
 
-  // Load an interstitial ad
+  // Load an interstitial ad (mock)
   async loadInterstitialAd(): Promise<boolean> {
     try {
       if (!this.initialized) await this.initialize();
       
-      const options: AdOptions = {
-        adId: this.interstitialAdId,
-      };
-      
-      await AdMob.prepareInterstitial(options);
-      console.log('Interstitial ad loaded successfully');
+      console.log('Mock interstitial ad loaded successfully');
       return true;
     } catch (error) {
-      console.error('Failed to load interstitial ad:', error);
+      console.error('Failed to load mock interstitial ad:', error);
       return false;
     }
   }
 
-  // Show the loaded interstitial ad
+  // Show the loaded interstitial ad (mock)
   async showInterstitialAd(): Promise<boolean> {
     try {
-      const result = await AdMob.showInterstitial();
-      console.log('Interstitial ad shown successfully:', result);
+      console.log('Mock interstitial ad shown successfully');
       return true;
     } catch (error) {
-      console.error('Failed to show interstitial ad:', error);
+      console.error('Failed to show mock interstitial ad:', error);
       return false;
     }
   }
