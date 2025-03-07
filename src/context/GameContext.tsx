@@ -753,6 +753,7 @@ interface GameContextType {
   buyUpgrade: (upgradeId: string, quantity?: number) => void;
   toggleAutoBuy: () => void;
   toggleAutoTap: () => void;
+  setAutoTap: (enabled: boolean) => void;
   setIncomeMultiplier: (multiplier: number) => void;
   prestige: () => void;
   buyManager: (managerId: string) => void;
@@ -834,80 +835,5 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
   const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
   const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
-  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
-  const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
-  const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
-  const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
-  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
-  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
-  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
-  
-  // Show interstitial ad on prestige
-  const prestige = async () => {
-    // First calculate the reward to show it in the toast
-    const essenceReward = calculatePotentialEssenceReward();
-    
-    // Dispatch the prestige action
-    dispatch({ type: 'PRESTIGE' });
-    
-    // Show toast notification
-    toast({
-      title: "Prestige Complete!",
-      description: `Gained ${essenceReward} essence from prestige`,
-      variant: "default",
-    });
-    
-    // Show an interstitial ad occasionally after prestige
-    try {
-      await adMobService.showInterstitialAd();
-      // Load a new ad for next time
-      await adMobService.loadInterstitialAd();
-    } catch (error) {
-      console.log("Ad failed to show:", error);
-    }
-  };
-  
-  const contextValue: GameContextType = {
-    state,
-    dispatch,
-    click,
-    addCoins,
-    addEssence,
-    buyUpgrade,
-    toggleAutoBuy,
-    toggleAutoTap,
-    setIncomeMultiplier,
-    prestige,
-    buyManager,
-    buyArtifact,
-    unlockAbility,
-    unlockPerk,
-    checkAchievements,
-    calculateMaxPurchaseAmount,
-    calculatePotentialEssenceReward,
-    handleClick
-  };
-
-  // Store context in the global holder to break circular dependency
-  gameContextHolder.current = contextValue;
-  
-  return (
-    <GameContext.Provider value={contextValue}>
-      {children}
-    </GameContext.Provider>
-  );
-};
-
-export const useGame = (): GameContextType => {
-  const context = useContext(GameContext);
-  
-  // If we don't have a context from the provider, try to use the holder
-  if (context === undefined) {
-    if (gameContextHolder.current) {
-      return gameContextHolder.current;
-    }
-    throw new Error('useGame must be used within a GameProvider');
-  }
-  
-  return context;
-};
+  const setAutoTap = (enabled: boolean) => dispatch({ type: 'TOGGLE_AUTO_TAP' });
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier

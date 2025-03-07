@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGame } from './GameContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -63,7 +62,7 @@ const boostConfigs: BoostConfig[] = [
 ];
 
 export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { state, setIncomeMultiplier, addCoins, setAutoTap } = useGame();
+  const { state, setIncomeMultiplier, addCoins, toggleAutoTap } = useGame();
   const { toast } = useToast();
   
   const [showAdNotification, setShowAdNotification] = useState(false);
@@ -151,7 +150,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (activeBoostType === 'income') {
           setIncomeMultiplier(1.0);
         } else if (activeBoostType === 'autoTap') {
-          setAutoTap(false);
+          toggleAutoTap();
         }
         
         setActiveBoostType(null);
@@ -215,7 +214,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         else if (selectedBoost.type === 'autoTap') {
           setAdBoostActive(true);
           setAdBoostTimeRemaining(selectedBoost.duration);
-          setAutoTap(true);
+          toggleAutoTap();
         } 
         else if (selectedBoost.type === 'timeWarp') {
           // Time warp is an instant effect
