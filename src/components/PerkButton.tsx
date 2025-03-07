@@ -58,11 +58,7 @@ const PerkButton: React.FC<PerkButtonProps> = ({
       toast.success(`Unlocked: ${perk.name}`);
     } else {
       handleShowTooltip();
-      if (disabled) {
-        toast.error("You must own this item first!");
-      } else if (state.skillPoints < perk.cost) {
-        toast.error(`Need ${perk.cost - state.skillPoints} more skill points!`);
-      }
+      // Removed the toast.error notifications for unowned items or insufficient skill points
     }
   };
   

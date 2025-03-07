@@ -5,7 +5,6 @@ import { useGame } from '@/context/GameContext';
 import { managers } from '@/utils/managersData';
 import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
-import { toast } from 'sonner';
 
 /**
  * Managers Component
@@ -42,18 +41,9 @@ const Managers: React.FC = () => {
     );
   };
 
-  // Handle unlocking a perk with notification
+  // Handle unlocking a perk
   const handleUnlockPerk = (perkId: string, parentId: string) => {
     unlockPerk(perkId, parentId);
-    
-    // Find the perk to display in notification
-    const manager = state.managers.find(m => m.id === parentId);
-    if (manager && manager.perks) {
-      const perk = manager.perks.find(p => p.id === perkId);
-      if (perk) {
-        toast.success(`Unlocked: ${perk.name}`);
-      }
-    }
   };
   
   return (
