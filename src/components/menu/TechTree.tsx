@@ -147,7 +147,7 @@ const TechTree: React.FC = () => {
               const containerRect = treeRef.current?.getBoundingClientRect();
               if (pos && containerRect && ability.unlocked) {
                 const x = pos.left - containerRect.left + pos.width / 2;
-                const y = pos.top - containerRect.top + pos.height / 2 - 8; // Move up slightly under icon
+                const y = pos.top - containerRect.top + pos.height / 2 - 32; // Move up slightly under icon
                 return (
                   <circle
                     key={`glow-${ability.id}`}
