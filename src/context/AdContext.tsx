@@ -63,7 +63,8 @@ const boostConfigs: BoostConfig[] = [
 ];
 
 export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { state, toggleAutoTap, setIncomeMultiplier, addCoins } = useGame();
+  const gameContext = useGame();
+  const { state, addCoins } = gameContext;
   const { toast } = useToast();
   
   const [showAdNotification, setShowAdNotification] = useState(false);
@@ -85,8 +86,16 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const cooldownPeriod = 60;
   // Auto-dismiss duration for ad notification (60 seconds)
   const adNotificationDuration = 60;
-  // Delay for the first ad: randomly between 90 to 300 seconds
+  
+  // Proper function to get initial ad delay
   const getInitialAdDelay = () => Math.floor(Math.random() * (300 - 90 + 1)) + 90;
+  
+  // Function to select a random boost
+  const selectRandomBoost = () => {
+    const randomIndex = Math.floor(Math.random() * boostConfigs.length);
+    setAvailableBoost(boostConfigs[randomIndex]);
+    console.log(`Selected random boost: ${boostConfigs[randomIndex].type}`);
+  };
   
   useEffect(() => {
     const initAds = async () => {
@@ -107,19 +116,13 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     initAds();
   }, []);
 
+  // Fix: Make sure nextAdTime has an initial value
   useEffect(() => {
     if (!nextAdTime) {
       const initialDelay = getInitialAdDelay();
       setNextAdTime(Date.now() + initialDelay * 1000);
     }
-  }, []);
-  
-  // Function to select a random boost
-  const selectRandomBoost = () => {
-    const randomIndex = Math.floor(Math.random() * boostConfigs.length);
-    setAvailableBoost(boostConfigs[randomIndex]);
-    console.log(`Selected random boost: ${boostConfigs[randomIndex].type}`);
-  };
+  }, [nextAdTime]);
   
   useInterval(() => {
     const now = Date.now();
@@ -153,9 +156,9 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         
         // Handle specific cleanup based on boost type
         if (activeBoostType === 'income') {
-          setIncomeMultiplier(1.0);
+          gameContext.setIncomeMultiplier(1.0);
         } else if (activeBoostType === 'autoTap') {
-          toggleAutoTap();
+          gameContext.setAutoTap(false);
         }
         
         setActiveBoostType(null);
@@ -214,12 +217,12 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (selectedBoost.type === 'income') {
           setAdBoostActive(true);
           setAdBoostTimeRemaining(selectedBoost.duration);
-          setIncomeMultiplier(selectedBoost.multiplier || 2);
+          gameContext.setIncomeMultiplier(selectedBoost.multiplier || 2);
         } 
         else if (selectedBoost.type === 'autoTap') {
           setAdBoostActive(true);
           setAdBoostTimeRemaining(selectedBoost.duration);
-          toggleAutoTap();
+          gameContext.setAutoTap(true);
         } 
         else if (selectedBoost.type === 'timeWarp') {
           // Time warp is an instant effect
