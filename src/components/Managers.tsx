@@ -21,6 +21,12 @@ import PerkButton from './PerkButton';
 const Managers: React.FC = () => {
   const { state, unlockPerk } = useGame();
   
+  // Helper function to get element name from element ID
+  const getElementName = (elementId: string): string => {
+    const element = state.upgrades.find(u => u.id === elementId);
+    return element ? element.name : elementId;
+  };
+  
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Element Managers</h2>
@@ -28,6 +34,13 @@ const Managers: React.FC = () => {
       <div className="space-y-4">
         {managers.map((manager, index) => {
           const isOwned = state.ownedManagers.includes(manager.id);
+          
+          // Generate a more detailed bonus description for managers with element boosts
+          let bonusDescription = manager.bonus;
+          if (manager.boosts && manager.boosts.length > 0) {
+            const boostedElements = manager.boosts.map(getElementName).join(' and ');
+            bonusDescription = `Increases ${boostedElements} production by 50%`;
+          }
           
           return (
             <div 
@@ -50,7 +63,7 @@ const Managers: React.FC = () => {
                 </div>
                 <p className="text-sm text-slate-300 mt-1">{manager.description}</p>
                 <p className="text-xs text-indigo-400 mt-2 font-medium">
-                  {manager.bonus}
+                  {bonusDescription}
                 </p>
               </div>
               

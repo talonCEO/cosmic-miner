@@ -28,6 +28,28 @@ const ArtifactsTab: React.FC = () => {
         {state.artifacts.map((artifact, index) => {
           const isOwned = state.ownedArtifacts.includes(artifact.id);
           
+          // Get the actual effect description based on the artifact's effect type
+          let effectDescription = artifact.bonus;
+          if (artifact.effect) {
+            switch(artifact.effect.type) {
+              case 'production':
+                effectDescription = `Increases all production by ${artifact.effect.value * 100}%`;
+                break;
+              case 'tap':
+                effectDescription = `${artifact.effect.value}x tap multiplier`;
+                break;
+              case 'essence':
+                effectDescription = `${artifact.effect.value * 100}% more essence from prestiging`;
+                break;
+              case 'cost':
+                effectDescription = `Reduces upgrade costs by ${artifact.effect.value * 100}%`;
+                break;
+              case 'startingCoins':
+                effectDescription = `Start with ${artifact.effect.value.toLocaleString()} coins after each prestige`;
+                break;
+            }
+          }
+          
           return (
             <div 
               key={artifact.id}
@@ -49,7 +71,7 @@ const ArtifactsTab: React.FC = () => {
                 </div>
                 <p className="text-sm text-slate-300 mt-1">{artifact.description}</p>
                 <p className="text-xs text-purple-400 mt-2 font-medium">
-                  {artifact.bonus}
+                  {effectDescription}
                 </p>
               </div>
               

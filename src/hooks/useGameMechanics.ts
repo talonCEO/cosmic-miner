@@ -47,6 +47,21 @@ export const calculateStartingCoins = (ownedArtifacts: string[]): number => {
   return coins;
 };
 
+// Helper function to calculate element multiplier from managers
+export const calculateManagerBoost = (elementId: string, ownedManagers: string[]): number => {
+  let boost = 1; // Base multiplier (no boost)
+  
+  // Check if any owned managers boost this element
+  managers.forEach(manager => {
+    if (ownedManagers.includes(manager.id) && manager.boosts && manager.boosts.includes(elementId)) {
+      // Each manager that boosts this element adds 50% to the multiplier
+      boost += 0.5;
+    }
+  });
+  
+  return boost;
+};
+
 // Check if an upgrade has reached a milestone level that awards a skill point
 export const checkUpgradeMilestone = (oldLevel: number, newLevel: number): boolean => {
   const oldMilestone = Math.floor(oldLevel / 100);
@@ -105,6 +120,7 @@ export default function useGameMechanics() {
     calculateCostReduction,
     calculateClickMultiplier,
     calculateStartingCoins,
+    calculateManagerBoost,
     checkUpgradeMilestone,
     createAchievements
   };

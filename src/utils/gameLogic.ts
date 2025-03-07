@@ -83,7 +83,7 @@ export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: strin
     multiplier += 0.25;
   }
   if (ownedArtifacts?.includes("artifact-8")) { // Quantum Microscope
-    multiplier += 0.5;
+    multiplier += 1.25;
   }
   
   return Math.max(0, Math.floor(baseEssence * multiplier));
@@ -144,6 +144,22 @@ export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean 
   
   // If it pays for itself in less than 100 seconds, it's a good value
   return paybackPeriod < 100;
+};
+
+/**
+ * Calculate click multiplier from artifacts
+ */
+export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number => {
+  let multiplier = 1;
+  
+  if (ownedArtifacts.includes("artifact-2")) { // Space Rocket
+    multiplier += 0.5; // adds 50% (1.5x multiplier)
+  }
+  if (ownedArtifacts.includes("artifact-7")) { // Molecular Flask
+    multiplier += 1.5; // adds 150% (additional 2.5x multiplier)
+  }
+  
+  return multiplier;
 };
 
 /**

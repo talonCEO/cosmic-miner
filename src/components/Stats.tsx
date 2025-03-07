@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
-import { formatNumber } from '@/utils/gameLogic';
+import { formatNumber, calculateClickMultiplier } from '@/utils/gameLogic';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ShieldQuestion } from 'lucide-react';
 import { 
@@ -23,7 +22,6 @@ const Stats: React.FC = () => {
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
-        // Convert old data format to new format if needed
         const convertedData = parsedData.map((item: any) => ({
           time: item.time,
           gross: item.totalEarned || 0,
@@ -95,11 +93,27 @@ const Stats: React.FC = () => {
     }
   }, [state.totalEarned, resourceData, state.essence]);
   
+  const calculateActualCoinsPerTap = () => {
+    const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
+    const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
+    
+    const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
+    
+    const baseClickValue = state.coinsPerClick * 0.35;
+    const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
+    
+    return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
+  };
+  
+  const calculateActualCoinsPerSecond = () => {
+    return state.coinsPerSecond * state.incomeMultiplier;
+  };
+
   const stats = [
     { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1) + 'x' },
     { label: 'Coins Earned', value: formatNumber(state.totalEarned) },
-    { label: 'CPT (Coins Per Tap)', value: formatNumber(state.coinsPerClick) },
-    { label: 'CPS (Coins Per Sec)', value: formatNumber(state.coinsPerSecond) }
+    { label: 'CPT (Coins Per Tap)', value: formatNumber(calculateActualCoinsPerTap()) },
+    { label: 'CPS (Coins Per Sec)', value: formatNumber(calculateActualCoinsPerSecond()) }
   ];
   
   const formatYAxis = (value: number) => {
@@ -142,8 +156,8 @@ const Stats: React.FC = () => {
     { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
     { category: "Resources", icon: "💵", name: "Gross Revenue", value: formatNumber(state.totalEarned) },
     { category: "Resources", icon: "📊", name: "Net Revenue", value: formatNumber(state.coins) },
-    { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(state.coinsPerClick) },
-    { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(state.coinsPerSecond) },
+    { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(calculateActualCoinsPerTap()) },
+    { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(calculateActualCoinsPerSecond()) },
     { category: "Production", icon: "⚡", name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
     { category: "Interactions", icon: "🖱️", name: "Total Clicks", value: formatNumber(state.totalClicks) },
     { category: "Interactions", icon: "🔄", name: "Prestige Count", value: state.prestigeCount || 0 },
