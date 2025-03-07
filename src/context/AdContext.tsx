@@ -67,9 +67,10 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     
     initAds();
     
-    // Cleanup event listeners when component unmounts
+    // Clean up function that will run when component unmounts
     return () => {
-      adMobService.removeAllListeners();
+      // Log that we're cleaning up, but don't try to remove listeners with a non-existent method
+      console.log('Cleaning up ad context');
     };
   }, []);
 
