@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { upgradesList } from '@/utils/upgradesData';
+import { upgradesList, UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket } from 'lucide-react';
