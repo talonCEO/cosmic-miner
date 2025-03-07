@@ -80,8 +80,8 @@ const Managers: React.FC = () => {
             bonusDescription = `Increases ${boostedElements} production by ${boostValue}%`;
           }
           
-          // Don't show perks for the default manager
-          const shouldShowPerks = isOwned && manager.perks && manager.id !== "manager-default";
+          // Show perks for all managers except the default one, regardless of ownership
+          const shouldShowPerks = manager.perks && manager.id !== "manager-default";
           
           return (
             <div 
@@ -108,7 +108,7 @@ const Managers: React.FC = () => {
                 </p>
               </div>
               
-              {/* Perk Buttons - Only shown for owned managers that have perks */}
+              {/* Perk Buttons - Show for all managers that have perks, except default one */}
               {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {manager.perks.map(perk => (
@@ -117,6 +117,7 @@ const Managers: React.FC = () => {
                       perk={perk}
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
+                      disabled={!isOwned}
                     />
                   ))}
                 </div>

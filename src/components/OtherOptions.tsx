@@ -3,6 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
 import PerkButton from './PerkButton';
+import { artifacts } from '@/utils/artifactsData';
 
 /**
  * ArtifactsTab Component
@@ -62,7 +63,7 @@ const ArtifactsTab: React.FC = () => {
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Powerful Artifacts</h2>
       
       <div className="space-y-4">
-        {state.artifacts.map((artifact, index) => {
+        {artifacts.map((artifact, index) => {
           const isOwned = state.ownedArtifacts.includes(artifact.id);
           
           // Get the highest unlocked perk if any
@@ -96,8 +97,8 @@ const ArtifactsTab: React.FC = () => {
                 </p>
               </div>
               
-              {/* Perk Buttons - Only shown for owned artifacts */}
-              {isOwned && artifact.perks && (
+              {/* Perk Buttons - Show for all artifacts that have perks, not just owned ones */}
+              {artifact.perks && artifact.id !== "artifact-default" && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {artifact.perks.map(perk => (
                     <PerkButton 
@@ -105,6 +106,7 @@ const ArtifactsTab: React.FC = () => {
                       perk={perk}
                       parentId={artifact.id}
                       onUnlock={unlockPerk}
+                      disabled={!isOwned}
                     />
                   ))}
                 </div>
