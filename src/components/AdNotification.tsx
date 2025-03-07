@@ -1,14 +1,14 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
-import { X, Plus, PlayCircle } from 'lucide-react';
+import { X, Plus, PlayCircle, Clock, Zap, MousePointerClick } from 'lucide-react';
 
 /**
  * AdNotification Component
  * 
  * Displays ad-related notifications and boost status indicators:
- * 1. An offer to watch an ad for income boost
+ * 1. An offer to watch an ad for one of three possible boosts
  * 2. Active boost indicator showing remaining time
  * 
  * Both elements have smooth animations for entry/exit and attention-grabbing effects.
@@ -19,10 +19,26 @@ const AdNotification: React.FC = () => {
     showAdNotification,
     adBoostActive,
     adBoostTimeRemaining,
-    adBoostMultiplier,
+    activeBoostType,
+    currentBoostConfig,
     handleWatchAd,
     dismissAdNotification
   } = useAd();
+  
+  const [showTimeWarpFlash, setShowTimeWarpFlash] = useState(false);
+  
+  // Listen for time warp activation events
+  useEffect(() => {
+    const handleTimeWarp = () => {
+      setShowTimeWarpFlash(true);
+      setTimeout(() => setShowTimeWarpFlash(false), 1000);
+    };
+    
+    document.addEventListener('timeWarpActivated', handleTimeWarp);
+    return () => {
+      document.removeEventListener('timeWarpActivated', handleTimeWarp);
+    };
+  }, []);
   
   // Format time remaining as mm:ss
   const formatTimeRemaining = (seconds: number): string => {
@@ -31,8 +47,32 @@ const AdNotification: React.FC = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
   
+  // Get the appropriate icon for the active boost
+  const getBoostIcon = () => {
+    if (!currentBoostConfig) return <Plus className="h-3 w-3 md:h-4 md:w-4" />;
+    
+    return currentBoostConfig.icon || (
+      activeBoostType === 'income' ? <Plus className="h-3 w-3 md:h-4 md:w-4" /> :
+      activeBoostType === 'autoTap' ? <MousePointerClick className="h-3 w-3 md:h-4 md:w-4" /> :
+      <Clock className="h-3 w-3 md:h-4 md:w-4" />
+    );
+  };
+  
   return (
     <>
+      {/* Time Warp Flash Animation */}
+      <AnimatePresence>
+        {showTimeWarpFlash && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-white z-[9999]"
+          />
+        )}
+      </AnimatePresence>
+      
       {/* Ad notification - responsive positioning for both web and mobile */}
       <AnimatePresence>
         {showAdNotification && (
@@ -87,7 +127,7 @@ const AdNotification: React.FC = () => {
                 <div className="flex-1">
                   <div className="text-yellow-300 font-semibold text-xs md:text-sm">Watch Ad</div>
                   <div className="text-blue-200 text-[10px] md:text-xs flex items-center gap-1">
-                    <Plus className="h-3 w-3" /> {adBoostMultiplier}x Income for 10min
+                    {currentBoostConfig?.icon || <Plus className="h-3 w-3" />} {currentBoostConfig?.description || "2x Income for 10min"}
                   </div>
                 </div>
                 
@@ -126,11 +166,15 @@ const AdNotification: React.FC = () => {
                 transition={{ repeat: Infinity, duration: 1.5 }}
               >
                 <div className="bg-yellow-400 text-slate-900 rounded-full p-1">
-                  <Plus className="h-3 w-3 md:h-4 md:w-4" />
+                  {getBoostIcon()}
                 </div>
               </motion.div>
               <div>
-                <div className="text-yellow-300 text-[10px] md:text-xs font-medium">{adBoostMultiplier}x Income Boost</div>
+                <div className="text-yellow-300 text-[10px] md:text-xs font-medium">
+                  {activeBoostType === 'income' ? '2x Income Boost' : 
+                   activeBoostType === 'autoTap' ? 'Auto Tap Active' : 
+                   'Boost Active'}
+                </div>
                 <div className="text-blue-200 text-[10px] md:text-xs">{formatTimeRemaining(adBoostTimeRemaining)} remaining</div>
               </div>
             </div>
