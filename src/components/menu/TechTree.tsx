@@ -43,14 +43,9 @@ const TechTree: React.FC = () => {
     });
   };
 
-  // Calculate SVG paths for flow diagram
-  const renderFlowDiagram = () => {
+  // Render pathway lines
+  const renderPathways = () => {
     const paths: JSX.Element[] = [];
-    const rowElements = treeRef.current?.querySelectorAll('.row-container');
-
-    if (!rowElements) return null;
-
-    // Map ability IDs to their DOM positions
     const getNodePosition = (abilityId: string) => {
       const node = treeRef.current?.querySelector(`[data-ability-id="${abilityId}"]`);
       if (!node) return null;
@@ -62,50 +57,49 @@ const TechTree: React.FC = () => {
       };
     };
 
-    // Draw paths from Row 1 to Row 2, and Row 2 downward
-    const row1Abilities = abilitiesByRow[1] || [];
-    const row2Abilities = abilitiesByRow[2] || [];
+    // Row 1 (center) to Row 2 (center)
+    const row1Center = abilitiesByRow[1]?.[Math.floor(abilitiesByRow[1].length / 2)];
+    const row2Center = abilitiesByRow[2]?.[Math.floor(abilitiesByRow[2].length / 2)];
+    if (row1Center && row2Center) {
+      const start = getNodePosition(row1Center.id);
+      const end = getNodePosition(row2Center.id);
+      if (start && end) {
+        paths.push(
+          <path
+            key="row1-to-row2"
+            d={`M${start.x},${start.y} L${end.x},${end.y}`}
+            stroke="#A5B4FC" // Soft indigo
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+            opacity="0.3"
+            fill="none"
+            className="animate-pulse-slow"
+          />
+        );
+      }
+    }
 
-    // Row 1 to Row 2 connections
-    row1Abilities.forEach((row1Ability) => {
-      row2Abilities.forEach((row2Ability) => {
-        if (row2Ability.requiredAbilities.includes(row1Ability.id)) {
-          const start = getNodePosition(row1Ability.id);
-          const end = getNodePosition(row2Ability.id);
-          if (start && end) {
-            paths.push(
-              <path
-                key={`${row1Ability.id}-${row2Ability.id}`}
-                d={`M${start.x},${start.y} L${end.x},${end.y}`}
-                stroke="#60A5FA" // Light blue
-                strokeWidth="2"
-                opacity="0.2"
-                fill="none"
-              />
-            );
-          }
-        }
-      });
-    });
-
-    // Row 2 to subsequent rows
+    // Row 2 downward branching
     for (let row = 2; row < 5; row++) {
       const currentRowAbilities = abilitiesByRow[row] || [];
       const nextRowAbilities = abilitiesByRow[row + 1] || [];
-      currentRowAbilities.forEach((currentAbility) => {
-        nextRowAbilities.forEach((nextAbility) => {
-          if (nextAbility.requiredAbilities.includes(currentAbility.id)) {
+      currentRowAbilities.forEach((currentAbility, index) => {
+        nextRowAbilities.forEach((nextAbility, nextIndex) => {
+          // Simple branching logic: connect to closest or same-index ability
+          if (Math.abs(index - nextIndex) <= 1 || nextAbility.requiredAbilities.includes(currentAbility.id)) {
             const start = getNodePosition(currentAbility.id);
             const end = getNodePosition(nextAbility.id);
             if (start && end) {
               paths.push(
                 <path
                   key={`${currentAbility.id}-${nextAbility.id}`}
-                  d={`M${start.x},${start.y} L${end.x},${end.y}`}
-                  stroke="#60A5FA"
-                  strokeWidth="2"
-                  opacity="0.2"
+                  d={`M${start.x},${start.y} Q${start.x},${(start.y + end.y) / 2} ${end.x},${end.y}`}
+                  stroke="#A5B4FC"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 4"
+                  opacity="0.3"
                   fill="none"
+                  className="animate-pulse-slow"
                 />
               );
             }
@@ -127,13 +121,39 @@ const TechTree: React.FC = () => {
       </DialogHeader>
 
       <ScrollArea className="h-[60vh]">
-        <div className="flex flex-col p-4 relative" ref={treeRef}>
-          {/* SVG Background for Flow Diagram */}
+        <div
+          className="flex flex-col p-4 relative"
+          ref={treeRef}
+          style={{
+            background: 'radial-gradient(circle at center, rgba(55, 65, 81, 0.9) 0%, rgba(17, 24, 39, 1) 70%)',
+          }}
+        >
+          {/* SVG for Pathways */}
           <svg
             className="absolute top-0 left-0 w-full h-full pointer-events-none"
-            style={{ zIndex: 0 }}
+            style={{ zIndex: 1 }}
           >
-            {renderFlowDiagram()}
+            {renderPathways()}
+            {/* Star-like dots at ability nodes */}
+            {Object.values(abilitiesByRow).flat().map((ability) => {
+              const pos = treeRef.current?.querySelector(`[data-ability-id="${ability.id}"]`)?.getBoundingClientRect();
+              const containerRect = treeRef.current?.getBoundingClientRect();
+              if (pos && containerRect) {
+                const x = pos.left - containerRect.left + pos.width / 2;
+                const y = pos.top - containerRect.top + pos.height / 2;
+                return (
+                  <circle
+                    key={`dot-${ability.id}`}
+                    cx={x}
+                    cy={y}
+                    r="2"
+                    fill="#A5B4FC"
+                    opacity="0.5"
+                  />
+                );
+              }
+              return null;
+            })}
           </svg>
 
           {/* Skill Points Display */}
@@ -159,7 +179,7 @@ const TechTree: React.FC = () => {
                     {abilities.map((ability) => (
                       <div
                         key={ability.id}
-                        data-ability-id={ability.id} // Add identifier for position calculation
+                        data-ability-id={ability.id}
                         style={{ opacity: ability.unlocked ? 1 : 0.5 }}
                         className="flex flex-col items-center"
                       >
@@ -208,6 +228,17 @@ const TechTree: React.FC = () => {
           Back
         </DialogClose>
       </div>
+
+      {/* Custom CSS for animation */}
+      <style jsx>{`
+        .animate-pulse-slow {
+          animation: pulse 4s infinite ease-in-out;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.6; }
+        }
+      `}</style>
     </>
   );
 };
