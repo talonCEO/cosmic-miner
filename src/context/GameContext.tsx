@@ -80,21 +80,21 @@ type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_COINS'; amount: number }
   | { type: 'ADD_ESSENCE'; amount: number }
-  | { type: 'BUY_UPGRADE'; upgradeId: string; quantity: number }
+  | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
   | { type: 'TOGGLE_AUTO_BUY' }
   | { type: 'TOGGLE_AUTO_TAP' }
-  | { type: 'SET_AUTO_TAP'; enabled: boolean }
   | { type: 'SET_INCOME_MULTIPLIER'; multiplier: number }
+  | { type: 'TICK' }
   | { type: 'PRESTIGE' }
   | { type: 'BUY_MANAGER'; managerId: string }
   | { type: 'BUY_ARTIFACT'; artifactId: string }
-  | { type: 'UNLOCK_ABILITY'; abilityId: string }
-  | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
-  | { type: 'CHECK_ACHIEVEMENTS' }
-  | { type: 'HANDLE_CLICK' }
-  | { type: 'TICK' }
   | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
-  | { type: 'ADD_SKILL_POINTS'; amount: number };
+  | { type: 'CHECK_ACHIEVEMENTS' }
+  | { type: 'UNLOCK_ABILITY'; abilityId: string }
+  | { type: 'ADD_SKILL_POINTS'; amount: number }
+  | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
+  | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
+  | { type: 'HANDLE_CLICK'; };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -414,11 +414,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         autoTap: !state.autoTap
-      };
-    case 'SET_AUTO_TAP':
-      return {
-        ...state,
-        autoTap: action.enabled
       };
     case 'SET_INCOME_MULTIPLIER':
       return {
@@ -758,7 +753,6 @@ interface GameContextType {
   buyUpgrade: (upgradeId: string, quantity?: number) => void;
   toggleAutoBuy: () => void;
   toggleAutoTap: () => void;
-  setAutoTap: (enabled: boolean) => void;
   setIncomeMultiplier: (multiplier: number) => void;
   prestige: () => void;
   buyManager: (managerId: string) => void;
@@ -840,9 +834,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
   const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
   const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
-  const setAutoTap = (enabled: boolean) => dispatch({ type: 'SET_AUTO_TAP', enabled });
   const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
-  const prestige = () => dispatch({ type: 'PRESTIGE' });
   const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
   const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
   const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
@@ -850,7 +842,32 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
   const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
   
-  const contextValue = {
+  // Show interstitial ad on prestige
+  const prestige = async () => {
+    // First calculate the reward to show it in the toast
+    const essenceReward = calculatePotentialEssenceReward();
+    
+    // Dispatch the prestige action
+    dispatch({ type: 'PRESTIGE' });
+    
+    // Show toast notification
+    toast({
+      title: "Prestige Complete!",
+      description: `Gained ${essenceReward} essence from prestige`,
+      variant: "default",
+    });
+    
+    // Show an interstitial ad occasionally after prestige
+    try {
+      await adMobService.showInterstitialAd();
+      // Load a new ad for next time
+      await adMobService.loadInterstitialAd();
+    } catch (error) {
+      console.log("Ad failed to show:", error);
+    }
+  };
+  
+  const contextValue: GameContextType = {
     state,
     dispatch,
     click,
@@ -859,7 +876,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     buyUpgrade,
     toggleAutoBuy,
     toggleAutoTap,
-    setAutoTap,
     setIncomeMultiplier,
     prestige,
     buyManager,
@@ -871,8 +887,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     calculatePotentialEssenceReward,
     handleClick
   };
-  
-  // Store context value for external access if needed
+
+  // Store context in the global holder to break circular dependency
   gameContextHolder.current = contextValue;
   
   return (
@@ -882,11 +898,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-// Export the useGame hook
 export const useGame = (): GameContextType => {
   const context = useContext(GameContext);
+  
+  // If we don't have a context from the provider, try to use the holder
   if (context === undefined) {
+    if (gameContextHolder.current) {
+      return gameContextHolder.current;
+    }
     throw new Error('useGame must be used within a GameProvider');
   }
+  
   return context;
 };

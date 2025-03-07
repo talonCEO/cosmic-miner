@@ -1,7 +1,6 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { useAd } from '@/context/AdContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import AnimatedAsteroid from './AnimatedAsteroid';
 
@@ -61,15 +60,13 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 
 const ClickArea: React.FC = () => {
   const { state, click } = useGame();
-  const { activeBoostType } = useAd();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
   
-  // Simplified click simulation
-  const simulateClick = () => {
+  const handleAreaClick = () => {
     if (!containerRef.current) return;
     
     const rect = containerRef.current.getBoundingClientRect();
@@ -117,13 +114,6 @@ const ClickArea: React.FC = () => {
     setTimeout(() => setIsAnimating(false), 150);
   };
   
-  const handleAreaClick = () => {
-    // Disable manual clicking if auto tap is active
-    if (activeBoostType === 'autoTap') return;
-    
-    simulateClick();
-  };
-  
   const removeClickEffect = (id: number) => {
     setClickEffects(prev => prev.filter(effect => effect.id !== id));
   };
@@ -138,7 +128,7 @@ const ClickArea: React.FC = () => {
         ref={containerRef}
         className="relative w-64 h-64 mb-5 flex items-center justify-center select-none"
       >
-        <div className={`w-64 h-64 rounded-full ${activeBoostType === 'autoTap' ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+        <div className="w-64 h-64 rounded-full cursor-pointer">
           <AnimatedAsteroid 
             onClick={handleAreaClick}
             isAnimating={isAnimating}
