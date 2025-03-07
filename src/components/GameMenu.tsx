@@ -16,7 +16,7 @@ import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
 
 const GameMenu: React.FC = () => {
-  const { state, prestige, calculateEssenceReward, buyManager, buyArtifact } = useGame();
+  const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
   const [menuType, setMenuType] = useState<MenuType>("none");
   const { toast } = useToast();
   
@@ -31,7 +31,7 @@ const GameMenu: React.FC = () => {
   };
   
   const handlePrestige = () => {
-    const essenceReward = calculateEssenceReward(state.totalEarned);
+    const essenceReward = calculatePotentialEssenceReward();
     
     prestige();
     setMenuType("none");
@@ -63,7 +63,7 @@ const GameMenu: React.FC = () => {
     });
   };
   
-  const potentialEssenceReward = calculateEssenceReward(state.totalEarned);
+  const potentialEssenceReward = calculatePotentialEssenceReward();
   
   return (
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>

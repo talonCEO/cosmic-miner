@@ -71,11 +71,22 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
  * Calculate essence reward with logarithmic scaling and progressive costs
  * As brackets of essence are earned, the cost for the next brackets increases exponentially
  */
-export const calculateEssenceReward = (totalCoins: number): number => {
+export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: string[] = []): number => {
   if (totalCoins < 1000000) return 0; // Minimum 1M coins to get any essence
   
-  // Logarithmic scaling provides diminishing returns but always some progress
-  return Math.floor(Math.log10(totalCoins) * 2 - 10);
+  // Basic logarithmic scaling
+  let baseEssence = Math.floor(Math.log10(totalCoins) * 2 - 10);
+  
+  // Apply artifact bonuses
+  let multiplier = 1;
+  if (ownedArtifacts?.includes("artifact-3")) { // Element Scanner
+    multiplier += 0.25;
+  }
+  if (ownedArtifacts?.includes("artifact-8")) { // Quantum Microscope
+    multiplier += 0.5;
+  }
+  
+  return Math.max(0, Math.floor(baseEssence * multiplier));
 };
 
 /**

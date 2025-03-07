@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
@@ -59,7 +58,7 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 };
 
 const ClickArea: React.FC = () => {
-  const { state, handleClick } = useGame();
+  const { state, click } = useGame();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,7 +107,7 @@ const ClickArea: React.FC = () => {
     
     setParticles(prev => [...prev, ...newParticles]);
     
-    handleClick();
+    click();
     
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150);

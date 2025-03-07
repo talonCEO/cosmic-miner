@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGame } from './GameContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -42,16 +43,6 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         const adLoaded = await adMobService.loadInterstitialAd();
         setIsAdLoaded(adLoaded);
         
-        adMobService.setupAdEventListeners(
-          () => setIsAdLoaded(true),
-          () => setIsAdLoaded(false),
-          () => {
-            setAdBoostActive(true);
-            setAdBoostTimeRemaining(adBoostDuration);
-            setIncomeMultiplier(adBoostMultiplier);
-          }
-        );
-        
         setNextAdTime(Date.now() + initialAdDelay * 1000); 
       } catch (error) {
         console.error('Error initializing ads:', error);
@@ -59,12 +50,6 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     };
     
     initAds();
-    
-    return () => {
-      adMobService.removeAllListeners()
-        .then(() => console.log('Successfully cleaned up ad context'))
-        .catch(err => console.error('Error during ad context cleanup:', err));
-    };
   }, []);
 
   useEffect(() => {
@@ -123,6 +108,13 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       
       const adCompleted = await adMobService.showInterstitialAd();
       setIsAdLoaded(false);
+      
+      // When ad completes successfully, apply the boost effect
+      if (adCompleted) {
+        setAdBoostActive(true);
+        setAdBoostTimeRemaining(adBoostDuration);
+        setIncomeMultiplier(adBoostMultiplier);
+      }
       
       adMobService.loadInterstitialAd()
         .then(success => setIsAdLoaded(success))

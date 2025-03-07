@@ -9,14 +9,11 @@ interface PrestigeProps {
   handlePrestige: () => void;
 }
 
-const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward, handlePrestige }) => {
+const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handlePrestige }) => {
   const { toast } = useToast();
   
   const onPrestige = () => {
     handlePrestige();
-    
-    // Show a notification when prestige happens (moved to GameContext)
-    // Removed toast here since it's now triggered in GameContext for better consistency
   };
   
   return (

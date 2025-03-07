@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
@@ -7,6 +6,7 @@ import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning
 import { useToast } from '@/components/ui/use-toast';
 import { calculateBulkPurchaseCost, calculateMaxAffordableQuantity, isGoodValue, calculateProductionMultiplier } from '@/utils/gameLogic';
 import { adMobService } from '@/services/AdMobService';
+import useGameMechanics, { createAchievements, checkUpgradeMilestone, calculateCostReduction, calculateClickMultiplier, calculateStartingCoins } from '@/hooks/useGameMechanics';
 
 // Achievement interface
 export interface Achievement {
@@ -94,46 +94,6 @@ type GameAction =
   | { type: 'ADD_SKILL_POINTS'; amount: number }
   | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
   | { type: 'UNLOCK_PERK'; perkId: string; parentId: string };
-
-// Create achievements based on upgrades and other collectibles
-const createAchievements = (): Achievement[] => {
-  // Upgrade level achievements
-  const upgradeAchievements: Achievement[] = upgradesList.map(upgrade => ({
-    id: `${upgrade.id}-mastery`,
-    name: `${upgrade.name} Mastery`,
-    description: `Reach level 1000 with ${upgrade.name}`,
-    unlocked: false,
-    checkCondition: (state: GameState) => {
-      const currentUpgrade = state.upgrades.find(u => u.id === upgrade.id);
-      return currentUpgrade ? currentUpgrade.level >= 1000 : false;
-    }
-  }));
-
-  // Manager achievements
-  const managerAchievements: Achievement[] = managers
-    .filter(manager => manager.id !== "manager-default")
-    .map(manager => ({
-      id: `manager-achievement-${manager.id}`,
-      name: `Hired: ${manager.name}`,
-      description: `Hired manager ${manager.name}`,
-      unlocked: false,
-      checkCondition: (state: GameState) => state.ownedManagers.includes(manager.id)
-    }));
-
-  // Artifact achievements
-  const artifactAchievements: Achievement[] = artifacts
-    .filter(artifact => artifact.id !== "artifact-default")
-    .map(artifact => ({
-      id: `artifact-achievement-${artifact.id}`,
-      name: `Discovered: ${artifact.name}`,
-      description: `Found the ${artifact.name} artifact`,
-      unlocked: false,
-      checkCondition: (state: GameState) => state.ownedArtifacts.includes(artifact.id)
-    }));
-  
-  // Combine all achievement types
-  return [...upgradeAchievements, ...managerAchievements, ...artifactAchievements];
-};
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -327,86 +287,6 @@ const initialState: GameState = {
   skillPoints: 0,
   abilities: initialAbilities,
   unlockedPerks: []
-};
-
-// Helper function to calculate potential essence reward with progressive scaling
-const calculateEssenceReward = (totalEarned: number, ownedArtifacts: string[]): number => {
-  let baseEssenceMultiplier = 1;
-  
-  if (ownedArtifacts.includes("artifact-3")) { // Element Scanner
-    baseEssenceMultiplier += 1.25;
-  }
-  if (ownedArtifacts.includes("artifact-8")) { // Quantum Microscope
-    baseEssenceMultiplier += 2.25;
-  }
-  
-  let totalEssence = 0;
-  let remainingCoins = totalEarned;
-  let currentCostPerEssence = 100000;
-  let currentBracket = 0;
-  
-  while (remainingCoins >= currentCostPerEssence) {
-    const essenceInBracket = Math.min(10, Math.floor(remainingCoins / currentCostPerEssence));
-    
-    if (essenceInBracket <= 0) break;
-    
-    totalEssence += essenceInBracket;
-    remainingCoins -= essenceInBracket * currentCostPerEssence;
-    
-    currentBracket++;
-    currentCostPerEssence = 100000 * Math.pow(2, currentBracket);
-  }
-  
-  return Math.floor(totalEssence * baseEssenceMultiplier);
-};
-
-// Helper function to calculate upgrade cost reduction from artifacts
-const calculateCostReduction = (ownedArtifacts: string[]): number => {
-  let reduction = 1; // Default: no reduction (multiplier of 1)
-  
-  if (ownedArtifacts.includes("artifact-4")) { // Telescope Array
-    reduction -= 0.1; // 10% reduction
-  }
-  if (ownedArtifacts.includes("artifact-9")) { // Satellite Network
-    reduction -= 0.25; // 25% reduction
-  }
-  
-  return Math.max(0.5, reduction);
-};
-
-// Helper function to calculate click multiplier from artifacts
-const calculateClickMultiplier = (ownedArtifacts: string[]): number => {
-  let multiplier = 1;
-  
-  if (ownedArtifacts.includes("artifact-2")) { // Space Rocket
-    multiplier += 0.5; // 1.5x multiplier
-  }
-  if (ownedArtifacts.includes("artifact-7")) { // Molecular Flask
-    multiplier += 1.5; // Additional 2.5x multiplier
-  }
-  
-  return multiplier;
-};
-
-// Helper function to calculate starting coins after prestige
-const calculateStartingCoins = (ownedArtifacts: string[]): number => {
-  let coins = 0;
-  
-  if (ownedArtifacts.includes("artifact-5")) { // Crystalline Gem
-    coins += 100000;
-  }
-  if (ownedArtifacts.includes("artifact-10")) { // Energy Core
-    coins += 1000000;
-  }
-  
-  return coins;
-};
-
-// Check if an upgrade has reached a milestone level that awards a skill point
-const checkUpgradeMilestone = (oldLevel: number, newLevel: number): boolean => {
-  const oldMilestone = Math.floor(oldLevel / 100);
-  const newMilestone = Math.floor(newLevel / 100);
-  return newMilestone > oldMilestone;
 };
 
 // Game reducer with updated mechanics
@@ -850,6 +730,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const { toast } = useToast();
+  const gameMechanics = useGameMechanics();
   
   // Load AdMob on initial render
   useEffect(() => {
@@ -901,7 +782,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   // Calculate potential essence reward for prestige
   const calculatePotentialEssenceReward = (): number => {
-    return calculateEssenceReward(state.totalEarned, state.ownedArtifacts);
+    return gameMechanics.calculatePotentialEssenceReward(state.totalEarned, state.ownedArtifacts);
   };
   
   // Game actions
