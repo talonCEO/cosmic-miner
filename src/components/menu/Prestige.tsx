@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Sparkles, Gem } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from '@/components/ui/use-toast';
 
 interface PrestigeProps {
   potentialEssenceReward: number;
@@ -10,8 +9,6 @@ interface PrestigeProps {
 }
 
 const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handlePrestige }) => {
-  const { toast } = useToast();
-  
   const onPrestige = () => {
     handlePrestige();
   };

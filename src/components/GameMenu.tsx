@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { 
   Dialog, 
-  DialogContent,
-  DialogClose
+  DialogContent
 } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/components/ui/use-toast';
