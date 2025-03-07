@@ -1,3 +1,4 @@
+
 import { AdMob, AdOptions, InterstitialAdPluginEvents, AdMobRewardItem } from '@capacitor-community/admob';
 
 // Initialize AdMob once when the service is first imported
@@ -8,7 +9,7 @@ type ListenerFunction = (...args: any[]) => void;
 
 // Interface to track listeners with their event name and function reference
 interface TrackedListener {
-  eventName: string;
+  eventName: keyof typeof InterstitialAdPluginEvents;
   listenerFn: ListenerFunction;
 }
 
@@ -67,9 +68,12 @@ class AdMobService {
   }
 
   // Helper method to add a listener and track it
-  private addTrackedListener(eventName: string, listenerFn: ListenerFunction): void {
+  private addTrackedListener(eventName: keyof typeof InterstitialAdPluginEvents, listenerFn: ListenerFunction): void {
+    // Get the actual event value from the enum
+    const eventValue = InterstitialAdPluginEvents[eventName];
+    
     // Add to the AdMob plugin
-    AdMob.addListener(eventName, listenerFn);
+    AdMob.addListener(eventValue, listenerFn);
     
     // Track it in our array
     this.listeners.push({
@@ -77,7 +81,7 @@ class AdMobService {
       listenerFn
     });
     
-    console.log(`Added listener for event: ${eventName}`);
+    console.log(`Added listener for event: ${eventValue}`);
   }
 
   // Set up event listeners for ads
@@ -91,19 +95,19 @@ class AdMobService {
       console.log('Interstitial ad loaded');
       onAdLoaded?.();
     };
-    this.addTrackedListener(InterstitialAdPluginEvents.Loaded, loadedFn);
+    this.addTrackedListener('Loaded', loadedFn);
 
     const failedFn = (error: any) => {
       console.error('Interstitial ad failed to load:', error);
       onAdFailed?.();
     };
-    this.addTrackedListener(InterstitialAdPluginEvents.FailedToLoad, failedFn);
+    this.addTrackedListener('FailedToLoad', failedFn);
 
     const dismissedFn = () => {
       console.log('Interstitial ad dismissed');
       onAdDismissed?.();
     };
-    this.addTrackedListener(InterstitialAdPluginEvents.Dismissed, dismissedFn);
+    this.addTrackedListener('Dismissed', dismissedFn);
   }
 
   // Remove all tracked event listeners 
@@ -114,9 +118,19 @@ class AdMobService {
         return;
       }
       
-      // Unfortunately, the AdMob plugin doesn't provide a direct way to remove specific listeners
-      // So we'll log the cleanup action and clear our tracking array
+      // Log how many listeners we're cleaning up
       console.log(`Cleaning up ${this.listeners.length} ad listeners`);
+      
+      // Attempt to remove each listener
+      for (const listener of this.listeners) {
+        const eventValue = InterstitialAdPluginEvents[listener.eventName];
+        try {
+          // Use the removeAllListeners method since removeListener isn't directly available
+          await AdMob.removeAllListeners();
+        } catch (err) {
+          console.warn(`Could not remove listener for ${eventValue}:`, err);
+        }
+      }
       
       // Clear our internal tracking array
       this.listeners = [];
