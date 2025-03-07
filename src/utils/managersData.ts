@@ -82,17 +82,6 @@ export const managers: Manager[] = [
     boosts: ["element-1", "element-2"]
   },
   {
-    "id": "manager-default-perk-3",
-    "name": "Hyper Shift",
-    "description": "Time bends to allow extra work, increasing all production by 15%.",
-    "cost": 12,
-    "icon": "⏳⚙️",
-    "unlocked": false,
-    "effect": { "type": "allProduction", "value": 0.15 }
-  }
-]
-  },
-  {
     id: "manager-2",
     name: "Carbon Collector",
     description: "Specializes in organic compound synthesis",
