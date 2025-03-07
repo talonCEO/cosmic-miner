@@ -110,8 +110,8 @@ const initialAbilities: Ability[] = [
   // Tier 1 (row 1) - Center ability (unlocked by default)
   {
     id: "ability-1",
-    name: "Cosmic Awakening",
-    description: "Your first connection to the cosmic energy, increasing tap value by 10% and passive income by 5%.",
+    name: "Basic Asteroid Drill",
+    description: "Just a rusty old drill that somehow still works. The user manual was written in crayon.",
     cost: 0,
     icon: <Star className="text-yellow-300" size={24} />,
     unlocked: true,
@@ -123,8 +123,8 @@ const initialAbilities: Ability[] = [
   // Tier 2 (row 2) - Three abilities requiring Tier 1
   {
     id: "ability-2",
-    name: "Energy Conversion",
-    description: "Convert cosmic energy into mining power, boosting tap value by 50% and critical hit chance by 5%.",
+    name: "Quantum Vibration Enhancer",
+    description: "Uses quantum vibration technology to increase mining efficiency. Tap power increased by 50% and passive income by 25%.",
     cost: 3,
     icon: <Zap className="text-blue-300" size={24} />,
     unlocked: false,
@@ -134,8 +134,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-3",
-    name: "Neural Enhancement",
-    description: "Improve mental capabilities, increasing all production by 35% and reducing upgrade costs by 5%.",
+    name: "Neural Mining Matrix",
+    description: "Connects your brain directly to mining operations. Increases all income by 40% and reduces upgrade costs by 5%.",
     cost: 3,
     icon: <Brain className="text-purple-300" size={24} />,
     unlocked: false,
@@ -145,8 +145,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-4",
-    name: "Protective Field",
-    description: "Generate a protective field reducing upgrade costs by 15% and increasing passive income by 20%.",
+    name: "Graviton Shield Generator",
+    description: "Creates a force field that optimizes mining operations. Reduces upgrade costs by 15% and increases passive income by 20%.",
     cost: 3,
     icon: <Shield className="text-green-300" size={24} />,
     unlocked: false,
@@ -158,8 +158,8 @@ const initialAbilities: Ability[] = [
   // Tier 3 (row 3) - Three abilities requiring Tier 2
   {
     id: "ability-5",
-    name: "Precision Strike",
-    description: "Your taps have a 15% chance to hit for 5x normal damage and increase passive income by 10%.",
+    name: "Laser-Guided Extraction System",
+    description: "Precision mining laser technology. 15% chance of critical strike for 5x normal mining yield per tap.",
     cost: 5,
     icon: <TargetIcon className="text-red-300" size={24} />,
     unlocked: false,
@@ -169,8 +169,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-6",
-    name: "Wealth Magnetism",
-    description: "Attract cosmic wealth, increasing all coin gains by 40% and passive income by 25%.",
+    name: "Dark Matter Attractor",
+    description: "Harnesses the power of dark matter to attract valuable elements. Increases all income by 45% and passive income by 30%.",
     cost: 5,
     icon: <HandCoins className="text-amber-300" size={24} />,
     unlocked: false,
@@ -180,8 +180,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-7",
-    name: "Achievement Hunter",
-    description: "Gain 2 skill points for each achievement and increase global income multiplier by 15%.",
+    name: "Galactic Achievement Scanner",
+    description: "Scans the galaxy for achievement opportunities. Gain 2 extra skill points per achievement and 15% more essence.",
     cost: 5,
     icon: <Trophy className="text-yellow-300" size={24} />,
     unlocked: false,
@@ -193,8 +193,8 @@ const initialAbilities: Ability[] = [
   // Tier 4 (row 4) - Three abilities requiring Tier 3
   {
     id: "ability-8",
-    name: "Lightning Strikes",
-    description: "Harness cosmic lightning, boosting tap value by 80% and passive income by 50%.",
+    name: "Plasma Discharge Excavator",
+    description: "Uses controlled plasma bursts to break down asteroids. Boosts tap value by 85% and passive income by 55%.",
     cost: 8,
     icon: <CloudLightning className="text-blue-300" size={24} />,
     unlocked: false,
@@ -204,8 +204,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-9",
-    name: "Stellar Efficiency",
-    description: "Optimize resource usage, reducing all upgrade costs by 25% and boosting passive income by 60%.",
+    name: "Nano-Bot Mining Swarm",
+    description: "Deploys microscopic robots that optimize resource extraction. Reduces upgrade costs by 30% and increases passive income by 65%.",
     cost: 8,
     icon: <Gauge className="text-green-300" size={24} />,
     unlocked: false,
@@ -215,8 +215,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-10",
-    name: "Cosmic Navigator",
-    description: "Map the galaxy, increasing global income multiplier by 50% and critical hit chance by 15%.",
+    name: "Interstellar Navigation AI",
+    description: "Advanced AI system that identifies the richest asteroid fields. Increases global income by 55% and essence rewards by 20%.",
     cost: 8,
     icon: <Compass className="text-purple-300" size={24} />,
     unlocked: false,
@@ -228,8 +228,8 @@ const initialAbilities: Ability[] = [
   // Tier 5 (row 5) - Three abilities requiring Tier 4
   {
     id: "ability-11",
-    name: "Supernova Burst",
-    description: "Channel explosive cosmic energy, boosting tap value by 120% and all coin gains by 75%.",
+    name: "Supernova Core Extractor",
+    description: "Harvests energy from the remnants of exploded stars. Boosts tap value by 120% and all income by 80%.",
     cost: 12,
     icon: <Sparkles className="text-yellow-300" size={24} />,
     unlocked: false,
@@ -239,8 +239,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-12",
-    name: "Quantum Mastery",
-    description: "Master quantum mechanics, reducing all upgrade costs by 40% and doubling passive income.",
+    name: "Quantum Tunneling Drill",
+    description: "Creates wormholes directly to valuable resources. Reduces all upgrade costs by 45% and doubles passive income.",
     cost: 12,
     icon: <Rocket className="text-blue-300" size={24} />,
     unlocked: false,
@@ -250,8 +250,8 @@ const initialAbilities: Ability[] = [
   },
   {
     id: "ability-13",
-    name: "Cosmic Dominion",
-    description: "Achieve dominion over cosmic forces, increasing global income multiplier by 100% and all production by 80%.",
+    name: "Cosmic Singularity Engine",
+    description: "Harnesses the power of a controlled black hole. Increases essence gain by 35% and all income by 100%.",
     cost: 12,
     icon: <Gem className="text-purple-300" size={24} />,
     unlocked: false,
@@ -266,8 +266,8 @@ const UPGRADE_COST_GROWTH = 1.15; // 15% increase per level
 
 // Updated initial values
 const initialState: GameState = {
-  coins: 50, // Start with enough for first upgrade
-  coinsPerClick: 1,
+  coins: 0, // Changed from 50 to 0
+  coinsPerClick: 1, // Base value is now 1 rather than being modified by multipliers
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
     ...upgrade
@@ -298,12 +298,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
       const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
       
-      // Base click value is now weaker (35% of previous) but scales with tap power upgrade
+      // Base click value is now 100% of coinsPerClick (not 35%)
       const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
       
       // Base click value now includes only 5% of coins per second (reduced synergy)
-      const baseClickValue = state.coinsPerClick * 0.35; // Reduced to 35% of original value
-      const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Reduced from 10% to 5%
+      const baseClickValue = state.coinsPerClick; // Now using full coinsPerClick
+      const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Kept this the same
       const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
       
       return {
@@ -724,12 +724,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
       const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
       
-      // Base click value is now weaker but scales with tap power upgrade
+      // Base click value is now 100% (not 35%)
       const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
       
-      // Base click value now includes only 5% of coins per second (reduced synergy)
-      const baseClickValue = state.coinsPerClick * 0.35; // Reduced to 35% of original value
-      const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Reduced from 10% to 5%
+      // Base click value now includes only 5% of coins per second
+      const baseClickValue = state.coinsPerClick; // Now using full coinsPerClick
+      const coinsPerSecondBonus = state.coinsPerSecond * 0.05; // Kept this the same
       const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier;
       
       return {
@@ -834,80 +834,4 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
   const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
   const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
-  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
-  const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
-  const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
-  const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
-  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
-  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
-  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
-  
-  // Show interstitial ad on prestige
-  const prestige = async () => {
-    // First calculate the reward to show it in the toast
-    const essenceReward = calculatePotentialEssenceReward();
-    
-    // Dispatch the prestige action
-    dispatch({ type: 'PRESTIGE' });
-    
-    // Show toast notification
-    toast({
-      title: "Prestige Complete!",
-      description: `Gained ${essenceReward} essence from prestige`,
-      variant: "default",
-    });
-    
-    // Show an interstitial ad occasionally after prestige
-    try {
-      await adMobService.showInterstitialAd();
-      // Load a new ad for next time
-      await adMobService.loadInterstitialAd();
-    } catch (error) {
-      console.log("Ad failed to show:", error);
-    }
-  };
-  
-  const contextValue: GameContextType = {
-    state,
-    dispatch,
-    click,
-    addCoins,
-    addEssence,
-    buyUpgrade,
-    toggleAutoBuy,
-    toggleAutoTap,
-    setIncomeMultiplier,
-    prestige,
-    buyManager,
-    buyArtifact,
-    unlockAbility,
-    unlockPerk,
-    checkAchievements,
-    calculateMaxPurchaseAmount,
-    calculatePotentialEssenceReward,
-    handleClick
-  };
-
-  // Store context in the global holder to break circular dependency
-  gameContextHolder.current = contextValue;
-  
-  return (
-    <GameContext.Provider value={contextValue}>
-      {children}
-    </GameContext.Provider>
-  );
-};
-
-export const useGame = (): GameContextType => {
-  const context = useContext(GameContext);
-  
-  // If we don't have a context from the provider, try to use the holder
-  if (context === undefined) {
-    if (gameContextHolder.current) {
-      return gameContextHolder.current;
-    }
-    throw new Error('useGame must be used within a GameProvider');
-  }
-  
-  return context;
-};
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type:

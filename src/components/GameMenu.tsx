@@ -68,7 +68,7 @@ const GameMenu: React.FC = () => {
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
       <MenuButton />
       
-      <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white">
+      <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[9999]">
         {menuType === "main" && (
           <MainMenu setMenuType={setMenuType} />
         )}
