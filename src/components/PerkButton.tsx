@@ -88,6 +88,9 @@ const PerkButton: React.FC<PerkButtonProps> = ({
     }
   };
   
+  // Set opacity based on whether the perk is unlocked
+  const perkOpacity = perk.unlocked ? "opacity-100" : "opacity-25";
+  
   return (
     <TooltipProvider>
       <Tooltip>
@@ -98,8 +101,9 @@ const PerkButton: React.FC<PerkButtonProps> = ({
               ${perk.unlocked 
                 ? 'bg-green-500/20 border border-green-500/50 text-green-300' 
                 : disabled
-                  ? 'bg-slate-700/30 border border-slate-600/50 text-slate-400 opacity-30 hover:opacity-50'
-                  : 'bg-slate-700/30 border border-slate-600/50 text-slate-400 opacity-50 hover:opacity-70'}`}
+                  ? 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-50'
+                  : 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-70'}
+              ${perkOpacity} transition-opacity duration-200`}
           >
             <div className="text-lg">{perk.icon}</div>
             {!perk.unlocked && (
