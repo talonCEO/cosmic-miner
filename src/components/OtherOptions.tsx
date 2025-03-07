@@ -39,7 +39,7 @@ const ArtifactsTab: React.FC = () => {
           
           // Calculate opacity based on ownership and unlocked perks
           const hasUnlockedPerks = isOwned && artifact.perks && artifact.perks.some(p => p.unlocked);
-          const itemOpacity = isOwned && hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
+          const itemOpacity = hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
           
           return (
             <div 

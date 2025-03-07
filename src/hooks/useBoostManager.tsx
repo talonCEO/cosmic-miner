@@ -1,6 +1,5 @@
-
 import { useGame } from '@/context/GameContext';
-import { Perk, Artifact } from '@/utils/types';
+import { Perk } from '@/utils/types';
 
 /**
  * useBoostManager Hook

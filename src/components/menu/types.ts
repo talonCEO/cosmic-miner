@@ -13,3 +13,4 @@ export interface Ability {
   row: number;
   column: number;
 }
+

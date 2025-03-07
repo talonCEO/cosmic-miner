@@ -55,9 +55,9 @@ const Managers: React.FC = () => {
           // Show perks for all managers except the default one, regardless of ownership
           const shouldShowPerks = manager.perks && manager.id !== "manager-default";
           
-          // Calculate opacity based on ownership - add check for perks
+          // Calculate opacity based on ownership and whether perks are unlocked
           const hasUnlockedPerks = isOwned && manager.perks && manager.perks.some(p => p.unlocked);
-          const itemOpacity = isOwned && hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
+          const itemOpacity = hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
           
           return (
             <div 
