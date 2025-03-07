@@ -5,6 +5,7 @@ import { useGame } from '@/context/GameContext';
 import { managers } from '@/utils/managersData';
 import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
+import { toast } from 'sonner';
 
 /**
  * Managers Component
@@ -40,6 +41,20 @@ const Managers: React.FC = () => {
       prev.effect.value > current.effect.value ? prev : current
     );
   };
+
+  // Handle unlocking a perk with notification
+  const handleUnlockPerk = (perkId: string, parentId: string) => {
+    unlockPerk(perkId, parentId);
+    
+    // Find the perk to display in notification
+    const manager = state.managers.find(m => m.id === parentId);
+    if (manager && manager.perks) {
+      const perk = manager.perks.find(p => p.id === perkId);
+      if (perk) {
+        toast.success(`Unlocked: ${perk.name}`);
+      }
+    }
+  };
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -64,6 +79,9 @@ const Managers: React.FC = () => {
               
             bonusDescription = `Increases ${boostedElements} production by ${boostValue}%`;
           }
+          
+          // Don't show perks for the default manager
+          const shouldShowPerks = isOwned && manager.perks && manager.id !== "manager-default";
           
           return (
             <div 
@@ -90,15 +108,15 @@ const Managers: React.FC = () => {
                 </p>
               </div>
               
-              {/* Perk Buttons - Only shown for owned managers */}
-              {isOwned && manager.perks && (
+              {/* Perk Buttons - Only shown for owned managers that have perks */}
+              {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {manager.perks.map(perk => (
                     <PerkButton 
                       key={perk.id}
                       perk={perk}
                       parentId={manager.id}
-                      onUnlock={unlockPerk}
+                      onUnlock={handleUnlockPerk}
                     />
                   ))}
                 </div>

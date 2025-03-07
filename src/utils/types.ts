@@ -18,6 +18,7 @@ export interface Perk {
     // - "startingCoins": Provides starting coins after prestige
     // - "critChance": Increases critical hit chance
     // - "critMultiplier": Increases critical hit multiplier
+    // - "elementBoost": Increases production of specific elements
     type: string;
     
     // Value represents the magnitude of the effect:
@@ -25,5 +26,8 @@ export interface Perk {
     // - For multipliers (tap, etc): 1.5 = 1.5x
     // - For flat values (startingCoins): direct amount
     value: number;
+    
+    // Optional list of element IDs that are affected by this perk
+    elements?: string[];
   };
 }

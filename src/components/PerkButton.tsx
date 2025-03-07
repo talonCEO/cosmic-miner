@@ -4,6 +4,7 @@ import { Perk } from '@/utils/types';
 import { useGame } from '@/context/GameContext';
 import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface PerkButtonProps {
   perk: Perk;
@@ -42,8 +43,29 @@ const PerkButton: React.FC<PerkButtonProps> = ({ perk, parentId, onUnlock }) => 
   const handleClick = () => {
     if (canUnlock) {
       onUnlock(perk.id, parentId);
+      toast.success(`Unlocked: ${perk.name}`);
     } else {
       handleShowTooltip();
+      if (state.skillPoints < perk.cost) {
+        toast.error(`Need ${perk.cost - state.skillPoints} more skill points!`);
+      }
+    }
+  };
+  
+  // Format the effect description based on the type
+  const getEffectDescription = () => {
+    switch (perk.effect.type) {
+      case 'elementBoost':
+        if (perk.effect.elements && perk.effect.elements.length > 0) {
+          const elementNames = perk.effect.elements.map(elementId => {
+            const element = state.upgrades.find(u => u.id === elementId);
+            return element ? element.name : 'Unknown Element';
+          }).join(' and ');
+          return `Increases ${elementNames} production by ${perk.effect.value * 100}%`;
+        }
+        return perk.description;
+      default:
+        return perk.description;
     }
   };
   
@@ -75,7 +97,7 @@ const PerkButton: React.FC<PerkButtonProps> = ({ perk, parentId, onUnlock }) => 
           >
             <div className="bg-slate-800 text-slate-100 p-2 rounded-md shadow-lg border border-slate-700 text-xs">
               <div className="font-bold">{perk.name}</div>
-              <div className="text-slate-300">{perk.description}</div>
+              <div className="text-slate-300">{getEffectDescription()}</div>
               {!perk.unlocked && (
                 <div className="mt-1 flex items-center text-[10px] font-medium text-indigo-300">
                   <Sparkles size={10} className="mr-1" />

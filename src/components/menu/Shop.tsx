@@ -51,7 +51,7 @@ const Shop: React.FC<ShopProps> = ({
                 // Count how many perks this manager has
                 const perksCount = manager.perks ? manager.perks.length : 0;
                 let perksInfo = "";
-                if (perksCount > 0) {
+                if (perksCount > 0 && manager.id !== "manager-default") {
                   perksInfo = `Includes ${perksCount} unlockable perks`;
                 }
                 
@@ -82,7 +82,7 @@ const Shop: React.FC<ShopProps> = ({
                 // Count how many perks this artifact has
                 const perksCount = artifact.perks ? artifact.perks.length : 0;
                 let perksInfo = "";
-                if (perksCount > 0) {
+                if (perksCount > 0 && artifact.id !== "artifact-default") {
                   perksInfo = `Includes ${perksCount} unlockable perks`;
                 }
                 

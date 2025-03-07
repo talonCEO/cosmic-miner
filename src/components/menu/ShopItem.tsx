@@ -13,6 +13,7 @@ interface ShopItemProps {
   isOwned: boolean;
   canAfford: boolean;
   onBuy: () => void;
+  additionalInfo?: string; // Add the additionalInfo prop as optional
 }
 
 const ShopItem: React.FC<ShopItemProps> = ({ 
@@ -24,7 +25,8 @@ const ShopItem: React.FC<ShopItemProps> = ({
   cost, 
   isOwned, 
   canAfford, 
-  onBuy 
+  onBuy,
+  additionalInfo
 }) => {
   return (
     <div 
@@ -50,6 +52,10 @@ const ShopItem: React.FC<ShopItemProps> = ({
         </div>
       </div>
       <p className="text-xs text-indigo-400 mb-2 break-words">{bonus}</p>
+      
+      {additionalInfo && (
+        <p className="text-xs text-amber-400 mb-2">{additionalInfo}</p>
+      )}
       
       {isOwned ? (
         <div className="bg-green-900/20 text-green-400 text-center py-1 rounded text-sm font-medium">
