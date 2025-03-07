@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGame } from './GameContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -84,8 +85,8 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const cooldownPeriod = 60;
   // Auto-dismiss duration for ad notification (60 seconds)
   const adNotificationDuration = 60;
-  // Delay first ad by 90 seconds (1.5 minutes)
-  const initialAdDelay = 90;
+  // Delay for the first ad: randomly between 90 to 300 seconds
+  const getInitialAdDelay = () => Math.floor(Math.random() * (300 - 90 + 1)) + 90;
   
   useEffect(() => {
     const initAds = async () => {
@@ -94,7 +95,10 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         const adLoaded = await adMobService.loadInterstitialAd();
         setIsAdLoaded(adLoaded);
         
-        setNextAdTime(Date.now() + initialAdDelay * 1000); 
+        // Set the first ad to appear randomly between 90-300 seconds
+        const initialDelay = getInitialAdDelay();
+        console.log(`First ad will appear in ${initialDelay} seconds`);
+        setNextAdTime(Date.now() + initialDelay * 1000); 
       } catch (error) {
         console.error('Error initializing ads:', error);
       }
@@ -114,6 +118,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const selectRandomBoost = () => {
     const randomIndex = Math.floor(Math.random() * boostConfigs.length);
     setAvailableBoost(boostConfigs[randomIndex]);
+    console.log(`Selected random boost: ${boostConfigs[randomIndex].type}`);
   };
   
   useInterval(() => {

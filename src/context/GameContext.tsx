@@ -80,21 +80,18 @@ type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_COINS'; amount: number }
   | { type: 'ADD_ESSENCE'; amount: number }
-  | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
+  | { type: 'BUY_UPGRADE'; upgradeId: string; quantity: number }
   | { type: 'TOGGLE_AUTO_BUY' }
   | { type: 'TOGGLE_AUTO_TAP' }
+  | { type: 'SET_AUTO_TAP'; enabled: boolean }
   | { type: 'SET_INCOME_MULTIPLIER'; multiplier: number }
-  | { type: 'TICK' }
   | { type: 'PRESTIGE' }
   | { type: 'BUY_MANAGER'; managerId: string }
   | { type: 'BUY_ARTIFACT'; artifactId: string }
-  | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
-  | { type: 'CHECK_ACHIEVEMENTS' }
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
-  | { type: 'ADD_SKILL_POINTS'; amount: number }
-  | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
   | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
-  | { type: 'HANDLE_CLICK'; };
+  | { type: 'CHECK_ACHIEVEMENTS' }
+  | { type: 'HANDLE_CLICK' };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -414,6 +411,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         autoTap: !state.autoTap
+      };
+    case 'SET_AUTO_TAP':
+      return {
+        ...state,
+        autoTap: action.enabled
       };
     case 'SET_INCOME_MULTIPLIER':
       return {
@@ -835,5 +837,19 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
   const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
   const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
-  const setAutoTap = (enabled: boolean) => dispatch({ type: 'TOGGLE_AUTO_TAP' });
-  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier
+  const setAutoTap = (enabled: boolean) => dispatch({ type: 'SET_AUTO_TAP', enabled });
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
+  const prestige = () => dispatch({ type: 'PRESTIGE' });
+  const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
+  const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
+  const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
+  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
+  
+  return (
+    <GameContext.Provider value={{ state, dispatch, click, addCoins, addEssence, buyUpgrade, toggleAutoBuy, toggleAutoTap, setAutoTap, setIncomeMultiplier, prestige, buyManager, buyArtifact, unlockAbility, unlockPerk, checkAchievements, calculateMaxPurchaseAmount, calculatePotentialEssenceReward, handleClick }}>
+      {children}
+    </GameContext.Provider>
+  );
+};
