@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
@@ -37,9 +36,8 @@ const ArtifactsTab: React.FC = () => {
           // Get the actual effect description based on the artifact's effect type and highest perk
           const effectDescription = formatEffectDescription(artifact, highestPerk);
           
-          // Calculate opacity based on ownership and unlocked perks
-          const hasUnlockedPerks = isOwned && artifact.perks && artifact.perks.some(p => p.unlocked);
-          const itemOpacity = hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
+          // Calculate opacity based on ownership
+          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-50';
           
           return (
             <div 
@@ -89,3 +87,4 @@ const ArtifactsTab: React.FC = () => {
 };
 
 export default ArtifactsTab;
+
