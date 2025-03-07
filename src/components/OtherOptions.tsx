@@ -36,14 +36,15 @@ const ArtifactsTab: React.FC = () => {
           // Get the actual effect description based on the artifact's effect type and highest perk
           const effectDescription = formatEffectDescription(artifact, highestPerk);
           
-          // Calculate opacity based on ownership
-          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-20';
+          // Calculate opacity based on ownership and unlocked perks
+          const hasUnlockedPerks = isOwned && artifact.perks && artifact.perks.some(p => p.unlocked);
+          const itemOpacity = hasUnlockedPerks ? 'opacity-100' : isOwned ? 'opacity-80' : 'opacity-50';
           
           return (
             <div 
               key={artifact.id}
-              className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-purple-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
-                ${isOwned ? 'hover:shadow-md hover:shadow-purple-500/20' : ''} ${itemOpacity}`}
+              className={bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-purple-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
+                ${isOwned ? 'hover:shadow-md hover:shadow-purple-500/20' : ''} ${itemOpacity}}
             >
               {/* Artifact Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">
@@ -68,18 +69,13 @@ const ArtifactsTab: React.FC = () => {
               {artifact.perks && artifact.id !== "artifact-default" && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {artifact.perks.map(perk => (
-                    <div key={perk.id} className="relative">
-                      {isOwned && (
-                        <div className="absolute inset-0 bg-purple-500/40 rounded-full z-10"></div>
-                      )}
-                      <PerkButton 
-                        perk={perk}
-                        parentId={artifact.id}
-                        onUnlock={unlockPerk}
-                        disabled={!isOwned}
-                        className="relative z-20"
-                      />
-                    </div>
+                    <PerkButton 
+                      key={perk.id}
+                      perk={perk}
+                      parentId={artifact.id}
+                      onUnlock={unlockPerk}
+                      disabled={!isOwned}
+                    />
                   ))}
                 </div>
               )}
