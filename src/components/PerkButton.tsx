@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Perk } from '@/utils/types';
 import { useGame } from '@/context/GameContext';

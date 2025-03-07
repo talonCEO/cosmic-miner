@@ -40,36 +40,7 @@ export const managers: Manager[] = [
     bonus: "+10% can-do attitude (purely cosmetic)",
     requiredCoins: 0,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=steve",
-    cost: 0,
-    perks: [
-      {
-        id: "manager-default-perk-1",
-        name: "Enthusiasm",
-        description: "Steve works with more enthusiasm, increasing production by 5%",
-        cost: 3,
-        icon: "💪",
-        unlocked: false,
-        effect: { type: "production", value: 0.05 }
-      },
-      {
-        id: "manager-default-perk-2",
-        name: "Coffee Break",
-        description: "Coffee breaks boost efficiency, increasing passive income by 10%",
-        cost: 6,
-        icon: "☕",
-        unlocked: false,
-        effect: { type: "passive", value: 0.1 }
-      },
-      {
-        id: "manager-default-perk-3", 
-        name: "Overtime Work",
-        description: "Steve works overtime, increasing all production by 15%",
-        cost: 12,
-        icon: "🕒",
-        unlocked: false,
-        effect: { type: "allProduction", value: 0.15 }
-      }
-    ]
+    cost: 0
   },
   {
     id: "manager-1",
@@ -79,7 +50,36 @@ export const managers: Manager[] = [
     requiredCoins: 1000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=hydrogen",
     cost: 1,
-    boosts: ["element-1", "element-2"]
+    boosts: ["element-1", "element-2"],
+    perks: [
+      {
+        id: "manager-1-perk-1",
+        name: "Isotope Separation",
+        description: "Advanced isotope handling increases Hydrogen and Carbon production by 75%",
+        cost: 3,
+        icon: "🧪",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-1", "element-2"] }
+      },
+      {
+        id: "manager-1-perk-2",
+        name: "Molecular Fusion",
+        description: "Experimental fusion techniques increase Hydrogen and Carbon production by 100%",
+        cost: 6,
+        icon: "⚛️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-1", "element-2"] }
+      },
+      {
+        id: "manager-1-perk-3",
+        name: "Zero-Point Extraction",
+        description: "Quantum vacuum manipulation boosts Hydrogen and Carbon production by 150%",
+        cost: 12,
+        icon: "🌌",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-1", "element-2"] }
+      }
+    ]
   },
   {
     id: "manager-2",
@@ -89,7 +89,36 @@ export const managers: Manager[] = [
     requiredCoins: 5000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=carbon",
     cost: 2,
-    boosts: ["element-3", "element-4"]
+    boosts: ["element-3", "element-4"],
+    perks: [
+      {
+        id: "manager-2-perk-1",
+        name: "Organic Catalyst",
+        description: "Organic reactions accelerated, increasing Oxygen and Nitrogen production by 75%",
+        cost: 3,
+        icon: "🌱",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-3", "element-4"] }
+      },
+      {
+        id: "manager-2-perk-2",
+        name: "Synthetic Biology",
+        description: "Engineered microorganisms increase Oxygen and Nitrogen production by 100%",
+        cost: 6,
+        icon: "🧬",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-3", "element-4"] }
+      },
+      {
+        id: "manager-2-perk-3",
+        name: "Carbon Nanotechnology",
+        description: "Nanotube extraction system boosts Oxygen and Nitrogen production by 150%",
+        cost: 12,
+        icon: "🔬",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-3", "element-4"] }
+      }
+    ]
   },
   {
     id: "manager-3",
@@ -99,7 +128,36 @@ export const managers: Manager[] = [
     requiredCoins: 10000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=oxygen",
     cost: 4,
-    boosts: ["element-5", "element-6"]
+    boosts: ["element-5", "element-6"],
+    perks: [
+      {
+        id: "manager-3-perk-1",
+        name: "Pressurized Processing",
+        description: "High-pressure techniques increase Silicon and Aluminum production by 75%",
+        cost: 3,
+        icon: "💨",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-5", "element-6"] }
+      },
+      {
+        id: "manager-3-perk-2",
+        name: "Oxidation Catalyst",
+        description: "Advanced oxidation processes increase Silicon and Aluminum production by 100%",
+        cost: 6,
+        icon: "🔥",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-5", "element-6"] }
+      },
+      {
+        id: "manager-3-perk-3",
+        name: "Molecular Sieve Technology",
+        description: "Precision separation technique boosts Silicon and Aluminum production by 150%",
+        cost: 12,
+        icon: "⚗️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-5", "element-6"] }
+      }
+    ]
   },
   {
     id: "manager-4",
@@ -109,7 +167,36 @@ export const managers: Manager[] = [
     requiredCoins: 25000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=silicon",
     cost: 8,
-    boosts: ["element-7", "element-8"]
+    boosts: ["element-7", "element-8"],
+    perks: [
+      {
+        id: "manager-4-perk-1",
+        name: "Semiconductor Enhancement",
+        description: "Improved conductivity increases Iron and Copper production by 75%",
+        cost: 3,
+        icon: "💻",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-7", "element-8"] }
+      },
+      {
+        id: "manager-4-perk-2",
+        name: "Quantum Computing",
+        description: "Quantum algorithms optimize Iron and Copper production by 100%",
+        cost: 6,
+        icon: "🔌",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-7", "element-8"] }
+      },
+      {
+        id: "manager-4-perk-3",
+        name: "Neural Network Mining",
+        description: "AI-driven extraction technology boosts Iron and Copper production by 150%",
+        cost: 12,
+        icon: "🤖",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-7", "element-8"] }
+      }
+    ]
   },
   {
     id: "manager-5",
@@ -119,7 +206,36 @@ export const managers: Manager[] = [
     requiredCoins: 50000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=iron",
     cost: 16,
-    boosts: ["element-9", "element-10"]
+    boosts: ["element-9", "element-10"],
+    perks: [
+      {
+        id: "manager-5-perk-1",
+        name: "Alloy Integration",
+        description: "Metal alloy technology increases Zinc and Tin production by 75%",
+        cost: 3,
+        icon: "⚒️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-9", "element-10"] }
+      },
+      {
+        id: "manager-5-perk-2",
+        name: "Blast Furnace",
+        description: "High-temperature processing increases Zinc and Tin production by 100%",
+        cost: 6,
+        icon: "🔨",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-9", "element-10"] }
+      },
+      {
+        id: "manager-5-perk-3",
+        name: "Molecular Restructuring",
+        description: "Atomic manipulation boosts Zinc and Tin production by 150%",
+        cost: 12,
+        icon: "⚙️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-9", "element-10"] }
+      }
+    ]
   },
   {
     id: "manager-6",
@@ -129,7 +245,36 @@ export const managers: Manager[] = [
     requiredCoins: 500000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gold",
     cost: 32,
-    boosts: ["element-11", "element-12"]
+    boosts: ["element-11", "element-12"],
+    perks: [
+      {
+        id: "manager-6-perk-1",
+        name: "Precious Metal Sensing",
+        description: "Enhanced detection increases Titanium and Chromium production by 75%",
+        cost: 3,
+        icon: "💰",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-11", "element-12"] }
+      },
+      {
+        id: "manager-6-perk-2",
+        name: "Electrolytic Refinement",
+        description: "Advanced purification increases Titanium and Chromium production by 100%",
+        cost: 6,
+        icon: "⚡",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-11", "element-12"] }
+      },
+      {
+        id: "manager-6-perk-3",
+        name: "Asteroid Core Drilling",
+        description: "Deep extraction technology boosts Titanium and Chromium production by 150%",
+        cost: 12,
+        icon: "🛠️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-11", "element-12"] }
+      }
+    ]
   },
   {
     id: "manager-7",
@@ -139,7 +284,36 @@ export const managers: Manager[] = [
     requiredCoins: 1000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=uranium",
     cost: 64,
-    boosts: ["element-13", "element-14"]
+    boosts: ["element-13", "element-14"],
+    perks: [
+      {
+        id: "manager-7-perk-1",
+        name: "Radiation Shielding",
+        description: "Improved safety increases Manganese and Cobalt production by 75%",
+        cost: 3,
+        icon: "☢️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-13", "element-14"] }
+      },
+      {
+        id: "manager-7-perk-2",
+        name: "Isotope Enrichment",
+        description: "Specialized processing increases Manganese and Cobalt production by 100%",
+        cost: 6,
+        icon: "🧬",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-13", "element-14"] }
+      },
+      {
+        id: "manager-7-perk-3",
+        name: "Nuclear Extraction",
+        description: "Controlled fission reactor boosts Manganese and Cobalt production by 150%",
+        cost: 12,
+        icon: "💥",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-13", "element-14"] }
+      }
+    ]
   },
   {
     id: "manager-8",
@@ -149,7 +323,36 @@ export const managers: Manager[] = [
     requiredCoins: 10000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=platinum",
     cost: 128,
-    boosts: ["element-15", "element-16"]
+    boosts: ["element-15", "element-16"],
+    perks: [
+      {
+        id: "manager-8-perk-1",
+        name: "Multi-Stage Filtration",
+        description: "Enhanced purification increases Nickel and Molybdenum production by 75%",
+        cost: 3,
+        icon: "🧪",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-15", "element-16"] }
+      },
+      {
+        id: "manager-8-perk-2",
+        name: "Catalytic Conversion",
+        description: "Chemical catalysts increase Nickel and Molybdenum production by 100%",
+        cost: 6,
+        icon: "⚗️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-15", "element-16"] }
+      },
+      {
+        id: "manager-8-perk-3",
+        name: "Molecular Reconstruction",
+        description: "Atom-by-atom refinement boosts Nickel and Molybdenum production by 150%",
+        cost: 12,
+        icon: "✨",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-15", "element-16"] }
+      }
+    ]
   },
   {
     id: "manager-9",
@@ -159,7 +362,36 @@ export const managers: Manager[] = [
     requiredCoins: 100000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=exotic",
     cost: 256,
-    boosts: ["element-17", "element-18"]
+    boosts: ["element-17", "element-18"],
+    perks: [
+      {
+        id: "manager-9-perk-1",
+        name: "Dark Matter Infusion",
+        description: "Experimental physics increases Silver and Tungsten production by 75%",
+        cost: 3,
+        icon: "🌑",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-17", "element-18"] }
+      },
+      {
+        id: "manager-9-perk-2",
+        name: "Quantum State Shifting",
+        description: "Manipulating quantum states increases Silver and Tungsten production by 100%",
+        cost: 6,
+        icon: "🔮",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-17", "element-18"] }
+      },
+      {
+        id: "manager-9-perk-3",
+        name: "Interdimensional Mining",
+        description: "Extract resources from parallel dimensions, boosting Silver and Tungsten production by 150%",
+        cost: 12,
+        icon: "🌌",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-17", "element-18"] }
+      }
+    ]
   },
   {
     id: "manager-10",
@@ -169,6 +401,35 @@ export const managers: Manager[] = [
     requiredCoins: 500000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=antimatter",
     cost: 512,
-    boosts: ["element-19", "element-20"]
+    boosts: ["element-19", "element-20"],
+    perks: [
+      {
+        id: "manager-10-perk-1",
+        name: "Particle Annihilation",
+        description: "Controlled antimatter reactions increase Lead and Uranium production by 75%",
+        cost: 3,
+        icon: "💫",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-19", "element-20"] }
+      },
+      {
+        id: "manager-10-perk-2",
+        name: "Matter Conversion",
+        description: "Transform common elements into rare ones, increasing Lead and Uranium production by 100%",
+        cost: 6,
+        icon: "🔄",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-19", "element-20"] }
+      },
+      {
+        id: "manager-10-perk-3",
+        name: "Singularity Harvesting",
+        description: "Extract elements from the edge of black holes, boosting Lead and Uranium production by 150%",
+        cost: 12,
+        icon: "🕳️",
+        unlocked: false,
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-19", "element-20"] }
+      }
+    ]
   }
 ];

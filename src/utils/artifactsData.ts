@@ -42,36 +42,7 @@ export const artifacts: Artifact[] = [
     description: "Just a regular rock you found on your first day",
     bonus: "Provides absolutely no benefit whatsoever",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=rock",
-    cost: 0,
-    perks: [
-      {
-        id: "artifact-default-perk-1",
-        name: "Lucky Rock",
-        description: "The rock might be lucky after all, increasing tap value by 5%",
-        cost: 3,
-        icon: "🍀",
-        unlocked: false,
-        effect: { type: "tap", value: 0.05 }
-      },
-      {
-        id: "artifact-default-perk-2",
-        name: "Polished Surface",
-        description: "A polished rock reflects cosmic energy, increasing production by 10%",
-        cost: 6,
-        icon: "✨",
-        unlocked: false,
-        effect: { type: "production", value: 0.1 }
-      },
-      {
-        id: "artifact-default-perk-3",
-        name: "Ancient Power",
-        description: "The rock contains ancient energy, reducing upgrade costs by 5%",
-        cost: 12,
-        icon: "🔮",
-        unlocked: false,
-        effect: { type: "cost", value: 0.05 }
-      }
-    ]
+    cost: 0
   },
   {
     id: "artifact-1",
@@ -83,7 +54,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "production",
       value: 0.1
-    }
+    },
+    perks: [
+      {
+        id: "artifact-1-perk-1",
+        name: "Quantum Acceleration",
+        description: "Upgraded processing algorithms increase production by 20%",
+        cost: 3,
+        icon: "🔄",
+        unlocked: false,
+        effect: { type: "production", value: 0.2 }
+      },
+      {
+        id: "artifact-1-perk-2",
+        name: "Parallel Computing",
+        description: "Computing in multiple dimensions increases production by 30%",
+        cost: 6,
+        icon: "⚡",
+        unlocked: false,
+        effect: { type: "production", value: 0.3 }
+      },
+      {
+        id: "artifact-1-perk-3",
+        name: "Quantum Supremacy",
+        description: "Achieves computational feats impossible with classic computers, increasing production by 40%",
+        cost: 12,
+        icon: "🌟",
+        unlocked: false,
+        effect: { type: "production", value: 0.4 }
+      }
+    ]
   },
   {
     id: "artifact-2",
@@ -95,7 +95,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "tap",
       value: 1.5
-    }
+    },
+    perks: [
+      {
+        id: "artifact-2-perk-1",
+        name: "Reinforced Thrusters",
+        description: "Enhanced propulsion system increases tap multiplier to 2x",
+        cost: 3,
+        icon: "🚀",
+        unlocked: false,
+        effect: { type: "tap", value: 2.0 }
+      },
+      {
+        id: "artifact-2-perk-2",
+        name: "Quantum Fuel Mixture",
+        description: "Revolutionary fuel composition increases tap multiplier to 2.5x",
+        cost: 6,
+        icon: "⛽",
+        unlocked: false,
+        effect: { type: "tap", value: 2.5 }
+      },
+      {
+        id: "artifact-2-perk-3",
+        name: "Warp Drive",
+        description: "Bend spacetime to reach minerals faster with a 3x tap multiplier",
+        cost: 12,
+        icon: "🌌",
+        unlocked: false,
+        effect: { type: "tap", value: 3.0 }
+      }
+    ]
   },
   {
     id: "artifact-3",
@@ -107,7 +136,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "essence",
       value: 1.25
-    }
+    },
+    perks: [
+      {
+        id: "artifact-3-perk-1",
+        name: "Enhanced Sensors",
+        description: "Improved detection range increases essence gain to 150%",
+        cost: 3,
+        icon: "📡",
+        unlocked: false,
+        effect: { type: "essence", value: 1.5 }
+      },
+      {
+        id: "artifact-3-perk-2",
+        name: "Quantum Resonance",
+        description: "Detect essence through quantum fields, increasing gain to 175%",
+        cost: 6,
+        icon: "🔍",
+        unlocked: false,
+        effect: { type: "essence", value: 1.75 }
+      },
+      {
+        id: "artifact-3-perk-3",
+        name: "Hyperdimensional Analysis",
+        description: "Scan across dimensions for a 200% essence gain",
+        cost: 12,
+        icon: "🔬",
+        unlocked: false,
+        effect: { type: "essence", value: 2.0 }
+      }
+    ]
   },
   {
     id: "artifact-4",
@@ -119,7 +177,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "cost",
       value: 0.1
-    }
+    },
+    perks: [
+      {
+        id: "artifact-4-perk-1",
+        name: "Wider Aperture",
+        description: "Expanded observation capability reduces upgrade costs by 15%",
+        cost: 3,
+        icon: "👁️",
+        unlocked: false,
+        effect: { type: "cost", value: 0.15 }
+      },
+      {
+        id: "artifact-4-perk-2",
+        name: "Gravitational Lensing",
+        description: "Use gravity to enhance observations, reducing upgrade costs by 20%",
+        cost: 6,
+        icon: "🔭",
+        unlocked: false,
+        effect: { type: "cost", value: 0.2 }
+      },
+      {
+        id: "artifact-4-perk-3",
+        name: "Quantum Entanglement Viewer",
+        description: "Instantly observe distant phenomena, reducing upgrade costs by 25%",
+        cost: 12,
+        icon: "🌠",
+        unlocked: false,
+        effect: { type: "cost", value: 0.25 }
+      }
+    ]
   },
   {
     id: "artifact-5",
@@ -131,7 +218,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "startingCoins",
       value: 100000
-    }
+    },
+    perks: [
+      {
+        id: "artifact-5-perk-1",
+        name: "Empowered Crystal",
+        description: "Enhanced energy focus provides 250,000 starting coins after prestige",
+        cost: 3,
+        icon: "💎",
+        unlocked: false,
+        effect: { type: "startingCoins", value: 250000 }
+      },
+      {
+        id: "artifact-5-perk-2",
+        name: "Resonant Lattice",
+        description: "Crystal structure resonates with cosmic energy for 500,000 starting coins",
+        cost: 6,
+        icon: "✨",
+        unlocked: false,
+        effect: { type: "startingCoins", value: 500000 }
+      },
+      {
+        id: "artifact-5-perk-3",
+        name: "Infinite Refraction",
+        description: "Light passes through the crystal infinitely, providing 1,000,000 starting coins",
+        cost: 12,
+        icon: "🌈",
+        unlocked: false,
+        effect: { type: "startingCoins", value: 1000000 }
+      }
+    ]
   },
   {
     id: "artifact-6",
@@ -143,7 +259,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "production",
       value: 0.25
-    }
+    },
+    perks: [
+      {
+        id: "artifact-6-perk-1",
+        name: "Focused Beam",
+        description: "Concentrated energy increases all production by 35%",
+        cost: 3,
+        icon: "🔦",
+        unlocked: false,
+        effect: { type: "production", value: 0.35 }
+      },
+      {
+        id: "artifact-6-perk-2",
+        name: "Particle Acceleration",
+        description: "Accelerated particles boost all production by 45%",
+        cost: 6,
+        icon: "⚛️",
+        unlocked: false,
+        effect: { type: "production", value: 0.45 }
+      },
+      {
+        id: "artifact-6-perk-3",
+        name: "Cosmic Ray Channeling",
+        description: "Harness the power of cosmic rays for 60% increased production",
+        cost: 12,
+        icon: "☄️",
+        unlocked: false,
+        effect: { type: "production", value: 0.6 }
+      }
+    ]
   },
   {
     id: "artifact-7",
@@ -155,7 +300,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "tap",
       value: 2.5
-    }
+    },
+    perks: [
+      {
+        id: "artifact-7-perk-1",
+        name: "Catalytic Reaction",
+        description: "Chemical catalysts increase tap multiplier to 3x",
+        cost: 3,
+        icon: "🧪",
+        unlocked: false,
+        effect: { type: "tap", value: 3.0 }
+      },
+      {
+        id: "artifact-7-perk-2",
+        name: "Quantum Chemistry",
+        description: "Manipulate molecules at quantum level for 3.5x tap multiplier",
+        cost: 6,
+        icon: "🔬",
+        unlocked: false,
+        effect: { type: "tap", value: 3.5 }
+      },
+      {
+        id: "artifact-7-perk-3",
+        name: "Philosopher's Solution",
+        description: "The legendary formula perfected, providing 4x tap multiplier",
+        cost: 12,
+        icon: "⚗️",
+        unlocked: false,
+        effect: { type: "tap", value: 4.0 }
+      }
+    ]
   },
   {
     id: "artifact-8",
@@ -167,7 +341,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "essence",
       value: 2.25
-    }
+    },
+    perks: [
+      {
+        id: "artifact-8-perk-1",
+        name: "Subatomic Resolution",
+        description: "See deeper into the essence of matter for 250% more essence",
+        cost: 3,
+        icon: "🔍",
+        unlocked: false,
+        effect: { type: "essence", value: 2.5 }
+      },
+      {
+        id: "artifact-8-perk-2",
+        name: "Quantum Probability Lens",
+        description: "Observe all possible material states for 275% more essence",
+        cost: 6,
+        icon: "🔎",
+        unlocked: false,
+        effect: { type: "essence", value: 2.75 }
+      },
+      {
+        id: "artifact-8-perk-3",
+        name: "Higgs Field Visualizer",
+        description: "Directly observe the field that gives matter mass, for 300% more essence",
+        cost: 12,
+        icon: "📊",
+        unlocked: false,
+        effect: { type: "essence", value: 3.0 }
+      }
+    ]
   },
   {
     id: "artifact-9",
@@ -179,7 +382,36 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "cost",
       value: 0.25
-    }
+    },
+    perks: [
+      {
+        id: "artifact-9-perk-1",
+        name: "Extended Coverage",
+        description: "Additional satellites reduce upgrade costs by 30%",
+        cost: 3,
+        icon: "🛰️",
+        unlocked: false,
+        effect: { type: "cost", value: 0.3 }
+      },
+      {
+        id: "artifact-9-perk-2",
+        name: "Real-time Analysis",
+        description: "Instant data processing reduces upgrade costs by 35%",
+        cost: 6,
+        icon: "📡",
+        unlocked: false,
+        effect: { type: "cost", value: 0.35 }
+      },
+      {
+        id: "artifact-9-perk-3",
+        name: "Autonomous Mining Fleet",
+        description: "AI-controlled orbital mining reduces upgrade costs by 40%",
+        cost: 12,
+        icon: "🤖",
+        unlocked: false,
+        effect: { type: "cost", value: 0.4 }
+      }
+    ]
   },
   {
     id: "artifact-10",
@@ -191,6 +423,35 @@ export const artifacts: Artifact[] = [
     effect: {
       type: "startingCoins",
       value: 1000000
-    }
+    },
+    perks: [
+      {
+        id: "artifact-10-perk-1",
+        name: "Power Regulation",
+        description: "Better energy control provides 2,500,000 starting coins",
+        cost: 3,
+        icon: "⚡",
+        unlocked: false,
+        effect: { type: "startingCoins", value: 2500000 }
+      },
+      {
+        id: "artifact-10-perk-2",
+        name: "Core Overcharge",
+        description: "Push the core beyond safe limits for 5,000,000 starting coins",
+        cost: 6,
+        icon: "🔋",
+        unlocked: false,
+        effect: { type: "startingCoins", value: 5000000 }
+      },
+      {
+        id: "artifact-10-perk-3",
+        name: "Ancient Knowledge Integration",
+        description: "Unlock the aliens' financial wisdom for 10,000,000 starting coins",
+        cost: 12,
+        icon: "👽",
+        unlocked: false,
+        effect: { type: "startingCoins", value: 10000000 }
+      }
+    ]
   }
 ];

@@ -27,6 +27,20 @@ const Managers: React.FC = () => {
     return element ? element.name : elementId;
   };
   
+  // Function to get the most powerful unlocked perk
+  const getHighestUnlockedPerkValue = (managerId: string) => {
+    const manager = state.managers.find(m => m.id === managerId);
+    if (!manager || !manager.perks) return null;
+    
+    const unlockedPerks = manager.perks.filter(p => p.unlocked);
+    if (unlockedPerks.length === 0) return null;
+    
+    // Return the highest value perk
+    return unlockedPerks.reduce((prev, current) => 
+      prev.effect.value > current.effect.value ? prev : current
+    );
+  };
+  
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Element Managers</h2>
@@ -35,11 +49,20 @@ const Managers: React.FC = () => {
         {managers.map((manager, index) => {
           const isOwned = state.ownedManagers.includes(manager.id);
           
+          // Get the highest unlocked perk if any
+          const highestPerk = isOwned ? getHighestUnlockedPerkValue(manager.id) : null;
+          
           // Generate a more detailed bonus description for managers with element boosts
           let bonusDescription = manager.bonus;
           if (manager.boosts && manager.boosts.length > 0) {
             const boostedElements = manager.boosts.map(getElementName).join(' and ');
-            bonusDescription = `Increases ${boostedElements} production by 50%`;
+            
+            // If there's a highest perk, use its value instead of the base 50%
+            const boostValue = highestPerk && highestPerk.effect.type === "elementBoost" 
+              ? highestPerk.effect.value * 100 
+              : 50;
+              
+            bonusDescription = `Increases ${boostedElements} production by ${boostValue}%`;
           }
           
           return (

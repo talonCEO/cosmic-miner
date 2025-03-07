@@ -48,6 +48,13 @@ const Shop: React.FC<ShopProps> = ({
                 const isOwned = ownedManagers.includes(manager.id);
                 const canAfford = essence >= manager.cost;
                 
+                // Count how many perks this manager has
+                const perksCount = manager.perks ? manager.perks.length : 0;
+                let perksInfo = "";
+                if (perksCount > 0) {
+                  perksInfo = `Includes ${perksCount} unlockable perks`;
+                }
+                
                 return (
                   <ShopItem
                     key={manager.id}
@@ -60,6 +67,7 @@ const Shop: React.FC<ShopProps> = ({
                     isOwned={isOwned}
                     canAfford={canAfford}
                     onBuy={() => onBuyManager(manager.id, manager.name)}
+                    additionalInfo={perksInfo}
                   />
                 );
               })}
@@ -70,6 +78,13 @@ const Shop: React.FC<ShopProps> = ({
               {artifacts.map(artifact => {
                 const isOwned = ownedArtifacts.includes(artifact.id);
                 const canAfford = essence >= artifact.cost;
+                
+                // Count how many perks this artifact has
+                const perksCount = artifact.perks ? artifact.perks.length : 0;
+                let perksInfo = "";
+                if (perksCount > 0) {
+                  perksInfo = `Includes ${perksCount} unlockable perks`;
+                }
                 
                 return (
                   <ArtifactShopItem
@@ -83,6 +98,7 @@ const Shop: React.FC<ShopProps> = ({
                     isOwned={isOwned}
                     canAfford={canAfford}
                     onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
+                    additionalInfo={perksInfo}
                   />
                 );
               })}

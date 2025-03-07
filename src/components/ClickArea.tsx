@@ -73,7 +73,38 @@ const ClickArea: React.FC = () => {
     
     // Calculate click multiplier from artifacts
     const clickMultiplier = state.ownedArtifacts.includes("artifact-2") ? 1.5 : 1;  // Space Rocket
-    const extraMultiplier = state.ownedArtifacts.includes("artifact-7") ? 1.5 : 0;  // Molecular Flask
+    let extraMultiplier = 0;
+    
+    // Check for Space Rocket perks
+    const rocketArtifact = state.artifacts.find(a => a.id === "artifact-2");
+    if (rocketArtifact && rocketArtifact.perks) {
+      const unlockedPerks = rocketArtifact.perks.filter(p => p.unlocked);
+      if (unlockedPerks.length > 0) {
+        // Use the highest unlocked perk value
+        const highestPerk = unlockedPerks.reduce((prev, current) => 
+          prev.effect.value > current.effect.value ? prev : current
+        );
+        extraMultiplier = highestPerk.effect.value - 1.5; // Subtract base value
+      }
+    }
+    
+    // Check for Molecular Flask and its perks
+    if (state.ownedArtifacts.includes("artifact-7")) {
+      extraMultiplier += 2.5; // Molecular Flask base bonus
+      
+      const flaskArtifact = state.artifacts.find(a => a.id === "artifact-7");
+      if (flaskArtifact && flaskArtifact.perks) {
+        const unlockedPerks = flaskArtifact.perks.filter(p => p.unlocked);
+        if (unlockedPerks.length > 0) {
+          // Use the highest unlocked perk value
+          const highestPerk = unlockedPerks.reduce((prev, current) => 
+            prev.effect.value > current.effect.value ? prev : current
+          );
+          extraMultiplier = highestPerk.effect.value - 1; // Use highest value instead
+        }
+      }
+    }
+    
     const artifactMultiplier = clickMultiplier + extraMultiplier;
     
     // Apply base value and bonuses

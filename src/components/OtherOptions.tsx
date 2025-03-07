@@ -20,6 +20,43 @@ import PerkButton from './PerkButton';
 const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
   
+  // Function to get the most powerful unlocked perk
+  const getHighestUnlockedPerkValue = (artifactId: string) => {
+    const artifact = state.artifacts.find(a => a.id === artifactId);
+    if (!artifact || !artifact.perks) return null;
+    
+    const unlockedPerks = artifact.perks.filter(p => p.unlocked);
+    if (unlockedPerks.length === 0) return null;
+    
+    // Return the highest value perk
+    return unlockedPerks.reduce((prev, current) => 
+      prev.effect.value > current.effect.value ? prev : current
+    );
+  };
+  
+  // Function to format effect description based on perk
+  const formatEffectDescription = (artifact, highestPerk = null) => {
+    if (!artifact.effect) return artifact.bonus;
+    
+    // If we have a highest perk, use its value instead of the base
+    const effectValue = highestPerk ? highestPerk.effect.value : artifact.effect.value;
+    
+    switch(artifact.effect.type) {
+      case 'production':
+        return `Increases all production by ${effectValue * 100}%`;
+      case 'tap':
+        return `${effectValue}x tap multiplier`;
+      case 'essence':
+        return `${effectValue * 100}% more essence from prestiging`;
+      case 'cost':
+        return `Reduces upgrade costs by ${effectValue * 100}%`;
+      case 'startingCoins':
+        return `Start with ${effectValue.toLocaleString()} coins after each prestige`;
+      default:
+        return artifact.bonus;
+    }
+  };
+  
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Powerful Artifacts</h2>
@@ -28,27 +65,11 @@ const ArtifactsTab: React.FC = () => {
         {state.artifacts.map((artifact, index) => {
           const isOwned = state.ownedArtifacts.includes(artifact.id);
           
-          // Get the actual effect description based on the artifact's effect type
-          let effectDescription = artifact.bonus;
-          if (artifact.effect) {
-            switch(artifact.effect.type) {
-              case 'production':
-                effectDescription = `Increases all production by ${artifact.effect.value * 100}%`;
-                break;
-              case 'tap':
-                effectDescription = `${artifact.effect.value}x tap multiplier`;
-                break;
-              case 'essence':
-                effectDescription = `${artifact.effect.value * 100}% more essence from prestiging`;
-                break;
-              case 'cost':
-                effectDescription = `Reduces upgrade costs by ${artifact.effect.value * 100}%`;
-                break;
-              case 'startingCoins':
-                effectDescription = `Start with ${artifact.effect.value.toLocaleString()} coins after each prestige`;
-                break;
-            }
-          }
+          // Get the highest unlocked perk if any
+          const highestPerk = isOwned ? getHighestUnlockedPerkValue(artifact.id) : null;
+          
+          // Get the actual effect description based on the artifact's effect type and highest perk
+          const effectDescription = formatEffectDescription(artifact, highestPerk);
           
           return (
             <div 
