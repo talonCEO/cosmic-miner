@@ -109,7 +109,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     if (!nextAdTime) {
-      const initialDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+      const initialDelay = getInitialAdDelay();
       setNextAdTime(Date.now() + initialDelay * 1000);
     }
   }, []);

@@ -91,7 +91,10 @@ type GameAction =
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
   | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
   | { type: 'CHECK_ACHIEVEMENTS' }
-  | { type: 'HANDLE_CLICK' };
+  | { type: 'HANDLE_CLICK' }
+  | { type: 'TICK' }
+  | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
+  | { type: 'ADD_SKILL_POINTS'; amount: number };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -847,9 +850,43 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
   const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
   
+  const contextValue = {
+    state,
+    dispatch,
+    click,
+    addCoins,
+    addEssence,
+    buyUpgrade,
+    toggleAutoBuy,
+    toggleAutoTap,
+    setAutoTap,
+    setIncomeMultiplier,
+    prestige,
+    buyManager,
+    buyArtifact,
+    unlockAbility,
+    unlockPerk,
+    checkAchievements,
+    calculateMaxPurchaseAmount,
+    calculatePotentialEssenceReward,
+    handleClick
+  };
+  
+  // Store context value for external access if needed
+  gameContextHolder.current = contextValue;
+  
   return (
-    <GameContext.Provider value={{ state, dispatch, click, addCoins, addEssence, buyUpgrade, toggleAutoBuy, toggleAutoTap, setAutoTap, setIncomeMultiplier, prestige, buyManager, buyArtifact, unlockAbility, unlockPerk, checkAchievements, calculateMaxPurchaseAmount, calculatePotentialEssenceReward, handleClick }}>
+    <GameContext.Provider value={contextValue}>
       {children}
     </GameContext.Provider>
   );
+};
+
+// Export the useGame hook
+export const useGame = (): GameContextType => {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
 };
