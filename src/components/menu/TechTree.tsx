@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Sparkles, Rocket, Gauge, Compass, Flower, Flame } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -53,10 +53,11 @@ const TechTree: React.FC = () => {
       const node = treeRef.current?.querySelector(`[data-ability-id="${abilityId}"]`);
       if (!node) return null;
       const rect = node.getBoundingClientRect();
-      const containerRect = treeRef.current?.getBoundingRectangl();
+      const containerRect = treeRef.current?.getBoundingClientRect();
+      if (!containerRect) return null;
       return {
-        x: rect.left - (containerRect?.left || 0) + rect.width / 2,
-        y: rect.top - (containerRect?.top || 0) + rect.height / 2,
+        x: rect.left - containerRect.left + rect.width / 2,
+        y: rect.top - containerRect.top + rect.height / 2,
       };
     };
 
@@ -180,7 +181,6 @@ const TechTree: React.FC = () => {
                 <stop offset="0%" style={{ stopColor: '#06B6D4', stopOpacity: 0.8 }} />
                 <stop offset="100%" style={{ stopColor: '#22D3EE', stopOpacity: 0.8 }} />
               </linearGradient>
-              {/* Blur filter for neon glow */}
               <filter id="blurGlow">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
                 <feComponentTransfer>
