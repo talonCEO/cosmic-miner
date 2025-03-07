@@ -68,12 +68,16 @@ const ArtifactsTab: React.FC = () => {
               {artifact.perks && artifact.id !== "artifact-default" && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {artifact.perks.map(perk => (
-                    <div key={perk.id} className={`relative ${isOwned ? 'bg-purple-500/30' : ''} p-1 rounded-lg`}>
+                    <div key={perk.id} className="relative">
+                      {isOwned && (
+                        <div className="absolute inset-0 bg-purple-500/40 rounded-full z-10"></div>
+                      )}
                       <PerkButton 
                         perk={perk}
                         parentId={artifact.id}
                         onUnlock={unlockPerk}
                         disabled={!isOwned}
+                        className="relative z-20"
                       />
                     </div>
                   ))}
