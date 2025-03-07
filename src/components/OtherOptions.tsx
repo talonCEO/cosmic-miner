@@ -37,7 +37,7 @@ const ArtifactsTab: React.FC = () => {
           const effectDescription = formatEffectDescription(artifact, highestPerk);
           
           // Calculate opacity based on ownership
-          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-50';
+          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-20';
           
           return (
             <div 
@@ -87,4 +87,3 @@ const ArtifactsTab: React.FC = () => {
 };
 
 export default ArtifactsTab;
-
