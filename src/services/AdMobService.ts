@@ -78,9 +78,17 @@ class AdMobService {
     });
   }
 
-  // Remove all event listeners
-  removeAllListeners(): Promise<void> {
-    return AdMob.removeAllListeners();
+  // Remove all event listeners - using separate removal for each listener type
+  async removeAllListeners(): Promise<void> {
+    try {
+      // Remove each listener type individually
+      await AdMob.removeAllListeners(InterstitialAdPluginEvents.Loaded);
+      await AdMob.removeAllListeners(InterstitialAdPluginEvents.FailedToLoad);
+      await AdMob.removeAllListeners(InterstitialAdPluginEvents.Dismissed);
+      console.log('All ad listeners removed');
+    } catch (error) {
+      console.error('Error removing ad listeners:', error);
+    }
   }
 }
 
