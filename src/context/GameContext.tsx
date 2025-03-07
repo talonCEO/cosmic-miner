@@ -266,7 +266,7 @@ const UPGRADE_COST_GROWTH = 1.15; // 15% increase per level
 
 // Updated initial values with starting coins at 0 and coinsPerClick at 1
 const initialState: GameState = {
-  coins: 0, // Changed to 0 as requested
+  coins: 10000000, // Changed to 0 as requested
   coinsPerClick: 1, // Changed to 1 as requested
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
@@ -276,7 +276,7 @@ const initialState: GameState = {
   totalEarned: 0,
   autoBuy: false,
   autoTap: false,
-  essence: 0,
+  essence: 10000,
   ownedManagers: ["manager-default"],
   ownedArtifacts: ["artifact-default"],
   achievements: createAchievements(),
@@ -284,8 +284,8 @@ const initialState: GameState = {
   managers: managers,
   artifacts: artifacts,
   prestigeCount: 0,
-  incomeMultiplier: 1.0,
-  skillPoints: 0,
+  incomeMultiplier: 10.0,
+  skillPoints: 10000,
   abilities: initialAbilities,
   unlockedPerks: []
 };
