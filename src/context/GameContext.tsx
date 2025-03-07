@@ -1,8 +1,9 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList, UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
-import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket } from 'lucide-react';
+import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket, Flower, Flame } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { calculateBulkPurchaseCost, calculateMaxAffordableQuantity, isGoodValue, calculateProductionMultiplier } from '@/utils/gameLogic';
 import { adMobService } from '@/services/AdMobService';
@@ -105,7 +106,7 @@ const updatedUpgradesList = upgradesList.map(upgrade => ({
   coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 0.5 // 50% decrease to passive income
 }));
 
-// Initial abilities for the tech tree - redesigned with new tiers
+// Initial abilities for the tech tree - redesigned with new space-mining theme
 const initialAbilities: Ability[] = [
   // Tier 1 (row 1) - Center ability (unlocked by default)
   {
@@ -264,10 +265,10 @@ const initialAbilities: Ability[] = [
 // Fixed growth rate for upgrade costs
 const UPGRADE_COST_GROWTH = 1.15; // 15% increase per level
 
-// Updated initial values
+// Updated initial values with starting coins at 0 and coinsPerClick at 1
 const initialState: GameState = {
-  coins: 0, // Changed from 50 to 0
-  coinsPerClick: 1, // Base value is now 1 rather than being modified by multipliers
+  coins: 0, // Changed to 0 as requested
+  coinsPerClick: 1, // Changed to 1 as requested
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
     ...upgrade
@@ -834,4 +835,50 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
   const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
   const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
-  const setIncomeMultiplier = (multiplier: number) => dispatch({ type:
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
+  const prestige = () => dispatch({ type: 'PRESTIGE' });
+  const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
+  const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
+  const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
+  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
+  
+  const contextValue = {
+    state,
+    dispatch,
+    click,
+    addCoins,
+    addEssence,
+    buyUpgrade,
+    toggleAutoBuy,
+    toggleAutoTap,
+    setIncomeMultiplier,
+    prestige,
+    buyManager,
+    buyArtifact,
+    unlockAbility,
+    unlockPerk,
+    checkAchievements,
+    calculateMaxPurchaseAmount,
+    calculatePotentialEssenceReward,
+    handleClick
+  };
+  
+  // Store the context in the global holder for access without hooks
+  gameContextHolder.current = contextValue;
+  
+  return (
+    <GameContext.Provider value={contextValue}>
+      {children}
+    </GameContext.Provider>
+  );
+};
+
+export const useGame = () => {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
+};
