@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Sparkles, Rocket, Gauge, Compass, Flower, Flame } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -249,8 +250,9 @@ const TechTree: React.FC = () => {
         </DialogClose>
       </div>
 
-      {/* Custom CSS for animations */}
-      <style jsx>{`
+      {/* Custom CSS for animations - Fixed the style tag by removing jsx property */}
+      <style>
+        {`
         .animate-flow {
           animation: flow 3s infinite linear;
         }
@@ -269,7 +271,8 @@ const TechTree: React.FC = () => {
             box-shadow: 0 0 20px 10px rgba(34, 211, 238, 0);
           }
         }
-      `}</style>
+      `}
+      </style>
     </>
   );
 };

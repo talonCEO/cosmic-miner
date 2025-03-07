@@ -1,4 +1,3 @@
-
 import { useGame } from '@/context/GameContext';
 import { Perk } from '@/utils/types';
 
@@ -35,21 +34,30 @@ export const useBoostManager = () => {
    */
   const getHighestUnlockedPerkValue = (itemId: string) => {
     // Check if it's a manager
-    let item = state.managers.find(m => m.id === itemId);
-    if (!item || !item.perks) {
-      // If not a manager, check if it's an artifact
-      item = state.artifacts.find(a => a.id === itemId);
+    const manager = state.managers.find(m => m.id === itemId);
+    if (manager && manager.perks) {
+      const unlockedPerks = manager.perks.filter(p => p.unlocked);
+      if (unlockedPerks.length === 0) return null;
+      
+      // Return the highest value perk
+      return unlockedPerks.reduce((prev, current) => 
+        prev.effect.value > current.effect.value ? prev : current
+      );
     }
     
-    if (!item || !item.perks) return null;
+    // If not a manager, check if it's an artifact
+    const artifact = state.artifacts.find(a => a.id === itemId);
+    if (artifact && artifact.perks) {
+      const unlockedPerks = artifact.perks.filter(p => p.unlocked);
+      if (unlockedPerks.length === 0) return null;
+      
+      // Return the highest value perk
+      return unlockedPerks.reduce((prev, current) => 
+        prev.effect.value > current.effect.value ? prev : current
+      );
+    }
     
-    const unlockedPerks = item.perks.filter(p => p.unlocked);
-    if (unlockedPerks.length === 0) return null;
-    
-    // Return the highest value perk
-    return unlockedPerks.reduce((prev, current) => 
-      prev.effect.value > current.effect.value ? prev : current
-    );
+    return null;
   };
 
   /**
@@ -422,3 +430,4 @@ export const useBoostManager = () => {
     calculateCriticalStats
   };
 };
+
