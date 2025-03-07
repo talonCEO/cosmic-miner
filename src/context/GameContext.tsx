@@ -1,11 +1,12 @@
-<lov-code>
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { upgradesList } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { calculateBulkPurchaseCost, calculateMaxAffordableQuantity } from '@/utils/gameLogic';
+import { calculateBulkPurchaseCost, calculateMaxAffordableQuantity, isGoodValue, calculateProductionMultiplier } from '@/utils/gameLogic';
+import { adMobService } from '@/services/AdMobService';
 
 // Achievement interface
 export interface Achievement {
@@ -328,15 +329,6 @@ const initialState: GameState = {
   unlockedPerks: []
 };
 
-// Helper function to calculate the total cost of buying multiple upgrades
-const calculateBulkCost = (baseCost: number, currentLevel: number, quantity: number): number => {
-  let totalCost = 0;
-  for (let i = 0; i < quantity; i++) {
-    totalCost += Math.floor(baseCost * Math.pow(1.07, currentLevel + i));
-  }
-  return totalCost;
-};
-
 // Helper function to calculate potential essence reward with progressive scaling
 const calculateEssenceReward = (totalEarned: number, ownedArtifacts: string[]): number => {
   let baseEssenceMultiplier = 1;
@@ -410,31 +402,6 @@ const calculateStartingCoins = (ownedArtifacts: string[]): number => {
   return coins;
 };
 
-// Calculate maximum affordable purchases for an upgrade
-const getMaxPurchaseAmount = (state: GameState, upgradeId: string): number => {
-  const upgrade = state.upgrades.find(u => u.id === upgradeId);
-  if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
-  
-  const costReduction = calculateCostReduction(state.ownedArtifacts);
-  let remainingCoins = state.coins;
-  let purchaseCount = 0;
-  let currentLevel = upgrade.level;
-  
-  while (remainingCoins > 0 && currentLevel < upgrade.maxLevel) {
-    const nextUpgradeCost = Math.floor(upgrade.baseCost * Math.pow(1.07, currentLevel) * costReduction);
-    
-    if (remainingCoins >= nextUpgradeCost) {
-      remainingCoins -= nextUpgradeCost;
-      purchaseCount++;
-      currentLevel++;
-    } else {
-      break;
-    }
-  }
-  
-  return purchaseCount;
-};
-
 // Check if an upgrade has reached a milestone level that awards a skill point
 const checkUpgradeMilestone = (oldLevel: number, newLevel: number): boolean => {
   const oldMilestone = Math.floor(oldLevel / 100);
@@ -488,7 +455,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         upgrade.maxLevel - upgrade.level
       );
       
-      // Use the new bulk cost calculation function
+      // Use the bulk cost calculation function
       const totalCost = Math.floor(calculateBulkPurchaseCost(
         upgrade.baseCost, 
         upgrade.level, 
@@ -683,7 +650,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         managers: state.managers,
         artifacts: state.artifacts,
         prestigeCount: state.prestigeCount + 1,
-        skillPoints: state.skillPoints // Retain skill points after prestige
+        skillPoints: state.skillPoints, // Retain skill points after prestige
+        abilities: state.abilities // Retain abilities after prestige
       };
     }
     case 'BUY_MANAGER': {
@@ -857,19 +825,155 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   }
 };
 
-// Helper function to calculate maximum affordable purchases
-const getMaxPurchaseAmount = (state: GameState, upgradeId: string): number => {
-  const upgrade = state.upgrades.find(u => u.id === upgradeId);
-  if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
+interface GameContextType {
+  state: GameState;
+  dispatch: React.Dispatch<GameAction>;
+  click: () => void;
+  addCoins: (amount: number) => void;
+  addEssence: (amount: number) => void;
+  buyUpgrade: (upgradeId: string, quantity?: number) => void;
+  toggleAutoBuy: () => void;
+  toggleAutoTap: () => void;
+  setIncomeMultiplier: (multiplier: number) => void;
+  prestige: () => void;
+  buyManager: (managerId: string) => void;
+  buyArtifact: (artifactId: string) => void;
+  unlockAbility: (abilityId: string) => void;
+  unlockPerk: (perkId: string, parentId: string) => void;
+  checkAchievements: () => void;
+  calculateMaxPurchaseAmount: (upgradeId: string) => number;
+  calculatePotentialEssenceReward: () => number;
+}
+
+const GameContext = createContext<GameContextType | undefined>(undefined);
+
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const { toast } = useToast();
   
-  const costReduction = calculateCostReduction(state.ownedArtifacts);
+  // Load AdMob on initial render
+  useEffect(() => {
+    const initAds = async () => {
+      try {
+        await adMobService.initialize();
+        await adMobService.loadInterstitialAd();
+      } catch (error) {
+        console.error("Failed to initialize ads:", error);
+      }
+    };
+    
+    initAds();
+  }, []);
   
-  // Use the new utility function from gameLogic.ts
-  const maxPurchases = calculateMaxAffordableQuantity(
-    state.coins,
-    upgrade.baseCost * costReduction,
-    upgrade.level,
-    UPGRADE_COST_GROWTH
+  // Game tick effect for passive income and auto features
+  useEffect(() => {
+    const tickInterval = setInterval(() => {
+      dispatch({ type: 'TICK' });
+    }, 100); // 10 ticks per second for smoother gameplay
+    
+    return () => clearInterval(tickInterval);
+  }, []);
+  
+  // Check for achievements periodically
+  useEffect(() => {
+    const achievementInterval = setInterval(() => {
+      dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+    }, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(achievementInterval);
+  }, []);
+  
+  // Calculate maximum affordable purchase amount
+  const calculateMaxPurchaseAmount = (upgradeId: string): number => {
+    const upgrade = state.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
+    
+    const costReduction = calculateCostReduction(state.ownedArtifacts);
+    
+    // Use our utility function
+    return calculateMaxAffordableQuantity(
+      state.coins,
+      upgrade.baseCost * costReduction,
+      upgrade.level,
+      UPGRADE_COST_GROWTH
+    );
+  };
+  
+  // Calculate potential essence reward for prestige
+  const calculatePotentialEssenceReward = (): number => {
+    return calculateEssenceReward(state.totalEarned, state.ownedArtifacts);
+  };
+  
+  // Game actions
+  const click = () => dispatch({ type: 'CLICK' });
+  const addCoins = (amount: number) => dispatch({ type: 'ADD_COINS', amount });
+  const addEssence = (amount: number) => dispatch({ type: 'ADD_ESSENCE', amount });
+  const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
+  const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
+  const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
+  const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
+  const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
+  const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
+  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+  
+  // Show interstitial ad on prestige
+  const prestige = async () => {
+    // First calculate the reward to show it in the toast
+    const essenceReward = calculatePotentialEssenceReward();
+    
+    // Dispatch the prestige action
+    dispatch({ type: 'PRESTIGE' });
+    
+    // Show toast notification
+    toast({
+      title: "Prestige Complete!",
+      description: `Gained ${essenceReward} essence from prestige`,
+      variant: "default",
+    });
+    
+    // Show an interstitial ad occasionally after prestige
+    try {
+      await adMobService.showInterstitialAd();
+      // Load a new ad for next time
+      await adMobService.loadInterstitialAd();
+    } catch (error) {
+      console.log("Ad failed to show:", error);
+    }
+  };
+  
+  const contextValue: GameContextType = {
+    state,
+    dispatch,
+    click,
+    addCoins,
+    addEssence,
+    buyUpgrade,
+    toggleAutoBuy,
+    toggleAutoTap,
+    setIncomeMultiplier,
+    prestige,
+    buyManager,
+    buyArtifact,
+    unlockAbility,
+    unlockPerk,
+    checkAchievements,
+    calculateMaxPurchaseAmount,
+    calculatePotentialEssenceReward
+  };
+  
+  return (
+    <GameContext.Provider value={contextValue}>
+      {children}
+    </GameContext.Provider>
   );
-  
-  // Make sure we
+};
+
+export const useGame = (): GameContextType => {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
+};

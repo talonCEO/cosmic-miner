@@ -15,12 +15,8 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward, handlePrest
   const onPrestige = () => {
     handlePrestige();
     
-    // Show a notification when prestige happens
-    toast({
-      title: "Prestige Complete!",
-      description: `Gained ${potentialEssenceReward} essence from prestige`,
-      variant: "default",
-    });
+    // Show a notification when prestige happens (moved to GameContext)
+    // Removed toast here since it's now triggered in GameContext for better consistency
   };
   
   return (
