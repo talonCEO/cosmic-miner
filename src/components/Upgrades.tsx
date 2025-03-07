@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress } from '@/utils/gameLogic';
@@ -74,7 +73,6 @@ const Upgrades: React.FC = () => {
     }
   };
 
-  // Handle clicking the upgrade card to buy 1 of that upgrade
   const handleUpgradeClick = (upgradeId: string) => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade || upgrade.level >= upgrade.maxLevel || state.coins < upgrade.cost) return;
@@ -104,12 +102,18 @@ const Upgrades: React.FC = () => {
           const timeToSave = calculateTimeToSave(upgrade.cost, state.coins, state.coinsPerSecond);
           const isMaxLevel = upgrade.level >= upgrade.maxLevel;
           
+          const profitPerSecond = upgrade.coinsPerSecondBonus;
+          const ROI = profitPerSecond > 0 ? upgrade.cost / profitPerSecond : Infinity;
+          const isGoodValue = ROI < 100;
+          
           return (
             <div 
               key={upgrade.id}
               onClick={() => handleUpgradeClick(upgrade.id)}
               className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border 
-                ${isMaxLevel ? 'border-slate-600' : canAfford ? 'border-indigo-500/40' : 'border-slate-700/40'} 
+                ${isMaxLevel ? 'border-slate-600' : canAfford 
+                  ? (isGoodValue ? 'border-green-500/40' : 'border-indigo-500/40') 
+                  : 'border-slate-700/40'} 
                 p-4 flex items-start gap-4 transition-all
                 ${!isMaxLevel ? (canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20 cursor-pointer' : '') : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
@@ -127,7 +131,9 @@ const Upgrades: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-slate-100">{upgrade.name}</h3>
                   <div className="text-right">
-                    <p className={`font-medium ${canAfford ? 'text-indigo-500' : 'text-slate-400'}`}>
+                    <p className={`font-medium ${canAfford 
+                      ? (isGoodValue ? 'text-green-500' : 'text-indigo-500') 
+                      : 'text-slate-400'}`}>
                       {isMaxLevel ? 'MAX' : formatNumber(upgrade.cost)}
                     </p>
                     <p className="text-xs text-slate-500">
@@ -141,13 +147,15 @@ const Upgrades: React.FC = () => {
                   <>
                     <div className="w-full bg-slate-700/50 rounded-full h-1.5 my-2">
                       <div 
-                        className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" 
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          isGoodValue ? 'bg-green-500' : 'bg-indigo-500'
+                        }`}
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
                     
                     <div className="flex justify-between items-center text-xs mt-2">
-                      <span className="text-indigo-400">
+                      <span className={isGoodValue ? 'text-green-400' : 'text-indigo-400'}>
                         {upgrade.coinsPerSecondBonus > 0 && `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec`}
                       </span>
                       {!canAfford && <span className="text-slate-400">{timeToSave}</span>}
