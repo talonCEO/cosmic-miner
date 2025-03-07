@@ -63,7 +63,7 @@ const boostConfigs: BoostConfig[] = [
 ];
 
 export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { state, setIncomeMultiplier, addCoins, toggleAutoTap } = useGame();
+  const { state, toggleAutoTap, setIncomeMultiplier, addCoins } = useGame();
   const { toast } = useToast();
   
   const [showAdNotification, setShowAdNotification] = useState(false);
