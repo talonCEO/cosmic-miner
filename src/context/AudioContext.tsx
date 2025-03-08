@@ -22,7 +22,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     // Create audio element for background music
     // Updated path to use the correct location
-    const audio = new Audio('/src/assets/music/background-music.mp3');
+    const audio = new Audio('/background-music.mp3');
     audio.loop = true;
     audio.volume = 0.3; // Set to a quiet level
     audioRef.current = audio;
