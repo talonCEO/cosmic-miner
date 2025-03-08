@@ -1,4 +1,3 @@
-
 import { Perk } from './types';
 
 /**
@@ -59,7 +58,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🧪",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-1", "element-2"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-1", "element-2"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-1-perk-2",
@@ -68,7 +68,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "⚛️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-1", "element-2"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-1", "element-2"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-1-perk-3",
@@ -77,11 +78,12 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🌌",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-1", "element-2"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-1", "element-2"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
-  {
+   {
     id: "manager-2",
     name: "Carbon Collector",
     description: "Specializes in organic compound synthesis",
@@ -98,7 +100,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🌱",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-3", "element-4"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-3", "element-4"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-2-perk-2",
@@ -107,7 +110,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🧬",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-3", "element-4"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-3", "element-4"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-2-perk-3",
@@ -116,7 +120,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🔬",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-3", "element-4"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-3", "element-4"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -137,7 +142,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💨",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-5", "element-6"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-5", "element-6"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-3-perk-2",
@@ -146,7 +152,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔥",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-5", "element-6"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-5", "element-6"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-3-perk-3",
@@ -155,7 +162,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "⚗️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-5", "element-6"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-5", "element-6"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -176,7 +184,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💻",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-7", "element-8"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-7", "element-8"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-4-perk-2",
@@ -185,7 +194,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔌",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-7", "element-8"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-7", "element-8"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-4-perk-3",
@@ -194,7 +204,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🤖",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-7", "element-8"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-7", "element-8"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -215,7 +226,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "⚒️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-9", "element-10"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-9", "element-10"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-5-perk-2",
@@ -224,7 +236,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔨",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-9", "element-10"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-9", "element-10"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-5-perk-3",
@@ -233,7 +246,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "⚙️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-9", "element-10"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-9", "element-10"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -254,7 +268,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💰",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-11", "element-12"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-11", "element-12"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-6-perk-2",
@@ -263,7 +278,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "⚡",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-11", "element-12"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-11", "element-12"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-6-perk-3",
@@ -272,7 +288,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🛠️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-11", "element-12"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-11", "element-12"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -293,7 +310,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "☢️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-13", "element-14"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-13", "element-14"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-7-perk-2",
@@ -302,7 +320,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🧬",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-13", "element-14"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-13", "element-14"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-7-perk-3",
@@ -311,7 +330,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "💥",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-13", "element-14"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-13", "element-14"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -332,7 +352,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🧪",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-15", "element-16"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-15", "element-16"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-8-perk-2",
@@ -341,7 +362,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "⚗️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-15", "element-16"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-15", "element-16"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-8-perk-3",
@@ -350,7 +372,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "✨",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-15", "element-16"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-15", "element-16"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -371,7 +394,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🌑",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-17", "element-18"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-17", "element-18"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-9-perk-2",
@@ -380,7 +404,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔮",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-17", "element-18"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-17", "element-18"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-9-perk-3",
@@ -389,7 +414,8 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🌌",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-17", "element-18"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-17", "element-18"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   },
@@ -410,7 +436,8 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💫",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-19", "element-20"] }
+        effect: { type: "elementBoost", value: 0.75, elements: ["element-19", "element-20"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-10-perk-2",
@@ -419,7 +446,8 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔄",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-19", "element-20"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-19", "element-20"] },
+        opacity: 0.5 // default opacity for locked perks
       },
       {
         id: "manager-10-perk-3",
@@ -428,8 +456,20 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🕳️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-19", "element-20"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-19", "element-20"] },
+        opacity: 0.5 // default opacity for locked perks
       }
     ]
   }
 ];
+
+// Update opacity of perks based on unlocked status
+managers.forEach(manager => {
+  if (manager.perks) {
+    manager.perks.forEach(perk => {
+      if (perk.unlocked) {
+        perk.opacity = 1; // Set opacity to 100% if unlocked
+      }
+    });
+  }
+});
