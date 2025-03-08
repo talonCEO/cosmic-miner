@@ -39,7 +39,7 @@ interface PerkProps {
   parentId: string;
   onUnlock: (perkId: string, parentId: string) => void;
   disabled?: boolean;
-  icon?: React.ReactNode; // Icon passed from parent
+  icon?: React.ReactNode;
 }
 
 const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = false, icon }) => {
@@ -55,10 +55,8 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
   const activeBgColor = isManagerPerk ? 'bg-indigo-500/20' : 'bg-purple-500/20';
   
   const getPerkIcon = () => {
-    // Use the passed icon if provided
     if (icon) return icon;
     
-    // Original logic as fallback
     const categoryIcons: Record<string, React.ReactNode> = {
       'production': <TrendingUp size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />,
       'power': <Zap size={16} className="text-yellow-400" />,
