@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Perk } from '@/utils/types';
 import { useGame } from '@/context/GameContext';
@@ -87,9 +88,6 @@ const PerkButton: React.FC<PerkButtonProps> = ({
     }
   };
 
-  // Set opacity based on whether the perk is unlocked or not
-  const perkOpacity = perk.unlocked ? "opacity-100" : "opacity-25";
-
   return (
     <TooltipProvider>
       <Tooltip>
@@ -98,11 +96,11 @@ const PerkButton: React.FC<PerkButtonProps> = ({
             onClick={handleClick}
             className={`w-8 h-8 flex items-center justify-center rounded-full mb-1
               ${perk.unlocked 
-                ? 'bg-green-500/20 border border-green-500/50 text-green-300' 
+                ? 'bg-green-500/20 border border-green-500/50 text-green-300 opacity-100 !important' 
                 : disabled
-                  ? 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-50'
-                  : 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-70'}
-              ${perkOpacity} transition-opacity duration-200`}
+                  ? 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-50 opacity-25'
+                  : 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-70 opacity-25'}
+              transition-opacity duration-200`}
           >
             <div className="text-lg">{perk.icon}</div>
             {!perk.unlocked && (
@@ -171,4 +169,3 @@ const PerkButton: React.FC<PerkButtonProps> = ({
 };
 
 export default PerkButton;
-

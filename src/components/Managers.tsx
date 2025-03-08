@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
@@ -54,15 +55,17 @@ const Managers: React.FC = () => {
           // Show perks for all managers except the default one, regardless of ownership
           const shouldShowPerks = manager.perks && manager.id !== "manager-default";
           
-          // Calculate opacity based on ownership and whether perks are unlocked
+          // Calculate opacity based on ownership
+          const managerOpacity = isOwned ? 'opacity-100' : 'opacity-50';
+          
+          // Check if manager has any unlocked perks
           const hasUnlockedPerks = isOwned && manager.perks && manager.perks.some(p => p.unlocked);
-          const itemOpacity = isOwned ? 'opacity-100' : 'opacity-50';
           
           return (
             <div 
               key={manager.id}
               className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-indigo-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
-                ${isOwned ? 'hover:shadow-md hover:shadow-indigo-500/20' : ''} ${itemOpacity}`}
+                ${isOwned ? 'hover:shadow-md hover:shadow-indigo-500/20' : ''} ${managerOpacity}`}
             >
               {/* Manager Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
@@ -86,22 +89,15 @@ const Managers: React.FC = () => {
               {/* Perk Buttons - Show for all managers that have perks, except default one */}
               {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
-                  {manager.perks.map(perk => {
-                    // Determine if perk is unlocked and adjust opacity accordingly
-                    const perkOpacity = perk.unlocked ? 'opacity-100' : 'opacity-50';
-                    const perkActiveClass = perk.unlocked ? 'bg-indigo-600' : '';
-                    
-                    return (
-                      <PerkButton 
-                        key={perk.id}
-                        perk={perk}
-                        parentId={manager.id}
-                        onUnlock={handleUnlockPerk}
-                        disabled={!isOwned}
-                        className={`${perkOpacity} ${perkActiveClass}`}
-                      />
-                    );
-                  })}
+                  {manager.perks.map(perk => (
+                    <PerkButton 
+                      key={perk.id}
+                      perk={perk}
+                      parentId={manager.id}
+                      onUnlock={handleUnlockPerk}
+                      disabled={!isOwned}
+                    />
+                  ))}
                 </div>
               )}
             </div>
