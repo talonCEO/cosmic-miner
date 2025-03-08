@@ -33,7 +33,7 @@ const Managers: React.FC = () => {
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Element Managers</h2>
       
       <div className="space-y-4">
-        {managers.map((manager, index) => {
+        {managers.map((manager) => {
           const isOwned = state.ownedManagers.includes(manager.id);
           
           // Get the highest unlocked perk if any

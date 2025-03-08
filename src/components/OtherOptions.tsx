@@ -28,7 +28,7 @@ const ArtifactsTab: React.FC = () => {
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Powerful Artifacts</h2>
       
       <div className="space-y-4">
-        {artifacts.map((artifact, index) => {
+        {artifacts.map((artifact) => {
           const isOwned = state.ownedArtifacts.includes(artifact.id);
           
           // Get the highest unlocked perk if any
@@ -36,9 +36,6 @@ const ArtifactsTab: React.FC = () => {
           
           // Get the actual effect description based on the artifact's effect type and highest perk
           const effectDescription = formatEffectDescription(artifact, highestPerk);
-          
-          // Check if artifact has any unlocked perks
-          const hasUnlockedPerks = isOwned && artifact.perks && artifact.perks.some(p => p.unlocked);
           
           return (
             <div 
