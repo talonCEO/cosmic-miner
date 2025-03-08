@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
@@ -7,26 +6,14 @@ import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
-  UserCog, Briefcase
+  UserCog, 
+  Briefcase
 } from 'lucide-react';
 
-/**
- * Managers Component
- * 
- * Displays all managers available in the game, both owned and unowned.
- * For owned managers, displays their perks that can be unlocked with skill points.
- * 
- * Managers provide special bonuses that affect gameplay in various ways:
- * - Element production boosts
- * - Passive income increases
- * - Automation of specific game mechanics
- * - Cost reductions
- */
 const Managers: React.FC = () => {
   const { state, unlockPerk } = useGame();
   const { getElementName, getHighestUnlockedPerkValue } = useBoostManager();
   
-  // Handle unlocking a perk without showing a toast
   const handleUnlockPerk = (perkId: string, parentId: string) => {
     unlockPerk(perkId, parentId);
   };
@@ -38,24 +25,17 @@ const Managers: React.FC = () => {
       <div className="space-y-4">
         {managers.map((manager) => {
           const isOwned = state.ownedManagers.includes(manager.id);
-          
-          // Get the highest unlocked perk if any
           const highestPerk = isOwned ? getHighestUnlockedPerkValue(manager.id) : null;
           
-          // Generate a more detailed bonus description for managers with element boosts
           let bonusDescription = manager.bonus;
           if (manager.boosts && manager.boosts.length > 0) {
             const boostedElements = manager.boosts.map(getElementName).join(' and ');
-
-            // If there's a highest perk, use its value instead of the base 50%
             const boostValue = highestPerk && highestPerk.effect.type === "elementBoost" 
               ? highestPerk.effect.value * 100 
               : 50;
-              
             bonusDescription = `Increases ${boostedElements} production by ${boostValue}%`;
           }
           
-          // Show perks for all managers except the default one, regardless of ownership
           const shouldShowPerks = manager.perks && manager.id !== "manager-default";
           
           return (
@@ -67,7 +47,6 @@ const Managers: React.FC = () => {
                 ${isOwned ? 'hover:shadow-md hover:shadow-indigo-500/20' : ''}
                 ${isOwned ? 'opacity-100' : 'opacity-50'}`}
             >
-              {/* Manager Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
                 <AvatarImage src={manager.avatar} alt={manager.name} />
                 <AvatarFallback className="bg-indigo-900/50 text-indigo-300 rounded-xl">
@@ -79,7 +58,6 @@ const Managers: React.FC = () => {
                 </AvatarFallback>
               </Avatar>
               
-              {/* Manager Info */}
               <div className="flex-1">
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-slate-100">{manager.name}</h3>
@@ -90,7 +68,6 @@ const Managers: React.FC = () => {
                 </p>
               </div>
               
-              {/* Perk Buttons - Show for all managers that have perks, except default one */}
               {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
                   {manager.perks.map(perk => (
