@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
@@ -43,7 +42,7 @@ const Managers: React.FC = () => {
           let bonusDescription = manager.bonus;
           if (manager.boosts && manager.boosts.length > 0) {
             const boostedElements = manager.boosts.map(getElementName).join(' and ');
-            
+
             // If there's a highest perk, use its value instead of the base 50%
             const boostValue = highestPerk && highestPerk.effect.type === "elementBoost" 
               ? highestPerk.effect.value * 100 
@@ -87,15 +86,22 @@ const Managers: React.FC = () => {
               {/* Perk Buttons - Show for all managers that have perks, except default one */}
               {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
-                  {manager.perks.map(perk => (
-                    <PerkButton 
-                      key={perk.id}
-                      perk={perk}
-                      parentId={manager.id}
-                      onUnlock={handleUnlockPerk}
-                      disabled={!isOwned}
-                    />
-                  ))}
+                  {manager.perks.map(perk => {
+                    // Determine if perk is unlocked and adjust opacity accordingly
+                    const perkOpacity = perk.unlocked ? 'opacity-100' : 'opacity-50';
+                    const perkActiveClass = perk.unlocked ? 'bg-indigo-600' : '';
+                    
+                    return (
+                      <PerkButton 
+                        key={perk.id}
+                        perk={perk}
+                        parentId={manager.id}
+                        onUnlock={handleUnlockPerk}
+                        disabled={!isOwned}
+                        className={`${perkOpacity} ${perkActiveClass}`}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
