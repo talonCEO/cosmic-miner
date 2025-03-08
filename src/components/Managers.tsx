@@ -7,7 +7,15 @@ import PerkButton from './PerkButton';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
   UserCog, 
-  Briefcase
+  Briefcase,
+  Zap,          // Speed/energy
+  DollarSign,   // Cost/money
+  BarChart,     // Production
+  Clock,        // Time/passive
+  Shield,       // Protection
+  Star,         // Special/bonus
+  TrendingUp,   // Growth
+  Battery,      // Energy
 } from 'lucide-react';
 
 const Managers: React.FC = () => {
@@ -17,6 +25,18 @@ const Managers: React.FC = () => {
   const handleUnlockPerk = (perkId: string, parentId: string) => {
     unlockPerk(perkId, parentId);
   };
+
+  // Define a list of icons with colors to cycle through
+  const perkIcons = [
+    <Zap size={16} className="text-yellow-400" />,          // Speed boost
+    <DollarSign size={16} className="text-green-400" />,    // Cost reduction
+    <BarChart size={16} className="text-blue-400" />,       // Production boost
+    <Clock size={16} className="text-amber-400" />,         // Passive income/time
+    <Shield size={16} className="text-red-400" />,          // Protection
+    <Star size={16} className="text-purple-400" />,         // Special/bonus
+    <TrendingUp size={16} className="text-indigo-400" />,   // Growth
+    <Battery size={16} className="text-cyan-400" />,        // Energy
+  ];
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -70,13 +90,14 @@ const Managers: React.FC = () => {
               
               {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
-                  {manager.perks.map(perk => (
+                  {manager.perks.map((perk, index) => (
                     <PerkButton 
                       key={perk.id}
                       perk={perk}
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
+                      icon={perkIcons[index % perkIcons.length]} // Cycle through icons
                     />
                   ))}
                 </div>
