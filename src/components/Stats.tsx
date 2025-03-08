@@ -4,7 +4,7 @@ import { formatNumber, calculateClickMultiplier } from '@/utils/gameLogic';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { 
   ShieldQuestion,
-  Coins,
+  Bitcoin,
   Sparkles,
   LineChart as LineChartIcon,
   BarChart,
@@ -31,7 +31,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Stats: React.FC = () => {
   const { state } = useGame();
-  const [resourceData, setResourceData] = useState<{ time: string; gross: number; net: number; coinsPerSecond: number; essence: number }[]>([]);
+  const [resourceData, setResourceData] = useState<{ time: string; gross: number; net: number; BitcoinPerSecond: number; essence: number }[]>([]);
   
   useEffect(() => {
     const savedData = localStorage.getItem('resourceHistory');
@@ -41,8 +41,8 @@ const Stats: React.FC = () => {
         const convertedData = parsedData.map((item: any) => ({
           time: item.time,
           gross: item.totalEarned || 0,
-          net: (item.totalEarned || 0) - ((item.totalEarned || 0) - (item.coins || 0)),
-          coinsPerSecond: item.coinsPerSecond || 0,
+          net: (item.totalEarned || 0) - ((item.totalEarned || 0) - (item.Bitcoin || 0)),
+          BitcoinPerSecond: item.BitcoinPerSecond || 0,
           essence: item.essence || 0
         }));
         setResourceData(convertedData);
@@ -59,8 +59,8 @@ const Stats: React.FC = () => {
     const initialData = {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       gross: state.totalEarned,
-      net: state.coins,
-      coinsPerSecond: state.coinsPerSecond,
+      net: state.Bitcoin,
+      BitcoinPerSecond: state.BitcoinPerSecond,
       essence: state.essence
     };
     setResourceData([initialData]);
@@ -71,8 +71,8 @@ const Stats: React.FC = () => {
       const newDataPoint = {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         gross: state.totalEarned,
-        net: state.coins,
-        coinsPerSecond: state.coinsPerSecond,
+        net: state.Bitcoin,
+        BitcoinPerSecond: state.BitcoinPerSecond,
         essence: state.essence
       };
       
@@ -85,7 +85,7 @@ const Stats: React.FC = () => {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [state.coins, state.totalEarned, state.coinsPerSecond, state.essence]);
+  }, [state.Bitcoin, state.totalEarned, state.BitcoinPerSecond, state.essence]);
   
   useEffect(() => {
     const handlePrestige = () => {
@@ -93,7 +93,7 @@ const Stats: React.FC = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (Prestige)",
         gross: 0,
         net: 0,
-        coinsPerSecond: 0,
+        BitcoinPerSecond: 0,
         essence: state.essence
       };
       
@@ -109,14 +109,14 @@ const Stats: React.FC = () => {
     }
   }, [state.totalEarned, resourceData, state.essence]);
   
-  const calculateActualCoinsPerTap = () => {
+  const calculateActualBitcoinPerTap = () => {
     const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
-    const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
+    const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.BitcoinPerClickBonus) : 1;
     
     const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
     
-    const baseClickValue = state.coinsPerClick;
-    const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
+    const baseClickValue = state.BitcoinPerClick;
+    const BitcoinPerSecondBonus = state.BitcoinPerSecond * 0.05;
     
     let tapIncomeMultiplier = 1;
     if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
@@ -129,10 +129,10 @@ const Stats: React.FC = () => {
       tapIncomeMultiplier += 1.2;
     }
     
-    return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier * tapIncomeMultiplier;
+    return (baseClickValue + BitcoinPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier * tapIncomeMultiplier;
   };
   
-  const calculateActualCoinsPerSecond = () => {
+  const calculateActualBitcoinPerSecond = () => {
     let passiveIncomeMultiplier = 1;
     if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
       passiveIncomeMultiplier += 0.25;
@@ -153,14 +153,14 @@ const Stats: React.FC = () => {
       passiveIncomeMultiplier += 1.0;
     }
     
-    return state.coinsPerSecond * state.incomeMultiplier * passiveIncomeMultiplier;
+    return state.BitcoinPerSecond * state.incomeMultiplier * passiveIncomeMultiplier;
   };
 
   const stats = [
     { label: 'Global Multiplier', value: formatNumber(state.incomeMultiplier || 1) + 'x' },
-    { label: 'Coins Earned', value: formatNumber(state.totalEarned) },
-    { label: 'CPT (Coins Per Tap)', value: formatNumber(calculateActualCoinsPerTap()) },
-    { label: 'CPS (Coins Per Sec)', value: formatNumber(calculateActualCoinsPerSecond()) }
+    { label: 'Bitcoin Earned', value: formatNumber(state.totalEarned) },
+    { label: 'CPT (Bitcoin Per Tap)', value: formatNumber(calculateActualBitcoinPerTap()) },
+    { label: 'CPS (Bitcoin Per Sec)', value: formatNumber(calculateActualBitcoinPerSecond()) }
   ];
   
   const formatYAxis = (value: number) => {
@@ -215,12 +215,12 @@ const Stats: React.FC = () => {
   };
 
   const allGameStats = [
-    { category: "Resources", icon: <Coins size={18} className="text-yellow-400" />, name: "Coins", value: formatNumber(state.coins) },
+    { category: "Resources", icon: <Bitcoin size={18} className="text-yellow-400" />, name: "Bitcoin", value: formatNumber(state.Bitcoin) },
     { category: "Resources", icon: <Sparkles size={18} className="text-purple-400" />, name: "Essence", value: formatNumber(state.essence) },
     { category: "Resources", icon: <LineChartIcon size={18} className="text-green-400" />, name: "Gross Revenue", value: formatNumber(state.totalEarned) },
-    { category: "Resources", icon: <BarChart size={18} className="text-blue-400" />, name: "Net Revenue", value: formatNumber(state.coins) },
-    { category: "Production", icon: <MousePointer size={18} className="text-amber-400" />, name: "Coins per Click", value: formatNumber(calculateActualCoinsPerTap()) },
-    { category: "Production", icon: <Timer size={18} className="text-indigo-400" />, name: "Coins per Second", value: formatNumber(calculateActualCoinsPerSecond()) },
+    { category: "Resources", icon: <BarChart size={18} className="text-blue-400" />, name: "Net Revenue", value: formatNumber(state.Bitcoin) },
+    { category: "Production", icon: <MousePointer size={18} className="text-amber-400" />, name: "Bitcoin per Click", value: formatNumber(calculateActualBitcoinPerTap()) },
+    { category: "Production", icon: <Timer size={18} className="text-indigo-400" />, name: "Bitcoin per Second", value: formatNumber(calculateActualBitcoinPerSecond()) },
     { category: "Production", icon: <Percent size={18} className="text-green-400" />, name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
     { category: "Interactions", icon: <MousePointer size={18} className="text-cyan-400" />, name: "Total Clicks", value: formatNumber(state.totalClicks) },
     { category: "Interactions", icon: <Medal size={18} className="text-red-400" />, name: "Prestige Count", value: state.prestigeCount || 0 },
@@ -354,7 +354,7 @@ const Stats: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="text-xs text-slate-400">Net</p>
-            <p className="font-medium text-blue-400">{formatNumber(state.coins)}</p>
+            <p className="font-medium text-blue-400">{formatNumber(state.Bitcoin)}</p>
           </div>
         </div>
         
