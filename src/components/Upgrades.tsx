@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress, isGoodValue } from '@/utils/gameLogic';
@@ -140,7 +139,11 @@ const Upgrades: React.FC = () => {
                 )}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 p-2">
+            <TooltipContent 
+              side="left" 
+              align="start"
+              className="bg-slate-800 text-white border-slate-700 p-3 max-w-[200px] break-words"
+            >
               <p>Unlock Auto Buy after prestiging at least once</p>
             </TooltipContent>
           </Tooltip>

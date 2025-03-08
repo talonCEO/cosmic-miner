@@ -77,7 +77,6 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
         <TooltipContent 
           side="top" 
           className="bg-slate-800 border-slate-700 p-2 w-48"
-          forceMount={isTooltipOpen}
         >
           <div className="space-y-1">
             <p className="font-semibold text-white">{perk.name}</p>

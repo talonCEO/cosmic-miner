@@ -14,7 +14,9 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
-        <MuteButton />
+        <div className="absolute top-4 left-4">
+          <MuteButton />
+        </div>
         <DialogTitle className="text-center text-xl">Game Menu</DialogTitle>
         <DialogDescription className="text-center text-slate-300">
           Select an option to continue

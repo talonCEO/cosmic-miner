@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mic, MicOff } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { useAudio } from '@/context/AudioContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,12 +21,12 @@ const MuteButton: React.FC = () => {
             variant="ghost" 
             size="icon" 
             onClick={toggleMute}
-            className="absolute top-4 right-4 p-2 rounded-full bg-slate-800/40 hover:bg-slate-700/60 backdrop-blur-sm border border-indigo-500/20"
+            className="p-2 rounded-full bg-slate-800/40 hover:bg-slate-700/60 backdrop-blur-sm border border-indigo-500/20"
           >
             {isMuted ? (
-              <MicOff size={20} className="text-slate-300" />
+              <VolumeX size={20} className="text-slate-300" />
             ) : (
-              <Mic size={20} className="text-indigo-400" />
+              <Volume2 size={20} className="text-indigo-400" />
             )}
           </Button>
         </TooltipTrigger>
