@@ -55,17 +55,14 @@ const Managers: React.FC = () => {
           // Show perks for all managers except the default one, regardless of ownership
           const shouldShowPerks = manager.perks && manager.id !== "manager-default";
           
-          // Calculate opacity based on ownership
-          const managerOpacity = isOwned ? 'opacity-100' : 'opacity-50';
-          
-          // Check if manager has any unlocked perks
-          const hasUnlockedPerks = isOwned && manager.perks && manager.perks.some(p => p.unlocked);
-          
           return (
             <div 
               key={manager.id}
-              className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border ${isOwned ? 'border-indigo-500/40' : 'border-slate-700/40'} p-4 flex items-start gap-4 transition-all
-                ${isOwned ? 'hover:shadow-md hover:shadow-indigo-500/20' : ''} ${managerOpacity}`}
+              className={`bg-slate-800/40 backdrop-blur-sm rounded-xl border 
+                ${isOwned ? 'border-indigo-500/40' : 'border-slate-700/40'} 
+                p-4 flex items-start gap-4 transition-all
+                ${isOwned ? 'hover:shadow-md hover:shadow-indigo-500/20' : ''}
+                ${isOwned ? 'opacity-100' : 'opacity-50'}`}
             >
               {/* Manager Avatar */}
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">

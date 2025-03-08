@@ -88,6 +88,17 @@ const PerkButton: React.FC<PerkButtonProps> = ({
     }
   };
 
+  // Determine button class based on perk state
+  const getButtonClass = () => {
+    if (perk.unlocked) {
+      return 'bg-green-500/20 border border-green-500/50 text-green-300 opacity-100';
+    } else if (disabled) {
+      return 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-50 opacity-25';
+    } else {
+      return 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-70 opacity-25';
+    }
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -95,12 +106,9 @@ const PerkButton: React.FC<PerkButtonProps> = ({
           <button 
             onClick={handleClick}
             className={`w-8 h-8 flex items-center justify-center rounded-full mb-1
-              ${perk.unlocked 
-                ? 'bg-green-500/20 border border-green-500/50 text-green-300 opacity-100 !important' 
-                : disabled
-                  ? 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-50 opacity-25'
-                  : 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-70 opacity-25'}
+              ${getButtonClass()}
               transition-opacity duration-200`}
+            style={{ opacity: perk.unlocked ? 1 : undefined }}
           >
             <div className="text-lg">{perk.icon}</div>
             {!perk.unlocked && (
