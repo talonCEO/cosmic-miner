@@ -15,7 +15,6 @@ import {
   Shield,
   TrendingUp,
   Battery,
-  Gem,
   Sparkles,
   Trophy,
   Settings,
@@ -29,17 +28,15 @@ const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
   const { getHighestUnlockedPerkValue, formatEffectDescription } = useBoostManager();
   
-  // Define a list of icons with random colors for perks
-  const perkIcons = [
+  // Unique icons for artifact perks (different from managers)
+  const artifactPerkIcons = [
     <Zap size={16} className="text-yellow-400" />,
     <DollarSign size={16} className="text-green-500" />,
     <BarChart size={16} className="text-blue-400" />,
     <Clock size={16} className="text-amber-300" />,
     <Shield size={16} className="text-red-400" />,
-    <Star size={16} className="text-purple-500" />,
     <TrendingUp size={16} className="text-indigo-400" />,
     <Battery size={16} className="text-cyan-300" />,
-    <Gem size={16} className="text-teal-400" />,
     <Sparkles size={16} className="text-amber-400" />,
     <Trophy size={16} className="text-yellow-500" />,
     <Settings size={16} className="text-gray-400" />,
@@ -47,6 +44,8 @@ const ArtifactsTab: React.FC = () => {
     <Lightbulb size={16} className="text-orange-400" />,
     <Brain size={16} className="text-blue-500" />,
     <Heart size={16} className="text-pink-400" />,
+    <Star size={16} className="text-purple-500" />,
+    <Diamond size={16} className="text-teal-400" />,
   ];
 
   // Flatten all perks across all artifacts and assign icons
@@ -54,10 +53,9 @@ const ArtifactsTab: React.FC = () => {
     artifact.perks ? artifact.perks.map(perk => ({ ...perk, artifactId: artifact.id })) : []
   );
   
-  // Create a mapping of perk IDs to icons
   const perkIconMap = new Map<string, React.ReactNode>();
   allPerks.forEach((perk, index) => {
-    perkIconMap.set(perk.id, perkIcons[index % perkIcons.length]);
+    perkIconMap.set(perk.id, artifactPerkIcons[index % artifactPerkIcons.length]);
   });
   
   return (
@@ -111,7 +109,7 @@ const ArtifactsTab: React.FC = () => {
                       parentId={artifact.id}
                       onUnlock={unlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap.get(perk.id)} // Assign unique icon
+                      icon={perkIconMap.get(perk.id)}
                     />
                   ))}
                 </div>
