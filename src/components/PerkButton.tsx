@@ -39,7 +39,7 @@ interface PerkProps {
   parentId: string;
   onUnlock: (perkId: string, parentId: string) => void;
   disabled?: boolean;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode; // Icon passed from parent
 }
 
 const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = false, icon }) => {
@@ -49,11 +49,16 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
   const canAfford = state.skillPoints >= perk.cost;
   const isUnlocked = state.unlockedPerks.includes(perk.id) || perk.unlocked;
   
-  // Get icon based on category
+  const isManagerPerk = parentId.includes("manager");
+  const borderColor = isManagerPerk ? 'border-indigo-500' : 'border-purple-500';
+  const hoverBgColor = isManagerPerk ? 'hover:bg-indigo-700/30' : 'hover:bg-purple-700/30';
+  const activeBgColor = isManagerPerk ? 'bg-indigo-500/20' : 'bg-purple-500/20';
+  
   const getPerkIcon = () => {
+    // Use the passed icon if provided
     if (icon) return icon;
     
-    // Default icon mapping based on category
+    // Original logic as fallback
     const categoryIcons: Record<string, React.ReactNode> = {
       'production': <TrendingUp size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />,
       'power': <Zap size={16} className="text-yellow-400" />,
@@ -68,7 +73,6 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
       'time': <Clock size={16} className="text-amber-400" />
     };
     
-    // Unique icons for specific perks based on their ID
     if (perk.id.includes('quantum')) return <Brain size={16} className="text-blue-400" />;
     if (perk.id.includes('crystal')) return <Diamond size={16} className="text-purple-400" />;
     if (perk.id.includes('acceleration')) return <Zap size={16} className="text-yellow-400" />;
@@ -77,13 +81,6 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
     return categoryIcons[perk.category || 'bonus'] || <Gem size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />;
   };
   
-  // Determine whether this is a manager or artifact perk for coloring
-  const isManagerPerk = parentId.includes("manager");
-  const borderColor = isManagerPerk ? 'border-indigo-500' : 'border-purple-500';
-  const hoverBgColor = isManagerPerk ? 'hover:bg-indigo-700/30' : 'hover:bg-purple-700/30';
-  const activeBgColor = isManagerPerk ? 'bg-indigo-500/20' : 'bg-purple-500/20';
-  
-  // Clear tooltip timer when component unmounts
   useEffect(() => {
     return () => {
       if (tooltipTimer) clearTimeout(tooltipTimer);
@@ -91,27 +88,18 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
   }, [tooltipTimer]);
   
   const handleClick = () => {
-    // Show tooltip for 5 seconds when clicked
     setIsTooltipOpen(true);
-    
-    // Clear any existing timer
     if (tooltipTimer) clearTimeout(tooltipTimer);
-    
-    // Set a new timer to close the tooltip after 5 seconds
     const timer = setTimeout(() => {
       setIsTooltipOpen(false);
     }, 5000);
-    
     setTooltipTimer(timer);
     
-    // Handle unlock action if conditions are met
     if (!(disabled || isUnlocked || !canAfford)) {
-      // If can unlock, perform unlock
       onUnlock(perk.id, parentId);
     }
   };
   
-  // Choose the right icon based on perk category
   const perkIcon = getPerkIcon();
   
   return (
