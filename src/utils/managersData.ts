@@ -432,14 +432,3 @@ export const managers: Manager[] = [
     ]
   }
 ];
-
-// Update opacity of perks based on unlocked status
-managers.forEach(manager => {
-  if (manager.perks) {
-    manager.perks.forEach(perk => {
-      if (perk.unlocked) {
-        perk.opacity = 1; // Set opacity to 100% if unlocked
-      }
-    });
-  }
-});

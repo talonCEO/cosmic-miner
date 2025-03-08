@@ -6,7 +6,7 @@ import PerkButton from './PerkButton';
 import { artifacts } from '@/utils/artifactsData';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
-  Gem, Flask, Star, Diamond, Trophy, 
+  Gem, Beaker, Star, Diamond, Trophy, 
   Sparkles, Zap, ShieldCheck, TrendingUp, Battery
 } from 'lucide-react';
 
@@ -69,7 +69,7 @@ const ArtifactsTab: React.FC = () => {
                   ) : artifact.id.includes("artifact-2") ? (
                     <Star size={24} />
                   ) : (
-                    <Flask size={24} />
+                    <Beaker size={24} />
                   )}
                 </AvatarFallback>
               </Avatar>
@@ -95,7 +95,7 @@ const ArtifactsTab: React.FC = () => {
                       parentId={artifact.id}
                       onUnlock={unlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap[perk.category] || <Gem size={16} className="text-purple-400" />}
+                      icon={perkIconMap[perk.category || 'bonus'] || <Gem size={16} className="text-purple-400" />}
                     />
                   ))}
                 </div>

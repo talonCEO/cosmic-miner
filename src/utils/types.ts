@@ -7,6 +7,7 @@ export interface Perk {
   cost: number;                // Skill points required
   icon: string;                // Visual representation (emoji)
   unlocked: boolean;           // Whether user has unlocked it
+  category?: string;           // Category for the perk (for icon mapping)
   effect: {
     // Effect type determines which game mechanic is affected:
     // - "tap": Increases tap value

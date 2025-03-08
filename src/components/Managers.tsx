@@ -113,7 +113,7 @@ const Managers: React.FC = () => {
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap[perk.category] || <Gem size={16} />}
+                      icon={perkIconMap[perk.category || 'cost'] || <Gem size={16} />}
                     />
                   ))}
                 </div>
