@@ -1,9 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateClickMultiplier } from '@/utils/gameLogic';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ShieldQuestion } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { 
+  ShieldQuestion,
+  Coins,
+  Sparkles,
+  LineChart as LineChartIcon,
+  BarChart,
+  DollarSign, 
+  Percent,
+  MousePointer,
+  Timer,
+  Award,
+  TrendingUp,
+  Users,
+  Gem,
+  Trophy,
+  Activity
+} from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
@@ -95,54 +110,47 @@ const Stats: React.FC = () => {
   }, [state.totalEarned, resourceData, state.essence]);
   
   const calculateActualCoinsPerTap = () => {
-    // Get tap multiplier from tap power upgrade
     const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
     const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
     
     const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
     
-    // Match exact formula used in the CLICK action in GameContext
     const baseClickValue = state.coinsPerClick;
     const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
     
-    // Apply all ability boosts that affect tap income
     let tapIncomeMultiplier = 1;
     if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
-      tapIncomeMultiplier += 0.5; // Quantum Vibration Enhancer: +50% tap power
-    }
-    if (state.abilities.find(a => a.id === "ability-5" && a.unlocked)) {
-      // Not applying random critical chance here, just showing average value
+      tapIncomeMultiplier += 0.5;
     }
     if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
-      tapIncomeMultiplier += 0.85; // Plasma Discharge Excavator: +85% tap value
+      tapIncomeMultiplier += 0.85;
     }
     if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
-      tapIncomeMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
+      tapIncomeMultiplier += 1.2;
     }
     
     return (baseClickValue + coinsPerSecondBonus) * state.incomeMultiplier * clickMultiplier * tapBoostMultiplier * tapIncomeMultiplier;
   };
   
   const calculateActualCoinsPerSecond = () => {
-    // Apply all ability boosts that affect passive income
     let passiveIncomeMultiplier = 1;
     if (state.abilities.find(a => a.id === "ability-2" && a.unlocked)) {
-      passiveIncomeMultiplier += 0.25; // Quantum Vibration Enhancer: +25% passive income
+      passiveIncomeMultiplier += 0.25;
     }
     if (state.abilities.find(a => a.id === "ability-4" && a.unlocked)) {
-      passiveIncomeMultiplier += 0.2; // Graviton Shield Generator: +20% passive income
+      passiveIncomeMultiplier += 0.2;
     }
     if (state.abilities.find(a => a.id === "ability-6" && a.unlocked)) {
-      passiveIncomeMultiplier += 0.3; // Dark Matter Attractor: +30% passive income
+      passiveIncomeMultiplier += 0.3;
     }
     if (state.abilities.find(a => a.id === "ability-8" && a.unlocked)) {
-      passiveIncomeMultiplier += 0.55; // Plasma Discharge Excavator: +55% passive income
+      passiveIncomeMultiplier += 0.55;
     }
     if (state.abilities.find(a => a.id === "ability-9" && a.unlocked)) {
-      passiveIncomeMultiplier += 0.65; // Nano-Bot Mining Swarm: +65% passive income
+      passiveIncomeMultiplier += 0.65;
     }
     if (state.abilities.find(a => a.id === "ability-12" && a.unlocked)) {
-      passiveIncomeMultiplier += 1.0; // Quantum Tunneling Drill: doubles passive income
+      passiveIncomeMultiplier += 1.0;
     }
     
     return state.coinsPerSecond * state.incomeMultiplier * passiveIncomeMultiplier;
@@ -187,39 +195,38 @@ const Stats: React.FC = () => {
       multiplier += 0.25;
     }
     
-    // Add ability bonuses to the overall multiplier
     if (state.abilities.find(a => a.id === "ability-3" && a.unlocked)) {
-      multiplier += 0.4; // Neural Mining Matrix: +40% all income
+      multiplier += 0.4;
     }
     if (state.abilities.find(a => a.id === "ability-6" && a.unlocked)) {
-      multiplier += 0.45; // Dark Matter Attractor: +45% all income
+      multiplier += 0.45;
     }
     if (state.abilities.find(a => a.id === "ability-10" && a.unlocked)) {
-      multiplier += 0.55; // Interstellar Navigation AI: +55% global income
+      multiplier += 0.55;
     }
     if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) {
-      multiplier += 0.8; // Supernova Core Extractor: +80% all income
+      multiplier += 0.8;
     }
     if (state.abilities.find(a => a.id === "ability-13" && a.unlocked)) {
-      multiplier += 1.0; // Cosmic Singularity Engine: +100% all income
+      multiplier += 1.0;
     }
     
     return multiplier.toFixed(2);
   };
 
   const allGameStats = [
-    { category: "Resources", icon: "💰", name: "Coins", value: formatNumber(state.coins) },
-    { category: "Resources", icon: "✨", name: "Essence", value: formatNumber(state.essence) },
-    { category: "Resources", icon: "💵", name: "Gross Revenue", value: formatNumber(state.totalEarned) },
-    { category: "Resources", icon: "📊", name: "Net Revenue", value: formatNumber(state.coins) },
-    { category: "Production", icon: "👆", name: "Coins per Click", value: formatNumber(calculateActualCoinsPerTap()) },
-    { category: "Production", icon: "⏱️", name: "Coins per Second", value: formatNumber(calculateActualCoinsPerSecond()) },
-    { category: "Production", icon: "⚡", name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
-    { category: "Interactions", icon: "🖱️", name: "Total Clicks", value: formatNumber(state.totalClicks) },
-    { category: "Interactions", icon: "🔄", name: "Prestige Count", value: state.prestigeCount || 0 },
-    { category: "Collections", icon: "👨‍💼", name: "Managers Owned", value: state.ownedManagers.length },
-    { category: "Collections", icon: "🔮", name: "Artifacts Owned", value: state.ownedArtifacts.length },
-    { category: "Achievements", icon: "🏆", name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
+    { category: "Resources", icon: <Coins size={18} className="text-yellow-400" />, name: "Coins", value: formatNumber(state.coins) },
+    { category: "Resources", icon: <Sparkles size={18} className="text-purple-400" />, name: "Essence", value: formatNumber(state.essence) },
+    { category: "Resources", icon: <LineChartIcon size={18} className="text-green-400" />, name: "Gross Revenue", value: formatNumber(state.totalEarned) },
+    { category: "Resources", icon: <BarChart size={18} className="text-blue-400" />, name: "Net Revenue", value: formatNumber(state.coins) },
+    { category: "Production", icon: <MousePointer size={18} className="text-amber-400" />, name: "Coins per Click", value: formatNumber(calculateActualCoinsPerTap()) },
+    { category: "Production", icon: <Timer size={18} className="text-indigo-400" />, name: "Coins per Second", value: formatNumber(calculateActualCoinsPerSecond()) },
+    { category: "Production", icon: <Percent size={18} className="text-green-400" />, name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
+    { category: "Interactions", icon: <MousePointer size={18} className="text-cyan-400" />, name: "Total Clicks", value: formatNumber(state.totalClicks) },
+    { category: "Interactions", icon: <Activity size={18} className="text-red-400" />, name: "Prestige Count", value: state.prestigeCount || 0 },
+    { category: "Collections", icon: <Users size={18} className="text-indigo-400" />, name: "Managers Owned", value: state.ownedManagers.length },
+    { category: "Collections", icon: <Gem size={18} className="text-purple-400" />, name: "Artifacts Owned", value: state.ownedArtifacts.length },
+    { category: "Achievements", icon: <Trophy size={18} className="text-amber-400" />, name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
   ];
 
   return (
@@ -279,7 +286,7 @@ const Stats: React.FC = () => {
                               <tr key={index} className="border-t border-slate-700/30 first:border-0">
                                 <td className="p-3 text-left">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-lg">{stat.icon}</span>
+                                    <span>{stat.icon}</span>
                                     <span className="text-slate-200">{stat.name}</span>
                                   </div>
                                 </td>
@@ -316,7 +323,7 @@ const Stats: React.FC = () => {
                 tickLine={{ stroke: '#4b5563' }}
                 axisLine={{ stroke: '#4b5563' }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <RechartsTooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ paddingTop: '8px' }} />
               <Line 
                 type="monotone" 
@@ -362,3 +369,4 @@ const Stats: React.FC = () => {
 };
 
 export default Stats;
+

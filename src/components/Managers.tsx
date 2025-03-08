@@ -7,8 +7,7 @@ import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
-  UserCog, Briefcase, Gem, Users, TrendingUp, 
-  Settings, Zap, ShieldCheck, BarChart, Clock
+  UserCog, Briefcase
 } from 'lucide-react';
 
 /**
@@ -30,18 +29,6 @@ const Managers: React.FC = () => {
   // Handle unlocking a perk without showing a toast
   const handleUnlockPerk = (perkId: string, parentId: string) => {
     unlockPerk(perkId, parentId);
-  };
-  
-  // Map of perk icons
-  const perkIconMap: Record<string, React.ReactNode> = {
-    'production': <TrendingUp size={16} className="text-indigo-400" />,
-    'efficiency': <Settings size={16} className="text-cyan-400" />,
-    'power': <Zap size={16} className="text-yellow-400" />,
-    'management': <Users size={16} className="text-green-400" />,
-    'cost': <Gem size={16} className="text-indigo-400" />,
-    'protection': <ShieldCheck size={16} className="text-red-400" />,
-    'optimization': <BarChart size={16} className="text-blue-400" />,
-    'time': <Clock size={16} className="text-amber-400" />
   };
   
   return (
@@ -113,7 +100,6 @@ const Managers: React.FC = () => {
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap[perk.category || 'cost'] || <Gem size={16} className="text-indigo-400" />}
                     />
                   ))}
                 </div>

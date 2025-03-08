@@ -6,8 +6,7 @@ import PerkButton from './PerkButton';
 import { artifacts } from '@/utils/artifactsData';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
-  Gem, Beaker, Star, Diamond, Trophy, 
-  Sparkles, Zap, ShieldCheck, TrendingUp, Battery
+  Beaker, Star, Diamond
 } from 'lucide-react';
 
 /**
@@ -26,16 +25,6 @@ import {
 const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
   const { getHighestUnlockedPerkValue, formatEffectDescription } = useBoostManager();
-  
-  // Map of perk icons
-  const perkIconMap: Record<string, React.ReactNode> = {
-    'production': <TrendingUp size={16} className="text-purple-400" />,
-    'power': <Zap size={16} className="text-yellow-400" />,
-    'bonus': <Sparkles size={16} className="text-amber-400" />,
-    'collection': <Trophy size={16} className="text-green-400" />,
-    'energy': <Battery size={16} className="text-blue-400" />,
-    'protection': <ShieldCheck size={16} className="text-red-400" />
-  };
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -95,7 +84,6 @@ const ArtifactsTab: React.FC = () => {
                       parentId={artifact.id}
                       onUnlock={unlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap[perk.category || 'bonus'] || <Gem size={16} className="text-purple-400" />}
                     />
                   ))}
                 </div>
