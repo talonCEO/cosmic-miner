@@ -38,7 +38,7 @@ const Managers: React.FC = () => {
     'efficiency': <Settings size={16} className="text-cyan-400" />,
     'power': <Zap size={16} className="text-yellow-400" />,
     'management': <Users size={16} className="text-green-400" />,
-    'cost': <Gem size={16} className="text-purple-400" />,
+    'cost': <Gem size={16} className="text-indigo-400" />,
     'protection': <ShieldCheck size={16} className="text-red-400" />,
     'optimization': <BarChart size={16} className="text-blue-400" />,
     'time': <Clock size={16} className="text-amber-400" />
@@ -113,7 +113,7 @@ const Managers: React.FC = () => {
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap[perk.category || 'cost'] || <Gem size={16} />}
+                      icon={perkIconMap[perk.category || 'cost'] || <Gem size={16} className="text-indigo-400" />}
                     />
                   ))}
                 </div>

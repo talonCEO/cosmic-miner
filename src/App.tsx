@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { GameProvider } from "@/context/GameContext";
 import { AdProvider } from "@/context/AdContext";
+import { AudioProvider } from "@/context/AudioContext";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +31,9 @@ const AnimatedRoutes = () => {
             >
               <GameProvider>
                 <AdProvider>
-                  <Index />
+                  <AudioProvider>
+                    <Index />
+                  </AudioProvider>
                 </AdProvider>
               </GameProvider>
             </motion.div>

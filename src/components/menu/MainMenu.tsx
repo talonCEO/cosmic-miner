@@ -4,6 +4,7 @@ import { Award, GraduationCap, ShoppingBasket, Network } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MenuType } from './types';
+import MuteButton from '../MuteButton';
 
 interface MainMenuProps {
   setMenuType: (menuType: MenuType) => void;
@@ -12,7 +13,8 @@ interface MainMenuProps {
 const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
   return (
     <>
-      <DialogHeader className="p-4 border-b border-indigo-500/20">
+      <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
+        <MuteButton />
         <DialogTitle className="text-center text-xl">Game Menu</DialogTitle>
         <DialogDescription className="text-center text-slate-300">
           Select an option to continue
