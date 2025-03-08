@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Perk } from '@/utils/types';
 import { useGame } from '@/context/GameContext';
@@ -87,10 +86,10 @@ const PerkButton: React.FC<PerkButtonProps> = ({
         return perk.description;
     }
   };
-  
-  // Set opacity based on whether the perk is unlocked
+
+  // Set opacity based on whether the perk is unlocked or not
   const perkOpacity = perk.unlocked ? "opacity-100" : "opacity-25";
-  
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -172,3 +171,4 @@ const PerkButton: React.FC<PerkButtonProps> = ({
 };
 
 export default PerkButton;
+
