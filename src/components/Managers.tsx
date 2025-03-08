@@ -16,6 +16,14 @@ import {
   Star,         // Special/bonus
   TrendingUp,   // Growth
   Battery,      // Energy
+  Gem,          // Resources
+  Sparkles,     // Enhancement
+  Trophy,       // Achievement
+  Settings,     // Optimization
+  Users,        // Team
+  Lightbulb,    // Innovation
+  Brain,        // Intelligence
+  Diamond,      // Premium
 } from 'lucide-react';
 
 const Managers: React.FC = () => {
@@ -26,17 +34,36 @@ const Managers: React.FC = () => {
     unlockPerk(perkId, parentId);
   };
 
-  // Define a list of icons with colors to cycle through
+  // Define a comprehensive list of unique icons with colors
   const perkIcons = [
-    <Zap size={16} className="text-yellow-400" />,          // Speed boost
-    <DollarSign size={16} className="text-green-400" />,    // Cost reduction
-    <BarChart size={16} className="text-blue-400" />,       // Production boost
-    <Clock size={16} className="text-amber-400" />,         // Passive income/time
-    <Shield size={16} className="text-red-400" />,          // Protection
-    <Star size={16} className="text-purple-400" />,         // Special/bonus
-    <TrendingUp size={16} className="text-indigo-400" />,   // Growth
-    <Battery size={16} className="text-cyan-400" />,        // Energy
+    <Zap size={16} className="text-yellow-400" />,          // 0
+    <DollarSign size={16} className="text-green-400" />,    // 1
+    <BarChart size={16} className="text-blue-400" />,       // 2
+    <Clock size={16} className="text-amber-400" />,         // 3
+    <Shield size={16} className="text-red-400" />,          // 4
+    <Star size={16} className="text-purple-400" />,         // 5
+    <TrendingUp size={16} className="text-indigo-400" />,   // 6
+    <Battery size={16} className="text-cyan-400" />,        // 7
+    <Gem size={16} className="text-teal-400" />,            // 8
+    <Sparkles size={16} className="text-amber-300" />,      // 9
+    <Trophy size={16} className="text-gold-400" />,         // 10
+    <Settings size={16} className="text-gray-400" />,       // 11
+    <Users size={16} className="text-green-500" />,         // 12
+    <Lightbulb size={16} className="text-yellow-300" />,    // 13
+    <Brain size={16} className="text-blue-500" />,          // 14
+    <Diamond size={16} className="text-purple-500" />,      // 15
   ];
+
+  // Flatten all perks across all managers and assign icons
+  const allPerks = managers.flatMap(manager => 
+    manager.perks ? manager.perks.map(perk => ({ ...perk, managerId: manager.id })) : []
+  );
+  
+  // Create a mapping of perk IDs to icons
+  const perkIconMap = new Map<string, React.ReactNode>();
+  allPerks.forEach((perk, index) => {
+    perkIconMap.set(perk.id, perkIcons[index % perkIcons.length]);
+  });
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -90,14 +117,14 @@ const Managers: React.FC = () => {
               
               {shouldShowPerks && (
                 <div className="flex flex-col items-center justify-center ml-auto">
-                  {manager.perks.map((perk, index) => (
+                  {manager.perks.map((perk) => (
                     <PerkButton 
                       key={perk.id}
                       perk={perk}
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
-                      icon={perkIcons[index % perkIcons.length]} // Cycle through icons
+                      icon={perkIconMap.get(perk.id)} // Use unique icon from map
                     />
                   ))}
                 </div>
