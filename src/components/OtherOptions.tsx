@@ -5,6 +5,10 @@ import { useGame } from '@/context/GameContext';
 import PerkButton from './PerkButton';
 import { artifacts } from '@/utils/artifactsData';
 import { useBoostManager } from '@/hooks/useBoostManager';
+import { 
+  Gem, Flask, Star, Diamond, Trophy, 
+  Sparkles, Zap, ShieldCheck, TrendingUp, Battery
+} from 'lucide-react';
 
 /**
  * ArtifactsTab Component
@@ -22,6 +26,16 @@ import { useBoostManager } from '@/hooks/useBoostManager';
 const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
   const { getHighestUnlockedPerkValue, formatEffectDescription } = useBoostManager();
+  
+  // Map of perk icons
+  const perkIconMap: Record<string, React.ReactNode> = {
+    'production': <TrendingUp size={16} className="text-purple-400" />,
+    'power': <Zap size={16} className="text-yellow-400" />,
+    'bonus': <Sparkles size={16} className="text-amber-400" />,
+    'collection': <Trophy size={16} className="text-green-400" />,
+    'energy': <Battery size={16} className="text-blue-400" />,
+    'protection': <ShieldCheck size={16} className="text-red-400" />
+  };
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -50,7 +64,13 @@ const ArtifactsTab: React.FC = () => {
               <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">
                 <AvatarImage src={artifact.avatar} alt={artifact.name} />
                 <AvatarFallback className="bg-purple-900/50 text-purple-300 rounded-xl">
-                  {artifact.name.substring(0, 2)}
+                  {artifact.id.includes("artifact-1") ? (
+                    <Diamond size={24} />
+                  ) : artifact.id.includes("artifact-2") ? (
+                    <Star size={24} />
+                  ) : (
+                    <Flask size={24} />
+                  )}
                 </AvatarFallback>
               </Avatar>
               
@@ -75,6 +95,7 @@ const ArtifactsTab: React.FC = () => {
                       parentId={artifact.id}
                       onUnlock={unlockPerk}
                       disabled={!isOwned}
+                      icon={perkIconMap[perk.category] || <Gem size={16} className="text-purple-400" />}
                     />
                   ))}
                 </div>

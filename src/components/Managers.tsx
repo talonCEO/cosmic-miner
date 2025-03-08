@@ -6,6 +6,10 @@ import { managers } from '@/utils/managersData';
 import { formatNumber } from '@/utils/gameLogic';
 import PerkButton from './PerkButton';
 import { useBoostManager } from '@/hooks/useBoostManager';
+import { 
+  UserCog, Briefcase, Gem, Users, TrendingUp, 
+  Settings, Zap, ShieldCheck, BarChart, Clock
+} from 'lucide-react';
 
 /**
  * Managers Component
@@ -26,6 +30,18 @@ const Managers: React.FC = () => {
   // Handle unlocking a perk without showing a toast
   const handleUnlockPerk = (perkId: string, parentId: string) => {
     unlockPerk(perkId, parentId);
+  };
+  
+  // Map of perk icons
+  const perkIconMap: Record<string, React.ReactNode> = {
+    'production': <TrendingUp size={16} className="text-indigo-400" />,
+    'efficiency': <Settings size={16} className="text-cyan-400" />,
+    'power': <Zap size={16} className="text-yellow-400" />,
+    'management': <Users size={16} className="text-green-400" />,
+    'cost': <Gem size={16} className="text-purple-400" />,
+    'protection': <ShieldCheck size={16} className="text-red-400" />,
+    'optimization': <BarChart size={16} className="text-blue-400" />,
+    'time': <Clock size={16} className="text-amber-400" />
   };
   
   return (
@@ -68,7 +84,11 @@ const Managers: React.FC = () => {
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
                 <AvatarImage src={manager.avatar} alt={manager.name} />
                 <AvatarFallback className="bg-indigo-900/50 text-indigo-300 rounded-xl">
-                  {manager.name.substring(0, 2)}
+                  {manager.id.includes("manager-1") ? (
+                    <UserCog size={24} />
+                  ) : (
+                    <Briefcase size={24} />
+                  )}
                 </AvatarFallback>
               </Avatar>
               
@@ -93,6 +113,7 @@ const Managers: React.FC = () => {
                       parentId={manager.id}
                       onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
+                      icon={perkIconMap[perk.category] || <Gem size={16} />}
                     />
                   ))}
                 </div>

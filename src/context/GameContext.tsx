@@ -266,7 +266,7 @@ const UPGRADE_COST_GROWTH = 1.15; // 15% increase per level
 
 // Updated initial values with starting coins at 0 and coinsPerClick at 1
 const initialState: GameState = {
-  coins: 10000000, // Changed to 0 as requested
+  coins: 0, // Changed to 0 as requested
   coinsPerClick: 1, // Changed to 1 as requested
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
@@ -317,25 +317,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         abilityTapMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
       }
       
-      // Add ability-5 (Laser-Guided Extraction) critical hit chance
-      let criticalMultiplier = 1;
-      if (state.abilities.find(a => a.id === "ability-5" && a.unlocked)) {
-        // 15% chance of critical strike for 5x normal mining yield
-        if (Math.random() < 0.15) {
-          criticalMultiplier = 5;
-        }
-      }
+      // Removed critical multiplier
       
       const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * 
                                state.incomeMultiplier * 
                                clickMultiplier * 
                                tapBoostMultiplier * 
-                               abilityTapMultiplier *
-                               criticalMultiplier;
+                               abilityTapMultiplier;
       
       return {
         ...state,
-        coins: state.coins + totalClickAmount,
+        coins: Math.max(0, state.coins + totalClickAmount), // Ensure coins never go below 0
         totalClicks: state.totalClicks + 1,
         totalEarned: state.totalEarned + totalClickAmount
       };
@@ -343,7 +335,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'ADD_COINS':
       return {
         ...state,
-        coins: state.coins + action.amount,
+        coins: Math.max(0, state.coins + action.amount), // Ensure coins never go below 0
         totalEarned: state.totalEarned + action.amount
       };
     case 'ADD_ESSENCE':
@@ -495,7 +487,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         const passiveAmount = (state.coinsPerSecond / 10) * state.incomeMultiplier * passiveIncomeMultiplier;
         newState = {
           ...newState,
-          coins: newState.coins + passiveAmount,
+          coins: Math.max(0, newState.coins + passiveAmount), // Ensure coins never go below 0
           totalEarned: newState.totalEarned + passiveAmount
         };
       }
@@ -514,7 +506,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         
         newState = {
           ...newState,
-          coins: newState.coins + autoTapAmount,
+          coins: Math.max(0, newState.coins + autoTapAmount), // Ensure coins never go below 0
           totalEarned: newState.totalEarned + autoTapAmount,
           totalClicks: newState.totalClicks + 1
         };
@@ -584,7 +576,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           
           newState = {
             ...newState,
-            coins: newState.coins - bestUpgrade.cost,
+            coins: state.coins - bestUpgrade.cost,
             coinsPerClick: newCoinsPerClick,
             coinsPerSecond: newCoinsPerSecond,
             upgrades: newUpgrades
@@ -837,25 +829,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         abilityTapMultiplier += 1.2; // Supernova Core Extractor: +120% tap value
       }
       
-      // Add ability-5 (Laser-Guided Extraction) critical hit chance
-      let criticalMultiplier = 1;
-      if (state.abilities.find(a => a.id === "ability-5" && a.unlocked)) {
-        // 15% chance of critical strike for 5x normal mining yield
-        if (Math.random() < 0.15) {
-          criticalMultiplier = 5;
-        }
-      }
+      // Removed critical hit logic
       
       const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * 
                               state.incomeMultiplier * 
                               clickMultiplier * 
                               tapBoostMultiplier *
-                              abilityTapMultiplier *
-                              criticalMultiplier;
+                              abilityTapMultiplier;
       
       return {
         ...state,
-        coins: state.coins + totalClickAmount,
+        coins: Math.max(0, state.coins + totalClickAmount), // Ensure coins never go below 0
         totalClicks: state.totalClicks + 1,
         totalEarned: state.totalEarned + totalClickAmount
       };

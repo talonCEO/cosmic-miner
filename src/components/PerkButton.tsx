@@ -1,177 +1,81 @@
 
-import React, { useState, useEffect } from 'react';
-import { Perk } from '@/utils/types';
+import React from 'react';
 import { useGame } from '@/context/GameContext';
-import { Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Gem } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/tooltip"
 
-interface PerkButtonProps {
-  perk: Perk;
+interface PerkProps {
+  perk: {
+    id: string;
+    name: string;
+    description: string;
+    cost: number;
+    unlocked?: boolean;
+    category?: string;
+    effect: {
+      type: string;
+      value: number;
+    };
+  };
   parentId: string;
   onUnlock: (perkId: string, parentId: string) => void;
-  disabled?: boolean; // Add disabled prop to indicate if parent is not owned
+  disabled?: boolean;
+  icon?: React.ReactNode;
 }
 
-const PerkButton: React.FC<PerkButtonProps> = ({ 
-  perk, 
-  parentId, 
-  onUnlock, 
-  disabled = false 
-}) => {
+const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = false, icon }) => {
   const { state } = useGame();
-  const canUnlock = state.skillPoints >= perk.cost && !perk.unlocked && !disabled;
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipTimer, setTooltipTimer] = useState<NodeJS.Timeout | null>(null);
-
-  const handleShowTooltip = () => {
-    if (tooltipTimer) {
-      clearTimeout(tooltipTimer);
-    }
-    
-    setShowTooltip(true);
-    
-    const timer = setTimeout(() => {
-      setShowTooltip(false);
-    }, 8000);
-    
-    setTooltipTimer(timer);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (tooltipTimer) {
-        clearTimeout(tooltipTimer);
-      }
-    };
-  }, [tooltipTimer]);
+  const canAfford = state.skillPoints >= perk.cost;
+  const isUnlocked = state.unlockedPerks.includes(perk.id) || perk.unlocked;
+  
+  // Default icon if none provided
+  const perkIcon = icon || <Gem size={16} className="text-purple-400" />;
   
   const handleClick = () => {
-    if (canUnlock) {
-      onUnlock(perk.id, parentId);
-      // No toast notification
-    } else {
-      handleShowTooltip();
-      // No toast notification for insufficient skill points either
-    }
+    if (disabled || isUnlocked || !canAfford) return;
+    onUnlock(perk.id, parentId);
   };
   
-  // Format the effect description based on the type
-  const getEffectDescription = () => {
-    switch (perk.effect.type) {
-      case 'elementBoost':
-        if (perk.effect.elements && perk.effect.elements.length > 0) {
-          const elementNames = perk.effect.elements.map(elementId => {
-            const element = state.upgrades.find(u => u.id === elementId);
-            return element ? element.name : 'Unknown Element';
-          }).join(' and ');
-          return `Increases ${elementNames} production by ${perk.effect.value * 100}%`;
-        }
-        return perk.description;
-      case 'production':
-        return `Increases all production by ${perk.effect.value * 100}%`;
-      case 'tap':
-        return `${perk.effect.value}x tap multiplier`;
-      case 'essence':
-        return `${perk.effect.value * 100}% more essence from prestiging`;
-      case 'cost':
-        return `Reduces upgrade costs by ${perk.effect.value * 100}%`;
-      case 'startingCoins':
-        return `Start with ${perk.effect.value.toLocaleString()} coins after each prestige`;
-      default:
-        return perk.description;
-    }
-  };
-
-  // Determine button class based on perk state
-  const getButtonClass = () => {
-    if (perk.unlocked) {
-      return 'bg-green-500/20 border border-green-500/50 text-green-300 opacity-100';
-    } else if (disabled) {
-      return 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-50 opacity-25';
-    } else {
-      return 'bg-slate-700/30 border border-slate-600/50 text-slate-400 hover:opacity-70 opacity-25';
-    }
-  };
-
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button 
+          <button
             onClick={handleClick}
-            className={`w-8 h-8 flex items-center justify-center rounded-full mb-1
-              ${getButtonClass()}
-              transition-opacity duration-200`}
-            style={{ opacity: perk.unlocked ? 1 : undefined }}
+            className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 transition-all
+              ${isUnlocked
+                ? 'bg-purple-500/20 border-2 border-purple-500 opacity-100'
+                : disabled
+                  ? 'bg-slate-800/40 border-2 border-slate-700/40 cursor-not-allowed opacity-50'
+                  : canAfford
+                    ? 'bg-purple-800/40 border-2 border-purple-500/40 hover:bg-purple-700/30 opacity-100'
+                    : 'bg-slate-800/40 border-2 border-slate-600/40 cursor-not-allowed opacity-75'
+              }`}
+            disabled={disabled || isUnlocked || !canAfford}
           >
-            <div className="text-lg">{perk.icon}</div>
-            {!perk.unlocked && (
-              <div className="absolute bottom-0 right-0 bg-indigo-800 rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold text-white">
-                {perk.cost}
-              </div>
-            )}
+            {perkIcon}
           </button>
         </TooltipTrigger>
-        <TooltipContent side="left" className="w-[200px] p-2 bg-slate-800 border border-slate-700">
-          <div className="font-bold text-slate-100">{perk.name}</div>
-          <div className="text-slate-300 text-xs">{getEffectDescription()}</div>
-          {!perk.unlocked && (
-            <div className="mt-1 flex items-center text-[10px] font-medium text-indigo-300">
-              <Sparkles size={10} className="mr-1" />
-              Cost: {perk.cost} skill points
-              {state.skillPoints < perk.cost && (
-                <span className="text-red-300 ml-1">
-                  (Need {perk.cost - state.skillPoints} more)
-                </span>
-              )}
-              {disabled && (
-                <span className="text-red-300 ml-1">
-                  (Must own item first)
-                </span>
-              )}
-            </div>
-          )}
+        <TooltipContent side="top" className="bg-slate-800 border-slate-700 p-2 w-48">
+          <div className="space-y-1">
+            <p className="font-semibold text-white">{perk.name}</p>
+            <p className="text-xs text-slate-300">{perk.description}</p>
+            {!isUnlocked && (
+              <p className={`text-xs mt-1 ${canAfford ? 'text-green-400' : 'text-red-400'}`}>
+                Cost: {perk.cost} skill points
+              </p>
+            )}
+            {isUnlocked && (
+              <p className="text-xs text-purple-400">Unlocked</p>
+            )}
+          </div>
         </TooltipContent>
       </Tooltip>
-      
-      <AnimatePresence>
-        {showTooltip && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.3 }}
-            className="absolute right-0 bottom-full -translate-x-full mb-2 z-50 w-[200px]"
-          >
-            <div className="bg-slate-800 text-slate-100 p-2 rounded-md shadow-lg border border-slate-700 text-xs">
-              <div className="font-bold">{perk.name}</div>
-              <div className="text-slate-300">{getEffectDescription()}</div>
-              {!perk.unlocked && (
-                <div className="mt-1 flex items-center text-[10px] font-medium text-indigo-300">
-                  <Sparkles size={10} className="mr-1" />
-                  Cost: {perk.cost} skill points
-                  {state.skillPoints < perk.cost && (
-                    <span className="text-red-300 ml-1">
-                      (Need {perk.cost - state.skillPoints} more)
-                    </span>
-                  )}
-                  {disabled && (
-                    <span className="text-red-300 ml-1">
-                      (Must own item first)
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </TooltipProvider>
   );
 };

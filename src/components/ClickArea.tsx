@@ -62,7 +62,6 @@ const ClickArea: React.FC = () => {
   const { state, click } = useGame();
   const { 
     calculateTapMultiplier, 
-    calculateCriticalStats,
     calculateGlobalIncomeMultiplier 
   } = useBoostManager();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
@@ -86,22 +85,12 @@ const ClickArea: React.FC = () => {
     const baseClickValue = state.coinsPerClick; 
     const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
     
-    // Get critical hit data
-    const { critChance, critMultiplier } = calculateCriticalStats();
-    
-    // Determine if this is a critical hit
-    let isCritical = false;
-    if (critChance > 0 && Math.random() < critChance) {
-      isCritical = true;
-    }
-    
-    // Apply all multipliers together
+    // Apply all multipliers together (removed critical hit chance)
     return (baseClickValue + coinsPerSecondBonus) * 
            state.incomeMultiplier * 
            artifactMultiplier * 
            tapBoostMultiplier *
-           globalMultiplier *
-           (isCritical ? critMultiplier : 1);
+           globalMultiplier;
   };
   
   const handleAreaClick = () => {

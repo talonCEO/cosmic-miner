@@ -1,20 +1,26 @@
 
-// NOTE: This file is quite large (237 lines). Consider refactoring into smaller components.
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateTimeToSave, calculateUpgradeProgress, isGoodValue } from '@/utils/gameLogic';
 import { 
   Atom, Battery, Bolt, Cpu, Database, Eye, FlaskConical, Flame, 
   Gem, Globe, Hammer, Lightbulb, Layers, Magnet, Monitor, Pickaxe, 
-  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote, Hand
+  Plane, Radiation, Shield, Sparkles, Sun, TestTube, Truck, Banknote, Hand, Lock
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { UPGRADE_CATEGORIES } from '@/utils/upgradesData';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Upgrades: React.FC = () => {
   const { state, buyUpgrade, toggleAutoBuy, calculateMaxPurchaseAmount } = useGame();
   const { toast } = useToast();
+  const [showTooltip, setShowTooltip] = React.useState(false);
   
   const iconMap: Record<string, React.ReactNode> = {
     'atom': <Atom size={20} />,
@@ -43,6 +49,9 @@ const Upgrades: React.FC = () => {
     'test-tube': <TestTube size={20} />,
     'hand': <Hand size={20} />
   };
+  
+  // Check if auto buy is unlocked
+  const isAutoBuyUnlocked = state.prestigeCount > 0;
   
   // Get all unlocked upgrades
   const unlockedUpgrades = state.upgrades.filter(upgrade => upgrade.unlocked);
@@ -93,20 +102,49 @@ const Upgrades: React.FC = () => {
     
     handleBulkPurchase(upgradeId, 1);
   };
+  
+  const handleAutoBuyClick = () => {
+    if (isAutoBuyUnlocked) {
+      toggleAutoBuy();
+    } else {
+      setShowTooltip(true);
+      setTimeout(() => {
+        setShowTooltip(false);
+      }, 8000);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-slate-100">Element Mining</h2>
-        <button
-          onClick={toggleAutoBuy}
-          className={`text-sm px-3 py-1.5 rounded-lg border border-indigo-500/30 transition-all
-            ${state.autoBuy 
-              ? 'bg-indigo-600/60 text-white font-medium' 
-              : 'bg-slate-800/40 text-slate-400 opacity-70'}`}
-        >
-          Auto Buy
-        </button>
+        <TooltipProvider>
+          <Tooltip open={showTooltip}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleAutoBuyClick}
+                className={`text-sm px-3 py-1.5 rounded-lg border border-indigo-500/30 transition-all
+                  ${isAutoBuyUnlocked 
+                    ? (state.autoBuy 
+                      ? 'bg-indigo-600/60 text-white font-medium' 
+                      : 'bg-slate-800/40 text-slate-400 opacity-70')
+                    : 'bg-slate-800/40 text-slate-500 opacity-50 cursor-not-allowed'}`}
+              >
+                {isAutoBuyUnlocked ? (
+                  "Auto Buy"
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Lock size={14} />
+                    <span>Auto Buy</span>
+                  </div>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 p-2">
+              <p>Unlock Auto Buy after prestiging at least once</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       
       <div className="space-y-4">
