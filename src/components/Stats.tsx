@@ -16,8 +16,8 @@ import {
   TrendingUp,
   Users,
   Gem,
-  Trophy,
-  Activity
+  Award,
+  Medal
 } from 'lucide-react';
 import { 
   Dialog,
@@ -223,10 +223,10 @@ const Stats: React.FC = () => {
     { category: "Production", icon: <Timer size={18} className="text-indigo-400" />, name: "Coins per Second", value: formatNumber(calculateActualCoinsPerSecond()) },
     { category: "Production", icon: <Percent size={18} className="text-green-400" />, name: "Income Multiplier", value: `x${calculateIncomeMultiplier()}` },
     { category: "Interactions", icon: <MousePointer size={18} className="text-cyan-400" />, name: "Total Clicks", value: formatNumber(state.totalClicks) },
-    { category: "Interactions", icon: <Activity size={18} className="text-red-400" />, name: "Prestige Count", value: state.prestigeCount || 0 },
+    { category: "Interactions", icon: <Medal size={18} className="text-red-400" />, name: "Prestige Count", value: state.prestigeCount || 0 },
     { category: "Collections", icon: <Users size={18} className="text-indigo-400" />, name: "Managers Owned", value: state.ownedManagers.length },
     { category: "Collections", icon: <Gem size={18} className="text-purple-400" />, name: "Artifacts Owned", value: state.ownedArtifacts.length },
-    { category: "Achievements", icon: <Trophy size={18} className="text-amber-400" />, name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
+    { category: "Achievements", icon: <Award size={18} className="text-amber-400" />, name: "Achievements Unlocked", value: state.achievements.filter(a => a.unlocked).length },
   ];
 
   return (
