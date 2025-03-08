@@ -21,6 +21,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     // Create audio element for background music
+    // Updated path to use the correct location
     const audio = new Audio('/src/assets/music/background-music.mp3');
     audio.loop = true;
     audio.volume = 0.3; // Set to a quiet level
@@ -33,6 +34,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         playPromise
           .then(() => {
             setIsPlaying(true);
+            console.log('Audio playing successfully');
           })
           .catch(error => {
             // Auto-play was prevented, need user interaction first
@@ -64,8 +66,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         playPromise
           .then(() => {
             setIsPlaying(true);
+            console.log('Audio resumed successfully');
           })
-          .catch(() => {
+          .catch((error) => {
+            console.warn('Audio resume failed:', error);
             setIsPlaying(false);
           });
       }
@@ -77,6 +81,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const toggleMute = () => {
     setIsMuted(prev => !prev);
+    console.log('Mute toggled to:', !isMuted);
   };
 
   return (
