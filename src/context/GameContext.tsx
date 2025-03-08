@@ -110,7 +110,7 @@ const initialAbilities: Ability[] = [
   // Tier 1 (row 1) - Center ability (unlocked by default)
   {
     id: "ability-1",
-    name: "Basic Asteroid Drill",
+    name: "Asteroid Drill",
     description: "Just a rusty old drill that somehow still works. The user manual was written in crayon.",
     cost: 0,
     icon: <Star className="text-yellow-300" size={24} />,
