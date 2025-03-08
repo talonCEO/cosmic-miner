@@ -16,7 +16,6 @@ import {
   TrendingUp,
   Users,
   Gem,
-  Award,
   Medal
 } from 'lucide-react';
 import { 
