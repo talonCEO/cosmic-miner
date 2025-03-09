@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
+import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
 import { useBoostManager } from '@/hooks/useBoostManager';
 
@@ -60,38 +61,11 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 
 const ClickArea: React.FC = () => {
   const { state, click } = useGame();
-  const { 
-    calculateTapMultiplier, 
-    calculateGlobalIncomeMultiplier 
-  } = useBoostManager();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
-  
-  const calculateClickValue = () => {
-    // Get tap multiplier from tap power upgrade
-    const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
-    const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
-    
-    // Use our centralized boost manager to get tap multiplier from artifacts and abilities
-    const artifactMultiplier = calculateTapMultiplier();
-    
-    // Get global income multiplier that applies to all income sources
-    const globalMultiplier = calculateGlobalIncomeMultiplier();
-    
-    // Apply base value and bonuses
-    const baseClickValue = state.coinsPerClick; 
-    const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
-    
-    // Apply all multipliers together (removed critical hit chance)
-    return (baseClickValue + coinsPerSecondBonus) * 
-           state.incomeMultiplier * 
-           artifactMultiplier * 
-           tapBoostMultiplier *
-           globalMultiplier;
-  };
   
   const handleAreaClick = () => {
     if (!containerRef.current) return;
@@ -167,7 +141,7 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateClickValue()}
+            value={calculateTapValue(state)}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}

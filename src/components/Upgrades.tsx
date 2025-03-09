@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGame } from '@/context/GameContext';
-import { formatNumber, calculateTimeToSave, calculateUpgradeProgress, isGoodValue } from '@/utils/gameLogic';
+import { formatNumber, calculateTimeToSave, calculateUpgradeProgress } from '@/utils/gameLogic';
+import { isGoodValue } from '@/utils/GameMechanics';
 import { 
   Atom, Battery, Bolt, Cpu, Database, Eye, FlaskConical, Flame, 
   Gem, Globe, Hammer, Lightbulb, Layers, Magnet, Monitor, Pickaxe, 
@@ -49,20 +50,15 @@ const Upgrades: React.FC = () => {
     'hand': <Hand size={20} />
   };
   
-  // Check if auto buy is unlocked
   const isAutoBuyUnlocked = state.prestigeCount > 0;
   
-  // Get all unlocked upgrades
   const unlockedUpgrades = state.upgrades.filter(upgrade => upgrade.unlocked);
   
-  // Split the upgrades into categories for ordering
   const elementUpgrades = unlockedUpgrades.filter(u => u.category === UPGRADE_CATEGORIES.ELEMENT);
   const tapUpgrades = unlockedUpgrades.filter(u => u.category === UPGRADE_CATEGORIES.TAP);
   
-  // Sort the element upgrades by base cost
   const sortedElementUpgrades = [...elementUpgrades].sort((a, b) => a.baseCost - b.baseCost);
   
-  // Combine them with tap upgrades at the end
   const sortedUpgrades = [...sortedElementUpgrades, ...tapUpgrades];
 
   const handleBulkPurchase = (upgradeId: string, quantity: number) => {
@@ -157,21 +153,18 @@ const Upgrades: React.FC = () => {
           const timeToSave = calculateTimeToSave(upgrade.cost, state.coins, state.coinsPerSecond);
           const isMaxLevel = upgrade.level >= upgrade.maxLevel;
           
-          // Determine if it's the Tap Power upgrade for special styling
           const isTapUpgrade = upgrade.category === UPGRADE_CATEGORIES.TAP;
           
-          // Calculate value indicator
           let profitPerSecond = upgrade.coinsPerSecondBonus;
           let isUpgradeGoodValue = isGoodValue(upgrade.cost, profitPerSecond);
           
-          // Special UI for tap upgrades
           let upgradeDescription = upgrade.description;
           let bonusText = "";
           
           if (isTapUpgrade) {
             const tapMultiplier = (upgrade.level * upgrade.coinsPerClickBonus) * 100;
             bonusText = `+${tapMultiplier.toFixed(0)}% tap power`;
-            isUpgradeGoodValue = true; // Always show tap upgrades as good value
+            isUpgradeGoodValue = true;
           } else {
             bonusText = upgrade.coinsPerSecondBonus > 0 ? `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec` : '';
           }
