@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Sparkles } from 'lucide-react';
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface PrestigeProps {
   potentialEssenceReward: number;
@@ -17,6 +17,9 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
         <DialogTitle className="text-xl">Prestige</DialogTitle>
+        <DialogDescription className="text-sm text-slate-400">
+          Reset progress for powerful bonuses
+        </DialogDescription>
       </DialogHeader>
       <div className="p-6 flex flex-col items-center">
         <div className="bg-indigo-900/30 rounded-lg py-3 px-6 mb-4 flex items-center">
@@ -34,7 +37,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
         <div className="border-t border-indigo-500/20 w-full my-2"></div>
         
         <p className="text-sm text-slate-400 mb-4 text-center">
-          Essence reward scales based on your total coins earned. The more essence you earn, the more coins you'll need for additional essence.
+          Essence reward scales with your total coins. First 5 essence at 100,000 coins each, then the cost doubles for each 5 essence.
         </p>
         
         <button
@@ -47,7 +50,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
         
         {potentialEssenceReward === 0 && (
           <p className="text-xs text-red-400 mt-2 text-center">
-            You need at least 1,000,000 total coins to earn essence.
+            You need at least 100,000 total coins to earn essence.
           </p>
         )}
       </div>
