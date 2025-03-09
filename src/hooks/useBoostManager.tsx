@@ -33,12 +33,27 @@ export const useBoostManager = () => {
   };
   
   /**
+   * Calculate total passive income multiplier from artifacts
+   */
+  const calculatePassiveIncomeMultiplier = (): number => {
+    return GameMechanics.calculateArtifactProductionMultiplier(state);
+  };
+  
+  /**
+   * Calculate total CPS with all multipliers applied
+   */
+  const calculateTotalCPS = (): number => {
+    return GameMechanics.calculateTotalCoinsPerSecond(state);
+  };
+  
+  /**
    * Check if user has active boosts
    */
   const hasActiveBoosts = (): boolean => {
     return calculateTapMultiplier() > 1 || 
            calculateGlobalIncomeMultiplier() > 1 || 
-           calculateTotalCostReduction() < 1;
+           calculateTotalCostReduction() < 1 ||
+           calculatePassiveIncomeMultiplier() > 1;
   };
   
   /**
@@ -95,7 +110,7 @@ export const useBoostManager = () => {
     
     switch (item.effect.type) {
       case "production":
-        return `Increases all production by ${formatNumber(effectValue * 100)}%`;
+        return `Increases passive income by ${formatNumber(effectValue * 100)}%`;
       case "tap":
         return `${formatNumber(effectValue)}x tap multiplier`;
       case "essence":
@@ -113,6 +128,8 @@ export const useBoostManager = () => {
     calculateTapMultiplier,
     calculateGlobalIncomeMultiplier,
     calculateTotalCostReduction,
+    calculatePassiveIncomeMultiplier,
+    calculateTotalCPS,
     hasActiveBoosts,
     getElementName,
     getHighestUnlockedPerkValue,
