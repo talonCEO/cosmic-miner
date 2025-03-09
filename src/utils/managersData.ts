@@ -49,7 +49,7 @@ export const managers: Manager[] = [
     requiredCoins: 1000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=hydrogen",
     cost: 1,
-    boosts: ["Hydrogen", "Carbon"],
+    boosts: ["Hydrogen", "Exotic Matter"],
     perks: [
       {
         id: "manager-1-perk-1",
@@ -88,7 +88,7 @@ export const managers: Manager[] = [
     requiredCoins: 5000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=carbon",
     cost: 2,
-    boosts: ["Oxygen", "Nitrogen"],
+    boosts: ["Carbon", "Nitrogen"],
     perks: [
       {
         id: "manager-2-perk-1",
@@ -127,7 +127,7 @@ export const managers: Manager[] = [
     requiredCoins: 10000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=oxygen",
     cost: 4,
-    boosts: ["Silicon", "Aluminum"],
+    boosts: ["Oxygen", "Promethium"],
     perks: [
       {
         id: "manager-3-perk-1",
@@ -205,7 +205,7 @@ export const managers: Manager[] = [
     requiredCoins: 50000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=iron",
     cost: 16,
-    boosts: ["element-9", "element-10"],
+    boosts: ["Iron", "Cobalt"],
     perks: [
       {
         id: "manager-5-perk-1",
@@ -244,7 +244,7 @@ export const managers: Manager[] = [
     requiredCoins: 500000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gold",
     cost: 32,
-    boosts: ["1", "element-12"],
+    boosts: ["Gold", "Nickel"],
     perks: [
       {
         id: "manager-6-perk-1",
@@ -283,7 +283,7 @@ export const managers: Manager[] = [
     requiredCoins: 1000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=uranium",
     cost: 64,
-    boosts: ["element-13", "element-14"],
+    boosts: ["Uranium", "Lead"],
     perks: [
       {
         id: "manager-7-perk-1",
@@ -318,11 +318,11 @@ export const managers: Manager[] = [
     id: "manager-8",
     name: "Platinum Purifier",
     description: "Refines precious metals to perfect purity",
-    bonus: "Increases Nickel and Molybdenum production by 50%",
+    bonus: "Increases Platinum and Molybdenum production by 50%",
     requiredCoins: 10000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=platinum",
     cost: 128,
-    boosts: ["element-15", "element-16"],
+    boosts: ["Platinum", "Berkelium"],
     perks: [
       {
         id: "manager-8-perk-1",
@@ -361,7 +361,7 @@ export const managers: Manager[] = [
     requiredCoins: 100000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=exotic",
     cost: 256,
-    boosts: ["element-17", "element-18"],
+    boosts: ["Germanium", "Californium"],
     perks: [
       {
         id: "manager-9-perk-1",
@@ -400,7 +400,7 @@ export const managers: Manager[] = [
     requiredCoins: 500000000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=antimatter",
     cost: 512,
-    boosts: ["element-19", "element-20"],
+    boosts: ["Antimatter", "Tungsten"],
     perks: [
       {
         id: "manager-10-perk-1",
