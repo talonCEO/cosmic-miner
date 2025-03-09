@@ -49,7 +49,7 @@ export const managers: Manager[] = [
     requiredCoins: 1000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=hydrogen",
     cost: 1,
-    boosts: ["element-1", "element-2"],
+    boosts: ["Hydrogen", "Carbon"],
     perks: [
       {
         id: "manager-1-perk-1",
@@ -88,7 +88,7 @@ export const managers: Manager[] = [
     requiredCoins: 5000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=carbon",
     cost: 2,
-    boosts: ["element-3", "element-4"],
+    boosts: ["Oxygen", "Nitrogen"],
     perks: [
       {
         id: "manager-2-perk-1",
@@ -127,7 +127,7 @@ export const managers: Manager[] = [
     requiredCoins: 10000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=oxygen",
     cost: 4,
-    boosts: ["element-5", "element-6"],
+    boosts: ["Silicon", "Aluminum"],
     perks: [
       {
         id: "manager-3-perk-1",
