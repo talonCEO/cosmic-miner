@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { 
@@ -15,23 +14,7 @@ import {
   Clock,
   Lightbulb,
   Brain,
-  Diamond,
-  ChevronUp,
-  CircleDollarSign,
-  Timer,
-  ShieldPlus,
-  Asterisk,
-  TrendingDown,
-  BatteryCharging,
-  Gift,
-  Sparkle,
-  Award,
-  Sliders,
-  Users2,
-  Lamp,
-  BrainCircuit,
-  Heart,
-  Star
+  Diamond
 } from 'lucide-react';
 import {
   Tooltip,
@@ -59,7 +42,7 @@ interface PerkProps {
   icon?: React.ReactNode;
 }
 
-const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = false }) => {
+const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = false, icon }) => {
   const { state } = useGame();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const [tooltipTimer, setTooltipTimer] = useState<NodeJS.Timeout | null>(null);
@@ -72,6 +55,8 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
   const activeBgColor = isManagerPerk ? 'bg-indigo-500/20' : 'bg-purple-500/20';
   
   const getPerkIcon = () => {
+    if (icon) return icon;
+    
     const categoryIcons: Record<string, React.ReactNode> = {
       'production': <TrendingUp size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />,
       'power': <Zap size={16} className="text-yellow-400" />,
@@ -86,34 +71,10 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
       'time': <Clock size={16} className="text-amber-400" />
     };
     
-    // Add more specific icon mappings by perk ID
     if (perk.id.includes('quantum')) return <Brain size={16} className="text-blue-400" />;
     if (perk.id.includes('crystal')) return <Diamond size={16} className="text-purple-400" />;
     if (perk.id.includes('acceleration')) return <Zap size={16} className="text-yellow-400" />;
     if (perk.id.includes('catalyst')) return <Lightbulb size={16} className="text-yellow-400" />;
-    
-    // Manager specific icons
-    if (isManagerPerk) {
-      if (perk.id.includes('boost')) return <ChevronUp size={16} className="text-yellow-400" />;
-      if (perk.id.includes('income')) return <CircleDollarSign size={16} className="text-green-500" />;
-      if (perk.id.includes('time')) return <Timer size={16} className="text-amber-300" />;
-      if (perk.id.includes('shield')) return <ShieldPlus size={16} className="text-red-400" />;
-      if (perk.id.includes('enhance')) return <Asterisk size={16} className="text-purple-500" />;
-      if (perk.id.includes('cost')) return <TrendingDown size={16} className="text-indigo-400" />;
-      if (perk.id.includes('energy')) return <BatteryCharging size={16} className="text-cyan-300" />;
-    }
-    // Artifact specific icons
-    else {
-      if (perk.id.includes('reward')) return <Gift size={16} className="text-teal-400" />;
-      if (perk.id.includes('spark')) return <Sparkle size={16} className="text-amber-400" />;
-      if (perk.id.includes('trophy')) return <Award size={16} className="text-yellow-500" />;
-      if (perk.id.includes('optimize')) return <Sliders size={16} className="text-gray-400" />;
-      if (perk.id.includes('team')) return <Users2 size={16} className="text-green-300" />;
-      if (perk.id.includes('light')) return <Lamp size={16} className="text-orange-400" />;
-      if (perk.id.includes('mind')) return <BrainCircuit size={16} className="text-blue-500" />;
-      if (perk.id.includes('heart')) return <Heart size={16} className="text-pink-400" />;
-      if (perk.id.includes('star')) return <Star size={16} className="text-purple-500" />;
-    }
     
     return categoryIcons[perk.category || 'bonus'] || <Gem size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />;
   };

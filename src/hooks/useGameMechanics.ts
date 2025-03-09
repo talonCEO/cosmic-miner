@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { isGoodValue } from '@/utils/gameLogic';
+import { calculateEssenceReward, isGoodValue } from '@/utils/gameLogic';
 import { artifacts } from '@/utils/artifactsData';
 import { managers } from '@/utils/managersData';
 import { upgradesList } from '@/utils/upgradesData';
@@ -107,48 +107,6 @@ export const createAchievements = () => {
   
   // Combine all achievement types
   return [...upgradeAchievements, ...managerAchievements, ...artifactAchievements];
-};
-
-/**
- * Calculate essence reward based on a stepped approach
- * First 5 essence at 100,000 coins each
- * Next 5 essence at 200,000 coins each
- * Next 5 essence at 400,000 coins each
- * And so on, doubling the cost for each 5 essence
- */
-export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: string[] = []): number => {
-  if (totalCoins < 100000) return 0; // Minimum 100k coins to get any essence
-  
-  let remainingCoins = totalCoins;
-  let essence = 0;
-  let currentBracketCost = 100000; // Starting cost per essence
-  let coinsPerBracket = 5 * currentBracketCost; // 5 essence per bracket
-  
-  while (remainingCoins >= currentBracketCost) {
-    // Check if we have enough for the full bracket
-    if (remainingCoins >= coinsPerBracket) {
-      essence += 5; // Add full bracket (5 essence)
-      remainingCoins -= coinsPerBracket;
-      currentBracketCost *= 2; // Double the cost for next bracket
-      coinsPerBracket = 5 * currentBracketCost; // Update coins needed for next full bracket
-    } else {
-      // Add partial bracket
-      const partialEssence = Math.floor(remainingCoins / currentBracketCost);
-      essence += partialEssence;
-      remainingCoins -= partialEssence * currentBracketCost;
-    }
-  }
-  
-  // Apply artifact bonuses
-  let multiplier = 1;
-  if (ownedArtifacts?.includes("artifact-3")) { // Element Scanner
-    multiplier += 0.25;
-  }
-  if (ownedArtifacts?.includes("artifact-8")) { // Quantum Microscope
-    multiplier += 0.5;
-  }
-  
-  return Math.max(0, Math.floor(essence * multiplier));
 };
 
 export default function useGameMechanics() {

@@ -596,10 +596,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'PRESTIGE': {
       // Calculate essence reward with improved formula
-      let essenceReward = 0;
+      let essenceReward = Math.floor(Math.log10(state.totalEarned) * 2 - 10);
       
-      // Use the updated calculation function
-      essenceReward = gameMechanics.calculatePotentialEssenceReward(state.totalEarned, state.ownedArtifacts);
+      // Apply artifact bonuses
+      if (state.ownedArtifacts.includes("artifact-3")) { // Element Scanner
+        essenceReward = Math.floor(essenceReward * 1.25);
+      }
+      if (state.ownedArtifacts.includes("artifact-8")) { // Quantum Microscope
+        essenceReward = Math.floor(essenceReward * 1.5);
+      }
       
       // Apply ability bonuses for essence rewards
       if (state.abilities.find(a => a.id === "ability-7" && a.unlocked)) {
@@ -613,13 +618,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
       
       // Ensure at least some reward if they've made significant progress
-      if (state.totalEarned > 100000 && essenceReward <= 0) {
+      if (state.totalEarned > 1000000 && essenceReward <= 0) {
         essenceReward = 1;
       }
       
       const startingCoins = calculateStartingCoins(state.ownedArtifacts);
       
-      // Create a new state that keeps all unlocks
       return {
         ...initialState,
         coins: startingCoins,
@@ -632,8 +636,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         artifacts: state.artifacts,
         prestigeCount: state.prestigeCount + 1,
         skillPoints: state.skillPoints, // Retain skill points after prestige
-        abilities: state.abilities, // Retain abilities after prestige
-        unlockedPerks: state.unlockedPerks // Keep unlocked perks after prestige
+        abilities: state.abilities // Retain abilities after prestige
       };
     }
     case 'BUY_MANAGER': {
@@ -996,4 +999,3 @@ export const useGame = () => {
   }
   return context;
 };
-
