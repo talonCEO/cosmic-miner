@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -62,20 +61,20 @@ const Stats: React.FC = () => {
           
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
-              <MousePointer size={18} className="text-green-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Tap Power</span>
-            </div>
-            <span className="text-lg font-bold text-green-300">{formatNumber(state.coinsPerClick)}</span>
-            <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
-          </div>
-          
-          <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
-            <div className="flex items-center mb-1">
               <Sparkles size={18} className="text-purple-400 mr-2" />
               <span className="text-xs font-medium text-slate-300">Global Multiplier</span>
             </div>
             <span className="text-lg font-bold text-purple-300">x{formatNumber(globalMultiplier)}</span>
             <span className="text-xs text-slate-500 mt-1">Boosts All Income</span>
+          </div>
+          
+          <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
+            <div className="flex items-center mb-1">
+              <MousePointer size={18} className="text-green-400 mr-2" />
+              <span className="text-xs font-medium text-slate-300">Tap Power</span>
+            </div>
+            <span className="text-lg font-bold text-green-300">{formatNumber(state.coinsPerClick)}</span>
+            <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
           </div>
           
           <div className="col-span-2 flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
