@@ -132,8 +132,8 @@ export const calculateCostReduction = (state: GameState): number => {
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
-        if (perk.unlocked && perk.type === 'cost-reduction') {
-          costReduction -= perk.value;
+        if (perk.unlocked && perk.effect.type === 'cost-reduction') {
+          costReduction -= perk.effect.value;
         }
       });
     }
@@ -273,8 +273,8 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
-        if (perk.unlocked && perk.type === 'income-multiplier') {
-          multiplier += perk.value;
+        if (perk.unlocked && perk.effect.type === 'income-multiplier') {
+          multiplier += perk.effect.value;
         }
       });
     }
@@ -284,8 +284,8 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
   state.artifacts.forEach(artifact => {
     if (state.ownedArtifacts.includes(artifact.id) && artifact.perks) {
       artifact.perks.forEach(perk => {
-        if (perk.unlocked && perk.type === 'income-multiplier') {
-          multiplier += perk.value;
+        if (perk.unlocked && perk.effect.type === 'income-multiplier') {
+          multiplier += perk.effect.value;
         }
       });
     }
@@ -349,8 +349,8 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
-        if (perk.unlocked && perk.type === 'essence-bonus') {
-          multiplier += perk.value;
+        if (perk.unlocked && perk.effect.type === 'essence-bonus') {
+          multiplier += perk.effect.value;
         }
       });
     }
@@ -359,8 +359,8 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
   state.artifacts.forEach(artifact => {
     if (state.ownedArtifacts.includes(artifact.id) && artifact.perks) {
       artifact.perks.forEach(perk => {
-        if (perk.unlocked && perk.type === 'essence-bonus') {
-          multiplier += perk.value;
+        if (perk.unlocked && perk.effect.type === 'essence-bonus') {
+          multiplier += perk.effect.value;
         }
       });
     }
