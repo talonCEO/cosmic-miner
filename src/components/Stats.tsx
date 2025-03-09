@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -17,6 +18,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { calculateTapValue } from '@/utils/GameMechanics';
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
@@ -25,6 +27,7 @@ const Stats: React.FC = () => {
   
   const totalCPS = calculateTotalCPS();
   const globalMultiplier = calculateGlobalIncomeMultiplier();
+  const tapPower = calculateTapValue(state);
   
   return (
     <div className="w-full max-w-md mx-auto pb-12">
@@ -73,7 +76,7 @@ const Stats: React.FC = () => {
               <MousePointer size={18} className="text-green-400 mr-2" />
               <span className="text-xs font-medium text-slate-300">Tap Power</span>
             </div>
-            <span className="text-lg font-bold text-green-300">{formatNumber(state.coinsPerClick)}</span>
+            <span className="text-lg font-bold text-green-300">{formatNumber(tapPower)}</span>
             <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
           </div>
           
@@ -91,54 +94,54 @@ const Stats: React.FC = () => {
       <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold text-white">Detailed Game Statistics</DialogTitle>
+            <DialogTitle className="text-center text-xl font-bold text-white">Deep Space Mining Corp. Performance Metrics</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 p-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Total Coins</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Galactic Treasury</h3>
                 <p className="text-lg font-bold text-yellow-300">{formatNumber(state.coins)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Lifetime Earnings</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Lifetime Revenue</h3>
                 <p className="text-lg font-bold text-yellow-300">{formatNumber(state.totalEarned)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Current Tap Power</h3>
-                <p className="text-lg font-bold text-green-300">{formatNumber(state.coinsPerClick)}</p>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Asteroid Demolisher</h3>
+                <p className="text-lg font-bold text-green-300">{formatNumber(tapPower)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Total Clicks</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Excavation Events</h3>
                 <p className="text-lg font-bold text-green-300">{formatNumber(state.totalClicks)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Passive Income</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Automated Yield</h3>
                 <p className="text-lg font-bold text-blue-300">{formatNumber(totalCPS)}/s</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Global Multiplier</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Quantum Efficiency</h3>
                 <p className="text-lg font-bold text-purple-300">x{formatNumber(globalMultiplier)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Essence</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Mystical Particles</h3>
                 <p className="text-lg font-bold text-indigo-300">{formatNumber(state.essence)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Prestige Level</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Corporate Resets</h3>
                 <p className="text-lg font-bold text-indigo-300">{state.prestigeCount}</p>
               </div>
             </div>
             
             <div className="bg-slate-700/50 p-3 rounded-lg">
-              <h3 className="text-sm font-semibold text-slate-300 mb-2">Next Prestige</h3>
+              <h3 className="text-sm font-semibold text-slate-300 mb-2">Pending Liquidation Value</h3>
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
           </div>
