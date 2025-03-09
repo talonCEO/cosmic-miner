@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { 
-  CircleDollarSign, 
+  Bitcoin, 
   MousePointer, 
   Sparkles, 
   Gauge, 
@@ -46,7 +46,7 @@ const Stats: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
-              <CircleDollarSign size={18} className="text-yellow-400 mr-2" />
+              <Bitcoin size={18} className="text-yellow-400 mr-2" />
               <span className="text-xs font-medium text-slate-300">Coins</span>
             </div>
             <span className="text-lg font-bold text-yellow-300">{formatNumber(state.coins)}</span>
@@ -74,7 +74,7 @@ const Stats: React.FC = () => {
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
               <MousePointer size={18} className="text-green-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Tap Power</span>
+              <span className="text-xs font-medium text-slate-300">Drill Power</span>
             </div>
             <span className="text-lg font-bold text-green-300">{formatNumber(tapPower)}</span>
             <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
