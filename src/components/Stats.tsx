@@ -12,7 +12,6 @@ import {
   Percent,
   MousePointer,
   Timer,
-  Award,
   TrendingUp,
   Users,
   Gem,
