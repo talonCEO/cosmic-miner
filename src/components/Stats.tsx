@@ -125,12 +125,12 @@ const Stats: React.FC = () => {
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Quantum Efficiency</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Company Efficiency</h3>
                 <p className="text-lg font-bold text-purple-300">x{formatNumber(globalMultiplier)}</p>
               </div>
               
               <div className="bg-slate-700/50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">Mystical Particles</h3>
+                <h3 className="text-sm font-semibold text-slate-300 mb-1">Mystical Essence</h3>
                 <p className="text-lg font-bold text-indigo-300">{formatNumber(state.essence)}</p>
               </div>
               
