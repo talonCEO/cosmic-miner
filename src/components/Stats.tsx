@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, calculateClickMultiplier } from '@/utils/gameLogic';
