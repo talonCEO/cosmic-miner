@@ -244,7 +244,7 @@ export const managers: Manager[] = [
     requiredCoins: 500000,
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gold",
     cost: 32,
-    boosts: ["element-11", "element-12"],
+    boosts: ["1", "element-12"],
     perks: [
       {
         id: "manager-6-perk-1",
