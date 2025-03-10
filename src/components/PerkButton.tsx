@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { 
@@ -14,7 +15,8 @@ import {
   Clock,
   Lightbulb,
   Brain,
-  Diamond
+  Diamond,
+  Lock
 } from 'lucide-react';
 import {
   Tooltip,
@@ -106,7 +108,7 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
         <TooltipTrigger asChild>
           <button
             onClick={handleClick}
-            className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 transition-all
+            className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 transition-all relative
               ${isUnlocked
                 ? `${activeBgColor} border-2 ${borderColor} opacity-100`
                 : disabled
@@ -117,6 +119,11 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
               }`}
           >
             {perkIcon}
+            {!isUnlocked && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
+                <Lock size={14} className="text-slate-300 opacity-90" />
+              </div>
+            )}
           </button>
         </TooltipTrigger>
         <TooltipContent 

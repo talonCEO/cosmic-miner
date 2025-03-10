@@ -27,6 +27,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [nextAdTime, setNextAdTime] = useState(0);
   const [adNotificationStartTime, setAdNotificationStartTime] = useState(0);
   const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [isRewardedAdLoaded, setIsRewardedAdLoaded] = useState(false);
   
   const adBoostMultiplier = 2; // x2 income boost
   const adBoostDuration = 10 * 60; // 10 minutes in seconds
@@ -40,8 +41,13 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const initAds = async () => {
       try {
         await adMobService.initialize();
-        const adLoaded = await adMobService.loadInterstitialAd();
-        setIsAdLoaded(adLoaded);
+        
+        // Load both interstitial and rewarded ads
+        const interstitialLoaded = await adMobService.loadInterstitialAd();
+        setIsAdLoaded(interstitialLoaded);
+        
+        const rewardedLoaded = await adMobService.loadRewardedAd();
+        setIsRewardedAdLoaded(rewardedLoaded);
         
         setNextAdTime(Date.now() + initialAdDelay * 1000); 
       } catch (error) {
@@ -67,10 +73,11 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       setAdNotificationStartTime(now);
       console.log('Showing ad notification');
       
-      if (!isAdLoaded) {
-        adMobService.loadInterstitialAd()
-          .then(success => setIsAdLoaded(success))
-          .catch(err => console.error('Failed to load ad', err));
+      // Make sure rewarded ad is loaded
+      if (!isRewardedAdLoaded) {
+        adMobService.loadRewardedAd()
+          .then(success => setIsRewardedAdLoaded(success))
+          .catch(err => console.error('Failed to load rewarded ad', err));
       }
     }
     
@@ -98,34 +105,42 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setShowAdNotification(false);
     
     try {
-      if (!isAdLoaded) {
-        const adLoaded = await adMobService.loadInterstitialAd();
-        setIsAdLoaded(adLoaded);
+      if (!isRewardedAdLoaded) {
+        const adLoaded = await adMobService.loadRewardedAd();
+        setIsRewardedAdLoaded(adLoaded);
         if (!adLoaded) {
-          throw new Error("Failed to load ad");
+          throw new Error("Failed to load rewarded ad");
         }
       }
       
-      const adCompleted = await adMobService.showInterstitialAd();
-      setIsAdLoaded(false);
+      // Show rewarded ad instead of interstitial
+      const reward = await adMobService.showRewardedAd();
+      setIsRewardedAdLoaded(false);
       
-      // When ad completes successfully, apply the boost effect
-      if (adCompleted) {
+      // When ad completes successfully and user earns the reward
+      if (reward) {
         setAdBoostActive(true);
         setAdBoostTimeRemaining(adBoostDuration);
         setIncomeMultiplier(adBoostMultiplier);
+        
+        toast({
+          title: "2x Income Boost Activated!",
+          description: `You've earned a ${adBoostMultiplier}x income boost for 10 minutes!`,
+          variant: "default",
+        });
       }
       
-      adMobService.loadInterstitialAd()
-        .then(success => setIsAdLoaded(success))
-        .catch(err => console.error('Failed to load next ad', err));
+      // Preload the next rewarded ad
+      adMobService.loadRewardedAd()
+        .then(success => setIsRewardedAdLoaded(success))
+        .catch(err => console.error('Failed to load next rewarded ad', err));
       
       setLastAdWatchedTime(Date.now());
       
       const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
       setNextAdTime(Date.now() + nextDelay * 1000);
     } catch (error) {
-      console.error("Error showing ad:", error);
+      console.error("Error showing rewarded ad:", error);
       
       const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
       setNextAdTime(Date.now() + nextDelay * 1000);

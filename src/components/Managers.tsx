@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
@@ -24,6 +25,7 @@ import {
   Lamp,
   BrainCircuit,
   Gem,
+  Lock
 } from 'lucide-react';
 
 const Managers: React.FC = () => {

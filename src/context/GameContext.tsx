@@ -671,23 +671,38 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const updatedParent = {...updatedCollections[parentCollection][parentIndex]};
       if (!updatedParent.perks) return state;
       
+      // Get the selected perk
       const perkIndex = updatedParent.perks.findIndex(p => p.id === action.perkId);
       if (perkIndex === -1) return state;
       
-      // Update the perk to be unlocked
-      updatedParent.perks = [...updatedParent.perks];
-      updatedParent.perks[perkIndex] = {
-        ...updatedParent.perks[perkIndex],
-        unlocked: true
-      };
+      // Create a list of perks to unlock (the selected one and any cheaper ones)
+      let perksToUnlock = [action.perkId];
+      let unlockedPerksCost = perk.cost;
+      const selectedPerkCost = perk.cost;
+      
+      // Find any cheaper perks that should be unlocked as a cascade effect
+      updatedParent.perks.forEach(p => {
+        // If the perk is cheaper and not already unlocked, add it to the list
+        if (p.cost < selectedPerkCost && !p.unlocked && !state.unlockedPerks.includes(p.id)) {
+          perksToUnlock.push(p.id);
+        }
+      });
+      
+      // Update all perks that need to be unlocked
+      updatedParent.perks = updatedParent.perks.map(p => {
+        if (perksToUnlock.includes(p.id)) {
+          return { ...p, unlocked: true };
+        }
+        return p;
+      });
       
       // Update the parent in the collection
       updatedCollections[parentCollection][parentIndex] = updatedParent;
       
       return {
         ...state,
-        skillPoints: state.skillPoints - perk.cost,
-        unlockedPerks: [...state.unlockedPerks, action.perkId],
+        skillPoints: state.skillPoints - perk.cost, // Only deduct the cost of the selected perk
+        unlockedPerks: [...state.unlockedPerks, ...perksToUnlock], // Add all unlocked perks
         [parentCollection]: updatedCollections[parentCollection]
       };
     }
