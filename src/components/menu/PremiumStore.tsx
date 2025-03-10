@@ -63,11 +63,13 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
 
   return (
     <>
+      {/* Fixed Gem Display */}
+      <div className="fixed top-4 left-4 z-50 flex items-center">
+        <Gem className="w-5 h-5 text-yellow-400 mr-1" />
+        <span className="text-yellow-400 font-bold">{playerGems}</span>
+      </div>
+
       <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
-        <div className="absolute top-4 right-4 flex items-center">
-          <Gem className="w-5 h-5 text-yellow-400 mr-1" />
-          <span className="text-yellow-400 font-bold">{playerGems}</span>
-        </div>
         <DialogTitle className="text-xl">Premium Store</DialogTitle>
       </DialogHeader>
       
