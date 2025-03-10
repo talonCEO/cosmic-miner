@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent
@@ -6,6 +7,7 @@ import {
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/components/ui/use-toast';
 import { MenuType } from './menu/types';
+import { BoostItem as BoostItemType, initialBoostItems } from './menu/types/premiumStore';
 import MenuButton from './menu/MenuButton';
 import MainMenu from './menu/MainMenu';
 import Achievements from './menu/Achievements';
@@ -17,7 +19,18 @@ import PremiumStore from './menu/PremiumStore';
 const GameMenu: React.FC = () => {
   const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
   const [menuType, setMenuType] = useState<MenuType>("none");
+  const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
+  const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
   const { toast } = useToast();
+  
+  // Initialize boost items with icons on component mount
+  useEffect(() => {
+    // We'll initialize the boost items here
+    // In a real implementation, this would load from persistent storage
+    if (boostItems.length === 0) {
+      setBoostItems(initialBoostItems);
+    }
+  }, [boostItems.length]);
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -61,12 +74,58 @@ const GameMenu: React.FC = () => {
       variant: "default",
     });
   };
+
+  // Handle buying gem packages
+  const handleBuyGemPackage = (packageId: string, amount: number) => {
+    // In a real implementation, this would open the Google Play billing flow
+    // For now, just add the gems directly
+    setPlayerGems(prev => prev + amount);
+    
+    toast({
+      title: "Gems Purchased!",
+      description: `${amount} gems have been added to your account.`,
+    });
+  };
+
+  // Handle buying boost items
+  const handleBuyBoostItem = (itemId: string) => {
+    const item = boostItems.find(item => item.id === itemId);
+    if (!item || !item.purchasable) return;
+    
+    // Check if player has enough gems
+    if (playerGems < item.cost) {
+      toast({
+        title: "Not Enough Gems",
+        description: `You need ${item.cost - playerGems} more gems to purchase this.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Mark the item as purchased and no longer purchasable
+    // Set refresh time to 8 hours from now
+    const refreshTime = Date.now() + (8 * 60 * 60 * 1000);
+    
+    setBoostItems(items => 
+      items.map(i => 
+        i.id === itemId 
+          ? { ...i, purchased: true, purchasable: false, refreshTime } 
+          : i
+      )
+    );
+    
+    // Deduct gems
+    setPlayerGems(prev => prev - item.cost);
+    
+    // Apply the boost effect (in a real implementation)
+    // This would modify game state based on the item's effect
+  };
   
   const potentialEssenceReward = calculatePotentialEssenceReward();
   
   return (
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
-      <div className="space-y-2">
+      <div className="flex flex-col space-y-2">
         <MenuButton />
         <MenuButton variant="premium" onClick={() => setMenuType("premium")} />
       </div>
@@ -104,7 +163,12 @@ const GameMenu: React.FC = () => {
         )}
         
         {menuType === "premium" && (
-          <PremiumStore />
+          <PremiumStore 
+            playerGems={playerGems}
+            boostItems={boostItems}
+            onBuyGemPackage={handleBuyGemPackage}
+            onBuyBoostItem={handleBuyBoostItem}
+          />
         )}
       </DialogContent>
     </Dialog>

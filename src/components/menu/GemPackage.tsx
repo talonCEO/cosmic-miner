@@ -2,26 +2,16 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import type { GemPackage } from './types/premiumStore';
-import { useToast } from '@/components/ui/use-toast';
 
 interface GemPackageProps {
   pack: GemPackage;
+  onPurchase: () => void;
 }
 
-const GemPackage: React.FC<GemPackageProps> = ({ pack }) => {
-  const { toast } = useToast();
-
-  const handlePurchase = () => {
-    // TODO: Implement Google Play billing
-    toast({
-      title: "Coming Soon",
-      description: "Google Play billing will be implemented soon!",
-    });
-  };
-
+const GemPackage: React.FC<GemPackageProps> = ({ pack, onPurchase }) => {
   return (
     <button
-      onClick={handlePurchase}
+      onClick={onPurchase}
       className="flex flex-col items-center p-4 rounded-lg border border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-yellow-900/40 hover:from-amber-900/50 hover:to-yellow-900/50 transition-colors"
     >
       <div className="flex items-center gap-2 mb-2">

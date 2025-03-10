@@ -9,5 +9,5 @@ export interface Ability {
   row: number;
   unlocked: boolean;
   requiredAbilities: string[];
-  icon: JSX.Element;
+  icon: React.ReactNode; // Changed from JSX.Element to ReactNode for compatibility
 }

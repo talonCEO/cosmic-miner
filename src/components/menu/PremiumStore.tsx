@@ -1,33 +1,161 @@
 
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Gem, RotateCcw } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import GemPackage from './GemPackage';
-import { gemPackages } from './types/premiumStore';
+import BoostItem from './BoostItem';
+import { gemPackages, BoostItem as BoostItemType } from './types/premiumStore';
+import { useMemo } from 'react';
 
-const PremiumStore: React.FC = () => {
+// Icons for the boost items
+import { Zap, Clock, Target, Gauge, Star, Rocket, Flame, CloudLightning, Compass, Trophy } from 'lucide-react';
+
+interface PremiumStoreProps {
+  playerGems: number;
+  boostItems: BoostItemType[];
+  onBuyGemPackage: (packageId: string, amount: number) => void;
+  onBuyBoostItem: (itemId: string) => void;
+}
+
+const PremiumStore: React.FC<PremiumStoreProps> = ({ 
+  playerGems, 
+  boostItems, 
+  onBuyGemPackage, 
+  onBuyBoostItem 
+}) => {
+  // Calculate when the shop will refresh - 8 hours from the earliest purchased item
+  const earliestRefreshTime = useMemo(() => {
+    const purchasedItems = boostItems.filter(item => item.purchased && item.refreshTime);
+    if (purchasedItems.length === 0) return null;
+    
+    const times = purchasedItems
+      .map(item => item.refreshTime || 0)
+      .sort((a, b) => a - b);
+    
+    return times[0];
+  }, [boostItems]);
+  
+  // Format the next refresh time
+  const formattedRefreshTime = useMemo(() => {
+    if (!earliestRefreshTime) return null;
+    
+    const now = Date.now();
+    const timeDiff = earliestRefreshTime - now;
+    
+    if (timeDiff <= 0) {
+      // Shop should refresh now
+      return "Ready to refresh";
+    }
+    
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m`;
+  }, [earliestRefreshTime]);
+  
+  // Function to manually refresh the shop (not implemented yet)
+  const handleRefreshShop = () => {
+    // This would be implemented in a real application
+  };
+  
+  // Enhance boost items with icons
+  const enhancedBoostItems = useMemo(() => {
+    const icons = [
+      <Zap key="zap" className="w-5 h-5" />,
+      <Gauge key="gauge" className="w-5 h-5" />,
+      <Star key="star" className="w-5 h-5" />,
+      <Rocket key="rocket" className="w-5 h-5" />,
+      <Flame key="flame" className="w-5 h-5" />,
+      <CloudLightning key="cloud" className="w-5 h-5" />,
+      <Compass key="compass" className="w-5 h-5" />,
+      <Trophy key="trophy" className="w-5 h-5" />,
+      <Target key="target" className="w-5 h-5" />,
+      <Clock key="clock" className="w-5 h-5" />
+    ];
+    
+    return boostItems.map((item, index) => ({
+      ...item,
+      icon: icons[index % icons.length]
+    }));
+  }, [boostItems]);
+
   return (
     <>
-      <DialogHeader className="p-4 border-b border-indigo-500/20">
+      <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
+        <div className="absolute top-4 left-4 flex items-center">
+          <Gem className="w-5 h-5 text-yellow-400 mr-1" />
+          <span className="text-yellow-400 font-bold">{playerGems}</span>
+        </div>
         <DialogTitle className="text-xl">Premium Store</DialogTitle>
       </DialogHeader>
       
       <ScrollArea className="h-[60vh]">
         <div className="p-4">
-          <div className="flex items-center mb-4 bg-amber-900/30 rounded-lg p-2">
-            <Sparkles size={16} className="text-yellow-400 mr-1" />
-            <p className="font-medium text-yellow-300">Premium Currency</p>
+          {/* Section 1: Gem Packages */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center bg-amber-900/30 rounded-lg p-2">
+                <Sparkles size={16} className="text-yellow-400 mr-1" />
+                <p className="font-medium text-yellow-300">Premium Currency</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1">
+                Gem Packages
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                {gemPackages.map(pack => (
+                  <GemPackage 
+                    key={pack.id} 
+                    pack={pack} 
+                    onPurchase={() => onBuyGemPackage(pack.id, pack.amount)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
           
-          <div className="space-y-4">
-            <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1">
-              Gem Packages
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
-              {gemPackages.map(pack => (
-                <GemPackage key={pack.id} pack={pack} />
-              ))}
+          {/* Section 2: Boost Items */}
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center bg-amber-900/30 rounded-lg p-2">
+                <Zap size={16} className="text-yellow-400 mr-1" />
+                <p className="font-medium text-yellow-300">Premium Boosts</p>
+              </div>
+              
+              {formattedRefreshTime && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Refreshes in: {formattedRefreshTime}</span>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-7 px-2 text-xs"
+                    onClick={handleRefreshShop}
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Refresh
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1">
+                Boost Items
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                {enhancedBoostItems.map(item => (
+                  <BoostItem 
+                    key={item.id} 
+                    item={item} 
+                    playerGems={playerGems}
+                    onPurchase={onBuyBoostItem}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
