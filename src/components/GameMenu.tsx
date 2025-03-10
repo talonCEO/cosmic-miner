@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -15,7 +16,11 @@ import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
 import PremiumStore from './menu/PremiumStore';
 
-const GameMenu: React.FC = () => {
+interface GameMenuProps {
+  menuType?: 'main' | 'premium';
+}
+
+const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) => {
   const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
   const [menuType, setMenuType] = useState<MenuType>("none");
   const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
@@ -38,12 +43,12 @@ const GameMenu: React.FC = () => {
     }
   };
   
-  const openMainMenu = () => {
-    setMenuType("main");
-  };
-  
-  const openPremiumStore = () => {
-    setMenuType("premium");
+  const handleButtonClick = () => {
+    if (buttonType === 'main') {
+      setMenuType("main");
+    } else if (buttonType === 'premium') {
+      setMenuType("premium");
+    }
   };
   
   const handlePrestige = () => {
@@ -129,10 +134,10 @@ const GameMenu: React.FC = () => {
   
   return (
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
-      <div className="flex flex-col space-y-2">
-        <MenuButton onClick={openMainMenu} />
-        <MenuButton variant="premium" onClick={openPremiumStore} />
-      </div>
+      <MenuButton 
+        variant={buttonType === 'premium' ? 'premium' : 'default'} 
+        onClick={handleButtonClick} 
+      />
       
       <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[9999]">
         {menuType === "main" && (

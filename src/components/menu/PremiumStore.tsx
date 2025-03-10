@@ -56,7 +56,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     // If there are 6 or fewer items, display all of them
     if (boostItems.length <= 6) return boostItems;
     
-    // Otherwise, select 6 random items
+    // Otherwise, select 6 random items that stay consistent until refresh
     const shuffled = [...boostItems].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 6);
   }, [boostItems]);
@@ -64,7 +64,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
-        <div className="absolute top-4 left-4 flex items-center">
+        <div className="absolute top-4 right-4 flex items-center">
           <Gem className="w-5 h-5 text-yellow-400 mr-1" />
           <span className="text-yellow-400 font-bold">{playerGems}</span>
         </div>
@@ -75,52 +75,44 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
         <div className="p-4">
           {/* Section 1: Gem Packages */}
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center bg-amber-900/30 rounded-lg p-2">
-                <Sparkles size={16} className="text-yellow-400 mr-1" />
-              </div>
-            </div>
+            <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1 mb-4">
+              Gem Packages
+            </h3>
             
-            <div className="space-y-4">
-              <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1">
-                Gem Packages
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {gemPackages.map(pack => (
-                  <GemPackage 
-                    key={pack.id} 
-                    pack={pack} 
-                    onPurchase={() => onBuyGemPackage(pack.id, pack.amount)}
-                  />
-                ))}
-              </div>
+            <div className="grid grid-cols-3 gap-3">
+              {gemPackages.map(pack => (
+                <GemPackage 
+                  key={pack.id} 
+                  pack={pack} 
+                  onPurchase={() => onBuyGemPackage(pack.id, pack.amount)}
+                />
+              ))}
             </div>
           </div>
           
           {/* Section 2: Boost Items */}
           <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              {formattedRefreshTime && (
-                <div className="flex items-center ml-auto">
-                  <span className="text-xs text-gray-400">Refreshes in: {formattedRefreshTime}</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1 w-full">
                 Boost Items
               </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {displayedBoostItems.map(item => (
-                  <BoostItem 
-                    key={item.id} 
-                    item={item} 
-                    playerGems={playerGems}
-                    onPurchase={onBuyBoostItem}
-                  />
-                ))}
+            </div>
+            
+            {formattedRefreshTime && (
+              <div className="flex items-center justify-end mb-3">
+                <span className="text-xs text-gray-400">Refreshes in: {formattedRefreshTime}</span>
               </div>
+            )}
+            
+            <div className="grid grid-cols-3 gap-3">
+              {displayedBoostItems.map(item => (
+                <BoostItem 
+                  key={item.id} 
+                  item={item} 
+                  playerGems={playerGems}
+                  onPurchase={onBuyBoostItem}
+                />
+              ))}
             </div>
           </div>
         </div>
