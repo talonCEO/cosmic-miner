@@ -25,7 +25,7 @@ class AdMobService {
           }
         });
         
-        AdMob.addListener(RewardAdPluginEvents.RewardedFailed, (error) => {
+        AdMob.addListener(RewardAdPluginEvents.FailedToLoad, (error) => {
           console.error('Rewarded ad failed:', error);
           if (this.rewardedAdCallback) {
             this.rewardedAdCallback(false);
@@ -33,7 +33,7 @@ class AdMobService {
           }
         });
         
-        AdMob.addListener(RewardAdPluginEvents.RewardedDismissed, () => {
+        AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
           console.log('Rewarded ad was dismissed');
           // If callback wasn't triggered by a reward, it means the user closed the ad without watching
           if (this.rewardedAdCallback) {
