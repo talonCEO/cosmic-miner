@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -13,6 +12,7 @@ import Achievements from './menu/Achievements';
 import Prestige from './menu/Prestige';
 import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
+import PremiumStore from './menu/PremiumStore';
 
 const GameMenu: React.FC = () => {
   const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
@@ -66,7 +66,10 @@ const GameMenu: React.FC = () => {
   
   return (
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
-      <MenuButton />
+      <div className="space-y-2">
+        <MenuButton />
+        <MenuButton variant="premium" onClick={() => setMenuType("premium")} />
+      </div>
       
       <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[9999]">
         {menuType === "main" && (
@@ -98,6 +101,10 @@ const GameMenu: React.FC = () => {
             onBuyManager={handleBuyManager}
             onBuyArtifact={handleBuyArtifact}
           />
+        )}
+        
+        {menuType === "premium" && (
+          <PremiumStore />
         )}
       </DialogContent>
     </Dialog>
