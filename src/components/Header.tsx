@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -16,14 +15,11 @@ const Header: React.FC = () => {
   React.useEffect(() => {
     const currentUnlockedCount = state.achievements.filter(a => a.unlocked).length;
     
-    // If we've unlocked new achievements
     if (currentUnlockedCount > previousUnlockedCountRef.current) {
-      // Find newly unlocked achievements
       const newlyUnlocked = state.achievements.filter((a, i) => {
         return a.unlocked && i >= previousUnlockedCountRef.current;
       });
       
-      // Show notifications for each
       newlyUnlocked.forEach(achievement => {
         toast({
           title: "Achievement Unlocked!",
@@ -37,7 +33,7 @@ const Header: React.FC = () => {
   }, [state.achievements, toast]);
   
   return (
-    <header className="w-full py-4 px-6 sticky top-0 z-30 mb-6">
+    <header className="w-full py-2 px-6 sticky top-0 z-30 mb-2">
       <div className="flex flex-col max-w-4xl mx-auto">
         <div className="flex justify-between items-center w-full">
           <h1 className="text-xl font-medium flex items-center">
@@ -46,7 +42,6 @@ const Header: React.FC = () => {
             </span>
             <span className="text-white ml-1">Miner</span>
             
-            {/* Animated star next to logo */}
             <span className="inline-block ml-1 animate-pulse">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
@@ -66,7 +61,7 @@ const Header: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex gap-6 mt-3">
+        <div className="flex gap-6 mt-2">
           <div className="flex items-center">
             <Sparkles size={16} className="text-purple-400 mr-1 animate-pulse" />
             <span className="text-sm text-slate-400 mr-1">Essence:</span>
