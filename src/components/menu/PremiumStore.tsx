@@ -9,9 +9,6 @@ import BoostItem from './BoostItem';
 import { gemPackages, BoostItem as BoostItemType } from './types/premiumStore';
 import { useMemo } from 'react';
 
-// Icons for the boost items
-import { Zap, Clock, Target, Gauge, Star, Rocket, Flame, CloudLightning, Compass, Trophy } from 'lucide-react';
-
 interface PremiumStoreProps {
   playerGems: number;
   boostItems: BoostItemType[];
@@ -59,27 +56,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
   const handleRefreshShop = () => {
     // This would be implemented in a real application
   };
-  
-  // Enhance boost items with icons
-  const enhancedBoostItems = useMemo(() => {
-    const icons = [
-      <Zap key="zap" className="w-5 h-5" />,
-      <Gauge key="gauge" className="w-5 h-5" />,
-      <Star key="star" className="w-5 h-5" />,
-      <Rocket key="rocket" className="w-5 h-5" />,
-      <Flame key="flame" className="w-5 h-5" />,
-      <CloudLightning key="cloud" className="w-5 h-5" />,
-      <Compass key="compass" className="w-5 h-5" />,
-      <Trophy key="trophy" className="w-5 h-5" />,
-      <Target key="target" className="w-5 h-5" />,
-      <Clock key="clock" className="w-5 h-5" />
-    ];
-    
-    return boostItems.map((item, index) => ({
-      ...item,
-      icon: icons[index % icons.length]
-    }));
-  }, [boostItems]);
 
   return (
     <>
@@ -122,7 +98,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center bg-amber-900/30 rounded-lg p-2">
-                <Zap size={16} className="text-yellow-400 mr-1" />
+                <Sparkles size={16} className="text-yellow-400 mr-1" />
                 <p className="font-medium text-yellow-300">Premium Boosts</p>
               </div>
               
@@ -147,7 +123,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 Boost Items
               </h3>
               <div className="grid grid-cols-3 gap-3">
-                {enhancedBoostItems.map(item => (
+                {boostItems.map(item => (
                   <BoostItem 
                     key={item.id} 
                     item={item} 

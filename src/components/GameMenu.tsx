@@ -36,10 +36,15 @@ const GameMenu: React.FC = () => {
     if (!open) {
       // Reset to main menu when dialog is closed externally
       setMenuType("none");
-    } else if (menuType === "none") {
-      // When opening, ensure we start with main menu
-      setMenuType("main");
     }
+  };
+  
+  const openMainMenu = () => {
+    setMenuType("main");
+  };
+  
+  const openPremiumStore = () => {
+    setMenuType("premium");
   };
   
   const handlePrestige = () => {
@@ -126,8 +131,8 @@ const GameMenu: React.FC = () => {
   return (
     <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
       <div className="flex flex-col space-y-2">
-        <MenuButton />
-        <MenuButton variant="premium" onClick={() => setMenuType("premium")} />
+        <MenuButton onClick={openMainMenu} />
+        <MenuButton variant="premium" onClick={openPremiumStore} />
       </div>
       
       <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[9999]">
