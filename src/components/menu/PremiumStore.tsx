@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Sparkles, Gem, RotateCcw } from 'lucide-react';
+import { Sparkles, Gem } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -52,10 +51,15 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     return `${hours}h ${minutes}m`;
   }, [earliestRefreshTime]);
   
-  // Function to manually refresh the shop (not implemented yet)
-  const handleRefreshShop = () => {
-    // This would be implemented in a real application
-  };
+  // Select 6 random boost items to display
+  const displayedBoostItems = useMemo(() => {
+    // If there are 6 or fewer items, display all of them
+    if (boostItems.length <= 6) return boostItems;
+    
+    // Otherwise, select 6 random items
+    const shuffled = [...boostItems].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6);
+  }, [boostItems]);
 
   return (
     <>
@@ -74,7 +78,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center bg-amber-900/30 rounded-lg p-2">
                 <Sparkles size={16} className="text-yellow-400 mr-1" />
-                <p className="font-medium text-yellow-300">Premium Currency</p>
               </div>
             </div>
             
@@ -97,23 +100,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
           {/* Section 2: Boost Items */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center bg-amber-900/30 rounded-lg p-2">
-                <Sparkles size={16} className="text-yellow-400 mr-1" />
-                <p className="font-medium text-yellow-300">Premium Boosts</p>
-              </div>
-              
               {formattedRefreshTime && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center ml-auto">
                   <span className="text-xs text-gray-400">Refreshes in: {formattedRefreshTime}</span>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-7 px-2 text-xs"
-                    onClick={handleRefreshShop}
-                  >
-                    <RotateCcw className="w-3 h-3 mr-1" />
-                    Refresh
-                  </Button>
                 </div>
               )}
             </div>
@@ -123,7 +112,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 Boost Items
               </h3>
               <div className="grid grid-cols-3 gap-3">
-                {boostItems.map(item => (
+                {displayedBoostItems.map(item => (
                   <BoostItem 
                     key={item.id} 
                     item={item} 

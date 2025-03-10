@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -79,7 +78,7 @@ const GameMenu: React.FC = () => {
       variant: "default",
     });
   };
-
+  
   // Handle buying gem packages
   const handleBuyGemPackage = (packageId: string, amount: number) => {
     // In a real implementation, this would open the Google Play billing flow
