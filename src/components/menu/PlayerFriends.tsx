@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, Search, Plus } from 'lucide-react';
+import { UserCircle, Search, Plus, UserPlus } from 'lucide-react';
 
 interface Friend {
   id: string;
@@ -56,14 +56,16 @@ const PlayerFriends: React.FC = () => {
           <UserCircle size={16} className="mr-1.5 text-blue-400" />
           Friends
         </h3>
-        <span className="text-xs text-slate-300">{friends.length} online</span>
       </div>
 
       {/* Two-Column Layout */}
       <div className="grid grid-cols-2 gap-4">
         {/* Column 1: Friends List */}
         <div className="space-y-2">
-          <h4 className="text-xs text-slate-300 mb-1">Your Friends</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs text-slate-300">Your Friends</h4>
+            <span className="text-xs text-slate-300">{friends.length} online</span>
+          </div>
           {friends.map(friend => (
             <div key={friend.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
               <div className="relative">
@@ -88,6 +90,14 @@ const PlayerFriends: React.FC = () => {
 
         {/* Column 2: Search Input and Results */}
         <div>
+          {/* Add Friends Heading */}
+          <div className="flex items-center mb-2">
+            <h4 className="text-xs text-slate-300 flex items-center">
+              <UserPlus size={14} className="mr-1 text-green-400" />
+              Add Friends
+            </h4>
+          </div>
+
           {/* Search Input */}
           <div className="flex items-center gap-1 mb-3">
             <Input
