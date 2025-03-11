@@ -35,8 +35,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   };
   
   return (
-    <div className="bg-indigo-600/20 rounded-lg p-4 border border-indigo-500/30 mb-4">
-      <div className="flex items-center mb-3">
+    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
+      <div className="flex">
         <Avatar className="h-16 w-16 border-2 border-amber-500/50">
           <AvatarImage src="/placeholder.svg" alt="Player avatar" />
           <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
@@ -44,55 +44,55 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           </AvatarFallback>
         </Avatar>
         
-        <div className="ml-4 flex-1">
+        <div className="ml-3 flex-1">
           {isEditing ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-1">
               <Input 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-8 text-white bg-indigo-700/50 border-indigo-500"
+                className="h-7 text-white bg-indigo-700/50 border-indigo-500"
                 maxLength={15}
               />
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="h-8 w-8"
+                className="h-7 w-7 p-0"
                 onClick={handleSaveName}
               >
-                <Check size={16} className="text-green-400" />
+                <Check size={14} className="text-green-400" />
               </Button>
             </div>
           ) : (
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">{playerName}</h3>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-semibold text-white">{playerName}</h3>
               <Button 
                 size="icon" 
                 variant="ghost"
-                className="h-8 w-8"
+                className="h-6 w-6 p-0"
                 onClick={() => setIsEditing(true)}
               >
-                <Edit2 size={16} className="text-slate-300" />
+                <Edit2 size={14} className="text-slate-300" />
               </Button>
             </div>
           )}
+          
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+              {playerRank}
+            </div>
+            <div className="text-white text-xs font-medium">
+              Level {playerLevel}
+            </div>
+          </div>
+          
+          <div className="space-y-0.5">
+            <div className="flex justify-between text-xs text-slate-300">
+              <span>XP</span>
+              <span>{playerExp}/{playerMaxExp}</span>
+            </div>
+            <Progress value={expPercentage} className="h-1.5 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
+          </div>
         </div>
-      </div>
-      
-      <div className="flex items-center mb-2">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-2 py-1 rounded mr-2 font-medium">
-          {playerRank}
-        </div>
-        <div className="text-white font-medium">
-          Level {playerLevel}
-        </div>
-      </div>
-      
-      <div className="space-y-1">
-        <div className="flex justify-between text-xs text-slate-300">
-          <span>XP</span>
-          <span>{playerExp}/{playerMaxExp}</span>
-        </div>
-        <Progress value={expPercentage} className="h-2 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
       </div>
     </div>
   );
