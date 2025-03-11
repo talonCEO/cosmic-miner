@@ -12,17 +12,19 @@ interface Friend {
   online: boolean;
 }
 
-// Mock friends data for demonstration
+// Mock friends data with two additional entries
 const mockFriends: Friend[] = [
   { id: '1', name: 'StarGazer', level: 42, rank: 'Galaxy Explorer', online: true },
   { id: '2', name: 'NebulaNinja', level: 37, rank: 'Cosmic Hunter', online: false },
   { id: '3', name: 'AstroAdventurer', level: 45, rank: 'Space Pioneer', online: true },
+  { id: '4', name: 'MeteorMage', level: 33, rank: 'Star Sorcerer', online: false },
+  { id: '5', name: 'OrbitOverlord', level: 50, rank: 'Celestial Ruler', online: true },
 ];
 
 // Mock search results
 const mockSearchResults: Friend[] = [
-  { id: '4', name: 'CosmicCrusader', level: 51, rank: 'Stellar Champion', online: true },
-  { id: '5', name: 'GalacticGamer', level: 29, rank: 'Star Voyager', online: false },
+  { id: '6', name: 'CosmicCrusader', level: 51, rank: 'Stellar Champion', online: true },
+  { id: '7', name: 'GalacticGamer', level: 29, rank: 'Star Voyager', online: false },
 ];
 
 const PlayerFriends: React.FC = () => {
@@ -66,26 +68,28 @@ const PlayerFriends: React.FC = () => {
             <h4 className="text-xs text-slate-300">Your Friends</h4>
             <span className="text-xs text-slate-300">{friends.length} online</span>
           </div>
-          {friends.map(friend => (
-            <div key={friend.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
-              <div className="relative">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt={friend.name} />
-                  <AvatarFallback className="bg-indigo-800/50 text-xs">
-                    {friend.name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.online ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-              </div>
-              <div className="ml-2 flex-1">
-                <div className="text-xs font-medium text-white">{friend.name}</div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-300">Lvl {friend.level}</span>
-                  <span className="text-[10px] text-indigo-300">{friend.rank}</span>
+          <div className="max-h-64 overflow-y-auto space-y-2">
+            {friends.map(friend => (
+              <div key={friend.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
+                <div className="relative">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="/placeholder.svg" alt={friend.name} />
+                    <AvatarFallback className="bg-indigo-800/50 text-xs">
+                      {friend.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.online ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+                </div>
+                <div className="ml-2 flex-1">
+                  <div className="text-xs font-medium text-white">{friend.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-300">Lvl {friend.level}</span>
+                    <span className="text-[10px] text-indigo-300">{friend.rank}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Column 2: Search Input and Results */}
@@ -121,34 +125,39 @@ const PlayerFriends: React.FC = () => {
           {searchResults.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs text-slate-300 mb-1">Search Results</h4>
-              {searchResults.map(result => (
-                <div key={result.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src="/placeholder.svg" alt={result.name} />
-                    <AvatarFallback className="bg-indigo-800/50 text-[10px]">
-                      {result.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="ml-2 flex-1">
-                    <div className="text-xs font-medium text-white">{result.name}</div>
-                    <div className="text-[10px] text-slate-300">Lvl {result.level}</div>
+              <div className="max-h-64 overflow-y-auto space-y-2">
+                {searchResults.map(result => (
+                  <div key={result.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src="/placeholder.svg" alt={result.name} />
+                      <AvatarFallback className="bg-indigo-800/50 text-[10px]">
+                        {result.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="ml-2 flex-1">
+                      <div className="text-xs font-medium text-white">{result.name}</div>
+                      <div className="text-[10px] text-slate-300">Lvl {result.level}</div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0"
+                      onClick={() => handleAddFriend(result)}
+                    >
+                      <Plus size={12} className="text-green-400" />
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0"
-                    onClick={() => handleAddFriend(result)}
-                  >
-                    <Plus size={12} className="text-green-400" />
-                  </Button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
     </div>
   );
+};
+
+export default PlayerFriends;
 };
 
 export default PlayerFriends;
