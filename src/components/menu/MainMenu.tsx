@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { Award, GraduationCap, ShoppingBasket, Network } from 'lucide-react';
+import { Award, GraduationCap, ShoppingBasket, Network, UserCircle } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MenuType } from './types';
 import MuteButton from '../MuteButton';
-import PlayerCard from './PlayerCard';
 import { useGame } from '@/context/GameContext';
 
 interface MainMenuProps {
@@ -14,20 +13,6 @@ interface MainMenuProps {
 
 const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
   const { state, dispatch } = useGame();
-  
-  // Mock player data - in a real implementation, this would come from the game state
-  const playerData = {
-    name: "Cosmic Explorer",
-    rank: "Space Adventurer",
-    level: state.prestigeCount + 1,
-    exp: state.totalEarned % 1000,
-    maxExp: 1000
-  };
-  
-  const handleNameChange = (newName: string) => {
-    console.log("Player name changed to:", newName);
-    // In a real implementation, update this in the game state
-  };
   
   return (
     <>
@@ -42,14 +27,13 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
       </DialogHeader>
       <ScrollArea className="h-[50vh]">
         <div className="flex flex-col p-4 gap-3">
-          <PlayerCard 
-            playerName={playerData.name}
-            playerRank={playerData.rank}
-            playerLevel={playerData.level}
-            playerExp={playerData.exp}
-            playerMaxExp={playerData.maxExp}
-            onNameChange={handleNameChange}
-          />
+          <button 
+            onClick={() => setMenuType("profile")} 
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <UserCircle size={20} />
+            <span>Profile</span>
+          </button>
           
           <button 
             onClick={() => setMenuType("achievements")} 

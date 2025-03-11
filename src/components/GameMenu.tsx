@@ -15,6 +15,7 @@ import Prestige from './menu/Prestige';
 import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
 import PremiumStore from './menu/PremiumStore';
+import Profile from './menu/Profile';
 
 interface GameMenuProps {
   menuType?: 'main' | 'premium';
@@ -161,6 +162,10 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[9999]">
         {menuType === "main" && (
           <MainMenu setMenuType={setMenuType} />
+        )}
+        
+        {menuType === "profile" && (
+          <Profile />
         )}
         
         {menuType === "achievements" && (
