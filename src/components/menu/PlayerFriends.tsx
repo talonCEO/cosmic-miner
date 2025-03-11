@@ -56,7 +56,7 @@ const PlayerFriends: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-white flex items-center">
           <UserCircle size={16} className="mr-1.5 text-blue-400" />
-          Friends
+          Social
         </h3>
       </div>
 
@@ -65,7 +65,7 @@ const PlayerFriends: React.FC = () => {
         {/* Column 1: Friends List */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs text-slate-300">Your Friends</h4>
+            <h4 className="text-xs text-slate-300">Friends List</h4>
             <span className="text-xs text-slate-300">{friends.length} online</span>
           </div>
           <div className="max-h-64 overflow-y-auto space-y-2">
