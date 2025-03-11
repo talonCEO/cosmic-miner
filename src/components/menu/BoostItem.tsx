@@ -61,15 +61,15 @@ const BoostItem: React.FC<BoostItemProps> = ({ item, playerGems, onPurchase }) =
       
       <p className="text-xs font-semibold text-green-400 mb-2 line-clamp-2">{item.effect}</p>
       
-      <div className="flex justify-between items-center mt-auto">
-        <div className="flex items-center gap-1">
+      <div className="flex flex-col mt-auto">
+        <div className="flex items-center gap-1 mb-2">
           <span className="text-yellow-400 text-sm font-bold">{item.cost}</span>
           <span className="text-xs text-yellow-400">gems</span>
         </div>
         <Button
           size="sm"
           variant={canAfford ? "default" : "secondary"}
-          className={`px-2 py-1 h-auto text-xs ${
+          className={`px-2 py-1 h-auto text-xs w-full ${
             item.purchasable && canAfford ? 
               'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600' : 
               'bg-gray-700'
