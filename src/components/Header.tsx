@@ -35,7 +35,7 @@ const Header: React.FC = () => {
   
   return (
     <header className="w-full py-2 px-6 sticky top-0 z-30 mb-2">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto flex flex-col">
         {/* Top row: Title and Main Menu */}
         <div className="flex justify-between items-center w-full">
           <h1 className="text-xl font-medium flex items-center">

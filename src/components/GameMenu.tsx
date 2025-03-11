@@ -84,16 +84,30 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     });
   };
   
-  // Handle buying gem packages
-  const handleBuyGemPackage = (packageId: string, amount: number) => {
-    // In a real implementation, this would open the Google Play billing flow
-    // For now, just add the gems directly
-    setPlayerGems(prev => prev + amount);
-    
-    toast({
-      title: "Gems Purchased!",
-      description: `${amount} gems have been added to your account.`,
-    });
+  // Handle buying gem packages via Google Play
+  const handleBuyGemPackage = async (packageId: string, amount: number) => {
+    try {
+      // In a real implementation with Capacitor, this would use a plugin like
+      // @capacitor/google-play-billing or similar to initiate a purchase
+      
+      // For now, simulate a successful purchase
+      console.log(`Initiating Google Play purchase for package: ${packageId}`);
+      
+      // After successful purchase, update the gems
+      setPlayerGems(prev => prev + amount);
+      
+      toast({
+        title: "Gems Purchased!",
+        description: `${amount} gems have been added to your account.`,
+      });
+    } catch (error) {
+      console.error('Purchase failed:', error);
+      toast({
+        title: "Purchase Failed",
+        description: "There was an error processing your purchase.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Handle buying boost items
@@ -128,6 +142,11 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     
     // Apply the boost effect (in a real implementation)
     // This would modify game state based on the item's effect
+    
+    toast({
+      title: `${item.name} Activated!`,
+      description: `${item.effect} has been applied to your game.`,
+    });
   };
   
   const potentialEssenceReward = calculatePotentialEssenceReward();

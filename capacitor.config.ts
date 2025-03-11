@@ -18,6 +18,10 @@ const config: CapacitorConfig = {
     AdMob: {
       // Replace with your actual AdMob app ID
       androidAppId: 'ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY', 
+    },
+    // Add Google Play Billing configuration
+    GooglePlayBilling: {
+      enabled: true
     }
   }
 };

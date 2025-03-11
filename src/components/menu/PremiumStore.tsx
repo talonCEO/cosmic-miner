@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Sparkles, Gem } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -50,25 +51,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     
     return `${hours}h ${minutes}m`;
   }, [earliestRefreshTime]);
-  
-  // Select 6 random boost items to display
-  const displayedBoostItems = useMemo(() => {
-    // If there are 6 or fewer items, display all of them
-    if (boostItems.length <= 6) return boostItems;
-    
-    // Otherwise, select 6 random items that stay consistent until refresh
-    const shuffled = [...boostItems].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 6);
-  }, [boostItems]);
 
   return (
     <>
-      {/* Fixed Gem Display */}
-      <div className="fixed top-4 left-4 z-50 flex items-center">
-        <Gem className="w-5 h-5 text-yellow-400 mr-1" />
-        <span className="text-yellow-400 font-bold">{playerGems}</span>
-      </div>
-
       <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
         <DialogTitle className="text-xl">Premium Store</DialogTitle>
       </DialogHeader>
@@ -77,9 +62,15 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
         <div className="p-4">
           {/* Section 1: Gem Packages */}
           <div className="mb-6">
-            <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1 mb-4">
-              Gem Packages
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold border-b border-amber-500/30 pb-1">
+                Gem Packages
+              </h3>
+              <div className="flex items-center">
+                <Gem className="w-5 h-5 text-yellow-400 mr-1" />
+                <span className="text-yellow-400 font-bold">{playerGems}</span>
+              </div>
+            </div>
             
             <div className="grid grid-cols-3 gap-3">
               {gemPackages.map(pack => (
@@ -95,7 +86,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
           {/* Section 2: Boost Items */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-center border-b border-amber-500/30 pb-1 w-full">
+              <h3 className="font-semibold border-b border-amber-500/30 pb-1">
                 Boost Items
               </h3>
             </div>
@@ -107,7 +98,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
             )}
             
             <div className="grid grid-cols-3 gap-3">
-              {displayedBoostItems.map(item => (
+              {boostItems.map(item => (
                 <BoostItem 
                   key={item.id} 
                   item={item} 
