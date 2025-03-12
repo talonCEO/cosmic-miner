@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Award, GraduationCap, ShoppingBasket, Network, UserCircle } from 'lucide-react';
+import { Award, GraduationCap, ShoppingBasket, Network, Users } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MenuType } from './types';
@@ -31,7 +31,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
             onClick={() => setMenuType("profile")} 
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
-            <UserCircle size={20} />
+            <Users size={20} />
             <span>Profile</span>
           </button>
           
