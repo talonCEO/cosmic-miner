@@ -26,6 +26,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: BoostItemType | null;
+    isGemPackage?: boolean;
+    gemAmount?: number;
   }>({
     show: false,
     item: null
@@ -64,7 +66,17 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
   const showUnlockAnimation = (item: BoostItemType) => {
     setUnlockAnimation({
       show: true,
-      item
+      item,
+      isGemPackage: false
+    });
+  };
+
+  const showGemUnlockAnimation = (amount: number) => {
+    setUnlockAnimation({
+      show: true,
+      item: null,
+      isGemPackage: true,
+      gemAmount: amount
     });
   };
 
@@ -75,19 +87,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     });
   };
 
-  // Generate placeholder image URL based on item name
-  const getPlaceholderImage = (itemName: string) => {
-    // Use different placeholder images for variety
-    const imageOptions = [
-      'photo-1488590528505-98d2b5aba04b',
-      'photo-1518770660439-4636190af475',
-      'photo-1461749280684-dccba630e2f6'
-    ];
-    
-    // Deterministically choose an image based on the item name
-    const index = itemName.length % imageOptions.length;
-    return `https://images.unsplash.com/${imageOptions[index]}?auto=format&fit=crop&w=400&h=400&q=80`;
-  };
+  // Always use this gem image for consistency
+  const gemImageUrl = 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 
   return (
     <>
@@ -96,7 +97,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       </DialogHeader>
       
       <AnimatePresence>
-        {unlockAnimation.show && unlockAnimation.item && (
+        {unlockAnimation.show && (
           <motion.div
             className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-6"
             initial={{ opacity: 0 }}
@@ -104,6 +105,16 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
+            {/* Close button at the top */}
+            <motion.button
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors"
+              onClick={hideUnlockAnimation}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <X className="w-6 h-6 text-white/70" />
+            </motion.button>
+
             <motion.div
               className="flex flex-col items-center justify-center gap-4 relative"
               initial={{ scale: 0.8, opacity: 0 }}
@@ -116,7 +127,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 delay: 0.1
               }}
             >
-              {/* Placeholder image */}
               <div className="relative">
                 {/* Glow effect */}
                 <motion.div 
@@ -138,13 +148,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                     <motion.div
                       key={i}
                       className="absolute w-2 h-2 rounded-full bg-amber-400"
-                      initial={{ 
-                        x: 0, 
-                        y: 0,
-                        opacity: 0
-                      }}
+                      initial={{ x: 0, y: 0, opacity: 0 }}
                       animate={{ 
-                        x: Math.cos(i * 30 * (Math.PI / 180)) * 100, 
+                        x: Math.cos(i * 30 * (Math.PI / 180)) * 100,
                         y: Math.sin(i * 30 * (Math.PI / 180)) * 100,
                         opacity: [0, 1, 0]
                       }}
@@ -171,8 +177,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                   }}
                 >
                   <img 
-                    src={getPlaceholderImage(unlockAnimation.item.name)} 
-                    alt={unlockAnimation.item.name}
+                    src={unlockAnimation.isGemPackage ? gemImageUrl : (unlockAnimation.item ? getPlaceholderImage(unlockAnimation.item.name) : gemImageUrl)}
+                    alt={unlockAnimation.isGemPackage ? "Gems" : (unlockAnimation.item?.name || "Item")}
                     className="w-full h-full object-cover"
                   />
                 </motion.div>
@@ -185,24 +191,22 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 transition={{ delay: 0.3 }}
               >
                 <h2 className="text-2xl font-bold text-amber-400 mb-2">
-                  {unlockAnimation.item.name}
+                  {unlockAnimation.isGemPackage 
+                    ? `${unlockAnimation.gemAmount} Gems`
+                    : unlockAnimation.item?.name}
                 </h2>
                 <p className="text-green-400 font-semibold mb-8">
-                  {unlockAnimation.item.effect}
+                  {unlockAnimation.isGemPackage 
+                    ? "Added to your account"
+                    : unlockAnimation.item?.effect}
                 </p>
                 
-                <motion.div 
-                  className="p-1 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-md"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <Button 
+                  onClick={hideUnlockAnimation}
+                  className="w-32 bg-slate-700 hover:bg-slate-600 text-white"
                 >
-                  <Button 
-                    onClick={hideUnlockAnimation}
-                    className="bg-slate-900 hover:bg-slate-800 w-32"
-                  >
-                    Close
-                  </Button>
-                </motion.div>
+                  Close
+                </Button>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -228,7 +232,10 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 <GemPackage 
                   key={pack.id} 
                   pack={pack} 
-                  onPurchase={() => onBuyGemPackage(pack.id, pack.amount)}
+                  onPurchase={() => {
+                    onBuyGemPackage(pack.id, pack.amount);
+                    showGemUnlockAnimation(pack.amount);
+                  }}
                 />
               ))}
             </div>
