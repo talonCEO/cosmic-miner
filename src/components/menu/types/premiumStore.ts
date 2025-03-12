@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 
 export interface GemPackage {
@@ -19,6 +18,7 @@ export interface BoostItem {
   purchasable: boolean;
   purchased: boolean;
   refreshTime?: number; // Timestamp when this item will refresh
+  imageSrc?: string; // Add missing imageSrc property
 }
 
 export const gemPackages: GemPackage[] = [
