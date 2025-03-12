@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -43,14 +44,13 @@ const Stats: React.FC = () => {
         </Button>
         
         <div className="grid grid-cols-2 gap-4">
-          {/* Swapped: Drill Power now top-left (was Coins) */}
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
-              <MousePointer size={18} className="text-yellow-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Drill Power</span>
+              <Bitcoin size={18} className="text-green-400 mr-2" />
+              <span className="text-xs font-medium text-slate-300">Coins</span>
             </div>
-            <span className="text-lg font-bold text-yellow-300">{formatNumber(tapPower)}</span>
-            <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
+            <span className="text-lg font-bold text-green-300">{formatNumber(state.coins)}</span>
+            <span className="text-xs text-slate-500 mt-1">Total Earned: {formatNumber(state.totalEarned)}</span>
           </div>
           
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
@@ -71,14 +71,13 @@ const Stats: React.FC = () => {
             <span className="text-xs text-slate-500 mt-1">Boosts All Income</span>
           </div>
           
-          {/* Swapped: Coins now bottom-right (was Drill Power) */}
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
-              <Bitcoin size={18} className="text-green-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Coins</span>
+              <MousePointer size={18} className="text-yellow-400 mr-2" />
+              <span className="text-xs font-medium text-slate-300">Drill Power</span>
             </div>
-            <span className="text-lg font-bold text-green-300">{formatNumber(state.essence)}</span>
-            <span className="text-xs text-slate-500 mt-1">Next Essence: +{formatNumber(calculatePotentialEssenceReward())}</span>
+            <span className="text-lg font-bold text-yellow-300">{formatNumber(tapPower)}</span>
+            <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
           </div>
           
           <div className="col-span-2 flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
@@ -87,7 +86,7 @@ const Stats: React.FC = () => {
               <span className="text-xs font-medium text-slate-300">Prestige Level</span>
             </div>
             <span className="text-lg font-bold text-indigo-300">{state.prestigeCount}</span>
-            <span className="text-xs text-slate-500 mt-1">Total Earned: {formatNumber(state.totalEarned)}</span>
+            <span className="text-xs text-slate-500 mt-1">Next Essence: +{formatNumber(calculatePotentialEssenceReward())}</span>
           </div>
         </div>
       </div>
