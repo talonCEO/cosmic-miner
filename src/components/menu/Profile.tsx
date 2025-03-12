@@ -5,25 +5,40 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
+import { useFirebase } from '@/context/FirebaseContext';
+import { Loader2 } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const { state } = useGame();
+  const { profile, loading, updateUsername } = useFirebase();
   
-  // Mock player data - in a real implementation, this would come from the game state
+  // Handle player name change (updates Firebase profile)
+  const handleNameChange = (newName: string) => {
+    if (profile && newName.trim() !== profile.username) {
+      updateUsername(newName);
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <p className="mt-2 text-slate-300">Loading your profile...</p>
+      </div>
+    );
+  }
+  
+  // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
-    name: "Cosmic Explorer",
-    rank: "Space Adventurer",
-    level: state.prestigeCount + 1,
+    name: profile?.username || "Cosmic Explorer",
+    rank: profile?.rank || "Space Adventurer",
+    level: profile?.level || state.prestigeCount + 1,
     exp: state.totalEarned % 1000,
     maxExp: 1000,
     coins: state.coins,
     gems: 500, // Mock value, would come from state in real implementation
-    essence: state.essence
-  };
-  
-  const handleNameChange = (newName: string) => {
-    console.log("Player name changed to:", newName);
-    // In a real implementation, update this in the game state
+    essence: state.essence,
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
   
   return (
@@ -44,6 +59,7 @@ const Profile: React.FC = () => {
           gems={playerData.gems}
           essence={playerData.essence}
           onNameChange={handleNameChange}
+          userId={playerData.userId}
         />
         
         {/* Friends list component */}

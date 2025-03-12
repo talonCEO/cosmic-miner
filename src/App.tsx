@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import { GameProvider } from "@/context/GameContext";
 import { AdProvider } from "@/context/AdContext";
 import { AudioProvider } from "@/context/AudioContext";
+import { FirebaseProvider } from "@/context/FirebaseContext";
 
 const queryClient = new QueryClient();
 
@@ -29,13 +30,15 @@ const AnimatedRoutes = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <GameProvider>
-                <AdProvider>
-                  <AudioProvider>
-                    <Index />
-                  </AudioProvider>
-                </AdProvider>
-              </GameProvider>
+              <FirebaseProvider>
+                <GameProvider>
+                  <AdProvider>
+                    <AudioProvider>
+                      <Index />
+                    </AudioProvider>
+                  </AdProvider>
+                </GameProvider>
+              </FirebaseProvider>
             </motion.div>
           } 
         />

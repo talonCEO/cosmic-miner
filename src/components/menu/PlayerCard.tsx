@@ -16,6 +16,7 @@ interface PlayerCardProps {
   gems: number;
   essence: number;
   onNameChange: (newName: string) => void;
+  userId?: string; // Make optional for backward compatibility
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -27,15 +28,16 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   coins,
   gems,
   essence,
-  onNameChange
+  onNameChange,
+  userId
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const expPercentage = (playerExp / playerMaxExp) * 100;
   
-  // Generate a random but static UID for the player
-  const playerUID = React.useMemo(() => {
-    return Math.floor(10000000 + Math.random() * 90000000);
+  // Use provided userId or generate a random one
+  const playerUID = userId || React.useMemo(() => {
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
   }, []);
   
   const handleSaveName = () => {
