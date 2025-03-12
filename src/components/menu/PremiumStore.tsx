@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Sparkles, Gem, X } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,6 +8,12 @@ import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
 import { gemPackages, BoostItem as BoostItemType } from './types/premiumStore';
 import { useMemo } from 'react';
+
+// Helper function to get placeholder images based on item name
+const getPlaceholderImage = (itemName: string): string => {
+  // Use a common gem image for all items as a placeholder
+  return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
+};
 
 interface PremiumStoreProps {
   playerGems: number;
