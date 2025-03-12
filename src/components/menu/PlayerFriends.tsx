@@ -1,171 +1,144 @@
-import React, { useState, useEffect } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
-import { Edit2, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle, Search, Plus } from 'lucide-react';
 
-interface PlayerCardProps {
-  playerName: string;
-  playerRank: string;
-  playerLevel: number;
-  playerExp: number;
-  playerMaxExp: number;
-  coins: number;
-  gems: number;
-  essence: number;
-  onNameChange: (newName: string) => void;
+interface Friend {
+  id: string;
+  name: string;
+  level: number;
+  rank: string;
+  online: boolean;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({
-  playerName,
-  playerRank,
-  playerLevel,
-  playerExp,
-  playerMaxExp,
-  coins,
-  gems,
-  essence,
-  onNameChange,
-}) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(playerName);
-  const [animateExp, setAnimateExp] = useState(false);
-  const expPercentage = (playerExp / playerMaxExp) * 100;
+// Mock friends data for demonstration
+const mockFriends: Friend[] = [
+  { id: '1', name: 'StarGazer', level: 42, rank: 'Galaxy Explorer', online: true },
+  { id: '2', name: 'NebulaNinja', level: 37, rank: 'Cosmic Hunter', online: false },
+  { id: '3', name: 'AstroAdventurer', level: 45, rank: 'Space Pioneer', online: true },
+];
 
-  const playerUID = React.useMemo(() => {
-    return Math.floor(10000000 + Math.random() * 90000000);
-  }, []);
+// Mock search results
+const mockSearchResults: Friend[] = [
+  { id: '4', name: 'CosmicCrusader', level: 51, rank: 'Stellar Champion', online: true },
+  { id: '5', name: 'GalacticGamer', level: 29, rank: 'Star Voyager', online: false },
+];
 
-  useEffect(() => {
-    setAnimateExp(true);
-  }, [playerExp]);
+const PlayerFriends: React.FC = () => {
+  const [friends] = useState<Friend[]>(mockFriends);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Friend[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSaveName = () => {
-    if (name.trim()) {
-      onNameChange(name);
-      setIsEditing(false);
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      setIsSearching(true);
+      // Simulate API search
+      setTimeout(() => {
+        setSearchResults(mockSearchResults.filter(friend =>
+          friend.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ));
+        setIsSearching(false);
+      }, 500);
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(1)}K`;
-    }
-    return amount.toString();
+  const handleAddFriend = (friend: Friend) => {
+    console.log(`Added friend: ${friend.name}`);
+    // Here you would update the actual friends list
   };
 
   return (
-    <motion.div
-      className="w-full bg-gradient-to-br from-indigo-900/80 to-indigo-700/80 rounded-xl p-4 border border-indigo-400/20 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-shadow duration-300"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="flex items-center space-x-4 w-full flex-wrap">
-        {/* Left: Avatar */}
-        <div className="relative flex-shrink-0">
-          <Avatar className="h-16 w-16 md:h-20 md:w-20 border-4 border-amber-400/60 rounded-full shadow-md shadow-amber-500/30 hover:scale-105 transition-transform duration-200">
-            <AvatarImage src="/placeholder.svg" alt="Player avatar" />
-            <AvatarFallback className="bg-indigo-600/60 text-white text-xl font-semibold">
-              {playerName.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
-            Lvl {playerLevel}
-          </div>
+    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-white flex items-center">
+          <UserCircle size={16} className="mr-1.5 text-blue-400" />
+          Friends
+        </h3>
+        <span className="text-xs text-slate-300">{friends.length} online</span>
+      </div>
+
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Column 1: Friends List */}
+        <div className="space-y-2">
+          <h4 className="text-xs text-slate-300 mb-1">Your Friends</h4>
+          {friends.map(friend => (
+            <div key={friend.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
+              <div className="relative">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/placeholder.svg" alt={friend.name} />
+                  <AvatarFallback className="bg-indigo-800/50 text-xs">
+                    {friend.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.online ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+              </div>
+              <div className="ml-2 flex-1">
+                <div className="text-xs font-medium text-white">{friend.name}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-300">Lvl {friend.level}</span>
+                  <span className="text-[10px] text-indigo-300">{friend.rank}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Middle: Player Info */}
-        <div className="flex-1 min-w-0">
-          {isEditing ? (
-            <div className="flex items-center gap-2 mb-2 w-full">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-8 text-white bg-indigo-800/50 border-indigo-400/50 rounded-md shadow-inner w-full max-w-[200px]"
-                maxLength={15}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 p-0 bg-green-500/20 hover:bg-green-500/40 rounded-full flex-shrink-0"
-                onClick={handleSaveName}
-              >
-                <Check size={16} className="text-green-300" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center mb-2 w-full">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 p-0 mr-2 hover:bg-indigo-500/30 rounded-full flex-shrink-0"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 size={16} className="text-indigo-300" />
-              </Button>
-              <h3 className="text-lg font-bold text-white tracking-tight truncate">{playerName}</h3>
-              <span className="text-sm text-indigo-300/50 ml-2 font-mono flex-shrink-0">#{playerUID}</span>
+        {/* Column 2: Search Input and Results */}
+        <div>
+          {/* Search Input */}
+          <div className="flex items-center gap-1 mb-3">
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search friends..."
+              className="h-8 text-xs bg-indigo-900/30 border-indigo-600/50 text-white"
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={handleSearch}
+              disabled={isSearching}
+            >
+              <Search size={14} className="text-slate-300" />
+            </Button>
+          </div>
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-xs text-slate-300 mb-1">Search Results</h4>
+              {searchResults.map(result => (
+                <div key={result.id} className="flex items-center p-1.5 bg-indigo-700/30 rounded-md">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src="/placeholder.svg" alt={result.name} />
+                    <AvatarFallback className="bg-indigo-800/50 text-[10px]">
+                      {result.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="ml-2 flex-1">
+                    <div className="text-xs font-medium text-white">{result.name}</div>
+                    <div className="text-[10px] text-slate-300">Lvl {result.level}</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0"
+                    onClick={() => handleAddFriend(result)}
+                  >
+                    <Plus size={12} className="text-green-400" />
+                  </Button>
+                </div>
+              ))}
             </div>
           )}
-
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-500 text-white text-sm px-2 py-1 rounded-md font-semibold shadow shadow-purple-500/30 truncate">
-              {playerRank}
-            </div>
-          </div>
-
-          <div className="space-y-1 w-full">
-            <div className="flex justify-between text-xs text-indigo-200">
-              <span>XP</span>
-              <span>{playerExp}/{playerMaxExp}</span>
-            </div>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${animateExp ? expPercentage : 0}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-              onAnimationComplete={() => setAnimateExp(false)}
-            >
-              <Progress
-                value={100}
-                className="h-2 bg-indigo-800/50 rounded-full overflow-hidden w-full"
-                indicatorClassName="bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500 shadow-inner"
-              />
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Right: Currency Info */}
-        <div className="flex flex-col space-y-2 w-full sm:w-auto sm:max-w-[120px] bg-indigo-800/30 p-3 rounded-lg border border-indigo-500/20 shadow-inner">
-          <div className="flex items-center justify-between">
-            <span className="text-amber-300 text-sm font-semibold flex items-center truncate">
-              <span className="w-2 h-2 bg-amber-400 rounded-full mr-1 flex-shrink-0" />
-              Coins
-            </span>
-            <span className="text-white text-sm font-mono">{formatCurrency(coins)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-purple-300 text-sm font-semibold flex items-center truncate">
-              <span className="w-2 h-2 bg-purple-400 rounded-full mr-1 flex-shrink-0" />
-              Gems
-            </span>
-            <span className="text-white text-sm font-mono">{formatCurrency(gems)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-blue-300 text-sm font-semibold flex items-center truncate">
-              <span className="w-2 h-2 bg-blue-400 rounded-full mr-1 flex-shrink-0" />
-              Essence
-            </span>
-            <span className="text-white text-sm font-mono">{formatCurrency(essence)}</span>
-          </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
-export default PlayerCard;
+export default PlayerFriends;
