@@ -158,6 +158,4 @@ const PlayerFriends: React.FC = () => {
 };
 
 export default PlayerFriends;
-};
 
-export default PlayerFriends;
