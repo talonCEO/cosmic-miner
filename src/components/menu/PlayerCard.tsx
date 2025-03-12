@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Check } from 'lucide-react';
-import { motion } from 'framer-motion'; // For animations
+import { motion } from 'framer-motion';
 
 interface PlayerCardProps {
   playerName: string;
@@ -34,12 +34,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [animateExp, setAnimateExp] = useState(false);
   const expPercentage = (playerExp / playerMaxExp) * 100;
 
-  // Generate a random but static UID for the player
   const playerUID = React.useMemo(() => {
     return Math.floor(10000000 + Math.random() * 90000000);
   }, []);
 
-  // Trigger XP bar animation on mount or exp change
   useEffect(() => {
     setAnimateExp(true);
   }, [playerExp]);
@@ -62,15 +60,15 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
   return (
     <motion.div
-      className="bg-gradient-to-br from-indigo-900/80 to-indigo-700/80 rounded-xl p-4 border border-indigo-400/20 shadow-lg shadow-indigo-500/10 mb-4 hover:shadow-indigo-500/20 transition-shadow duration-300"
+      className="w-full bg-gradient-to-br from-indigo-900/80 to-indigo-700/80 rounded-xl p-4 border border-indigo-400/20 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-shadow duration-300"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 w-full flex-wrap">
         {/* Left: Avatar */}
-        <div className="relative">
-          <Avatar className="h-20 w-20 border-4 border-amber-400/60 rounded-full shadow-md shadow-amber-500/30 hover:scale-105 transition-transform duration-200">
+        <div className="relative flex-shrink-0">
+          <Avatar className="h-16 w-16 md:h-20 md:w-20 border-4 border-amber-400/60 rounded-full shadow-md shadow-amber-500/30 hover:scale-105 transition-transform duration-200">
             <AvatarImage src="/placeholder.svg" alt="Player avatar" />
             <AvatarFallback className="bg-indigo-600/60 text-white text-xl font-semibold">
               {playerName.substring(0, 2).toUpperCase()}
@@ -82,46 +80,46 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
 
         {/* Middle: Player Info */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {isEditing ? (
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 w-full">
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-8 text-white bg-indigo-800/50 border-indigo-400/50 rounded-md shadow-inner"
+                className="h-8 text-white bg-indigo-800/50 border-indigo-400/50 rounded-md shadow-inner w-full max-w-[200px]"
                 maxLength={15}
               />
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8 p-0 bg-green-500/20 hover:bg-green-500/40 rounded-full"
+                className="h-8 w-8 p-0 bg-green-500/20 hover:bg-green-500/40 rounded-full flex-shrink-0"
                 onClick={handleSaveName}
               >
                 <Check size={16} className="text-green-300" />
               </Button>
             </div>
           ) : (
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-2 w-full">
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-7 w-7 p-0 mr-2 hover:bg-indigo-500/30 rounded-full"
+                className="h-7 w-7 p-0 mr-2 hover:bg-indigo-500/30 rounded-full flex-shrink-0"
                 onClick={() => setIsEditing(true)}
               >
                 <Edit2 size={16} className="text-indigo-300" />
               </Button>
-              <h3 className="text-lg font-bold text-white tracking-tight">{playerName}</h3>
-              <span className="text-sm text-indigo-300/50 ml-2 font-mono">#{playerUID}</span>
+              <h3 className="text-lg font-bold text-white tracking-tight truncate">{playerName}</h3>
+              <span className="text-sm text-indigo-300/50 ml-2 font-mono flex-shrink-0">#{playerUID}</span>
             </div>
           )}
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-500 text-white text-sm px-2 py-1 rounded-md font-semibold shadow shadow-purple-500/30">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-500 text-white text-sm px-2 py-1 rounded-md font-semibold shadow shadow-purple-500/30 truncate">
               {playerRank}
             </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 w-full">
             <div className="flex justify-between text-xs text-indigo-200">
               <span>XP</span>
               <span>{playerExp}/{playerMaxExp}</span>
@@ -133,8 +131,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               onAnimationComplete={() => setAnimateExp(false)}
             >
               <Progress
-                value={100} // Set to 100 because the animation handles the width
-                className="h-2 bg-indigo-800/50 rounded-full overflow-hidden"
+                value={100}
+                className="h-2 bg-indigo-800/50 rounded-full overflow-hidden w-full"
                 indicatorClassName="bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500 shadow-inner"
               />
             </motion.div>
@@ -142,24 +140,24 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
 
         {/* Right: Currency Info */}
-        <div className="flex flex-col space-y-2 min-w-24 bg-indigo-800/30 p-3 rounded-lg border border-indigo-500/20 shadow-inner">
+        <div className="flex flex-col space-y-2 w-full sm:w-auto sm:max-w-[120px] bg-indigo-800/30 p-3 rounded-lg border border-indigo-500/20 shadow-inner">
           <div className="flex items-center justify-between">
-            <span className="text-amber-300 text-sm font-semibold flex items-center">
-              <span className="w-2 h-2 bg-amber-400 rounded-full mr-1" />
+            <span className="text-amber-300 text-sm font-semibold flex items-center truncate">
+              <span className="w-2 h-2 bg-amber-400 rounded-full mr-1 flex-shrink-0" />
               Coins
             </span>
             <span className="text-white text-sm font-mono">{formatCurrency(coins)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-purple-300 text-sm font-semibold flex items-center">
-              <span className="w-2 h-2 bg-purple-400 rounded-full mr-1" />
+            <span className="text-purple-300 text-sm font-semibold flex items-center truncate">
+              <span className="w-2 h-2 bg-purple-400 rounded-full mr-1 flex-shrink-0" />
               Gems
             </span>
             <span className="text-white text-sm font-mono">{formatCurrency(gems)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-blue-300 text-sm font-semibold flex items-center">
-              <span className="w-2 h-2 bg-blue-400 rounded-full mr-1" />
+            <span className="text-blue-300 text-sm font-semibold flex items-center truncate">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mr-1 flex-shrink-0" />
               Essence
             </span>
             <span className="text-white text-sm font-mono">{formatCurrency(essence)}</span>
