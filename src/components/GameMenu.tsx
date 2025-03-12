@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent
 } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
-import { useToast } from '@/components/ui/use-toast';
 import { MenuType } from './menu/types';
 import { BoostItem as BoostItemType, initialBoostItems } from './menu/types/premiumStore';
 import MenuButton from './menu/MenuButton';
@@ -16,6 +14,8 @@ import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
 import PremiumStore from './menu/PremiumStore';
 import Profile from './menu/Profile';
+import UnlockAnimation from './UnlockAnimation';
+import { Sparkles, Shield, Zap, Star, Gem, X } from 'lucide-react';
 
 interface GameMenuProps {
   menuType?: 'main' | 'premium';
@@ -26,7 +26,20 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const [menuType, setMenuType] = useState<MenuType>("none");
   const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
   const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
-  const { toast } = useToast();
+  
+  // Animation state
+  const [unlockAnimation, setUnlockAnimation] = useState<{
+    show: boolean;
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    imageSrc?: string;
+  }>({
+    show: false,
+    title: "",
+    description: "",
+    icon: <Star className="h-12 w-12" />
+  });
   
   // Initialize boost items with icons on component mount
   useEffect(() => {
@@ -52,37 +65,62 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     }
   };
   
+  const showUnlockAnimation = (title: string, description: string, icon: React.ReactNode, imageSrc?: string) => {
+    setUnlockAnimation({
+      show: true,
+      title,
+      description,
+      icon,
+      imageSrc
+    });
+  };
+  
+  const hideUnlockAnimation = () => {
+    setUnlockAnimation(prev => ({
+      ...prev,
+      show: false
+    }));
+  };
+  
   const handlePrestige = () => {
     const essenceReward = calculatePotentialEssenceReward();
     
     prestige();
     setMenuType("none");
     
-    toast({
-      title: "Prestige Complete!",
-      description: `Gained ${essenceReward} essence. All progress has been reset.`,
-      variant: "default",
-    });
+    showUnlockAnimation(
+      "Prestige Complete!",
+      `Gained ${essenceReward} essence. All progress has been reset.`,
+      <Sparkles className="h-12 w-12" />
+    );
   };
 
-  const handleBuyManager = (managerId: string, name: string) => {
+  const handleBuyManager = (managerId: string, name: string, description: string) => {
     buyManager(managerId);
     
-    toast({
-      title: `${name} Hired!`,
-      description: `Manager added to your team.`,
-      variant: "default",
-    });
+    // Find the manager to get its avatar for the animation
+    const manager = state.managers.find(m => m.id === managerId);
+    
+    showUnlockAnimation(
+      `${name} Hired!`,
+      description || "Manager added to your team.",
+      <Shield className="h-12 w-12" />,
+      manager?.avatar
+    );
   };
 
-  const handleBuyArtifact = (artifactId: string, name: string) => {
+  const handleBuyArtifact = (artifactId: string, name: string, description: string) => {
     buyArtifact(artifactId);
     
-    toast({
-      title: `${name} Acquired!`,
-      description: `Artifact added to your collection.`,
-      variant: "default",
-    });
+    // Find the artifact to get its avatar for the animation
+    const artifact = state.artifacts.find(a => a.id === artifactId);
+    
+    showUnlockAnimation(
+      `${name} Acquired!`,
+      description || "Artifact added to your collection.",
+      <Zap className="h-12 w-12" />,
+      artifact?.avatar
+    );
   };
   
   // Handle buying gem packages via Google Play
@@ -97,17 +135,20 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       // After successful purchase, update the gems
       setPlayerGems(prev => prev + amount);
       
-      toast({
-        title: "Gems Purchased!",
-        description: `${amount} gems have been added to your account.`,
-      });
+      // Show animation instead of toast
+      showUnlockAnimation(
+        `${amount} Gems Purchased!`,
+        `Gems have been added to your account.`,
+        <Gem className="h-12 w-12" />
+      );
     } catch (error) {
       console.error('Purchase failed:', error);
-      toast({
-        title: "Purchase Failed",
-        description: "There was an error processing your purchase.",
-        variant: "destructive",
-      });
+      // Show error animation
+      showUnlockAnimation(
+        "Purchase Failed",
+        "There was an error processing your purchase.",
+        <X className="h-12 w-12 text-red-500" />
+      );
     }
   };
 
@@ -118,11 +159,11 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     
     // Check if player has enough gems
     if (playerGems < item.cost) {
-      toast({
-        title: "Not Enough Gems",
-        description: `You need ${item.cost - playerGems} more gems to purchase this.`,
-        variant: "destructive",
-      });
+      showUnlockAnimation(
+        "Not Enough Gems",
+        `You need ${item.cost - playerGems} more gems to purchase this.`,
+        <Gem className="h-12 w-12 text-red-500" />
+      );
       return;
     }
     
@@ -141,8 +182,13 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     // Deduct gems
     setPlayerGems(prev => prev - item.cost);
     
-    // Apply the boost effect (in a real implementation)
-    // This would modify game state based on the item's effect
+    // Show animation for the boost item
+    showUnlockAnimation(
+      item.name,
+      item.effect,
+      <Star className="h-12 w-12" />,
+      item.imageSrc
+    );
   };
   
   const potentialEssenceReward = calculatePotentialEssenceReward();
@@ -199,6 +245,18 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
           />
         )}
       </DialogContent>
+      
+      {/* Global Animation Popup */}
+      <UnlockAnimation
+        show={unlockAnimation.show}
+        title={unlockAnimation.title}
+        description={unlockAnimation.description}
+        icon={unlockAnimation.icon}
+        imageSrc={unlockAnimation.imageSrc}
+        onClose={hideUnlockAnimation}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
     </Dialog>
   );
 };
