@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Sparkles, Gem, X } from 'lucide-react';
+import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
 
   // Calculate when the shop will refresh - 8 hours from the earliest purchased item
   const earliestRefreshTime = useMemo(() => {
-    const purchasedItems = boostItems.filter(item => item.purchased && item.refreshTime);
+    const purchasedItems = boostItems.filter(item => item.purchased && item.refreshTime && !item.isPermanent);
     if (purchasedItems.length === 0) return null;
     
     const times = purchasedItems
@@ -74,6 +75,11 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       item,
       isGemPackage: false
     });
+    
+    // Auto-hide the animation after 3 seconds
+    setTimeout(() => {
+      hideUnlockAnimation();
+    }, 3000);
   };
 
   const showGemUnlockAnimation = (amount: number) => {
@@ -83,6 +89,11 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       isGemPackage: true,
       gemAmount: amount
     });
+    
+    // Auto-hide the animation after 3 seconds
+    setTimeout(() => {
+      hideUnlockAnimation();
+    }, 3000);
   };
 
   const hideUnlockAnimation = () => {
@@ -92,8 +103,36 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     });
   };
 
+  // Map of boost IDs to icons
+  const boostIcons = {
+    boost_no_ads: <Ban className="w-5 h-5 text-yellow-400" />,
+    boost_quantum_accelerator: <Zap className="w-5 h-5 text-yellow-400" />,
+    boost_nebula_enhancer: <ArrowUp className="w-5 h-5 text-yellow-400" />,
+    boost_cosmic_catalyst: <Gauge className="w-5 h-5 text-yellow-400" />,
+    boost_void_extractor: <Clock className="w-5 h-5 text-yellow-400" />,
+    boost_supernova_surge: <Star className="w-5 h-5 text-yellow-400" />,
+    boost_galactic_magnet: <Magnet className="w-5 h-5 text-yellow-400" />,
+    boost_temporal_distortion: <Clock className="w-5 h-5 text-yellow-400" />,
+    boost_stellar_fusion: <Bolt className="w-5 h-5 text-yellow-400" />,
+    boost_dark_matter_infusion: <Target className="w-5 h-5 text-yellow-400" />,
+    boost_asteroid_locator: <Compass className="w-5 h-5 text-yellow-400" />,
+    boost_wormhole_generator: <Rocket className="w-5 h-5 text-yellow-400" />
+  };
+
   // Always use this gem image for consistency
   const gemImageUrl = 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
+
+  // Ensure no ads boost is always first
+  const sortedBoostItems = useMemo(() => {
+    return boostItems.sort((a, b) => {
+      if (a.id === 'boost_no_ads') return -1;
+      if (b.id === 'boost_no_ads') return 1;
+      return 0;
+    }).map(item => ({
+      ...item,
+      icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />
+    }));
+  }, [boostItems]);
 
   return (
     <>
@@ -110,16 +149,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Close button at the top */}
-            <motion.button
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors"
-              onClick={hideUnlockAnimation}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <X className="w-6 h-6 text-white/70" />
-            </motion.button>
-
             <motion.div
               className="flex flex-col items-center justify-center gap-4 relative"
               initial={{ scale: 0.8, opacity: 0 }}
@@ -205,13 +234,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                     ? "Added to your account"
                     : unlockAnimation.item?.effect}
                 </p>
-                
-                <Button 
-                  onClick={hideUnlockAnimation}
-                  className="w-32 bg-slate-700 hover:bg-slate-600 text-white"
-                >
-                  Close
-                </Button>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -261,12 +283,15 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
             )}
             
             <div className="grid grid-cols-3 gap-3">
-              {boostItems.map(item => (
+              {sortedBoostItems.map(item => (
                 <BoostItem 
                   key={item.id} 
                   item={item} 
                   playerGems={playerGems}
-                  onPurchase={onBuyBoostItem}
+                  onPurchase={(itemId) => {
+                    onBuyBoostItem(itemId);
+                    showUnlockAnimation(item);
+                  }}
                   showUnlockAnimation={showUnlockAnimation}
                 />
               ))}

@@ -22,20 +22,10 @@ const BoostItem: React.FC<BoostItemProps> = ({
   
   const handlePurchase = () => {
     if (!item.purchasable) {
-      toast({
-        title: "Item Unavailable",
-        description: "This item will become available again after the shop refreshes.",
-        variant: "destructive",
-      });
       return;
     }
     
     if (!canAfford) {
-      toast({
-        title: "Not Enough Gems",
-        description: `You need ${item.cost - playerGems} more gems to purchase this item.`,
-        variant: "destructive",
-      });
       return;
     }
     
@@ -43,13 +33,16 @@ const BoostItem: React.FC<BoostItemProps> = ({
     showUnlockAnimation(item);
   };
 
+  // For permanent items that have been purchased
+  const isPermanentAndPurchased = item.isPermanent && item.purchased;
+
   return (
     <div 
       className={`flex flex-col p-3 rounded-lg border ${
         item.purchasable ? 
           'border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-yellow-900/40' : 
           'border-gray-500/30 bg-gradient-to-br from-gray-900/40 to-gray-800/40'
-      } ${!item.purchasable ? 'opacity-50' : 'hover:from-amber-900/50 hover:to-yellow-900/50'} transition-colors`}
+      } ${!item.purchasable || isPermanentAndPurchased ? 'opacity-50' : 'hover:from-amber-900/50 hover:to-yellow-900/50'} transition-colors`}
     >
       <div className="flex items-start gap-2 mb-2">
         <div className="p-2 rounded-md bg-amber-900/50 text-yellow-400 shrink-0">
@@ -72,14 +65,15 @@ const BoostItem: React.FC<BoostItemProps> = ({
           size="sm"
           variant={canAfford ? "default" : "secondary"}
           className={`px-2 py-1 h-auto text-xs w-full ${
-            item.purchasable && canAfford ? 
+            item.purchasable && canAfford && !isPermanentAndPurchased ? 
               'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600' : 
               'bg-gray-700'
           }`}
           onClick={handlePurchase}
-          disabled={!item.purchasable || !canAfford}
+          disabled={!item.purchasable || !canAfford || isPermanentAndPurchased}
         >
-          {item.purchased ? "Purchased" : "Purchase"}
+          {isPermanentAndPurchased ? "Purchased" : 
+            item.purchased ? "Purchased" : "Purchase"}
         </Button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -7,7 +8,8 @@ import {
   Sparkles, 
   Gauge, 
   Recycle, 
-  BarChart 
+  BarChart,
+  Gem 
 } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
@@ -72,11 +74,11 @@ const Stats: React.FC = () => {
           
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
-              <Bitcoin size={18} className="text-green-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Essence</span>
+              <Gem size={18} className="text-green-400 mr-2" />
+              <span className="text-xs font-medium text-slate-300">Gems</span>
             </div>
-            <span className="text-lg font-bold text-green-300">{formatNumber(state.essence)}</span>
-            <span className="text-xs text-slate-500 mt-1">+{formatNumber(calculatePotentialEssenceReward())}</span>
+            <span className="text-lg font-bold text-green-300">500</span>
+            <span className="text-xs text-slate-500 mt-1">Premium Currency</span>
           </div>
           
           <div className="col-span-2 flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">

@@ -92,17 +92,27 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       return;
     }
     
-    // Mark the item as purchased and no longer purchasable
-    // Set refresh time to 8 hours from now
-    const refreshTime = Date.now() + (8 * 60 * 60 * 1000);
-    
-    setBoostItems(items => 
-      items.map(i => 
-        i.id === itemId 
-          ? { ...i, purchased: true, purchasable: false, refreshTime } 
-          : i
-      )
-    );
+    // For the "No Ads" item, mark it as permanently purchased
+    if (item.id === 'boost_no_ads') {
+      setBoostItems(items => 
+        items.map(i => 
+          i.id === itemId 
+            ? { ...i, purchased: true, purchasable: false } 
+            : i
+        )
+      );
+    } else {
+      // For other items, mark as purchased and set refresh time
+      const refreshTime = Date.now() + (8 * 60 * 60 * 1000);
+      
+      setBoostItems(items => 
+        items.map(i => 
+          i.id === itemId 
+            ? { ...i, purchased: true, purchasable: false, refreshTime } 
+            : i
+        )
+      );
+    }
     
     // Deduct gems
     setPlayerGems(prev => prev - item.cost);

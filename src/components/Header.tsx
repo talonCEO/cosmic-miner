@@ -3,7 +3,7 @@ import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
-import { Sparkles, Bitcoin } from 'lucide-react';
+import { Gem, Bitcoin } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { state } = useGame();
@@ -42,9 +42,9 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center mt-2">
           <div className="flex gap-6">
             <div className="flex items-center">
-              <Sparkles size={16} className="text-purple-400 mr-1 animate-pulse" />
-              <span className="text-sm text-slate-400 mr-1">Essence:</span>
-              <p className="text-lg font-medium text-purple-300">{formatNumber(state.essence)}</p>
+              <Gem size={16} className="text-purple-400 mr-1 animate-pulse" />
+              <span className="text-sm text-slate-400 mr-1">Gems:</span>
+              <p className="text-lg font-medium text-purple-300">500</p>
             </div>
             
             <div className="flex items-center">

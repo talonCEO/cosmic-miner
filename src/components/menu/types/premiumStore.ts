@@ -19,6 +19,8 @@ export interface BoostItem {
   purchasable: boolean;
   purchased: boolean;
   refreshTime?: number; // Timestamp when this item will refresh
+  isPermanent?: boolean; // If true, this item can only be purchased once and is permanently enabled
+  imageSrc?: string; // Optional image source for the boost
 }
 
 export const gemPackages: GemPackage[] = [
@@ -68,6 +70,17 @@ export const gemPackages: GemPackage[] = [
 
 // Initial boost items with default values (not purchased, refreshable)
 export const initialBoostItems = [
+  {
+    id: "boost_no_ads",
+    name: "No Ads",
+    description: "Permanently removes all ads from the game",
+    effect: "Never see ads again!",
+    cost: 250,
+    icon: null, // Will be set in PremiumStore component
+    purchasable: true,
+    purchased: false,
+    isPermanent: true
+  },
   {
     id: "boost_quantum_accelerator",
     name: "Quantum Accelerator",
@@ -164,6 +177,16 @@ export const initialBoostItems = [
     description: "Advanced technology that locates resource-rich asteroids",
     effect: "Instant boost of 5000 coins and +10% income for 4 hours",
     cost: 160,
+    icon: null,
+    purchasable: true,
+    purchased: false
+  },
+  {
+    id: "boost_wormhole_generator",
+    name: "Wormhole Generator",
+    description: "Creates temporary shortcuts to distant resource-rich galaxies",
+    effect: "All resource collection is tripled for 1 hour",
+    cost: 220,
     icon: null,
     purchasable: true,
     purchased: false
