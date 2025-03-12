@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -35,8 +36,6 @@ export interface UserProfile {
   essence: number;
   achievements: string[];
   friends: string[];
-  mmr?: number; // Add missing mmr property
-  leaderboardRank?: number; // Add missing leaderboardRank property
 }
 
 interface FirebaseContextType {
@@ -99,9 +98,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
               coins: 0,
               essence: 0,
               achievements: [],
-              friends: [],
-              mmr: 1000, // Initialize with default MMR
-              leaderboardRank: 0 // Initialize with default leaderboard rank (0 = unranked)
+              friends: []
             };
             
             await setDoc(userDocRef, newUserProfile);
