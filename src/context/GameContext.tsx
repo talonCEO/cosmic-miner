@@ -9,6 +9,7 @@ import { adMobService } from '@/services/AdMobService';
 import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
+import { StorageService } from '@/services/StorageService';
 
 // Achievement interface
 export interface Achievement {
@@ -96,7 +97,11 @@ type GameAction =
   | { type: 'ADD_SKILL_POINTS'; amount: number }
   | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
   | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
-  | { type: 'HANDLE_CLICK'; };
+  | { type: 'HANDLE_CLICK'; }
+  | { type: 'RESTORE_STATE_PROPERTY'; property: keyof GameState; value: any }
+  | { type: 'RESTORE_UPGRADES'; upgrades: Upgrade[] }
+  | { type: 'RESTORE_ABILITIES'; abilities: Ability[] }
+  | { type: 'RESTORE_ACHIEVEMENTS'; achievements: Achievement[] };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -723,6 +728,30 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         totalEarned: state.totalEarned + totalClickAmount
       };
     }
+    case 'RESTORE_STATE_PROPERTY': {
+      return {
+        ...state,
+        [action.property]: action.value
+      };
+    }
+    case 'RESTORE_UPGRADES': {
+      return {
+        ...state,
+        upgrades: action.upgrades
+      };
+    }
+    case 'RESTORE_ABILITIES': {
+      return {
+        ...state,
+        abilities: action.abilities
+      };
+    }
+    case 'RESTORE_ACHIEVEMENTS': {
+      return {
+        ...state,
+        achievements: action.achievements
+      };
+    }
     default:
       return state;
   }
@@ -757,8 +786,92 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const { toast } = useToast();
   
-  // Load AdMob on initial render
+  // Load saved game state on initial render
   useEffect(() => {
+    const loadSavedGameState = async () => {
+      try {
+        const savedState = await StorageService.loadGameState();
+        
+        if (savedState) {
+          // Restore saved abilities with full ability objects including icons
+          const restoredAbilities = initialState.abilities.map(ability => {
+            const savedAbility = savedState.abilities?.find(a => a.id === ability.id);
+            if (savedAbility) {
+              return {
+                ...ability,
+                unlocked: savedAbility.unlocked
+              };
+            }
+            return ability;
+          });
+          
+          // Restore saved upgrades with full upgrade objects
+          const restoredUpgrades = initialState.upgrades.map(upgrade => {
+            const savedUpgrade = savedState.upgrades?.find(u => u.id === upgrade.id);
+            if (savedUpgrade) {
+              return {
+                ...savedUpgrade,
+                icon: upgrade.icon, // Restore icon from initial state
+                description: upgrade.description // Restore description from initial state
+              };
+            }
+            return upgrade;
+          });
+          
+          // Apply saved state over initial state
+          const restoredState: GameState = {
+            ...initialState,
+            ...savedState,
+            abilities: restoredAbilities,
+            upgrades: restoredUpgrades,
+            achievements: initialState.achievements.map(achievement => {
+              const savedAchievement = savedState.achievements?.find(a => a.id === achievement.id);
+              return {
+                ...achievement,
+                unlocked: savedAchievement?.unlocked || false
+              };
+            }),
+            managers: initialState.managers,
+            artifacts: initialState.artifacts
+          };
+          
+          // Dispatch restored state to replace initial state
+          for (const key in restoredState) {
+            if (key !== 'abilities' && key !== 'upgrades' && key !== 'achievements') {
+              dispatch({ 
+                type: 'RESTORE_STATE_PROPERTY', 
+                property: key as keyof GameState, 
+                value: restoredState[key as keyof GameState] 
+              });
+            }
+          }
+          
+          // Restore upgraded separately to maintain references
+          dispatch({ type: 'RESTORE_UPGRADES', upgrades: restoredState.upgrades });
+          
+          // Restore abilities separately to maintain references
+          dispatch({ type: 'RESTORE_ABILITIES', abilities: restoredState.abilities });
+          
+          // Restore achievements separately
+          dispatch({ type: 'RESTORE_ACHIEVEMENTS', achievements: restoredState.achievements });
+          
+          console.log('Game state restored from storage');
+          
+          // Show toast notification
+          toast({
+            title: "Game Loaded",
+            description: "Your saved game has been loaded successfully!",
+            duration: 3000,
+          });
+        }
+      } catch (error) {
+        console.error('Error loading saved game state:', error);
+      }
+    };
+    
+    loadSavedGameState();
+    
+    // Load AdMob on initial render
     const initAds = async () => {
       try {
         await adMobService.initialize();
@@ -769,7 +882,20 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
     
     initAds();
-  }, []);
+  }, [toast]);
+  
+  // Save game state periodically
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+      StorageService.saveGameState(state);
+    }, 30000); // Save every 30 seconds
+    
+    // Also save when component unmounts
+    return () => {
+      clearInterval(saveInterval);
+      StorageService.saveGameState(state);
+    };
+  }, [state]);
   
   // Game tick effect for passive income and auto features
   useEffect(() => {
