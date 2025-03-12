@@ -5,7 +5,6 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
-import PlayerRankings from './PlayerRankings';
 import { useFirebase } from '@/context/FirebaseContext';
 import { Loader2 } from 'lucide-react';
 
@@ -39,13 +38,7 @@ const Profile: React.FC = () => {
     coins: state.coins,
     gems: 500, // Mock value, would come from state in real implementation
     essence: state.essence,
-    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
-    totalCoins: state.totalEarned,
-    totalGems: 1500, // Mock value for total gems
-    totalEssence: state.essence * (state.prestigeCount + 1),
-    totalAbilityPoints: state.skillPoints + state.abilities.filter(a => a.unlocked).length,
-    mmr: profile?.mmr || 1000,
-    leaderboardRank: profile?.leaderboardRank || 0
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
   
   return (
@@ -67,18 +60,6 @@ const Profile: React.FC = () => {
           essence={playerData.essence}
           onNameChange={handleNameChange}
           userId={playerData.userId}
-        />
-        
-        {/* Player Rankings component */}
-        <PlayerRankings 
-          rank={playerData.rank}
-          level={playerData.level}
-          leaderboardRank={playerData.leaderboardRank}
-          totalCoins={playerData.totalCoins}
-          totalGems={playerData.totalGems}
-          totalEssence={playerData.totalEssence}
-          totalAbilityPoints={playerData.totalAbilityPoints}
-          mmr={playerData.mmr}
         />
         
         {/* Friends list component */}

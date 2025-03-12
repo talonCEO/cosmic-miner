@@ -15,8 +15,8 @@ interface ShopProps {
   artifacts: GameState['artifacts'];
   ownedManagers: string[];
   ownedArtifacts: string[];
-  onBuyManager: (managerId: string, name: string, description: string) => void;
-  onBuyArtifact: (artifactId: string, name: string, description: string) => void;
+  onBuyManager: (managerId: string, name: string) => void;
+  onBuyArtifact: (artifactId: string, name: string) => void;
 }
 
 const Shop: React.FC<ShopProps> = ({ 
@@ -66,7 +66,7 @@ const Shop: React.FC<ShopProps> = ({
                     cost={manager.cost}
                     isOwned={isOwned}
                     canAfford={canAfford}
-                    onBuy={() => onBuyManager(manager.id, manager.name, manager.description)}
+                    onBuy={() => onBuyManager(manager.id, manager.name)}
                     additionalInfo={perksInfo}
                   />
                 );
@@ -97,7 +97,7 @@ const Shop: React.FC<ShopProps> = ({
                     cost={artifact.cost}
                     isOwned={isOwned}
                     canAfford={canAfford}
-                    onBuy={() => onBuyArtifact(artifact.id, artifact.name, artifact.description)}
+                    onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
                     additionalInfo={perksInfo}
                   />
                 );

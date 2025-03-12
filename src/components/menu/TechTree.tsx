@@ -3,27 +3,16 @@ import React, { useRef, useState } from 'react';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Sparkles, Rocket, Gauge, Compass, Flower, Flame } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
+import { useToast } from '@/hooks/use-toast';
 import { Ability } from '@/utils/types'; // Import from utils/types instead of menu/types
 import { ScrollArea } from "@/components/ui/scroll-area";
-import UnlockAnimation from '../UnlockAnimation';
 
 const TechTree: React.FC = () => {
   const { state, unlockAbility } = useGame();
+  const { toast } = useToast();
   const treeRef = useRef<HTMLDivElement>(null);
   // Track which abilities have just been unlocked to trigger burst
   const [justUnlocked, setJustUnlocked] = useState<string[]>([]);
-  // Animation state
-  const [unlockAnimation, setUnlockAnimation] = useState<{
-    show: boolean;
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-  }>({
-    show: false,
-    title: "",
-    description: "",
-    icon: <Brain className="h-12 w-12" />
-  });
 
   // Group abilities by row for easier rendering
   const abilitiesByRow = state.abilities.reduce((acc, ability) => {
@@ -44,7 +33,7 @@ const TechTree: React.FC = () => {
     });
   };
 
-  // Handle ability unlock with burst effect and animation
+  // Handle ability unlock with burst effect
   const handleUnlockAbility = (abilityId: string, abilityName: string) => {
     const ability = state.abilities.find(a => a.id === abilityId);
     if (!ability || !canUnlockAbility(ability)) return;
@@ -55,22 +44,11 @@ const TechTree: React.FC = () => {
     setTimeout(() => {
       setJustUnlocked((prev) => prev.filter((id) => id !== abilityId));
     }, 500); // Match animation duration (0.5s)
-    
-    // Show unlock animation
-    setUnlockAnimation({
-      show: true,
+    toast({
       title: `${abilityName} Unlocked!`,
-      description: ability.description,
-      icon: ability.icon
+      description: `${ability.description}`,
+      variant: "default",
     });
-  };
-
-  // Hide the animation
-  const hideUnlockAnimation = () => {
-    setUnlockAnimation(prev => ({
-      ...prev,
-      show: false
-    }));
   };
 
   // Check if any ability in Row 2 is unlocked
@@ -295,17 +273,6 @@ const TechTree: React.FC = () => {
         }
       `}
       </style>
-      
-      {/* Animation for ability unlock */}
-      <UnlockAnimation
-        show={unlockAnimation.show}
-        title={unlockAnimation.title}
-        description={unlockAnimation.description}
-        icon={unlockAnimation.icon}
-        onClose={hideUnlockAnimation}
-        autoClose={true}
-        autoCloseDelay={3000}
-      />
     </>
   );
 };
