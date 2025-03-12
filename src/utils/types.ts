@@ -44,6 +44,9 @@ export interface Ability {
   unlocked: boolean;
   cost: number;
   requiredAbilities: string[];
-  row?: number;
-  col?: number;
+  row: number;
+  column?: number;
+  cooldown?: number;
+  duration?: number;
+  effect?: string;
 }
