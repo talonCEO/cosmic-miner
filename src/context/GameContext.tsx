@@ -10,6 +10,7 @@ import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
+import { InventoryItem } from '@/components/menu/types';
 
 // Achievement interface
 export interface Achievement {
@@ -55,6 +56,8 @@ export interface GameState {
   skillPoints: number;
   abilities: Ability[];
   unlockedPerks: string[];
+  inventory: InventoryItem[];
+  inventoryCapacity: number;
 }
 
 // Upgrade interface
@@ -101,7 +104,11 @@ type GameAction =
   | { type: 'RESTORE_STATE_PROPERTY'; property: keyof GameState; value: any }
   | { type: 'RESTORE_UPGRADES'; upgrades: Upgrade[] }
   | { type: 'RESTORE_ABILITIES'; abilities: Ability[] }
-  | { type: 'RESTORE_ACHIEVEMENTS'; achievements: Achievement[] };
+  | { type: 'RESTORE_ACHIEVEMENTS'; achievements: Achievement[] }
+  | { type: 'USE_ITEM'; itemId: string }
+  | { type: 'ADD_ITEM'; item: InventoryItem }
+  | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
+  | { type: 'SET_MENU_TYPE'; menuType: string };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -294,7 +301,9 @@ const initialState: GameState = {
   incomeMultiplier: 10.0,
   skillPoints: 10000,
   abilities: initialAbilities,
-  unlockedPerks: []
+  unlockedPerks: [],
+  inventory: [],
+  inventoryCapacity: 100,
 };
 
 // Game reducer with updated mechanics
@@ -752,6 +761,117 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievements: action.achievements
       };
     }
+    case 'USE_ITEM': {
+      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+      if (itemIndex === -1) return state;
+      
+      const item = state.inventory[itemIndex];
+      if (!item.usable) return state;
+      
+      // Apply item effect based on type
+      let updatedState = { ...state };
+      
+      if (item.effect) {
+        switch (item.effect.type) {
+          case 'coins':
+            updatedState.coins += item.effect.value;
+            updatedState.totalEarned += item.effect.value;
+            break;
+          case 'essence':
+            updatedState.essence += item.effect.value;
+            break;
+          case 'boost':
+            // Temporary boost logic would go here
+            break;
+          // Add more effect types as needed
+        }
+      }
+      
+      // Update inventory
+      const updatedInventory = [...state.inventory];
+      if (item.quantity > 1) {
+        updatedInventory[itemIndex] = {
+          ...item,
+          quantity: item.quantity - 1
+        };
+      } else {
+        updatedInventory.splice(itemIndex, 1);
+      }
+      
+      return {
+        ...updatedState,
+        inventory: updatedInventory
+      };
+    }
+    case 'ADD_ITEM': {
+      // Check if inventory is full
+      const currentItems = state.inventory.reduce(
+        (total, item) => total + (item.stackable ? 1 : item.quantity), 
+        0
+      );
+      
+      if (currentItems >= state.inventoryCapacity && !action.item.stackable) {
+        return state; // Inventory full
+      }
+      
+      // If item is stackable, check if it already exists
+      if (action.item.stackable) {
+        const existingItemIndex = state.inventory.findIndex(
+          item => item.id === action.item.id
+        );
+        
+        if (existingItemIndex !== -1) {
+          // Update existing item quantity
+          const updatedInventory = [...state.inventory];
+          updatedInventory[existingItemIndex] = {
+            ...updatedInventory[existingItemIndex],
+            quantity: updatedInventory[existingItemIndex].quantity + action.item.quantity
+          };
+          
+          return {
+            ...state,
+            inventory: updatedInventory
+          };
+        }
+      }
+      
+      // Add new item
+      return {
+        ...state,
+        inventory: [...state.inventory, action.item]
+      };
+    }
+    case 'REMOVE_ITEM': {
+      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+      if (itemIndex === -1) return state;
+      
+      const item = state.inventory[itemIndex];
+      const quantity = action.quantity || 1;
+      
+      if (item.quantity <= quantity) {
+        // Remove the item completely
+        return {
+          ...state,
+          inventory: state.inventory.filter(item => item.id !== action.itemId)
+        };
+      } else {
+        // Reduce the quantity
+        const updatedInventory = [...state.inventory];
+        updatedInventory[itemIndex] = {
+          ...item,
+          quantity: item.quantity - quantity
+        };
+        
+        return {
+          ...state,
+          inventory: updatedInventory
+        };
+      }
+    }
+    case 'SET_MENU_TYPE': {
+      // This is handled by the GameMenu component
+      return state;
+    }
     default:
       return state;
   }
@@ -776,6 +896,9 @@ interface GameContextType {
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   calculatePotentialEssenceReward: () => number;
   handleClick: () => void;
+  useItem: (itemId: string) => void;
+  addItem: (item: InventoryItem) => void;
+  removeItem: (itemId: string, quantity?: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -951,6 +1074,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
   const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
   const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
+  const useItem = (itemId: string) => dispatch({ type: 'USE_ITEM', itemId });
+  const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
+  const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
   
   const contextValue = {
     state,
@@ -970,7 +1096,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkAchievements,
     calculateMaxPurchaseAmount,
     calculatePotentialEssenceReward,
-    handleClick
+    handleClick,
+    useItem,
+    addItem,
+    removeItem
   };
   
   // Store the context in the global holder for access without hooks

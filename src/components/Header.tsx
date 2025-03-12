@@ -4,34 +4,9 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
 import { Sparkles, Bitcoin } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
 
 const Header: React.FC = () => {
   const { state } = useGame();
-  const { toast } = useToast();
-  
-  // Check for newly unlocked achievements and show notification
-  const previousUnlockedCountRef = React.useRef(state.achievements.filter(a => a.unlocked).length);
-  
-  React.useEffect(() => {
-    const currentUnlockedCount = state.achievements.filter(a => a.unlocked).length;
-    
-    if (currentUnlockedCount > previousUnlockedCountRef.current) {
-      const newlyUnlocked = state.achievements.filter((a, i) => {
-        return a.unlocked && i >= previousUnlockedCountRef.current;
-      });
-      
-      newlyUnlocked.forEach(achievement => {
-        toast({
-          title: "Achievement Unlocked!",
-          description: `${achievement.name}: ${achievement.description}`,
-          duration: 3000,
-        });
-      });
-    }
-    
-    previousUnlockedCountRef.current = currentUnlockedCount;
-  }, [state.achievements, toast]);
   
   return (
     <header className="w-full py-2 px-6 sticky top-0 z-30 mb-2">

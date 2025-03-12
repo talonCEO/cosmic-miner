@@ -6,11 +6,12 @@ import { formatNumber } from '@/utils/gameLogic';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
 import { useFirebase } from '@/context/FirebaseContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 
 const Profile: React.FC = () => {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
   const { profile, loading, updateUsername } = useFirebase();
+  const [activeSection, setActiveSection] = useState<'profile' | 'achievements' | 'leaderboard'>('profile');
   
   // Handle player name change (updates Firebase profile)
   const handleNameChange = (newName: string) => {
@@ -61,6 +62,25 @@ const Profile: React.FC = () => {
           onNameChange={handleNameChange}
           userId={playerData.userId}
         />
+        
+        {/* Navigation buttons */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <button 
+            onClick={() => dispatch({ type: 'SET_MENU_TYPE', menuType: 'achievements' })}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Trophy size={20} />
+            <span>Achievements</span>
+          </button>
+          
+          <button 
+            onClick={() => dispatch({ type: 'SET_MENU_TYPE', menuType: 'leaderboard' })}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <BarChart3 size={20} />
+            <span>Leaderboard</span>
+          </button>
+        </div>
         
         {/* Friends list component */}
         <PlayerFriends />

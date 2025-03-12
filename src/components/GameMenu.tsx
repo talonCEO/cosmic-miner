@@ -5,7 +5,6 @@ import {
   DialogContent
 } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
-import { useToast } from '@/components/ui/use-toast';
 import { MenuType } from './menu/types';
 import { BoostItem as BoostItemType, initialBoostItems } from './menu/types/premiumStore';
 import MenuButton from './menu/MenuButton';
@@ -16,6 +15,8 @@ import Shop from './menu/Shop';
 import TechTree from './menu/TechTree';
 import PremiumStore from './menu/PremiumStore';
 import Profile from './menu/Profile';
+import Inventory from './menu/Inventory';
+import Leaderboard from './menu/Leaderboard';
 
 interface GameMenuProps {
   menuType?: 'main' | 'premium';
@@ -26,7 +27,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const [menuType, setMenuType] = useState<MenuType>("none");
   const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
   const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
-  const { toast } = useToast();
   
   // Initialize boost items with icons on component mount
   useEffect(() => {
@@ -54,35 +54,16 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   
   const handlePrestige = () => {
     const essenceReward = calculatePotentialEssenceReward();
-    
     prestige();
     setMenuType("none");
-    
-    toast({
-      title: "Prestige Complete!",
-      description: `Gained ${essenceReward} essence. All progress has been reset.`,
-      variant: "default",
-    });
   };
 
   const handleBuyManager = (managerId: string, name: string) => {
     buyManager(managerId);
-    
-    toast({
-      title: `${name} Hired!`,
-      description: `Manager added to your team.`,
-      variant: "default",
-    });
   };
 
   const handleBuyArtifact = (artifactId: string, name: string) => {
     buyArtifact(artifactId);
-    
-    toast({
-      title: `${name} Acquired!`,
-      description: `Artifact added to your collection.`,
-      variant: "default",
-    });
   };
   
   // Handle buying gem packages via Google Play
@@ -96,18 +77,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       
       // After successful purchase, update the gems
       setPlayerGems(prev => prev + amount);
-      
-      toast({
-        title: "Gems Purchased!",
-        description: `${amount} gems have been added to your account.`,
-      });
     } catch (error) {
       console.error('Purchase failed:', error);
-      toast({
-        title: "Purchase Failed",
-        description: "There was an error processing your purchase.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -118,11 +89,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     
     // Check if player has enough gems
     if (playerGems < item.cost) {
-      toast({
-        title: "Not Enough Gems",
-        description: `You need ${item.cost - playerGems} more gems to purchase this.`,
-        variant: "destructive",
-      });
       return;
     }
     
@@ -165,6 +131,14 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
         
         {menuType === "achievements" && (
           <Achievements achievements={state.achievements} />
+        )}
+        
+        {menuType === "leaderboard" && (
+          <Leaderboard />
+        )}
+        
+        {menuType === "inventory" && (
+          <Inventory />
         )}
         
         {menuType === "techTree" && (
