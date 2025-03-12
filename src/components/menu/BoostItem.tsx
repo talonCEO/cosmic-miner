@@ -8,9 +8,15 @@ interface BoostItemProps {
   item: BoostItemType;
   playerGems: number;
   onPurchase: (itemId: string) => void;
+  showUnlockAnimation: (item: BoostItemType) => void;
 }
 
-const BoostItem: React.FC<BoostItemProps> = ({ item, playerGems, onPurchase }) => {
+const BoostItem: React.FC<BoostItemProps> = ({ 
+  item, 
+  playerGems, 
+  onPurchase, 
+  showUnlockAnimation 
+}) => {
   const { toast } = useToast();
   const canAfford = playerGems >= item.cost;
   
@@ -34,11 +40,7 @@ const BoostItem: React.FC<BoostItemProps> = ({ item, playerGems, onPurchase }) =
     }
     
     onPurchase(item.id);
-    
-    toast({
-      title: `${item.name} Activated!`,
-      description: `${item.effect} has been applied to your game.`,
-    });
+    showUnlockAnimation(item);
   };
 
   return (

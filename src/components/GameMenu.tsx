@@ -143,11 +143,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     
     // Apply the boost effect (in a real implementation)
     // This would modify game state based on the item's effect
-    
-    toast({
-      title: `${item.name} Activated!`,
-      description: `${item.effect} has been applied to your game.`,
-    });
   };
   
   const potentialEssenceReward = calculatePotentialEssenceReward();

@@ -1,4 +1,6 @@
 
+import { ReactNode } from 'react';
+
 // Perk Interface - Unlockable bonuses for managers and artifacts
 export interface Perk {
   id: string;                  // Unique identifier
@@ -31,4 +33,17 @@ export interface Perk {
     // Optional list of element IDs that are affected by this perk
     elements?: string[];
   };
+}
+
+// Ability Interface - For TechTree component
+export interface Ability {
+  id: string;
+  name: string;
+  description: string;
+  icon: ReactNode;
+  unlocked: boolean;
+  cost: number;
+  requiredAbilities: string[];
+  row?: number;
+  col?: number;
 }
