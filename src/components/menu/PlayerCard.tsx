@@ -49,11 +49,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
+      return `${(Math.round(amount / 100000) / 10).toFixed(1)}M`; // Round to 1 decimal place
     } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(1)}K`;
+      return `${(Math.round(amount / 100) / 10).toFixed(1)}K`; // Round to 1 decimal place
     }
-    return amount.toString();
+    return amount.toFixed(1); // Round to 1 decimal place for values < 1000
   };
 
   const handleChestClick = () => {
@@ -75,7 +75,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               {playerName.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="mt-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium flex items-center justify-center w-full">
+          <div className="mt-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
             {playerTitle}
           </div>
         </div>
