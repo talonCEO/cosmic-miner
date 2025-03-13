@@ -75,7 +75,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               {playerName.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="mt-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+          <div className="mt-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium flex items-center justify-center w-full">
             {playerTitle}
           </div>
         </div>
