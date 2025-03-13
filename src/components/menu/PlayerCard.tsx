@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -68,13 +67,18 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex">
-        {/* Left column: Avatar */}
-        <Avatar className="h-16 w-16 border-2 border-amber-500/50">
-          <AvatarImage src="/placeholder.svg" alt="Player avatar" />
-          <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
-            {playerName.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {/* Left column: Avatar and Title */}
+        <div className="flex flex-col items-center">
+          <Avatar className="h-16 w-16 border-2 border-amber-500/50">
+            <AvatarImage src="/placeholder.svg" alt="Player avatar" />
+            <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
+              {playerName.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="mt-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+            {playerTitle}
+          </div>
+        </div>
         
         {/* Middle column: Player info */}
         <div className="ml-3 flex-1">
@@ -111,9 +115,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           )}
           
           <div className="flex items-center gap-2 mb-1">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
-              {playerTitle} {/* Changed from playerRank */}
-            </div>
             <div className="text-white text-xs font-medium">
               Level {playerLevel}
             </div>
