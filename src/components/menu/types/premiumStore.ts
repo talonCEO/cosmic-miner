@@ -34,7 +34,7 @@ export const gemPackages: GemPackage[] = [
   {
     id: "gems_medium",
     name: "Nebula Cache",
-    amount: 500,
+    amount: 550,
     price: "$4.99",
     description: "A glowing collection of rare gems"
   },
@@ -55,7 +55,7 @@ export const gemPackages: GemPackage[] = [
   {
     id: "gems_mega",
     name: "Solar Fortune",
-    amount: 6000,
+    amount: 6500,
     price: "$49.99",
     description: "An extraordinary wealth of precious gems"
   },
