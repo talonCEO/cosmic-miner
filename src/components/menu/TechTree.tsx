@@ -4,7 +4,7 @@ import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/hooks/use-toast';
-import { Ability } from '@/utils/types'; // Import from utils/types instead of menu/types
+import { Ability } from '@/utils/types'; // Import from utils/types
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const TechTree: React.FC = () => {
