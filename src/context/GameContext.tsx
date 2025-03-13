@@ -932,7 +932,6 @@ export const gameContextHolder: { current: GameContextType | null } = { current:
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  const { toast } = useToast();
   
   // Load saved game state on initial render
   useEffect(() => {
@@ -1004,13 +1003,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           dispatch({ type: 'RESTORE_ACHIEVEMENTS', achievements: restoredState.achievements });
           
           console.log('Game state restored from storage');
-          
-          // Show toast notification
-          toast({
-            title: "Game Loaded",
-            description: "Your saved game has been loaded successfully!",
-            duration: 3000,
-          });
         }
       } catch (error) {
         console.error('Error loading saved game state:', error);
@@ -1030,7 +1022,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
     
     initAds();
-  }, [toast]);
+  }, []);
   
   // Save game state periodically
   useEffect(() => {
