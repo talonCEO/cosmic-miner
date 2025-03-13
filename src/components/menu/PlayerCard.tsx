@@ -69,7 +69,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       <div className="flex">
         {/* Left column: Avatar and Title */}
         <div className="flex flex-col items-center">
-          <Avatar className="h-16 w-16 border-2 border-amber-500/50">
+          <Avatar className="h-16 w-16 border-2 border-amber-500/50 mb-1">
             <AvatarImage src="/placeholder.svg" alt="Player avatar" />
             <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
               {playerName.substring(0, 2).toUpperCase()}
@@ -83,7 +83,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         {/* Middle column: Player info */}
         <div className="ml-3 flex-1">
           {isEditing ? (
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <Input 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -100,7 +100,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center mb-1">
+            <div className="flex items-center mb-2">
               <Button 
                 size="icon" 
                 variant="ghost"
