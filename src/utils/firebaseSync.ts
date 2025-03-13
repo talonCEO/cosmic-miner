@@ -1,5 +1,5 @@
 
-import { getFirestore, doc, updateDoc, increment } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { GameState } from '@/context/GameContext';
 import { UserProfile } from '@/context/FirebaseContext';
 
@@ -21,8 +21,13 @@ export const syncGameProgress = async (
       level: gameState.prestigeCount + 1,
       coins: gameState.coins,
       essence: gameState.essence,
-      lastActive: new Date()
+      skillPoints: gameState.skillPoints || 0,
+      totalCoins: gameState.totalEarned || 0,
+      exp: gameState.totalClicks || 0, // Using total clicks as a simple measure of experience
+      lastLogin: serverTimestamp()
     });
+    
+    console.log("Game progress synced with Firebase for user:", uid);
   } catch (error) {
     console.error("Error syncing game progress:", error);
   }

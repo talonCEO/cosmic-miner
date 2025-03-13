@@ -1,6 +1,6 @@
 
 // Firebase configuration
-// Replace these values with your actual Firebase project configuration
+// Replace these placeholder values with your actual Firebase project configuration
 export const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_AUTH_DOMAIN",
@@ -9,3 +9,6 @@ export const firebaseConfig = {
   messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
+
+// IMPORTANT: Replace the values above with your actual Firebase project details.
+// These can be found in your Firebase project settings in the Firebase console.

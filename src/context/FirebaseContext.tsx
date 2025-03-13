@@ -16,7 +16,6 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { firebaseConfig } from '@/config/firebase';
-import { useToast } from '@/components/ui/use-toast';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -28,14 +27,17 @@ export interface UserProfile {
   uid: string;
   username: string;
   userId: string; // 8-digit unique ID
-  level: number;
-  rank: string;
-  joinDate: Date;
-  lastActive: Date;
   coins: number;
+  gems: number;
   essence: number;
-  achievements: string[];
+  skillPoints: number;
   friends: string[];
+  rank: string;
+  level: number;
+  exp: number;
+  totalCoins: number;
+  createdAt: Date;
+  lastLogin: Date;
 }
 
 interface FirebaseContextType {
@@ -59,7 +61,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   // When the app initializes, sign in anonymously and listen for auth state changes
   useEffect(() => {
@@ -78,9 +79,9 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             const userData = userDoc.data() as UserProfile;
             setProfile(userData);
             
-            // Update last active timestamp
+            // Update last login timestamp
             await updateDoc(userDocRef, {
-              lastActive: serverTimestamp()
+              lastLogin: serverTimestamp()
             });
           } else {
             // New user, create profile
@@ -91,34 +92,27 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
               uid: user.uid,
               username: defaultUsername,
               userId: newUserId,
-              level: 1,
-              rank: "Space Adventurer",
-              joinDate: new Date(),
-              lastActive: new Date(),
               coins: 0,
+              gems: 0,
               essence: 0,
-              achievements: [],
-              friends: []
+              skillPoints: 0,
+              friends: [],
+              rank: "Space Adventurer",
+              level: 1,
+              exp: 0,
+              totalCoins: 0,
+              createdAt: new Date(),
+              lastLogin: new Date()
             };
             
             await setDoc(userDocRef, newUserProfile);
             setProfile(newUserProfile);
             
-            toast({
-              title: "Welcome to Cosmic Explorer!",
-              description: "Your account has been created successfully.",
-              duration: 5000,
-            });
+            console.log("New anonymous user created:", user.uid);
           }
         } catch (err) {
           console.error("Error fetching user data:", err);
           setError("Failed to load user profile");
-          toast({
-            title: "Error",
-            description: "Failed to load your profile. Please try again later.",
-            variant: "destructive",
-            duration: 5000,
-          });
         }
       } else {
         // No user signed in, sign in anonymously
@@ -127,12 +121,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
         } catch (err) {
           console.error("Error signing in anonymously:", err);
           setError("Failed to create anonymous account");
-          toast({
-            title: "Error",
-            description: "Failed to connect to the game servers. Please check your connection.",
-            variant: "destructive",
-            duration: 5000,
-          });
         }
       }
       
@@ -141,7 +129,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     
     // Cleanup subscription
     return () => unsubscribe();
-  }, [toast]);
+  }, []);
 
   // Function to update user profile
   const updateProfile = async (data: Partial<UserProfile>) => {
@@ -151,7 +139,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
         ...data,
-        lastActive: serverTimestamp()
+        lastLogin: serverTimestamp()
       });
       
       // Update local state
@@ -160,12 +148,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     } catch (err) {
       console.error("Error updating profile:", err);
       setError("Failed to update profile");
-      toast({
-        title: "Error",
-        description: "Failed to update your profile. Please try again later.",
-        variant: "destructive",
-        duration: 3000,
-      });
     }
   };
 
@@ -173,11 +155,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const updateUsername = async (username: string) => {
     if (!username.trim()) return;
     await updateProfile({ username });
-    toast({
-      title: "Username Updated",
-      description: "Your username has been updated successfully.",
-      duration: 3000,
-    });
+    console.log("Username updated successfully");
   };
 
   const value = {

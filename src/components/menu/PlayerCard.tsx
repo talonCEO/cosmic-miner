@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -32,7 +33,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
-  const [isChestAvailable, setIsChestAvailable] = useState(false); // New state for chest availability
+  const [isChestAvailable, setIsChestAvailable] = useState(false); // State for chest availability
   const expPercentage = (playerExp / playerMaxExp) * 100;
   
   // Use provided userId or generate a random one
