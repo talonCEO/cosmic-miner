@@ -65,34 +65,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   };
   
   return (
-    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3 relative">
-      {/* Treasure Chest Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className={`absolute top-2 right-2 h-10 w-10 p-0 transition-all z-10 ${
-          isChestAvailable ? 'opacity-100' : 'opacity-50'
-        }`}
-        onClick={handleChestClick}
-        disabled={!isChestAvailable}
-      >
-        <div className="relative flex items-center justify-center h-full w-full">
-          {/* Chest Icon */}
-          <Gift 
-            size={24} 
-            className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`}
-          />
-          {/* Lock overlay when unavailable */}
-          {!isChestAvailable && (
-            <Lock 
-              size={16} 
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
-            />
-          )}
-        </div>
-      </Button>
-
-      <div className="flex pr-14"> {/* Added padding-right to avoid overlap */}
+    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
+      <div className="flex">
         {/* Left column: Avatar */}
         <Avatar className="h-16 w-16 border-2 border-amber-500/50">
           <AvatarImage src="/placeholder.svg" alt="Player avatar" />
@@ -153,20 +127,46 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         </div>
         
-        {/* Right column: Currency info */}
-        <div className="ml-4 flex flex-col justify-center space-y-1 min-w-20">
-          <div className="flex items-center justify-between">
-            <span className="text-amber-400 text-xs font-semibold">Coins:</span>
-            <span className="text-white text-xs">{formatCurrency(coins)}</span>
+        {/* Right column: Currency info with Chest Button */}
+        <div className="ml-4 flex items-center space-x-4">
+          <div className="flex flex-col justify-center space-y-1 min-w-20">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 text-xs font-semibold">Coins:</span>
+              <span className="text-white text-xs">{formatCurrency(coins)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-purple-400 text-xs font-semibold">Gems:</span>
+              <span className="text-white text-xs">{formatCurrency(gems)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-blue-400 text-xs font-semibold">Essence:</span>
+              <span className="text-white text-xs">{formatCurrency(essence)}</span>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-purple-400 text-xs font-semibold">Gems:</span>
-            <span className="text-white text-xs">{formatCurrency(gems)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-blue-400 text-xs font-semibold">Essence:</span>
-            <span className="text-white text-xs">{formatCurrency(essence)}</span>
-          </div>
+          
+          {/* Treasure Chest Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-10 w-10 p-0 transition-all ${
+              isChestAvailable ? 'opacity-100' : 'opacity-50'
+            }`}
+            onClick={handleChestClick}
+            disabled={!isChestAvailable}
+          >
+            <div className="relative flex items-center justify-center h-full w-full">
+              <Gift 
+                size={24} 
+                className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`}
+              />
+              {!isChestAvailable && (
+                <Lock 
+                  size={16} 
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
+                />
+              )}
+            </div>
+          </Button>
         </div>
       </div>
     </div>
