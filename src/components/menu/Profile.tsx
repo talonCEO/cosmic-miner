@@ -11,7 +11,6 @@ import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 const Profile: React.FC = () => {
   const { state, dispatch } = useGame();
   const { profile, loading, updateUsername } = useFirebase();
-  const [activeSection, setActiveSection] = useState<'profile' | 'achievements' | 'leaderboard'>('profile');
   
   // Handle player name change (updates Firebase profile)
   const handleNameChange = (newName: string) => {
@@ -32,7 +31,7 @@ const Profile: React.FC = () => {
   // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
-    rank: profile?.rank || "Space Adventurer",
+    title: profile?.title || "Space Pilot", // Changed from rank to title with default "Space Pilot"
     level: profile?.level || state.prestigeCount + 1,
     exp: state.totalEarned % 1000,
     maxExp: 1000,
@@ -52,7 +51,7 @@ const Profile: React.FC = () => {
         {/* Enhanced player card with currency info and UID */}
         <PlayerCard 
           playerName={playerData.name}
-          playerRank={playerData.rank}
+          playerTitle={playerData.title} // Changed from playerRank to playerTitle
           playerLevel={playerData.level}
           playerExp={playerData.exp}
           playerMaxExp={playerData.maxExp}

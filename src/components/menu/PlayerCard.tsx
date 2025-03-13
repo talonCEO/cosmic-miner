@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -7,7 +8,7 @@ import { Edit2, Check, Lock, Gift } from 'lucide-react';
 
 interface PlayerCardProps {
   playerName: string;
-  playerRank: string;
+  playerTitle: string; // Changed from playerRank to playerTitle
   playerLevel: number;
   playerExp: number;
   playerMaxExp: number;
@@ -20,7 +21,7 @@ interface PlayerCardProps {
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
   playerName,
-  playerRank,
+  playerTitle, // Changed from playerRank
   playerLevel,
   playerExp,
   playerMaxExp,
@@ -111,7 +112,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           
           <div className="flex items-center gap-2 mb-1">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
-              {playerRank}
+              {playerTitle} {/* Changed from playerRank */}
             </div>
             <div className="text-white text-xs font-medium">
               Level {playerLevel}

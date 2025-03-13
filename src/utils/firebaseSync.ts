@@ -55,6 +55,30 @@ export const syncAchievements = async (
 };
 
 /**
+ * Update player title
+ */
+export const updatePlayerTitle = async (
+  uid: string,
+  title: string
+) => {
+  if (!uid || !title) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    await updateDoc(userDocRef, {
+      title: title
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating player title:", error);
+    return false;
+  }
+};
+
+/**
  * Add a friend to the user's friend list
  */
 export const addFriend = async (
