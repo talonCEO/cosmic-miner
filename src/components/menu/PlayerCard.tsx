@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -128,23 +127,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         </div>
         
-        {/* Right column: Currency info with Chest Button */}
-        <div className="ml-4 flex items-center space-x-4">
-          <div className="flex flex-col justify-center space-y-1 min-w-20">
-            <div className="flex items-center justify-between">
-              <span className="text-amber-400 text-xs font-semibold">Coins:</span>
-              <span className="text-white text-xs">{formatCurrency(coins)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-purple-400 text-xs font-semibold">Gems:</span>
-              <span className="text-white text-xs">{formatCurrency(gems)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-blue-400 text-xs font-semibold">Essence:</span>
-              <span className="text-white text-xs">{formatCurrency(essence)}</span>
-            </div>
-          </div>
-          
+        {/* Right column: Treasure Chest Button above Currency info */}
+        <div className="ml-4 flex flex-col items-end space-y-2">
           {/* Treasure Chest Button */}
           <Button
             variant="ghost"
@@ -168,6 +152,22 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               )}
             </div>
           </Button>
+
+          {/* Currency info */}
+          <div className="flex flex-col justify-center space-y-1 min-w-20">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 text-xs font-semibold">Coins:</span>
+              <span className="text-white text-xs">{formatCurrency(coins)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-purple-400 text-xs font-semibold">Gems:</span>
+              <span className="text-white text-xs">{formatCurrency(gems)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-blue-400 text-xs font-semibold">Essence:</span>
+              <span className="text-white text-xs">{formatCurrency(essence)}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
