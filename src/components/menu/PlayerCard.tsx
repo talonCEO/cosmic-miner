@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Check } from 'lucide-react';
+import { Edit2, Check, Lock } from 'lucide-react';
 
 interface PlayerCardProps {
   playerName: string;
@@ -33,6 +32,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
+  const [isChestAvailable, setIsChestAvailable] = useState(false); // New state for chest availability
   const expPercentage = (playerExp / playerMaxExp) * 100;
   
   // Use provided userId or generate a random one
@@ -55,9 +55,40 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     }
     return amount.toString();
   };
+
+  const handleChestClick = () => {
+    if (isChestAvailable) {
+      // Add your chest opening logic here
+      console.log('Treasure chest opened!');
+      setIsChestAvailable(false); // Example: make it unavailable after clicking
+    }
+  };
   
   return (
-    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
+    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3 relative">
+      {/* Treasure Chest Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className={`absolute top-2 right-2 h-10 w-10 p-0 transition-all ${
+          isChestAvailable ? 'opacity-100' : 'opacity-50'
+        }`}
+        onClick={handleChestClick}
+        disabled={!isChestAvailable}
+      >
+        <div className="relative">
+          {/* Chest Icon (using a simple square with rounded corners as placeholder) */}
+          <div className="w-6 h-6 bg-yellow-500 rounded-sm" />
+          {/* Lock overlay when unavailable */}
+          {!isChestAvailable && (
+            <Lock 
+              size={16} 
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
+            />
+          )}
+        </div>
+      </Button>
+
       <div className="flex">
         {/* Left column: Avatar */}
         <Avatar className="h-16 w-16 border-2 border-amber-500/50">
@@ -137,6 +168,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       </div>
     </div>
   );
+};
+
+export default PlayerCard;
 };
 
 export default PlayerCard;
