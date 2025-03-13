@@ -3,7 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Check, Lock } from 'lucide-react';
+import { Edit2, Check, Lock, Gift } from 'lucide-react';
 
 interface PlayerCardProps {
   playerName: string;
@@ -76,9 +76,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         onClick={handleChestClick}
         disabled={!isChestAvailable}
       >
-        <div className="relative">
-          {/* Chest Icon (using a simple square with rounded corners as placeholder) */}
-          <div className="w-6 h-6 bg-yellow-500 rounded-sm" />
+        <div className="relative flex items-center justify-center h-full w-full">
+          {/* Chest Icon */}
+          <Gift 
+            size={24} 
+            className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`}
+          />
           {/* Lock overlay when unavailable */}
           {!isChestAvailable && (
             <Lock 
@@ -168,9 +171,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       </div>
     </div>
   );
-};
-
-export default PlayerCard;
 };
 
 export default PlayerCard;
