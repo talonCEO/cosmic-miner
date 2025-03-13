@@ -70,7 +70,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        className={`absolute top-2 right-2 h-10 w-10 p-0 transition-all ${
+        className={`absolute top-2 right-2 h-10 w-10 p-0 transition-all z-10 ${
           isChestAvailable ? 'opacity-100' : 'opacity-50'
         }`}
         onClick={handleChestClick}
@@ -92,7 +92,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
       </Button>
 
-      <div className="flex">
+      <div className="flex pr-14"> {/* Added padding-right to avoid overlap */}
         {/* Left column: Avatar */}
         <Avatar className="h-16 w-16 border-2 border-amber-500/50">
           <AvatarImage src="/placeholder.svg" alt="Player avatar" />
