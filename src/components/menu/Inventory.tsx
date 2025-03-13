@@ -3,13 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Package, Filter, Search, Plus, Minus, XCircle, Coins, Gem, Sparkles, Brain } from 'lucide-react';
-import { InventoryItem } from './types';
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from './types';
 import { Button } from "@/components/ui/button";
 
 const rarityColors = {
@@ -38,7 +33,7 @@ const ItemSlot: React.FC<{
 
   return (
     <div 
-      className={`relative w-full h-full aspect-square rounded-lg ${rarityColors[item.rarity]} border transition-all hover:scale-[1.03] cursor-pointer p-2 flex flex-col items-center justify-center`}
+      className={`relative w-full h-full aspect-square rounded-lg ${rarityColors[item.rarity]} border p-2 flex flex-col items-center justify-center ${item.usable ? 'cursor-pointer' : 'cursor-default'}`}
       onClick={() => item.usable && onItemClick(item)}
     >
       <div className="flex flex-col items-center justify-center h-full">
@@ -95,7 +90,7 @@ const UseItemPopover: React.FC<{
           <div className="text-4xl mb-3">{item.icon}</div>
           <p className="text-sm text-slate-300 text-center mb-3">{item.description}</p>
           <p className="text-sm text-green-400 font-medium text-center mb-4">
-            {item.effect ? `${item.effect.type}: +${item.effect.value}` : 'No effect'}
+            {item.effect ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
           </p>
         </div>
         
@@ -140,62 +135,50 @@ const UseItemPopover: React.FC<{
 };
 
 const Inventory: React.FC = () => {
-  const { state, dispatch, useItem } = useGame();
+  const { state, dispatch, useItem, addItem } = useGame();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   
+  // Add test boosts to player inventory when component mounts
+  useEffect(() => {
+    // Only add the boosts if they don't already exist in the inventory
+    const hasDoubleCoins = state.inventory.some(item => item.id === INVENTORY_ITEMS.DOUBLE_COINS.id);
+    const hasTimeWarp = state.inventory.some(item => item.id === INVENTORY_ITEMS.TIME_WARP.id);
+    const hasAutoTap = state.inventory.some(item => item.id === INVENTORY_ITEMS.AUTO_TAP.id);
+    
+    if (!hasDoubleCoins) {
+      addItem(createInventoryItem(INVENTORY_ITEMS.DOUBLE_COINS, 3));
+    }
+    
+    if (!hasTimeWarp) {
+      addItem(createInventoryItem(INVENTORY_ITEMS.TIME_WARP, 2));
+    }
+    
+    if (!hasAutoTap) {
+      addItem(createInventoryItem(INVENTORY_ITEMS.AUTO_TAP, 5));
+    }
+  }, []);
+  
   // Create virtual inventory with resource items
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
       {
-        id: 'resource-coins',
-        name: 'Coins',
-        description: 'The main currency used for upgrades',
-        type: 'resource',
-        rarity: 'common',
-        icon: <Coins className="text-yellow-400" />,
-        quantity: Math.floor(state.coins),
-        usable: false,
-        stackable: true,
-        obtained: Date.now()
+        ...INVENTORY_ITEMS.COINS,
+        quantity: Math.floor(state.coins)
       },
       {
-        id: 'resource-gems',
-        name: 'Gems',
-        description: 'Premium currency for special items',
-        type: 'resource',
-        rarity: 'epic',
-        icon: <Gem className="text-purple-400" />,
+        ...INVENTORY_ITEMS.GEMS,
         quantity: 500, // Use actual gems from state when available
-        usable: false,
-        stackable: true,
-        obtained: Date.now()
       },
       {
-        id: 'resource-essence',
-        name: 'Essence',
-        description: 'Earned through prestige, used for permanent upgrades',
-        type: 'resource',
-        rarity: 'legendary',
-        icon: <Sparkles className="text-amber-400" />,
-        quantity: state.essence,
-        usable: false,
-        stackable: true,
-        obtained: Date.now()
+        ...INVENTORY_ITEMS.ESSENCE,
+        quantity: state.essence
       },
       {
-        id: 'resource-skillpoints',
-        name: 'Skill Points',
-        description: 'Used to unlock abilities in the tech tree',
-        type: 'resource',
-        rarity: 'rare',
-        icon: <Brain className="text-blue-400" />,
-        quantity: state.skillPoints,
-        usable: false,
-        stackable: true,
-        obtained: Date.now()
+        ...INVENTORY_ITEMS.SKILL_POINTS,
+        quantity: state.skillPoints
       }
     ];
     

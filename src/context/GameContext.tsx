@@ -3,14 +3,13 @@ import { upgradesList, UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Gauge, Compass, Sparkles, Rocket, Flower, Flame } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
 import { formatNumber } from '@/utils/gameLogic';
 import { adMobService } from '@/services/AdMobService';
 import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
-import { InventoryItem } from '@/components/menu/types';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
 // Achievement interface
 export interface Achievement {
@@ -780,8 +779,34 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           case 'essence':
             updatedState.essence += item.effect.value;
             break;
-          case 'boost':
-            // Temporary boost logic would go here
+          case 'coinMultiplier':
+            // Apply temporary boost for a duration
+            // This would need to be handled by a boost manager in a real implementation
+            // For now, we'll just give an immediate coin reward as a simplification
+            const reward = updatedState.coinsPerSecond * item.effect.value * (item.effect.duration || 60);
+            updatedState.coins += reward;
+            updatedState.totalEarned += reward;
+            console.log(`Applied coinMultiplier boost: ${reward} coins`);
+            break;
+          case 'timeWarp':
+            // Calculate time warp reward as passive income * time
+            const timeReward = updatedState.coinsPerSecond * item.effect.value;
+            updatedState.coins += timeReward;
+            updatedState.totalEarned += timeReward;
+            console.log(`Applied timeWarp boost: ${timeReward} coins`);
+            break;
+          case 'autoTap':
+            // Apply auto-tap boost
+            // In a real implementation, this would set a timer to auto-tap
+            // For now, we'll just give an equivalent coin reward
+            const tapValue = GameMechanics.calculateTapValue(state);
+            const tapRate = item.effect.value || 1; // taps per second
+            const duration = item.effect.duration || 60; // duration in seconds
+            const tapReward = tapValue * tapRate * duration;
+            updatedState.coins += tapReward;
+            updatedState.totalEarned += tapReward;
+            updatedState.totalClicks += tapRate * duration;
+            console.log(`Applied autoTap boost: ${tapReward} coins from ${tapRate * duration} taps`);
             break;
           // Add more effect types as needed
         }
