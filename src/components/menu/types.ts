@@ -20,9 +20,9 @@ export interface InventoryItem {
   id: string;
   name: string;
   description: string;
-  type: 'boost' | 'reward' | 'gift' | 'consumable';
+  type: 'resource' | 'boost' | 'reward' | 'gift' | 'consumable';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  icon: string;
+  icon: React.ReactNode;
   quantity: number;
   effect?: {
     type: string;
