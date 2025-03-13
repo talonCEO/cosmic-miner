@@ -7,7 +7,7 @@ import { Edit2, Check, Lock, Gift } from 'lucide-react';
 
 interface PlayerCardProps {
   playerName: string;
-  playerTitle: string; // Changed from playerRank to playerTitle
+  playerTitle: string;
   playerLevel: number;
   playerExp: number;
   playerMaxExp: number;
@@ -20,7 +20,7 @@ interface PlayerCardProps {
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
   playerName,
-  playerTitle, // Changed from playerRank
+  playerTitle,
   playerLevel,
   playerExp,
   playerMaxExp,
@@ -35,7 +35,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [isChestAvailable, setIsChestAvailable] = useState(false); // State for chest availability
   const expPercentage = (playerExp / playerMaxExp) * 100;
   
-  // Use provided userId or generate a random one
+  // Use provided userId or generate a random one (still needed for logic, just not displayed)
   const playerUID = userId || React.useMemo(() => {
     return Math.floor(10000000 + Math.random() * 90000000).toString();
   }, []);
@@ -75,7 +75,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               {playerName.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="mt-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
+          <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
             {playerTitle}
           </div>
         </div>
@@ -110,7 +110,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                 <Edit2 size={14} className="text-slate-300" />
               </Button>
               <h3 className="text-sm font-semibold text-white">{playerName}</h3>
-              <span className="text-xs text-slate-400/40 ml-2">#{playerUID}</span>
             </div>
           )}
           
