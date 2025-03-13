@@ -74,11 +74,11 @@ const Stats: React.FC = () => {
           
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
-              <Gem size={18} className="text-green-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Gems</span>
+              <Sparkles size={18} className="text-purple-300 mr-2" />
+              <span className="text-xs font-medium text-slate-300">Essence</span>
             </div>
-            <span className="text-lg font-bold text-green-300">500</span>
-            <span className="text-xs text-slate-500 mt-1">Premium Currency</span>
+            <span className="text-lg font-bold text-purple-300">{formatNumber(state.essence)}</span>
+            <span className="text-xs text-slate-500 mt-1">+{formatNumber(calculatePotentialEssenceReward())}</span>
           </div>
           
           <div className="col-span-2 flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
@@ -87,7 +87,7 @@ const Stats: React.FC = () => {
               <span className="text-xs font-medium text-slate-300">Prestige Level</span>
             </div>
             <span className="text-lg font-bold text-indigo-300">{state.prestigeCount}</span>
-            <span className="text-xs text-slate-500 mt-1">Total Earned: {formatNumber(state.totalEarned)}</span>
+            <span className="text-xs text-slate-500 mt-1">Coins Earned: {formatNumber(state.totalEarned)}</span>
           </div>
         </div>
       </div>
