@@ -100,7 +100,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-5">
               <Button 
                 size="icon" 
                 variant="ghost"
