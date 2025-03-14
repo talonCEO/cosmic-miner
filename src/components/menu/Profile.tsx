@@ -28,18 +28,13 @@ const Profile: React.FC = () => {
     );
   }
   
-  // Calculate experience and level data
-  const currentExp = profile?.exp || state.totalEarned;
-  const level = profile?.level || state.prestigeCount + 1;
-  const expNeeded = calculateExpForNextLevel(level);
-  
   // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
-    title: profile?.title || "Space Pilot", // Using title instead of rank
-    level: level,
-    exp: currentExp % expNeeded,
-    maxExp: expNeeded,
+    title: profile?.title || "Space Pilot", // Changed from rank to title with default "Space Pilot"
+    level: profile?.level || state.prestigeCount + 1,
+    exp: state.totalEarned % 1000,
+    maxExp: 1000,
     coins: state.coins,
     gems: 500, // Mock value, would come from state in real implementation
     essence: state.essence,
@@ -56,7 +51,7 @@ const Profile: React.FC = () => {
         {/* Enhanced player card with currency info and UID */}
         <PlayerCard 
           playerName={playerData.name}
-          playerTitle={playerData.title}
+          playerTitle={playerData.title} // Changed from playerRank to playerTitle
           playerLevel={playerData.level}
           playerExp={playerData.exp}
           playerMaxExp={playerData.maxExp}
@@ -98,15 +93,5 @@ const Profile: React.FC = () => {
     </>
   );
 };
-
-// Helper function to calculate experience needed for next level
-function calculateExpForNextLevel(currentLevel: number): number {
-  // Base experience needed for level 2
-  const baseExp = 1000;
-  
-  // Experience growth formula - quadratic growth
-  // This creates a progressive curve that gets steeper at higher levels
-  return Math.floor(baseExp * Math.pow(currentLevel, 1.5));
-}
 
 export default Profile;
