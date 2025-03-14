@@ -1,4 +1,3 @@
-
 /**
  * Format a number to a readable string with K, M, B, T suffixes
  */
@@ -168,4 +167,60 @@ export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number 
  */
 export const calculateProductionMultiplier = (baseMultiplier: number, bonuses: number[]): number => {
   return bonuses.reduce((total, bonus) => total * (1 + bonus), baseMultiplier);
+};
+
+/**
+ * Calculate experience required for a specific level
+ */
+export const calculateExpForLevel = (level: number): number => {
+  // Base experience needed for level 2
+  const baseExp = 1000;
+  
+  // Experience growth formula - quadratic growth
+  return Math.floor(baseExp * Math.pow(level, 1.5));
+};
+
+/**
+ * Calculate total experience required to reach a level
+ */
+export const calculateTotalExpForLevel = (level: number): number => {
+  let totalExp = 0;
+  for (let i = 1; i < level; i++) {
+    totalExp += calculateExpForLevel(i);
+  }
+  return totalExp;
+};
+
+/**
+ * Calculate current level based on total experience
+ */
+export const calculateLevelFromExp = (exp: number): number => {
+  let level = 1;
+  let expRequired = calculateExpForLevel(level);
+  
+  while (exp >= expRequired && level < 100) {
+    exp -= expRequired;
+    level++;
+    if (level < 100) {
+      expRequired = calculateExpForLevel(level);
+    }
+  }
+  
+  return level;
+};
+
+/**
+ * Calculate experience progress within current level
+ */
+export const calculateExpProgress = (totalExp: number): {level: number, currentExp: number, requiredExp: number} => {
+  const level = calculateLevelFromExp(totalExp);
+  const totalExpToCurrentLevel = calculateTotalExpForLevel(level);
+  const currentExp = totalExp - totalExpToCurrentLevel;
+  const requiredExp = calculateExpForLevel(level);
+  
+  return {
+    level,
+    currentExp,
+    requiredExp
+  };
 };

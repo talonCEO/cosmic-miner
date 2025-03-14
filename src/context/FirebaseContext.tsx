@@ -32,12 +32,13 @@ export interface UserProfile {
   essence: number;
   skillPoints: number;
   friends: string[];
-  rank: string;
+  title: string; // Changed from rank to title
   level: number;
   exp: number;
   totalCoins: number;
   createdAt: Date;
   lastLogin: Date;
+  border?: string; // New property for avatar border
 }
 
 interface FirebaseContextType {
@@ -97,12 +98,13 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
               essence: 0,
               skillPoints: 0,
               friends: [],
-              rank: "Space Adventurer",
+              title: "Space Pilot", // Changed from rank to title with default "Space Pilot"
               level: 1,
               exp: 0,
               totalCoins: 0,
               createdAt: new Date(),
-              lastLogin: new Date()
+              lastLogin: new Date(),
+              border: "default" // Default border
             };
             
             await setDoc(userDocRef, newUserProfile);
