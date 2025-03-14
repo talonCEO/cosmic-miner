@@ -32,10 +32,14 @@ export interface UserProfile {
   essence: number;
   skillPoints: number;
   friends: string[];
-  rank: string;
   level: number;
   exp: number;
   totalCoins: number;
+  title: string;      // Current selected title
+  portrait: string;   // Current selected portrait/border
+  unlockedTitles: string[];     // Array of unlocked title IDs
+  unlockedPortraits: string[];  // Array of unlocked portrait IDs
+  achievements: string[];       // Array of completed achievement IDs
   createdAt: Date;
   lastLogin: Date;
 }
@@ -47,6 +51,10 @@ interface FirebaseContextType {
   error: string | null;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   updateUsername: (username: string) => Promise<void>;
+  updateTitle: (titleId: string) => Promise<void>;
+  updatePortrait: (portraitId: string) => Promise<void>;
+  unlockTitle: (titleId: string) => Promise<void>;
+  unlockPortrait: (portraitId: string) => Promise<void>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
@@ -97,10 +105,14 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
               essence: 0,
               skillPoints: 0,
               friends: [],
-              rank: "Space Adventurer",
               level: 1,
               exp: 0,
               totalCoins: 0,
+              title: 'space_pilot', // Default title
+              portrait: 'default',  // Default portrait
+              unlockedTitles: ['space_pilot'], // Start with default title
+              unlockedPortraits: ['default'],  // Start with default portrait
+              achievements: [],
               createdAt: new Date(),
               lastLogin: new Date()
             };
@@ -158,13 +170,69 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     console.log("Username updated successfully");
   };
 
+  // Function to update title
+  const updateTitle = async (titleId: string) => {
+    if (!titleId.trim()) return;
+    
+    // Check if the title is unlocked
+    if (profile && profile.unlockedTitles.includes(titleId)) {
+      await updateProfile({ title: titleId });
+      console.log("Title updated successfully");
+    } else {
+      console.error("Cannot select title that isn't unlocked");
+      setError("This title is not unlocked yet");
+    }
+  };
+
+  // Function to update portrait
+  const updatePortrait = async (portraitId: string) => {
+    if (!portraitId.trim()) return;
+    
+    // Check if the portrait is unlocked
+    if (profile && profile.unlockedPortraits.includes(portraitId)) {
+      await updateProfile({ portrait: portraitId });
+      console.log("Portrait updated successfully");
+    } else {
+      console.error("Cannot select portrait that isn't unlocked");
+      setError("This portrait is not unlocked yet");
+    }
+  };
+
+  // Function to unlock a new title
+  const unlockTitle = async (titleId: string) => {
+    if (!titleId.trim() || !profile) return;
+    
+    // Don't add duplicates
+    if (profile.unlockedTitles.includes(titleId)) return;
+    
+    const updatedTitles = [...profile.unlockedTitles, titleId];
+    await updateProfile({ unlockedTitles: updatedTitles });
+    console.log(`New title unlocked: ${titleId}`);
+  };
+
+  // Function to unlock a new portrait
+  const unlockPortrait = async (portraitId: string) => {
+    if (!portraitId.trim() || !profile) return;
+    
+    // Don't add duplicates
+    if (profile.unlockedPortraits.includes(portraitId)) return;
+    
+    const updatedPortraits = [...profile.unlockedPortraits, portraitId];
+    await updateProfile({ unlockedPortraits: updatedPortraits });
+    console.log(`New portrait unlocked: ${portraitId}`);
+  };
+
   const value = {
     user,
     profile,
     loading,
     error,
     updateProfile,
-    updateUsername
+    updateUsername,
+    updateTitle,
+    updatePortrait,
+    unlockTitle,
+    unlockPortrait
   };
 
   return (

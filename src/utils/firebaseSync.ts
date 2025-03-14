@@ -2,6 +2,7 @@
 import { getFirestore, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { GameState } from '@/context/GameContext';
 import { UserProfile } from '@/context/FirebaseContext';
+import { getLevelFromExp } from '@/data/playerProgressionData';
 
 /**
  * Sync important game metrics with the Firebase database
@@ -16,14 +17,18 @@ export const syncGameProgress = async (
     const db = getFirestore();
     const userDocRef = doc(db, 'users', uid);
     
+    // Calculate level from total coins earned (used as experience)
+    const exp = gameState.totalEarned || 0;
+    const { currentLevel } = getLevelFromExp(exp);
+    
     // Only sync important metrics that should be saved between sessions
     await updateDoc(userDocRef, {
-      level: gameState.prestigeCount + 1,
+      level: currentLevel.level,
+      exp: exp,
       coins: gameState.coins,
       essence: gameState.essence,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,
-      exp: gameState.totalClicks || 0, // Using total clicks as a simple measure of experience
       lastLogin: serverTimestamp()
     });
     
@@ -34,7 +39,7 @@ export const syncGameProgress = async (
 };
 
 /**
- * Update achievement progress
+ * Update achievement progress and check for title/portrait unlocks
  */
 export const syncAchievements = async (
   uid: string,
@@ -59,21 +64,101 @@ export const syncAchievements = async (
  */
 export const updatePlayerTitle = async (
   uid: string,
-  title: string
+  titleId: string
 ) => {
-  if (!uid || !title) return;
+  if (!uid || !titleId) return;
   
   try {
     const db = getFirestore();
     const userDocRef = doc(db, 'users', uid);
     
     await updateDoc(userDocRef, {
-      title: title
+      title: titleId
     });
     
     return true;
   } catch (error) {
     console.error("Error updating player title:", error);
+    return false;
+  }
+};
+
+/**
+ * Update player portrait/border
+ */
+export const updatePlayerPortrait = async (
+  uid: string,
+  portraitId: string
+) => {
+  if (!uid || !portraitId) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    await updateDoc(userDocRef, {
+      portrait: portraitId
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating player portrait:", error);
+    return false;
+  }
+};
+
+/**
+ * Unlock a new title for the user
+ */
+export const unlockPlayerTitle = async (
+  uid: string,
+  titleId: string,
+  currentTitles: string[]
+) => {
+  if (!uid || !titleId) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    // Don't add duplicates
+    if (currentTitles.includes(titleId)) return true;
+    
+    await updateDoc(userDocRef, {
+      unlockedTitles: [...currentTitles, titleId]
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error unlocking player title:", error);
+    return false;
+  }
+};
+
+/**
+ * Unlock a new portrait for the user
+ */
+export const unlockPlayerPortrait = async (
+  uid: string,
+  portraitId: string,
+  currentPortraits: string[]
+) => {
+  if (!uid || !portraitId) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    // Don't add duplicates
+    if (currentPortraits.includes(portraitId)) return true;
+    
+    await updateDoc(userDocRef, {
+      unlockedPortraits: [...currentPortraits, portraitId]
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error unlocking player portrait:", error);
     return false;
   }
 };

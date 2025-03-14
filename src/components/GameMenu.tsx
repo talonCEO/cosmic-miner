@@ -24,7 +24,7 @@ interface GameMenuProps {
 
 const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) => {
   const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
-  const [menuType, setMenuType] = useState<MenuType>("none");
+  const [activeMenuType, setActiveMenuType] = useState<MenuType>("none");
   const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
   const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
   
@@ -40,22 +40,22 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       // Reset to main menu when dialog is closed externally
-      setMenuType("none");
+      setActiveMenuType("none");
     }
   };
   
   const handleButtonClick = () => {
     if (buttonType === 'main') {
-      setMenuType("main");
+      setActiveMenuType("main");
     } else if (buttonType === 'premium') {
-      setMenuType("premium");
+      setActiveMenuType("premium");
     }
   };
   
   const handlePrestige = () => {
     const essenceReward = calculatePotentialEssenceReward();
     prestige();
-    setMenuType("none");
+    setActiveMenuType("none");
   };
 
   const handleBuyManager = (managerId: string, name: string) => {
@@ -123,58 +123,63 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   
   const potentialEssenceReward = calculatePotentialEssenceReward();
   
+  // Handler for menu type changes from subcomponents
+  const handleMenuChange = (menuType: MenuType) => {
+    setActiveMenuType(menuType);
+  };
+  
   return (
-    <Dialog onOpenChange={handleOpenChange} open={menuType !== "none"}>
+    <Dialog onOpenChange={handleOpenChange} open={activeMenuType !== "none"}>
       <MenuButton 
         variant={buttonType === 'premium' ? 'premium' : 'default'} 
         onClick={handleButtonClick} 
       />
       
       <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[9999]">
-        {menuType === "main" && (
-          <MainMenu setMenuType={setMenuType} />
+        {activeMenuType === "main" && (
+          <MainMenu setMenuType={handleMenuChange} />
         )}
         
-        {menuType === "profile" && (
+        {activeMenuType === "profile" && (
           <Profile />
         )}
         
-        {menuType === "achievements" && (
-          <Achievements achievements={state.achievements} />
+        {activeMenuType === "achievements" && (
+          <Achievements achievements={state.achievements || []} />
         )}
         
-        {menuType === "leaderboard" && (
+        {activeMenuType === "leaderboard" && (
           <Leaderboard />
         )}
         
-        {menuType === "inventory" && (
+        {activeMenuType === "inventory" && (
           <Inventory />
         )}
         
-        {menuType === "techTree" && (
+        {activeMenuType === "techTree" && (
           <TechTree />
         )}
         
-        {menuType === "prestige" && (
+        {activeMenuType === "prestige" && (
           <Prestige 
             potentialEssenceReward={potentialEssenceReward} 
             handlePrestige={handlePrestige} 
           />
         )}
         
-        {menuType === "shop" && (
+        {activeMenuType === "shop" && (
           <Shop 
             essence={state.essence}
-            managers={state.managers}
-            artifacts={state.artifacts}
-            ownedManagers={state.ownedManagers}
-            ownedArtifacts={state.ownedArtifacts}
+            managers={state.managers || []}
+            artifacts={state.artifacts || []}
+            ownedManagers={state.ownedManagers || []}
+            ownedArtifacts={state.ownedArtifacts || []}
             onBuyManager={handleBuyManager}
             onBuyArtifact={handleBuyArtifact}
           />
         )}
         
-        {menuType === "premium" && (
+        {activeMenuType === "premium" && (
           <PremiumStore 
             playerGems={playerGems}
             boostItems={boostItems}

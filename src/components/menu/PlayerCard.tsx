@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Check, Lock, Gift } from 'lucide-react';
+import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
 
 interface PlayerCardProps {
   playerName: string;
@@ -33,7 +35,20 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false); // State for chest availability
-  const expPercentage = (playerExp / playerMaxExp) * 100;
+  const [titleDisplay, setTitleDisplay] = useState(playerTitle);
+  
+  // Calculate the level and progress based on experience
+  const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
+  
+  // Set the correct title display name from the title ID
+  useEffect(() => {
+    const title = getTitleById(playerTitle);
+    if (title) {
+      setTitleDisplay(title.name);
+    } else {
+      setTitleDisplay(playerTitle);
+    }
+  }, [playerTitle]);
   
   // Use provided userId or generate a random one (still needed for logic, just not displayed)
   const playerUID = userId || React.useMemo(() => {
@@ -64,6 +79,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     }
   };
   
+  // Get appropriate text for next level info
+  const getNextLevelText = () => {
+    if (!nextLevel) {
+      return "Max Level";
+    }
+    return `${playerExp}/${nextLevel.expRequired}`;
+  };
+  
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex">
@@ -76,7 +99,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </AvatarFallback>
           </Avatar>
           <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
-            {playerTitle}
+            {titleDisplay}
           </div>
         </div>
         
@@ -100,7 +123,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center mb-7">
+            <div className="flex items-center mb-2">
               <Button 
                 size="icon" 
                 variant="ghost"
@@ -115,16 +138,24 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           
           <div className="flex items-center gap-2 mb-1">
             <div className="text-white text-xs font-medium">
-              Level {playerLevel}
+              Level {currentLevel.level}
             </div>
+            
+            {/* Display level reward if applicable */}
+            {currentLevel.rewards && (
+              <div className="text-xs text-amber-400">
+                {currentLevel.rewards.skillPoints ? `+${currentLevel.rewards.skillPoints} SP` : ''}
+                {currentLevel.rewards.essence ? ` +${currentLevel.rewards.essence} Essence` : ''}
+              </div>
+            )}
           </div>
           
           <div className="space-y-0.5">
             <div className="flex justify-between text-xs text-slate-300">
               <span>XP</span>
-              <span>{playerExp}/{playerMaxExp}</span>
+              <span>{getNextLevelText()}</span>
             </div>
-            <Progress value={expPercentage} className="h-1.5 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
+            <Progress value={progress} className="h-1.5 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
           </div>
         </div>
         
@@ -171,6 +202,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Player ID at the bottom */}
+      {userId && (
+        <div className="mt-2 text-xs text-slate-400 text-center">
+          ID: {userId}
+        </div>
+      )}
     </div>
   );
 };
