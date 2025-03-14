@@ -1,4 +1,3 @@
-
 /**
  * Player Progression Data
  * 
@@ -9,6 +8,7 @@
  */
 
 import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
+import { ReactNode } from 'react';
 
 // =========================================
 // Level Data (1-100)
@@ -238,7 +238,7 @@ export interface PortraitData {
   glowClass?: string;             // Tailwind CSS glow effect
   animationClass?: string;        // Animation class
   gradientColors?: string[];      // Array of colors for gradient
-  icon?: React.ReactNode;         // Optional icon component
+  iconName?: string;              // Name of the icon to use
   shaderKey?: string;             // Reference to a shader in the shaders.ts file
 }
 
@@ -267,7 +267,7 @@ export const PORTRAITS: PortraitData[] = [
     borderClass: 'border-2',
     glowClass: 'shadow-lg shadow-purple-500/50',
     gradientColors: ['#8B5CF6', '#EC4899'],
-    icon: <Star className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+    iconName: 'Star'
   },
   {
     id: 'cosmic_spark',
@@ -283,7 +283,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-lg shadow-blue-500/50',
     animationClass: 'animate-pulse',
     gradientColors: ['#3B82F6', '#06B6D4'],
-    icon: <Zap className="absolute -top-1 -right-1 h-4 w-4 text-blue-400" />
+    iconName: 'Zap'
   },
   {
     id: 'stellar_halo',
@@ -299,7 +299,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-xl shadow-amber-500/50',
     animationClass: 'animate-border-pulse',
     gradientColors: ['#F59E0B', '#EF4444'],
-    icon: <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-amber-400" />
+    iconName: 'Sparkles'
   },
   {
     id: 'void_ripple',
@@ -315,7 +315,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-xl shadow-indigo-500/50',
     animationClass: 'animate-border-flow',
     gradientColors: ['#6366F1', '#A78BFA', '#EC4899'],
-    icon: <ShieldCheck className="absolute -top-1 -right-1 h-4 w-4 text-indigo-400" />
+    iconName: 'ShieldCheck'
   },
   {
     id: 'celestial_radiance',
@@ -331,7 +331,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-2xl shadow-yellow-500/50',
     animationClass: 'animate-cosmic-pulse',
     gradientColors: ['#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#3B82F6'],
-    icon: <Trophy className="absolute -top-1 -right-1 h-5 w-5 text-yellow-400" />,
+    iconName: 'Trophy',
     shaderKey: 'glowShader'
   }
 ];
@@ -557,3 +557,27 @@ export const portraitStyles = `
   }
 }
 `;
+
+/**
+ * Helper function to get the icon component for a portrait
+ * @param iconName Name of the icon from lucide-react
+ * @returns React component for the icon or null if not found
+ */
+export const getPortraitIcon = (iconName?: string): ReactNode => {
+  if (!iconName) return null;
+  
+  switch (iconName) {
+    case 'Star':
+      return <Star className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />;
+    case 'Zap':
+      return <Zap className="absolute -top-1 -right-1 h-4 w-4 text-blue-400" />;
+    case 'Sparkles':
+      return <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-amber-400" />;
+    case 'ShieldCheck':
+      return <ShieldCheck className="absolute -top-1 -right-1 h-4 w-4 text-indigo-400" />;
+    case 'Trophy':
+      return <Trophy className="absolute -top-1 -right-1 h-5 w-5 text-yellow-400" />;
+    default:
+      return null;
+  }
+};
