@@ -563,6 +563,7 @@ export const portraitStyles = `
  * @param iconName Name of the icon from lucide-react
  * @returns React component for the icon or null if not found
  */
+/*
 export const getPortraitIcon = (iconName?: string): ReactNode => {
   if (!iconName) return null;
   
@@ -581,3 +582,4 @@ export const getPortraitIcon = (iconName?: string): ReactNode => {
       return null;
   }
 };
+*/
