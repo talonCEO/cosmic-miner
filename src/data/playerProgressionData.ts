@@ -1,6 +1,6 @@
 /**
  * Player Progression Data
- * 
+ *
  * This file contains all the information related to player progression:
  * - Level thresholds and rewards
  * - Titles and their unlock requirements
@@ -16,8 +16,8 @@ import { ReactNode } from 'react';
 
 export interface LevelData {
   level: number;
-  expRequired: number;     // Experience required to reach this level
-  rewards?: {              // Optional rewards given when reaching this level
+  expRequired: number; // Experience required to reach this level
+  rewards?: { // Optional rewards given when reaching this level
     coins?: number;
     essence?: number;
     skillPoints?: number;
@@ -33,46 +33,46 @@ export interface LevelData {
  */
 export const generateLevelData = (): LevelData[] => {
   const levels: LevelData[] = [];
-  const baseExp = 150;      // Base experience for level 1
+  const baseExp = 150; // Base experience for level 1
   const scalingFactor = 1.5; // How quickly the curve increases
-  
+
   for (let i = 1; i <= 100; i++) {
     const level: LevelData = {
       level: i,
-      expRequired: Math.round(baseExp * Math.pow(i, scalingFactor))
+      expRequired: Math.round(baseExp * Math.pow(i, scalingFactor)),
     };
-    
+
     // Add special rewards at milestone levels
     if (i % 5 === 0) { // Every 5 levels
       level.rewards = { skillPoints: 1 };
-      
+
       // Add more rewards at bigger milestones
       if (i % 10 === 0) { // Every 10 levels
         level.rewards.essence = i * 2;
       }
-      
+
       if (i % 25 === 0) { // Every 25 levels
         level.rewards.gems = 50;
       }
     }
-    
+
     // Specific milestone rewards
     if (i === 10) level.rewards = { ...level.rewards, unlocksTitle: 'space_rookie' };
     if (i === 25) level.rewards = { ...level.rewards, unlocksTitle: 'cosmic_explorer' };
     if (i === 50) level.rewards = { ...level.rewards, unlocksTitle: 'galactic_pioneer' };
     if (i === 75) level.rewards = { ...level.rewards, unlocksTitle: 'stellar_commander' };
     if (i === 100) level.rewards = { ...level.rewards, unlocksTitle: 'celestial_sovereign' };
-    
+
     // Portrait unlocks
     if (i === 20) level.rewards = { ...level.rewards, unlocksPortrait: 'nebula_glow' };
     if (i === 40) level.rewards = { ...level.rewards, unlocksPortrait: 'cosmic_spark' };
     if (i === 60) level.rewards = { ...level.rewards, unlocksPortrait: 'stellar_halo' };
     if (i === 80) level.rewards = { ...level.rewards, unlocksPortrait: 'void_ripple' };
     if (i === 100) level.rewards = { ...level.rewards, unlocksPortrait: 'celestial_radiance' };
-    
+
     levels.push(level);
   }
-  
+
   return levels;
 };
 
@@ -87,14 +87,14 @@ export interface TitleData {
   name: string;
   description: string;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  unlockCriteria: string;  // Human-readable unlock description
+  unlockCriteria: string; // Human-readable unlock description
   unlockCondition: {
     type: 'level' | 'achievement' | 'purchase' | 'prestige' | 'collection' | 'starting';
-    value?: number;        // Specific value needed (level number, count, etc)
+    value?: number; // Specific value needed (level number, count, etc)
     achievementId?: string; // If unlocked by specific achievement
   };
-  color?: string;          // Optional CSS color class for the title
-  special?: boolean;       // Whether this is a special/limited title
+  color?: string; // Optional CSS color class for the title
+  special?: boolean; // Whether this is a special/limited title
 }
 
 export const TITLES: TitleData[] = [
@@ -104,9 +104,7 @@ export const TITLES: TitleData[] = [
     description: 'Default title for all new cosmic miners',
     rarity: 'common',
     unlockCriteria: 'Default starting title for all players',
-    unlockCondition: {
-      type: 'starting'
-    }
+    unlockCondition: { type: 'starting' },
   },
   {
     id: 'space_rookie',
@@ -114,10 +112,7 @@ export const TITLES: TitleData[] = [
     description: 'Achieved a basic understanding of cosmic mining',
     rarity: 'common',
     unlockCriteria: 'Reach Level 10',
-    unlockCondition: {
-      type: 'level',
-      value: 10
-    }
+    unlockCondition: { type: 'level', value: 10 },
   },
   {
     id: 'cosmic_explorer',
@@ -125,11 +120,8 @@ export const TITLES: TitleData[] = [
     description: 'Ventured deeper into the cosmic realms',
     rarity: 'uncommon',
     unlockCriteria: 'Reach Level 25',
-    unlockCondition: {
-      type: 'level',
-      value: 25
-    },
-    color: 'text-blue-400'
+    unlockCondition: { type: 'level', value: 25 },
+    color: 'text-blue-400',
   },
   {
     id: 'asteroid_hunter',
@@ -137,11 +129,8 @@ export const TITLES: TitleData[] = [
     description: 'Master of finding valuable cosmic rocks',
     rarity: 'uncommon',
     unlockCriteria: 'Mine 1,000,000 coins total',
-    unlockCondition: {
-      type: 'achievement',
-      achievementId: 'earn_million'
-    },
-    color: 'text-amber-400'
+    unlockCondition: { type: 'achievement', achievementId: 'earn_million' },
+    color: 'text-amber-400',
   },
   {
     id: 'galactic_pioneer',
@@ -149,11 +138,8 @@ export const TITLES: TitleData[] = [
     description: 'Charted unknown territories of the cosmic mine',
     rarity: 'rare',
     unlockCriteria: 'Reach Level 50',
-    unlockCondition: {
-      type: 'level',
-      value: 50
-    },
-    color: 'text-purple-400'
+    unlockCondition: { type: 'level', value: 50 },
+    color: 'text-purple-400',
   },
   {
     id: 'essence_collector',
@@ -161,11 +147,8 @@ export const TITLES: TitleData[] = [
     description: 'Amassed significant cosmic essence',
     rarity: 'rare',
     unlockCriteria: 'Collect 100 Essence total',
-    unlockCondition: {
-      type: 'achievement',
-      achievementId: 'collect_essence_100'
-    },
-    color: 'text-indigo-500'
+    unlockCondition: { type: 'achievement', achievementId: 'collect_essence_100' },
+    color: 'text-indigo-500',
   },
   {
     id: 'stellar_commander',
@@ -173,11 +156,8 @@ export const TITLES: TitleData[] = [
     description: 'Commands respect throughout the galaxy',
     rarity: 'epic',
     unlockCriteria: 'Reach Level 75',
-    unlockCondition: {
-      type: 'level',
-      value: 75
-    },
-    color: 'text-emerald-400'
+    unlockCondition: { type: 'level', value: 75 },
+    color: 'text-emerald-400',
   },
   {
     id: 'nebula_master',
@@ -185,11 +165,8 @@ export const TITLES: TitleData[] = [
     description: 'Mastered the art of harnessing nebula energy',
     rarity: 'epic',
     unlockCriteria: 'Prestige 10 times',
-    unlockCondition: {
-      type: 'prestige',
-      value: 10
-    },
-    color: 'text-pink-500'
+    unlockCondition: { type: 'prestige', value: 10 },
+    color: 'text-pink-500',
   },
   {
     id: 'celestial_sovereign',
@@ -197,11 +174,8 @@ export const TITLES: TitleData[] = [
     description: 'Rules over the cosmic mining operation with unmatched expertise',
     rarity: 'legendary',
     unlockCriteria: 'Reach Level 100',
-    unlockCondition: {
-      type: 'level',
-      value: 100
-    },
-    color: 'text-yellow-400'
+    unlockCondition: { type: 'level', value: 100 },
+    color: 'text-yellow-400',
   },
   {
     id: 'cosmic_deity',
@@ -209,13 +183,10 @@ export const TITLES: TitleData[] = [
     description: 'Transcended mortal limitations in cosmic mining',
     rarity: 'legendary',
     unlockCriteria: 'Complete all achievements',
-    unlockCondition: {
-      type: 'collection',
-      value: 100 // Assuming 100% achievement completion
-    },
+    unlockCondition: { type: 'collection', value: 100 }, // Assuming 100% achievement completion
     color: 'text-gradient-cosmic',
-    special: true
-  }
+    special: true,
+  },
 ];
 
 // =========================================
@@ -233,13 +204,12 @@ export interface PortraitData {
     value?: number;
     achievementId?: string;
   };
-  // Define the border style properties
-  borderClass?: string;           // Tailwind CSS classes
-  glowClass?: string;             // Tailwind CSS glow effect
-  animationClass?: string;        // Animation class
-  gradientColors?: string[];      // Array of colors for gradient
-  iconName?: string;              // Name of the icon to use
-  shaderKey?: string;             // Reference to a shader in the shaders.ts file
+  borderClass?: string; // Tailwind CSS classes
+  glowClass?: string; // Tailwind CSS glow effect
+  animationClass?: string; // Animation class
+  gradientColors?: string[]; // Array of colors for gradient
+  iconName?: string; // Name of the icon to use
+  shaderKey?: string; // Reference to a shader in the shaders.ts file
 }
 
 export const PORTRAITS: PortraitData[] = [
@@ -249,10 +219,8 @@ export const PORTRAITS: PortraitData[] = [
     description: 'Basic border for all cosmic miners',
     rarity: 'common',
     unlockCriteria: 'Default starting border',
-    unlockCondition: {
-      type: 'starting'
-    },
-    borderClass: 'border-2 border-slate-400'
+    unlockCondition: { type: 'starting' },
+    borderClass: 'border-2 border-slate-400',
   },
   {
     id: 'nebula_glow',
@@ -260,14 +228,11 @@ export const PORTRAITS: PortraitData[] = [
     description: 'A mystical aura emanating from distant nebulae',
     rarity: 'uncommon',
     unlockCriteria: 'Reach Level 20',
-    unlockCondition: {
-      type: 'level',
-      value: 20
-    },
+    unlockCondition: { type: 'level', value: 20 },
     borderClass: 'border-2',
     glowClass: 'shadow-lg shadow-purple-500/50',
     gradientColors: ['#8B5CF6', '#EC4899'],
-    iconName: 'Star'
+    iconName: 'Star',
   },
   {
     id: 'cosmic_spark',
@@ -275,15 +240,12 @@ export const PORTRAITS: PortraitData[] = [
     description: 'Surging energy from the heart of cosmic anomalies',
     rarity: 'rare',
     unlockCriteria: 'Reach Level 40',
-    unlockCondition: {
-      type: 'level',
-      value: 40
-    },
+    unlockCondition: { type: 'level', value: 40 },
     borderClass: 'border-2',
     glowClass: 'shadow-lg shadow-blue-500/50',
     animationClass: 'animate-pulse',
     gradientColors: ['#3B82F6', '#06B6D4'],
-    iconName: 'Zap'
+    iconName: 'Zap',
   },
   {
     id: 'stellar_halo',
@@ -291,15 +253,12 @@ export const PORTRAITS: PortraitData[] = [
     description: 'Radiance of a thousand distant stars',
     rarity: 'epic',
     unlockCriteria: 'Reach Level 60',
-    unlockCondition: {
-      type: 'level',
-      value: 60
-    },
+    unlockCondition: { type: 'level', value: 60 },
     borderClass: 'border-3',
     glowClass: 'shadow-xl shadow-amber-500/50',
     animationClass: 'animate-border-pulse',
     gradientColors: ['#F59E0B', '#EF4444'],
-    iconName: 'Sparkles'
+    iconName: 'Sparkles',
   },
   {
     id: 'void_ripple',
@@ -307,15 +266,12 @@ export const PORTRAITS: PortraitData[] = [
     description: 'Mysterious energies from the edge of the universe',
     rarity: 'epic',
     unlockCriteria: 'Reach Level 80',
-    unlockCondition: {
-      type: 'level',
-      value: 80
-    },
+    unlockCondition: { type: 'level', value: 80 },
     borderClass: 'border-3',
     glowClass: 'shadow-xl shadow-indigo-500/50',
     animationClass: 'animate-border-flow',
     gradientColors: ['#6366F1', '#A78BFA', '#EC4899'],
-    iconName: 'ShieldCheck'
+    iconName: 'ShieldCheck',
   },
   {
     id: 'celestial_radiance',
@@ -323,17 +279,14 @@ export const PORTRAITS: PortraitData[] = [
     description: 'The ultimate cosmic power, harnessed as a portrait border',
     rarity: 'legendary',
     unlockCriteria: 'Reach Level 100',
-    unlockCondition: {
-      type: 'level',
-      value: 100
-    },
+    unlockCondition: { type: 'level', value: 100 },
     borderClass: 'border-4',
     glowClass: 'shadow-2xl shadow-yellow-500/50',
     animationClass: 'animate-cosmic-pulse',
     gradientColors: ['#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#3B82F6'],
     iconName: 'Trophy',
-    shaderKey: 'glowShader'
-  }
+    shaderKey: 'glowShader',
+  },
 ];
 
 /**
@@ -341,15 +294,12 @@ export const PORTRAITS: PortraitData[] = [
  * @param exp Current experience points
  * @returns Current level data and progress to next level
  */
-export const getLevelFromExp = (exp: number): { 
-  currentLevel: LevelData, 
-  nextLevel: LevelData | null,
-  progress: number 
-} => {
-  // Find the highest level the player has achieved
+export const getLevelFromExp = (
+  exp: number
+): { currentLevel: LevelData; nextLevel: LevelData | null; progress: number } => {
   let currentLevel = LEVELS[0];
   let nextLevel: LevelData | null = LEVELS[1];
-  
+
   for (let i = 0; i < LEVELS.length; i++) {
     if (exp >= LEVELS[i].expRequired) {
       currentLevel = LEVELS[i];
@@ -358,8 +308,7 @@ export const getLevelFromExp = (exp: number): {
       break;
     }
   }
-  
-  // Calculate progress to next level
+
   let progress = 0;
   if (nextLevel) {
     const currentLevelExp = currentLevel.expRequired;
@@ -368,10 +317,9 @@ export const getLevelFromExp = (exp: number): {
     const playerProgress = exp - currentLevelExp;
     progress = Math.min(Math.max(playerProgress / expRange, 0), 1) * 100;
   } else {
-    // Max level reached
-    progress = 100;
+    progress = 100; // Max level reached
   }
-  
+
   return { currentLevel, nextLevel, progress };
 };
 
@@ -381,7 +329,7 @@ export const getLevelFromExp = (exp: number): {
  * @returns Title data or undefined if not found
  */
 export const getTitleById = (id: string): TitleData | undefined => {
-  return TITLES.find(title => title.id === id);
+  return TITLES.find((title) => title.id === id);
 };
 
 /**
@@ -390,7 +338,7 @@ export const getTitleById = (id: string): TitleData | undefined => {
  * @returns Portrait data or undefined if not found
  */
 export const getPortraitById = (id: string): PortraitData | undefined => {
-  return PORTRAITS.find(portrait => portrait.id === id);
+  return PORTRAITS.find((portrait) => portrait.id === id);
 };
 
 /**
@@ -402,14 +350,14 @@ export const getPortraitById = (id: string): PortraitData | undefined => {
  * @returns Boolean indicating if the title is unlocked
  */
 export const isTitleUnlocked = (
-  titleId: string, 
-  userLevel: number, 
+  titleId: string,
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): boolean => {
   const title = getTitleById(titleId);
   if (!title) return false;
-  
+
   switch (title.unlockCondition.type) {
     case 'starting':
       return true;
@@ -420,9 +368,7 @@ export const isTitleUnlocked = (
     case 'prestige':
       return prestigeCount >= (title.unlockCondition.value || 0);
     case 'collection':
-      // For 100% achievement completion
-      // This would need to be compared against the total number of achievements
-      return false; // Implement based on actual achievement system
+      return false; // Placeholder; implement based on actual achievement system
     default:
       return false;
   }
@@ -437,14 +383,14 @@ export const isTitleUnlocked = (
  * @returns Boolean indicating if the portrait is unlocked
  */
 export const isPortraitUnlocked = (
-  portraitId: string, 
-  userLevel: number, 
+  portraitId: string,
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): boolean => {
   const portrait = getPortraitById(portraitId);
   if (!portrait) return false;
-  
+
   switch (portrait.unlockCondition.type) {
     case 'starting':
       return true;
@@ -455,7 +401,7 @@ export const isPortraitUnlocked = (
     case 'prestige':
       return prestigeCount >= (portrait.unlockCondition.value || 0);
     case 'collection':
-      return false; // Implement based on actual collection system
+      return false; // Placeholder; implement based on actual collection system
     default:
       return false;
   }
@@ -469,11 +415,11 @@ export const isPortraitUnlocked = (
  * @returns Array of unlocked title data
  */
 export const getUnlockedTitles = (
-  userLevel: number, 
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): TitleData[] => {
-  return TITLES.filter(title => 
+  return TITLES.filter((title) =>
     isTitleUnlocked(title.id, userLevel, userAchievements, prestigeCount)
   );
 };
@@ -486,76 +432,76 @@ export const getUnlockedTitles = (
  * @returns Array of unlocked portrait data
  */
 export const getUnlockedPortraits = (
-  userLevel: number, 
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): PortraitData[] => {
-  return PORTRAITS.filter(portrait => 
+  return PORTRAITS.filter((portrait) =>
     isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount)
   );
 };
 
 // Add CSS classes for special border animations
 export const portraitStyles = `
-.animate-border-pulse {
-  animation: border-pulse 2s ease-in-out infinite;
-}
+  .animate-border-pulse {
+    animation: border-pulse 2s ease-in-out infinite;
+  }
 
-.animate-border-flow {
-  animation: border-flow 3s linear infinite;
-  background: linear-gradient(90deg, #6366F1, #A78BFA, #EC4899, #6366F1);
-  background-size: 300% 100%;
-}
+  .animate-border-flow {
+    animation: border-flow 3s linear infinite;
+    background: linear-gradient(90deg, #6366F1, #A78BFA, #EC4899, #6366F1);
+    background-size: 300% 100%;
+  }
 
-.animate-cosmic-pulse {
-  animation: cosmic-pulse 4s ease-in-out infinite;
-  background: linear-gradient(90deg, #F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6, #F59E0B);
-  background-size: 600% 100%;
-}
+  .animate-cosmic-pulse {
+    animation: cosmic-pulse 4s ease-in-out infinite;
+    background: linear-gradient(90deg, #F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6, #F59E0B);
+    background-size: 600% 100%;
+  }
 
-@keyframes border-pulse {
-  0%, 100% {
-    border-color: rgba(139, 92, 246, 0.8);
+  @keyframes border-pulse {
+    0%, 100% {
+      border-color: rgba(139, 92, 246, 0.8);
+    }
+    50% {
+      border-color: rgba(236, 72, 153, 0.8);
+    }
   }
-  50% {
-    border-color: rgba(236, 72, 153, 0.8);
-  }
-}
 
-@keyframes border-flow {
-  0% {
-    background-position: 0% 0%;
+  @keyframes border-flow {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 100% 0%;
+    }
   }
-  100% {
-    background-position: 100% 0%;
-  }
-}
 
-@keyframes cosmic-pulse {
-  0% {
-    background-position: 0% 0%;
+  @keyframes cosmic-pulse {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 100% 0%;
+    }
   }
-  100% {
-    background-position: 100% 0%;
-  }
-}
 
-.text-gradient-cosmic {
-  background: linear-gradient(90deg, #F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 400% 100%;
-  animation: cosmic-text-flow 4s linear infinite;
-}
+  .text-gradient-cosmic {
+    background: linear-gradient(90deg, #F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 400% 100%;
+    animation: cosmic-text-flow 4s linear infinite;
+  }
 
-@keyframes cosmic-text-flow {
-  0% {
-    background-position: 0% 0%;
+  @keyframes cosmic-text-flow {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 400% 0%;
+    }
   }
-  100% {
-    background-position: 400% 0%;
-  }
-}
 `;
 
 /**
@@ -566,7 +512,7 @@ export const portraitStyles = `
 /*
 export const getPortraitIcon = (iconName?: string): ReactNode => {
   if (!iconName) return null;
-  
+
   switch (iconName) {
     case 'Star':
       return <Star className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />;
