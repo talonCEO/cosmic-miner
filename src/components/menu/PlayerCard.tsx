@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -33,12 +34,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false); // State for chest availability
-  const expPercentage = (playerExp / playerMaxExp) * 100;
   
-  // Use provided userId or generate a random one (still needed for logic, just not displayed)
-  const playerUID = userId || React.useMemo(() => {
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
-  }, []);
+  // Calculate exp percentage for progress bar
+  const expPercentage = playerMaxExp > 0 
+    ? Math.min(100, Math.floor((playerExp % playerMaxExp) / playerMaxExp * 100)) 
+    : 100;
   
   const handleSaveName = () => {
     if (name.trim()) {
@@ -63,6 +63,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       setIsChestAvailable(false); // Example: make it unavailable after clicking
     }
   };
+
+  // Format exp numbers for display
+  const formattedExp = formatCurrency(playerExp);
+  const formattedMaxExp = formatCurrency(playerMaxExp);
   
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
@@ -100,7 +104,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center mb-7">
+            <div className="flex items-center mb-2">
               <Button 
                 size="icon" 
                 variant="ghost"
@@ -114,7 +118,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           )}
           
           <div className="flex items-center gap-2 mb-1">
-            <div className="text-white text-xs font-medium">
+            <div className="text-white text-xs font-medium bg-indigo-800/50 px-1.5 py-0.5 rounded">
               Level {playerLevel}
             </div>
           </div>
@@ -122,9 +126,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           <div className="space-y-0.5">
             <div className="flex justify-between text-xs text-slate-300">
               <span>XP</span>
-              <span>{playerExp}/{playerMaxExp}</span>
+              <span>{formattedExp}/{formattedMaxExp}</span>
             </div>
-            <Progress value={expPercentage} className="h-1.5 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
+            <Progress 
+              value={expPercentage} 
+              className="h-1.5 bg-slate-700/50" 
+              indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" 
+            />
           </div>
         </div>
         
