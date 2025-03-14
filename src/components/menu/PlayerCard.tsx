@@ -81,7 +81,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
         
         {/* Middle column: Player info */}
-        <div className="ml-3 flex-1">
+        <div className="ml-3 flex-1" mt-"2">
           {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
               <Input 
