@@ -141,7 +141,7 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
         )}
         
         {activeMenuType === "profile" && (
-          <Profile />
+          <Profile setMenuType={handleMenuChange} />
         )}
         
         {activeMenuType === "achievements" && (

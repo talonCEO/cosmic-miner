@@ -8,8 +8,13 @@ import PlayerFriends from './PlayerFriends';
 import { useFirebase } from '@/context/FirebaseContext';
 import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
+import { MenuType } from './types';
 
-const Profile: React.FC = () => {
+interface ProfileProps {
+  setMenuType?: (menuType: MenuType) => void;
+}
+
+const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
   const { profile, loading, updateUsername, updateTitle } = useFirebase();
   
@@ -54,15 +59,17 @@ const Profile: React.FC = () => {
   };
   
   const handleAchievementsClick = () => {
-    // Navigate to achievements menu
-    // For GameMenu component we'd use:
-    // dispatch({ type: 'SET_MENU', payload: 'achievements' });
+    // Navigate to achievements menu if setMenuType prop is available
+    if (setMenuType) {
+      setMenuType('achievements');
+    }
   };
   
   const handleLeaderboardClick = () => {
-    // Navigate to leaderboard menu
-    // For GameMenu component we'd use:
-    // dispatch({ type: 'SET_MENU', payload: 'leaderboard' });
+    // Navigate to leaderboard menu if setMenuType prop is available
+    if (setMenuType) {
+      setMenuType('leaderboard');
+    }
   };
   
   return (
