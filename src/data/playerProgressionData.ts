@@ -8,7 +8,8 @@
  * - Portrait borders/effects and their unlock requirements
  */
 
-import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
+// We need to avoid using JSX in .ts files, so we'll use string-based icons
+// import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
 
 // =========================================
 // Level Data (1-100)
@@ -238,7 +239,7 @@ export interface PortraitData {
   glowClass?: string;             // Tailwind CSS glow effect
   animationClass?: string;        // Animation class
   gradientColors?: string[];      // Array of colors for gradient
-  icon?: React.ReactNode;         // Optional icon component
+  iconName?: string;              // Name of the icon to use instead of React component
   shaderKey?: string;             // Reference to a shader in the shaders.ts file
 }
 
@@ -267,7 +268,7 @@ export const PORTRAITS: PortraitData[] = [
     borderClass: 'border-2',
     glowClass: 'shadow-lg shadow-purple-500/50',
     gradientColors: ['#8B5CF6', '#EC4899'],
-    icon: <Star className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+    iconName: 'star' // Instead of JSX: icon: <Star className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
   },
   {
     id: 'cosmic_spark',
@@ -283,7 +284,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-lg shadow-blue-500/50',
     animationClass: 'animate-pulse',
     gradientColors: ['#3B82F6', '#06B6D4'],
-    icon: <Zap className="absolute -top-1 -right-1 h-4 w-4 text-blue-400" />
+    iconName: 'zap' // Instead of JSX: icon: <Zap className="absolute -top-1 -right-1 h-4 w-4 text-blue-400" />
   },
   {
     id: 'stellar_halo',
@@ -299,7 +300,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-xl shadow-amber-500/50',
     animationClass: 'animate-border-pulse',
     gradientColors: ['#F59E0B', '#EF4444'],
-    icon: <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-amber-400" />
+    iconName: 'sparkles' // Instead of JSX: icon: <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-amber-400" />
   },
   {
     id: 'void_ripple',
@@ -315,7 +316,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-xl shadow-indigo-500/50',
     animationClass: 'animate-border-flow',
     gradientColors: ['#6366F1', '#A78BFA', '#EC4899'],
-    icon: <ShieldCheck className="absolute -top-1 -right-1 h-4 w-4 text-indigo-400" />
+    iconName: 'shield-check' // Instead of JSX: icon: <ShieldCheck className="absolute -top-1 -right-1 h-4 w-4 text-indigo-400" />
   },
   {
     id: 'celestial_radiance',
@@ -331,7 +332,7 @@ export const PORTRAITS: PortraitData[] = [
     glowClass: 'shadow-2xl shadow-yellow-500/50',
     animationClass: 'animate-cosmic-pulse',
     gradientColors: ['#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#3B82F6'],
-    icon: <Trophy className="absolute -top-1 -right-1 h-5 w-5 text-yellow-400" />,
+    iconName: 'trophy', // Instead of JSX: icon: <Trophy className="absolute -top-1 -right-1 h-5 w-5 text-yellow-400" />
     shaderKey: 'glowShader'
   }
 ];
