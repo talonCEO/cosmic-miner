@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -34,13 +33,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
-  const [isChestAvailable, setIsChestAvailable] = useState(false); // State for chest availability
+  const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
   
-  // Calculate the level and progress based on experience
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
   
-  // Set the correct title display name from the title ID
   useEffect(() => {
     const title = getTitleById(playerTitle);
     if (title) {
@@ -50,7 +47,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     }
   }, [playerTitle]);
   
-  // Use provided userId or generate a random one (still needed for logic, just not displayed)
   const playerUID = userId || React.useMemo(() => {
     return Math.floor(10000000 + Math.random() * 90000000).toString();
   }, []);
@@ -64,22 +60,20 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
-      return `${(Math.round(amount / 100000) / 10).toFixed(1)}M`; // Round to 1 decimal place
+      return `${(Math.round(amount / 100000) / 10).toFixed(1)}M`;
     } else if (amount >= 1000) {
-      return `${(Math.round(amount / 100) / 10).toFixed(1)}K`; // Round to 1 decimal place
+      return `${(Math.round(amount / 100) / 10).toFixed(1)}K`;
     }
-    return amount.toFixed(1); // Round to 1 decimal place for values < 1000
+    return amount.toFixed(1);
   };
 
   const handleChestClick = () => {
     if (isChestAvailable) {
-      // Add your chest opening logic here
       console.log('Treasure chest opened!');
-      setIsChestAvailable(false); // Example: make it unavailable after clicking
+      setIsChestAvailable(false);
     }
   };
   
-  // Get appropriate text for next level info
   const getNextLevelText = () => {
     if (!nextLevel) {
       return "Max Level";
@@ -104,7 +98,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
         
         {/* Middle column: Player info */}
-        <div className="ml-3 flex-1">
+        <div className="ml-3 flex-1 pt-2"> {/* Added pt-2 for top padding */}
           {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
               <Input 
@@ -136,12 +130,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           )}
           
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 pt-1"> {/* Added pt-1 for level display padding */}
             <div className="text-white text-xs font-medium">
               Level {currentLevel.level}
             </div>
             
-            {/* Display level reward if applicable */}
             {currentLevel.rewards && (
               <div className="text-xs text-amber-400">
                 {currentLevel.rewards.skillPoints ? `+${currentLevel.rewards.skillPoints} SP` : ''}
@@ -161,7 +154,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         
         {/* Right column: Treasure Chest Button above Currency info */}
         <div className="ml-4 flex flex-col items-end space-y-2">
-          {/* Treasure Chest Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -185,7 +177,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           </Button>
 
-          {/* Currency info */}
           <div className="flex flex-col justify-center space-y-1 min-w-20">
             <div className="flex items-center justify-between">
               <span className="text-amber-400 text-xs font-semibold">Coins:</span>
@@ -202,13 +193,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         </div>
       </div>
-      
-      {/* Player ID at the bottom */}
-      {userId && (
-        <div className="mt-2 text-xs text-slate-400 text-center">
-          ID: {userId}
-        </div>
-      )}
     </div>
   );
 };
