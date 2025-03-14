@@ -1,8 +1,10 @@
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { StorageService } from '@/services/StorageService';
 import { Ability } from '@/utils/types';
-import { firebaseSync } from '@/utils/firebaseSync';
 import { formatNumber } from '@/utils/formatters';
+import { managers } from '@/utils/managersData';
+import { artifacts } from '@/utils/artifactsData';
 
 // Define available upgrade types
 export type UpgradeType = 'click' | 'production' | 'manager' | 'artifact';
@@ -22,6 +24,18 @@ export interface Upgrade {
   };
   unlocked: boolean;
   element?: string;
+  // Add missing properties referenced in other components
+  level: number;
+  cost: number;
+  coinsPerClickBonus?: number;
+  coinsPerSecondBonus?: number;
+  multiplierBonus?: number;
+  icon?: string;
+  category?: string;
+  unlocksAt?: {
+    upgradeId: string;
+    level: number;
+  };
 }
 
 // Manager interface
@@ -32,6 +46,10 @@ export interface Manager {
   cost: number;
   unlocked: boolean;
   element?: string;
+  bonus?: string;
+  boosts?: string[];
+  perks?: any[];
+  avatar?: string;
 }
 
 // Artifact interface
@@ -46,6 +64,33 @@ export interface Artifact {
     multiplier: number;
   };
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+}
+
+// Achievement interface
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  checkCondition?: (state: GameState) => boolean;
+}
+
+// Inventory item interface
+export interface InventoryItem {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  type: string;
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  usable: boolean;
+  stackable: boolean;
+  icon: React.ReactNode;
+  effect?: {
+    type: string;
+    value: number;
+    duration?: number;
+  };
 }
 
 // Perk interface
@@ -75,8 +120,8 @@ export interface GameState {
   autoBuy: boolean;
   autoTap: boolean;
   essence: number;
-  ownedManagers: Manager[];
-  ownedArtifacts: Artifact[];
+  ownedManagers: string[];
+  ownedArtifacts: string[];
   prestigeCount: number;
   incomeMultiplier: number;
   skillPoints: number;
@@ -84,6 +129,12 @@ export interface GameState {
   unlockedPerks: string[];
   exp: number;
   level: number;
+  // Add missing properties referenced in components
+  achievements: Achievement[];
+  managers: Manager[];
+  artifacts: Artifact[];
+  inventory: InventoryItem[];
+  inventoryCapacity: number;
 }
 
 // Action interface
@@ -99,7 +150,11 @@ type GameAction =
   | { type: 'UNLOCK_ABILITY'; abilityId: string }
   | { type: 'UNLOCK_PERK'; perkId: string }
   | { type: 'SET_GAME_STATE'; state: Partial<GameState> }
-  | { type: 'UPDATE_EXP'; exp: number };
+  | { type: 'UPDATE_EXP'; exp: number }
+  | { type: 'SET_INCOME_MULTIPLIER'; multiplier: number }
+  | { type: 'ADD_ESSENCE'; amount: number }
+  | { type: 'USE_ITEM'; itemId: string }
+  | { type: 'ADD_ITEM'; item: InventoryItem };
 
 // Context value interface
 interface GameContextValue {
@@ -113,6 +168,23 @@ interface GameContextValue {
   nextLevelExp: (level: number) => number;
   expToNextLevel: (currentExp: number, currentLevel: number) => number;
   expProgress: (currentExp: number, currentLevel: number) => number;
+  // Add missing methods referenced in components
+  click: () => void;
+  toggleAutoTap: () => void;
+  toggleAutoBuy: () => void;
+  setIncomeMultiplier: (multiplier: number) => void;
+  addCoins: (amount: number) => void;
+  addEssence: (amount: number) => void;
+  prestige: () => void;
+  buyManager: (managerId: string) => void;
+  buyArtifact: (artifactId: string) => void;
+  unlockPerk: (perkId: string, parentId: string) => void;
+  unlockAbility: (abilityId: string) => void;
+  buyUpgrade: (upgradeId: string) => void;
+  calculatePotentialEssenceReward: () => number;
+  calculateMaxPurchaseAmount: (upgradeId: string) => number;
+  useItem: (itemId: string) => void;
+  addItem: (item: InventoryItem) => void;
 }
 
 // Initial state
@@ -133,6 +205,8 @@ const initialState: GameState = {
         growth: 0.5,
       },
       unlocked: true,
+      level: 0,
+      cost: 10,
     },
     {
       id: 'upgrade-production-1',
@@ -146,6 +220,8 @@ const initialState: GameState = {
         growth: 0.8,
       },
       unlocked: true,
+      level: 0,
+      cost: 50,
     },
   ],
   totalClicks: 0,
@@ -162,6 +238,12 @@ const initialState: GameState = {
   unlockedPerks: [],
   exp: 0,
   level: 1,
+  // Initialize new properties
+  achievements: [],
+  managers: [],
+  artifacts: [],
+  inventory: [],
+  inventoryCapacity: 100,
 };
 
 const calculateLevelFromExp = (exp: number): number => {
@@ -196,14 +278,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newExp = state.exp + state.coinsPerClick;
       const newLevel = calculateLevelFromExp(newExp);
       
-      // Sync with Firebase if level changed
-      if (newLevel !== state.level) {
-        firebaseSync.updateUserData({
-          level: newLevel,
-          exp: newExp
-        });
-      }
-      
       return {
         ...state,
         coins: newCoins,
@@ -220,14 +294,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newExp = state.exp + action.amount;
       const newLevel = calculateLevelFromExp(newExp);
       
-      // Sync with Firebase if level changed
-      if (newLevel !== state.level) {
-        firebaseSync.updateUserData({
-          level: newLevel,
-          exp: newExp
-        });
-      }
-      
       return {
         ...state,
         coins: newCoins,
@@ -240,14 +306,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'UPDATE_EXP': {
       const newExp = action.exp;
       const newLevel = calculateLevelFromExp(newExp);
-      
-      // Sync with Firebase if level changed
-      if (newLevel !== state.level) {
-        firebaseSync.updateUserData({
-          level: newLevel,
-          exp: newExp
-        });
-      }
       
       return {
         ...state,
@@ -264,7 +322,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.coins < cost) return state;
 
       const updatedUpgrades = state.upgrades.map(u =>
-        u.id === upgradeId ? { ...u, currentLevel: u.currentLevel + 1 } : u
+        u.id === upgradeId ? { 
+          ...u, 
+          currentLevel: u.currentLevel + 1,
+          level: u.currentLevel + 1,  // Update level field as well
+          cost: Math.floor(u.baseCost * Math.pow(1.15, u.currentLevel + 1)) // Update cost field
+        } : u
       );
 
       // Calculate new coinsPerClick and coinsPerSecond
@@ -303,7 +366,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     case 'PURCHASE_MANAGER': {
       const managerId = action.managerId;
-      const manager = managers.find(m => m.id === managerId);
+      const manager = state.managers.find(m => m.id === managerId);
       if (!manager) return state;
     
       if (state.coins < manager.cost) return state;
@@ -311,12 +374,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         coins: state.coins - manager.cost,
-        ownedManagers: [...state.ownedManagers, manager],
+        ownedManagers: [...state.ownedManagers, manager.id],
       };
     }
     case 'PURCHASE_ARTIFACT': {
       const artifactId = action.artifactId;
-      const artifact = artifacts.find(a => a.id === artifactId);
+      const artifact = state.artifacts.find(a => a.id === artifactId);
       if (!artifact) return state;
     
       if (state.coins < artifact.cost) return state;
@@ -324,7 +387,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         coins: state.coins - artifact.cost,
-        ownedArtifacts: [...state.ownedArtifacts, artifact],
+        ownedArtifacts: [...state.ownedArtifacts, artifact.id],
       };
     }
     case 'UNLOCK_ABILITY': {
@@ -351,6 +414,56 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         ...action.state
       };
+      
+    case 'SET_INCOME_MULTIPLIER':
+      return {
+        ...state,
+        incomeMultiplier: action.multiplier
+      };
+    
+    case 'ADD_ESSENCE':
+      return {
+        ...state,
+        essence: state.essence + action.amount
+      };
+    
+    case 'USE_ITEM': {
+      const itemId = action.itemId;
+      const updatedInventory = state.inventory.map(item => 
+        item.id === itemId 
+          ? { ...item, quantity: item.quantity - 1 } 
+          : item
+      ).filter(item => item.quantity > 0);
+      
+      return {
+        ...state,
+        inventory: updatedInventory
+      };
+    }
+    
+    case 'ADD_ITEM': {
+      const existingItemIndex = state.inventory.findIndex(item => 
+        item.id === action.item.id && item.stackable
+      );
+      
+      if (existingItemIndex >= 0) {
+        const updatedInventory = [...state.inventory];
+        updatedInventory[existingItemIndex] = {
+          ...updatedInventory[existingItemIndex],
+          quantity: updatedInventory[existingItemIndex].quantity + action.item.quantity
+        };
+        
+        return {
+          ...state,
+          inventory: updatedInventory
+        };
+      }
+      
+      return {
+        ...state,
+        inventory: [...state.inventory, action.item]
+      };
+    }
       
     default:
       return state;
@@ -402,6 +515,72 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'CLICK' });
   };
   
+  const click = () => {
+    dispatch({ type: 'CLICK' });
+  };
+  
+  const toggleAutoTap = () => {
+    dispatch({ type: 'TOGGLE_AUTO_TAP' });
+  };
+  
+  const toggleAutoBuy = () => {
+    dispatch({ type: 'TOGGLE_AUTO_BUY' });
+  };
+  
+  const setIncomeMultiplier = (multiplier: number) => {
+    dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
+  };
+  
+  const addCoins = (amount: number) => {
+    dispatch({ type: 'ADD_COINS', amount });
+  };
+  
+  const addEssence = (amount: number) => {
+    dispatch({ type: 'ADD_ESSENCE', amount });
+  };
+  
+  const prestige = () => {
+    dispatch({ type: 'PRESTIGE' });
+  };
+  
+  const buyManager = (managerId: string) => {
+    dispatch({ type: 'PURCHASE_MANAGER', managerId });
+  };
+  
+  const buyArtifact = (artifactId: string) => {
+    dispatch({ type: 'PURCHASE_ARTIFACT', artifactId });
+  };
+  
+  const unlockPerk = (perkId: string, parentId: string) => {
+    dispatch({ type: 'UNLOCK_PERK', perkId });
+  };
+  
+  const unlockAbility = (abilityId: string) => {
+    dispatch({ type: 'UNLOCK_ABILITY', abilityId });
+  };
+  
+  const buyUpgrade = (upgradeId: string) => {
+    dispatch({ type: 'PURCHASE_UPGRADE', upgradeId });
+  };
+  
+  const calculatePotentialEssenceReward = () => {
+    // Simple calculation for now
+    return Math.floor(state.totalEarned / 1000000);
+  };
+  
+  const calculateMaxPurchaseAmount = (upgradeId: string) => {
+    // Simple calculation for now
+    return 1;
+  };
+  
+  const useItem = (itemId: string) => {
+    dispatch({ type: 'USE_ITEM', itemId });
+  };
+  
+  const addItem = (item: InventoryItem) => {
+    dispatch({ type: 'ADD_ITEM', item });
+  };
+  
   const canAffordUpgrade = (upgradeId: string) => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) return false;
@@ -411,14 +590,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const canAffordManager = (managerId: string) => {
-    const manager = state.ownedManagers.find(m => m.id === managerId);
+    const manager = state.managers.find(m => m.id === managerId);
     if (!manager) return false;
     
     return state.coins >= manager.cost;
   };
   
   const canAffordArtifact = (artifactId: string) => {
-    const artifact = state.ownedArtifacts.find(a => a.id === artifactId);
+    const artifact = state.artifacts.find(a => a.id === artifactId);
     if (!artifact) return false;
     
     return state.coins >= artifact.cost;
@@ -435,7 +614,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return calculateUpgradeCost(upgrade);
   };
   
-  const nextLevelExp = (level: number): number => {
+  const nextLevelExpThreshold = (level: number): number => {
     // Return the EXP needed for the next level
     const levelThresholds = [
       0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 11000, 15000, // Levels 1-11
@@ -449,6 +628,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     return levelThresholds[level];
   };
+  
+  const nextLevelExp = nextLevelExpThreshold;
   
   const expToNextLevel = (currentExp: number, currentLevel: number): number => {
     const nextLevelExpThreshold = nextLevelExp(currentLevel);
@@ -467,21 +648,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (expInCurrentLevel / expRequiredForNextLevel) * 100;
   };
   
-  const nextLevelExpThreshold = (level: number): number => {
-    // Return the EXP needed for the next level
-    const levelThresholds = [
-      0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 11000, 15000, // Levels 1-11
-      20000, 26000, 33000, 41000, 50000, 60000, 71000, 83000, 96000, 110000, // Levels 12-21
-      // ...and so on up to level 100
-    ];
-    
-    if (level >= levelThresholds.length) {
-      return Infinity; // Max level reached
-    }
-    
-    return levelThresholds[level];
-  };
-  
   return (
     <GameContext.Provider
       value={{
@@ -495,6 +661,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nextLevelExp,
         expToNextLevel,
         expProgress,
+        click,
+        toggleAutoTap,
+        toggleAutoBuy,
+        setIncomeMultiplier,
+        addCoins,
+        addEssence,
+        prestige,
+        buyManager,
+        buyArtifact,
+        unlockPerk,
+        unlockAbility,
+        buyUpgrade,
+        calculatePotentialEssenceReward,
+        calculateMaxPurchaseAmount,
+        useItem,
+        addItem
       }}
     >
       {children}
