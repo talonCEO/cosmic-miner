@@ -297,7 +297,6 @@ const initialState: GameState = {
   managers: managers,
   artifacts: artifacts,
   prestigeCount: 0,
-  coins: 999999999999999999,
   incomeMultiplier: 10.0,
   skillPoints: 10000,
   abilities: initialAbilities,
