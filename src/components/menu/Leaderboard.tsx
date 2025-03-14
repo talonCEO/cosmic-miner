@@ -1,211 +1,183 @@
 
 import React, { useState, useEffect } from 'react';
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { BarChart3, Medal, Trophy, Users, Filter } from 'lucide-react';
+import { useGame } from '@/context/GameContext';
+import { formatNumber } from '@/utils/gameLogic';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useFirebase } from '@/context/FirebaseContext';
-import { Loader2, Trophy, Sparkles, Users, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { getFirestore, collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 
-interface LeaderboardPlayer {
-  userId: string;
-  username: string;
-  level: number;
-  exp: number;
-  title: string;
-  avatarUrl?: string;
-}
+// List of player titles in ascending order of prestige
+const playerTitles = [
+  "Space Pilot", // Default starting title
+  "Asteroid Miner",
+  "Orbital Explorer",
+  "Star Navigator",
+  "Nebula Ranger",
+  "Void Wanderer",
+  "Galaxy Voyager",
+  "Cosmic Pathfinder",
+  "Celestial Commander",
+  "Galactic Overlord" // Most prestigious title
+];
+
+// Generate realistic player data for leaderboard
+const generateLeaderboardData = () => {
+  // Names for random players
+  const names = [
+    "CosmicChampion", "StarGazer", "MoonWalker", "SolarFlare", 
+    "NebulaNinja", "GalaxyGlider", "AsteroidAvenger", "CometCrusher",
+    "PlanetPioneer", "VoidVoyager", "OrbitalHunter", "NeutronNavigator"
+  ];
+  
+  // Randomly select 10 unique names
+  const shuffledNames = [...names].sort(() => 0.5 - Math.random());
+  const selectedNames = shuffledNames.slice(0, 10);
+  
+  // Create leaderboard data
+  return selectedNames.map((username, index) => {
+    // Make first player highest score, then descending
+    const score = 10000000000 - (index * 1000000000 / 10);
+    const level = 120 - (index * 5);
+    
+    // Higher ranked players get better titles
+    const titleIndex = Math.min(9, Math.max(0, 9 - Math.floor(index / 2)));
+    const title = playerTitles[titleIndex];
+    
+    // Generate a random elo/mmr between 2000-3000 for top player, then descending
+    const elo = 3000 - (index * 100);
+    
+    // Generate initials for the avatar
+    const initials = username.substring(0, 2).toUpperCase();
+    
+    return {
+      id: index + 1,
+      username,
+      score,
+      level,
+      title,
+      galacticRank: elo,
+      initials
+    };
+  });
+};
 
 const Leaderboard: React.FC = () => {
-  const { profile } = useFirebase();
-  const [players, setPlayers] = useState<LeaderboardPlayer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [leaderboardType, setLeaderboardType] = useState<'level' | 'friends'>('level');
-
+  const { state } = useGame();
+  const [filterType, setFilterType] = useState<'all' | 'friends' | 'global'>('global');
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  
+  // Generate leaderboard data on component mount
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setLoading(true);
-        const db = getFirestore();
-        
-        if (leaderboardType === 'level') {
-          // Fetch global leaderboard
-          const leaderboardQuery = query(
-            collection(db, 'users'),
-            orderBy('level', 'desc'),
-            orderBy('exp', 'desc'),
-            limit(20)
-          );
-          
-          const querySnapshot = await getDocs(leaderboardQuery);
-          const leaderboardData: LeaderboardPlayer[] = [];
-          
-          querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            leaderboardData.push({
-              userId: doc.id,
-              username: data.username || 'Unknown Player',
-              level: data.level || 1,
-              exp: data.exp || 0,
-              title: data.title || 'Space Pilot',
-              avatarUrl: data.avatarUrl
-            });
-          });
-          
-          setPlayers(leaderboardData);
-        } else {
-          // Fetch friends leaderboard
-          // This would need to be implemented based on your friend system
-          // For now, we'll just display a mock friends leaderboard
-          setPlayers([
-            {
-              userId: 'friend1',
-              username: 'SpaceBuddy',
-              level: 42,
-              exp: 78500,
-              title: 'Stellar Prospector'
-            },
-            {
-              userId: 'friend2',
-              username: 'CosmicPal',
-              level: 38,
-              exp: 62300,
-              title: 'Galactic Engineer'
-            },
-            {
-              userId: 'friend3',
-              username: 'AsteroidFriend',
-              level: 27,
-              exp: 41900,
-              title: 'Cosmic Excavator'
-            }
-          ]);
-        }
-      } catch (error) {
-        console.error("Error fetching leaderboard:", error);
-        setPlayers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLeaderboard();
-  }, [leaderboardType]);
-
-  const filteredPlayers = players.filter(player => 
-    player.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
+    setLeaderboardData(generateLeaderboardData());
+  }, []);
+  
+  // Simulated player position
+  const playerPosition = 42; // In a real app, this would be calculated
+  
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
-        <DialogTitle className="text-center text-xl">Leaderboard</DialogTitle>
+        <DialogTitle className="text-center text-xl flex items-center justify-center gap-2">
+          <BarChart3 size={20} />
+          <span>Leaderboard</span>
+        </DialogTitle>
       </DialogHeader>
-
-      <div className="p-4 space-y-4">
-        {/* Leaderboard tabs */}
-        <div className="flex space-x-2 border-b border-indigo-500/20 pb-2">
+      
+      <div className="p-4 border-b border-indigo-500/20">
+        <div className="flex justify-center gap-2">
           <button
-            onClick={() => setLeaderboardType('level')}
-            className={`px-4 py-2 rounded-t-lg flex items-center space-x-1 ${
-              leaderboardType === 'level'
-                ? 'bg-indigo-600/50 text-white font-medium'
-                : 'text-slate-300 hover:bg-indigo-600/30'
+            className={`px-4 py-2 rounded-md text-sm font-medium ${
+              filterType === 'global' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'
             }`}
+            onClick={() => setFilterType('global')}
           >
-            <Trophy size={16} />
-            <span>Global</span>
+            Global
           </button>
           <button
-            onClick={() => setLeaderboardType('friends')}
-            className={`px-4 py-2 rounded-t-lg flex items-center space-x-1 ${
-              leaderboardType === 'friends'
-                ? 'bg-indigo-600/50 text-white font-medium'
-                : 'text-slate-300 hover:bg-indigo-600/30'
+            className={`px-4 py-2 rounded-md text-sm font-medium ${
+              filterType === 'friends' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'
             }`}
+            onClick={() => setFilterType('friends')}
           >
-            <Users size={16} />
-            <span>Friends</span>
+            Friends
           </button>
         </div>
-
-        {/* Search bar */}
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-          <Input
-            placeholder="Search players..."
-            className="bg-slate-800/50 border-slate-700 pl-8"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </div>
-
-        {/* Leaderboard list */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-            <p className="mt-2 text-slate-300">Loading leaderboard...</p>
+      </div>
+      
+      <div className="bg-slate-800/50 mx-4 mt-4 p-3 rounded-lg border border-indigo-500/20">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 flex items-center justify-center bg-indigo-600/60 rounded-full">
+              {playerPosition}
+            </div>
+            <div>
+              <div className="font-medium">Your Rank</div>
+              <div className="text-sm text-slate-400">Score: {formatNumber(state.totalEarned)}</div>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-1">
-            {filteredPlayers.length > 0 ? (
-              filteredPlayers.map((player, index) => (
-                <div
-                  key={player.userId}
-                  className={`flex items-center p-2 rounded-lg ${
-                    player.userId === profile?.userId
-                      ? 'bg-indigo-600/30 border border-indigo-500/50'
-                      : 'bg-slate-800/50 hover:bg-slate-700/50'
-                  }`}
-                >
-                  <div className="w-8 text-center font-bold text-slate-400">
-                    {index + 1}
-                  </div>
-                  <div className="relative">
-                    <Avatar className="h-9 w-9 border border-slate-600">
-                      <AvatarImage src={player.avatarUrl || "/placeholder.svg"} />
-                      <AvatarFallback className="bg-indigo-700/50 text-white">
-                        {player.username.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {index < 3 && (
-                      <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5">
-                        <Trophy size={12} className="text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="ml-3 flex-1">
-                    <div className="flex items-center">
-                      <span className="font-medium text-white">{player.username}</span>
-                      {player.userId === profile?.userId && (
-                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-indigo-500/50 rounded text-white">You</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-400">{player.title}</div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center text-sm font-medium text-amber-400">
-                      <Sparkles size={14} className="mr-1" />
-                      <span>Lvl {player.level}</span>
-                    </div>
-                    <div className="text-xs text-slate-400">
-                      {(player.exp / 1000).toFixed(1)}K XP
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-slate-400">
-                No players found with that name
+          <div>
+            <Trophy className="text-yellow-500 h-6 w-6" />
+          </div>
+        </div>
+      </div>
+      
+      <ScrollArea className="h-[40vh] px-4 mt-2">
+        <div className="space-y-2">
+          {leaderboardData.map((player, index) => (
+            <div 
+              key={player.id} 
+              className={`flex items-center p-3 rounded-lg border ${
+                index === 0 ? "border-yellow-500/50 bg-yellow-900/20" :
+                index === 1 ? "border-slate-400/50 bg-slate-700/30" :
+                index === 2 ? "border-amber-800/50 bg-amber-900/20" :
+                "border-slate-700 bg-slate-800/30"
+              } hover:bg-slate-800/60 transition-colors`}
+            >
+              <div className="flex-shrink-0 w-8 flex justify-center">
+                {index + 1 <= 3 ? (
+                  <Medal className={
+                    index === 0 ? "text-yellow-400" : 
+                    index === 1 ? "text-slate-300" : 
+                    "text-amber-600"
+                  } />
+                ) : (
+                  <span className="text-slate-400">{index + 1}</span>
+                )}
               </div>
-            )}
-          </div>
-        )}
+              
+              {/* Player Avatar */}
+              <Avatar className="h-10 w-10 mx-2">
+                <AvatarImage src={`/placeholder.svg`} alt={player.username} />
+                <AvatarFallback className="bg-indigo-700/50">
+                  {player.initials}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="ml-2 flex-grow">
+                <div className="font-medium">{player.username}</div>
+                <div className="text-xs text-slate-400">
+                  <span>Level {player.level}</span>
+                  <span className="mx-1">•</span>
+                  <span>{player.title}</span>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <div className="font-medium">{formatNumber(player.score)}</div>
+                <div className="text-xs text-slate-400">
+                  ELO: {player.galacticRank}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+      
+      <div className="p-4 border-t border-indigo-500/20 mt-auto">
+        <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
+          Back
+        </DialogClose>
       </div>
     </>
   );

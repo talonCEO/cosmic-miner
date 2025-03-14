@@ -57,9 +57,6 @@ export interface GameState {
   unlockedPerks: string[];
   inventory: InventoryItem[];
   inventoryCapacity: number;
-  playerLevel?: number;
-  playerTitle?: string;
-  playerBorder?: string;
 }
 
 // Upgrade interface
@@ -110,8 +107,7 @@ type GameAction =
   | { type: 'USE_ITEM'; itemId: string }
   | { type: 'ADD_ITEM'; item: InventoryItem }
   | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
-  | { type: 'SET_MENU_TYPE'; menuType: string }
-  | { type: 'UPDATE_PLAYER_PROFILE'; title?: string; border?: string; level?: number };
+  | { type: 'SET_MENU_TYPE'; menuType: string };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -307,9 +303,6 @@ const initialState: GameState = {
   unlockedPerks: [],
   inventory: [],
   inventoryCapacity: 100,
-  playerLevel: 1,
-  playerTitle: "Space Pilot",
-  playerBorder: "border-1",
 };
 
 // Game reducer with updated mechanics
@@ -904,14 +897,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // This is handled by the GameMenu component
       return state;
     }
-    case 'UPDATE_PLAYER_PROFILE': {
-      return {
-        ...state,
-        playerTitle: action.title || state.playerTitle,
-        playerBorder: action.border || state.playerBorder,
-        playerLevel: action.level || state.playerLevel
-      };
-    }
     default:
       return state;
   }
@@ -939,7 +924,6 @@ interface GameContextType {
   useItem: (itemId: string) => void;
   addItem: (item: InventoryItem) => void;
   removeItem: (itemId: string, quantity?: number) => void;
-  updatePlayerProfile: (title?: string, border?: string, level?: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1110,8 +1094,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const useItem = (itemId: string) => dispatch({ type: 'USE_ITEM', itemId });
   const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
   const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
-  const updatePlayerProfile = (title?: string, border?: string, level?: number) => 
-    dispatch({ type: 'UPDATE_PLAYER_PROFILE', title, border, level });
   
   const contextValue = {
     state,
@@ -1134,8 +1116,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     handleClick,
     useItem,
     addItem,
-    removeItem,
-    updatePlayerProfile
+    removeItem
   };
   
   // Store the context in the global holder for access without hooks

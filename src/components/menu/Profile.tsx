@@ -7,18 +7,10 @@ import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
 import { useFirebase } from '@/context/FirebaseContext';
 import { Loader2, Trophy, BarChart3 } from 'lucide-react';
-import { calculatePlayerLevel, calculateLevelProgress, calculateXPForNextLevel, getHighestUnlockedTitle, getUnlockedTitles } from '@/utils/playerData';
 
 const Profile: React.FC = () => {
   const { state, dispatch } = useGame();
   const { profile, loading, updateUsername } = useFirebase();
-  const [activeTab, setActiveTab] = useState<string>('profile');
-  
-  // Calculate player level and progress
-  const playerLevel = profile?.level || calculatePlayerLevel(state.totalEarned);
-  const expProgress = calculateLevelProgress(state.totalEarned);
-  const currentExp = state.totalEarned;
-  const expForNextLevel = calculateXPForNextLevel(playerLevel);
   
   // Handle player name change (updates Firebase profile)
   const handleNameChange = (newName: string) => {
@@ -36,68 +28,17 @@ const Profile: React.FC = () => {
     );
   }
   
-  // Get available titles for this player level
-  const availableTitles = getUnlockedTitles(playerLevel);
-  const defaultTitle = getHighestUnlockedTitle(playerLevel).name;
-  
   // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
-    title: profile?.title || defaultTitle, // Use player's selected title or default
-    level: playerLevel,
-    exp: currentExp,
-    maxExp: expForNextLevel,
+    title: profile?.title || "Space Pilot", // Changed from rank to title with default "Space Pilot"
+    level: profile?.level || state.prestigeCount + 1,
+    exp: state.totalEarned % 1000,
+    maxExp: 1000,
     coins: state.coins,
     gems: 500, // Mock value, would come from state in real implementation
     essence: state.essence,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
-  };
-  
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'profile':
-        return (
-          <>
-            {/* Enhanced player card with currency info and UID */}
-            <PlayerCard 
-              playerName={playerData.name}
-              playerTitle={playerData.title}
-              playerLevel={playerData.level}
-              playerExp={playerData.exp}
-              playerMaxExp={playerData.maxExp}
-              coins={playerData.coins}
-              gems={playerData.gems}
-              essence={playerData.essence}
-              onNameChange={handleNameChange}
-              userId={playerData.userId}
-            />
-            
-            {/* Navigation buttons */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <button 
-                onClick={() => dispatch({ type: 'SET_MENU_TYPE', menuType: 'achievements' })}
-                className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <Trophy size={20} />
-                <span>Achievements</span>
-              </button>
-              
-              <button 
-                onClick={() => dispatch({ type: 'SET_MENU_TYPE', menuType: 'leaderboard' })}
-                className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <BarChart3 size={20} />
-                <span>Leaderboard</span>
-              </button>
-            </div>
-            
-            {/* Friends list component */}
-            <PlayerFriends />
-          </>
-        );
-      default:
-        return null;
-    }
   };
   
   return (
@@ -107,7 +48,41 @@ const Profile: React.FC = () => {
       </DialogHeader>
       
       <div className="p-4 space-y-4">
-        {renderContent()}
+        {/* Enhanced player card with currency info and UID */}
+        <PlayerCard 
+          playerName={playerData.name}
+          playerTitle={playerData.title} // Changed from playerRank to playerTitle
+          playerLevel={playerData.level}
+          playerExp={playerData.exp}
+          playerMaxExp={playerData.maxExp}
+          coins={playerData.coins}
+          gems={playerData.gems}
+          essence={playerData.essence}
+          onNameChange={handleNameChange}
+          userId={playerData.userId}
+        />
+        
+        {/* Navigation buttons */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <button 
+            onClick={() => dispatch({ type: 'SET_MENU_TYPE', menuType: 'achievements' })}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Trophy size={20} />
+            <span>Achievements</span>
+          </button>
+          
+          <button 
+            onClick={() => dispatch({ type: 'SET_MENU_TYPE', menuType: 'leaderboard' })}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <BarChart3 size={20} />
+            <span>Leaderboard</span>
+          </button>
+        </div>
+        
+        {/* Friends list component */}
+        <PlayerFriends />
       </div>
       
       <div className="p-4 mt-auto border-t border-indigo-500/20">

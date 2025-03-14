@@ -30,8 +30,6 @@ export const StorageService = {
         prestigeCount: gameState.prestigeCount,
         incomeMultiplier: gameState.incomeMultiplier,
         skillPoints: gameState.skillPoints,
-        playerTitle: gameState.playerTitle, // Store the player's selected title
-        playerBorder: gameState.playerBorder, // Store the player's selected border
         abilities: gameState.abilities.map(ability => ({
           id: ability.id,
           unlocked: ability.unlocked
