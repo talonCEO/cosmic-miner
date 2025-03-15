@@ -1,0 +1,189 @@
+cd C:\Users\coco1\Desktop\cosmic-miner-main 02
+npm install
+npm install react react-dom @capacitor/cli @capacitor/core @capacitor/android @capacitor-community/admob --save
+npm install --save-dev vite @vitejs/plugin-react-swc typescript @types/react @types/react-dom
+npx cap init
+npm run build           # Moved this up!
+npx cap add android
+npx cap sync
+npx cap open android
+
+Tomorrow Prep - 
+	- Artifacts More Expensive Than Managers.
+	- Add Store Items (?)
+	- Premium Store and Ads
+
+08/03/25 - ToDoList
+	- Ad Popups: x2 income for 10 minutes; 'Auto Tap' for 2 minutes, Time Warp 30 minutes
+	- Premium Currency Store and Powerups
+	- Google Store Integration
+	- Autobuy added to shop?
+	- Save locally @react-native-async-storage/async-storage
+
+08/03/25 - ToDoList
+	- App Store Publishing
+	- Marketing, Assets, and Description
+	- Final Release!!!
+
+
+ToDoList
+- Daily Login Bonuses
+- Unlock Animations
+- Custom Icons!!!!
+
+- PROGRESSION RATE + BALANCING (!important)
+: x1 multiplier, more expensive upgrades? take it from there
+
+Brainstorm:
+	Another Main Menu Section
+	More Items/Managers/Artifacts
+	Infinite Progression Mechanics
+inventory system?
+premium store?
+PlayerInfo / Level / Rank / Achievement Score
+Leaderboard
+
+= tokens left (4 +5/Day for 21Days) 22:52 Saturday 08/03/25
+: Think each day on what questions you will ask!!!! (Morning Task)
+What's Next? 
+	- 
+	- 
+	- 
+
+
+14/03/25
+    1. Change premium store to get boosts from inventory/types
+Store -> Inventory -> Mechanics
+    1. Adjust Premium store layout + conditional checks 
+    2. Integrate Inventory Items with game mechanics
+    3. Adjust Admob rewards + reward chest ad
+    4. Ensure items affect mechanics: Abilities, Managers, Artifacts, Boosts, Ads (no bugs)
+    5. Check progression/balance/scaling
+    6. Leveling system & rewards
+    7. Microtransactions
+Notes
+    1. Premium store boosts buggy
+    • + Max buys for no ads/auto buy/inventory
+    • + negative gem values
+    • + only certain purchases should be added to inventory
+    1. Boosts not working on gameplay
+    2. Rename only works while component is mounted = make global
+    3. Level not increasing (no defined thresholds)
+
+
+????
+Achievement rewards + more of em
+Upgrade boosts e.g. 100, 500, 1000 – Colour/Glow
+Galactic Credits + New Planets
+Drones/Ships
+Customer Icons/Assets+
+
+
+
+
+
+ideas - 
+    • New Planet?
+    • Powerups
+    • Advanced Managers/Artifacts/Tech
+    • Better Achievements
+    • Graphics
+    • Soundtrack
+Questions
+    • How do you earn skill points?
+    • whats the milestone for a new world?
+    • How can it be unique?
+    • What makes the user feel powerful and motivated to explore?
+    • What's the next breadcrumb?
+    • How can I implement a social element and create competition? 
+Notes
+    • Should get you hooked. Progression should be challenging but rewarding. There should be something you're working towards that keeps your attention...
+    • Plan out the user journey, ensuring they are constantly exposed to new features at a fun rate and don't get burnt out from over-exposure. 
+    • Tune the mechanics so the Upgrades, Managers, Artifacts, and Abilities are affordable and balanced. 
+    • Make sure there's an end game that's scalable or repeatable. 
+Release - todolist
+    • Screenshots
+    • Descriptions
+    • Niche/Theme
+    • Research
+    • Monetization
+
+
+
+
+// Tune manually at the end
+CPT + CPS
+backend:
+
+I'd be happy to explain how tap power and passive income (coins per second) are calculated in the game!
+
+Tap Power (Coins Per Click)
+Tap power is calculated based on several factors:
+
+Base Click Value:
+
+The base coinsPerClick value starts at 1.
+Each upgrade you purchase adds its coinsPerClickBonus to this value.
+In the click handler, this base value is multiplied by 2.5 to make clicking more rewarding.
+Passive Income Bonus:
+
+30% of your coins per second is added to each click, encouraging players to build passive income.
+Income Multiplier:
+
+The global income multiplier (affected by abilities) is applied to the click value.
+Artifact Bonuses:
+
+Artifacts like "Space Rocket" and "Molecular Flask" provide click multipliers.
+Here's the relevant code from the handleClick function:
+
+
+// In the 'CLICK' action case of gameReducer
+const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
+  
+// Base click value is 2.5x higher and includes 30% of coins per second
+const baseClickValue = state.coinsPerClick * 2.5; 
+const coinsPerSecondBonus = state.coinsPerSecond * 0.3;
+const totalClickAmount = (baseClickValue + coinsPerSecondBonus) * (state.incomeMultiplier || 1) * clickMultiplier;
+Passive Income (Coins Per Second)
+Passive income is calculated through:
+
+Base Passive Income:
+
+Each upgrade contributes its coinsPerSecondBonus to your total.
+This value is multiplied by 4x (in the 'BUY_UPGRADE' action) to make passive income more impactful.
+Income Multiplier:
+
+The global income multiplier (from abilities) is applied.
+Tick Rate:
+
+The income is further multiplied by 2x in the 'TICK' action (which runs 10 times per second).
+This effectively makes the displayed CPS value accurate (0.5 * 4 * 2 = 4, combined with the 10 ticks per second).
+Here's the key code for passive income calculation:
+
+
+// In the 'TICK' action case
+if (state.coinsPerSecond > 0) {
+  const passiveAmount = (state.coinsPerSecond / 10) * (state.incomeMultiplier || 1) * 2; // 4x increase (0.5 * 4 = 2)
+  newState = {
+    ...newState,
+    coins: newState.coins + passiveAmount,
+    totalEarned: newState.totalEarned + passiveAmount
+  };
+}
+Upgrade Effects
+When purchasing upgrades:
+
+The coinsPerClick increases by the upgrade's coinsPerClickBonus
+The coinsPerSecond increases by the upgrade's coinsPerSecondBonus * 4 (the 4x multiplier makes passive income more valuable)
+
+const newCoinsPerClick = state.coinsPerClick + (upgrade.coinsPerClickBonus * maxPossibleQuantity);
+const newCoinsPerSecond = state.coinsPerSecond + (upgrade.coinsPerSecondBonus * 4 * maxPossibleQuantity); // 4x passive income boost
+Ability Effects
+Abilities can affect all these calculations through:
+
+Direct increases to tap power
+Reductions in upgrade costs
+Boosts to passive income
+Increases to the global income multiplier
+Does this explanation help you understand how the game's economy works? Let me know if you need more specific details about any part of the calculation!
+
