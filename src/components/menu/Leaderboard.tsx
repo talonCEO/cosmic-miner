@@ -38,7 +38,7 @@ const generateLeaderboardData = () => {
   return selectedNames.map((username, index) => {
     // Make first player highest score, then descending
     const score = 10000000000 - (index * 1000000000 / 10);
-    const level = 120 - (index * 5);
+    const level = 100 - (index * 5);
     
     // Higher ranked players get better titles
     const titleIndex = Math.min(9, Math.max(0, 9 - Math.floor(index / 2)));
@@ -83,27 +83,6 @@ const Leaderboard: React.FC = () => {
           <span>Leaderboard</span>
         </DialogTitle>
       </DialogHeader>
-      
-      <div className="p-4 border-b border-indigo-500/20">
-        <div className="flex justify-center gap-2">
-          <button
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              filterType === 'global' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'
-            }`}
-            onClick={() => setFilterType('global')}
-          >
-            Global
-          </button>
-          <button
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              filterType === 'friends' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'
-            }`}
-            onClick={() => setFilterType('friends')}
-          >
-            Friends
-          </button>
-        </div>
-      </div>
       
       <div className="bg-slate-800/50 mx-4 mt-4 p-3 rounded-lg border border-indigo-500/20">
         <div className="flex justify-between items-center">
