@@ -53,7 +53,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: 500, // Mock value, would come from state in real implementation
+    gems: 1, // Mock value, would come from state in real implementation
     essence: state.essence,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
