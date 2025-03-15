@@ -1,11 +1,10 @@
-
 /**
  * Player Progression Data
  * 
  * This file contains all the information related to player progression:
  * - Level thresholds and rewards
  * - Titles and their unlock requirements
- * - Portrait borders/effects and their unlock requirements
+ * - Portrait borders/effects and their unlock requirements (commented out)
  */
 
 import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
@@ -23,7 +22,7 @@ export interface LevelData {
     skillPoints?: number;
     gems?: number;
     unlocksTitle?: string; // References title.id
-    unlocksPortrait?: string; // References portrait.id
+    // unlocksPortrait?: string; // References portrait.id (commented out)
   };
 }
 
@@ -63,12 +62,12 @@ export const generateLevelData = (): LevelData[] => {
     if (i === 75) level.rewards = { ...level.rewards, unlocksTitle: 'stellar_commander' };
     if (i === 100) level.rewards = { ...level.rewards, unlocksTitle: 'celestial_sovereign' };
     
-    // Portrait unlocks
-    if (i === 20) level.rewards = { ...level.rewards, unlocksPortrait: 'nebula_glow' };
-    if (i === 40) level.rewards = { ...level.rewards, unlocksPortrait: 'cosmic_spark' };
-    if (i === 60) level.rewards = { ...level.rewards, unlocksPortrait: 'stellar_halo' };
-    if (i === 80) level.rewards = { ...level.rewards, unlocksPortrait: 'void_ripple' };
-    if (i === 100) level.rewards = { ...level.rewards, unlocksPortrait: 'celestial_radiance' };
+    // Portrait unlocks (commented out)
+    // if (i === 20) level.rewards = { ...level.rewards, unlocksPortrait: 'nebula_glow' };
+    // if (i === 40) level.rewards = { ...level.rewards, unlocksPortrait: 'cosmic_spark' };
+    // if (i === 60) level.rewards = { ...level.rewards, unlocksPortrait: 'stellar_halo' };
+    // if (i === 80) level.rewards = { ...level.rewards, unlocksPortrait: 'void_ripple' };
+    // if (i === 100) level.rewards = { ...level.rewards, unlocksPortrait: 'celestial_radiance' };
     
     levels.push(level);
   }
@@ -219,9 +218,9 @@ export const TITLES: TitleData[] = [
 ];
 
 // =========================================
-// Portrait Borders/Effects
+// Portrait Borders/Effects (commented out)
 // =========================================
-
+/*
 export interface PortraitData {
   id: string;
   name: string;
@@ -233,7 +232,6 @@ export interface PortraitData {
     value?: number;
     achievementId?: string;
   };
-  // Define the border style properties
   borderClass?: string;           // Tailwind CSS classes
   glowClass?: string;             // Tailwind CSS glow effect
   animationClass?: string;        // Animation class
@@ -335,6 +333,7 @@ export const PORTRAITS: PortraitData[] = [
     shaderKey: 'glowShader'
   }
 ];
+*/
 
 /**
  * Helper function to get level data based on experience points
@@ -385,13 +384,15 @@ export const getTitleById = (id: string): TitleData | undefined => {
 };
 
 /**
- * Get a portrait by its ID
+ * Get a portrait by its ID (commented out)
  * @param id Portrait ID
  * @returns Portrait data or undefined if not found
  */
+/*
 export const getPortraitById = (id: string): PortraitData | undefined => {
   return PORTRAITS.find(portrait => portrait.id === id);
 };
+*/
 
 /**
  * Check if a player has unlocked a specific title based on their profile
@@ -429,13 +430,14 @@ export const isTitleUnlocked = (
 };
 
 /**
- * Check if a player has unlocked a specific portrait based on their profile
+ * Check if a player has unlocked a specific portrait based on their profile (commented out)
  * @param portraitId Portrait ID to check
  * @param userLevel Current user level
  * @param userAchievements Array of achievement IDs the user has completed
  * @param prestigeCount Number of times the user has prestiged
  * @returns Boolean indicating if the portrait is unlocked
  */
+/*
 export const isPortraitUnlocked = (
   portraitId: string, 
   userLevel: number, 
@@ -460,6 +462,7 @@ export const isPortraitUnlocked = (
       return false;
   }
 };
+*/
 
 /**
  * Get all titles unlocked by a player
@@ -479,12 +482,13 @@ export const getUnlockedTitles = (
 };
 
 /**
- * Get all portraits unlocked by a player
+ * Get all portraits unlocked by a player (commented out)
  * @param userLevel Current user level
  * @param userAchievements Array of achievement IDs the user has completed
  * @param prestigeCount Number of times the user has prestiged
  * @returns Array of unlocked portrait data
  */
+/*
 export const getUnlockedPortraits = (
   userLevel: number, 
   userAchievements: string[] = [],
@@ -494,8 +498,10 @@ export const getUnlockedPortraits = (
     isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount)
   );
 };
+*/
 
-// Add CSS classes for special border animations
+// Add CSS classes for special border animations (commented out)
+/*
 export const portraitStyles = `
 .animate-border-pulse {
   animation: border-pulse 2s ease-in-out infinite;
@@ -557,3 +563,4 @@ export const portraitStyles = `
   }
 }
 `;
+*/
