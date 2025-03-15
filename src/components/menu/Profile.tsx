@@ -1,122 +1,117 @@
 
-import React, { useState, useEffect } from 'react';
-import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useGame } from '@/context/GameContext';
-import { formatNumber } from '@/utils/gameLogic';
+import React, { useState } from 'react';
+import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tab, Tabs, TabPanel, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useFirebase } from "@/context/FirebaseContext";
+import { useGame } from "@/context/GameContext";
+import { getLevelFromExp } from '@/data/playerProgressionData';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
-import { useFirebase } from '@/context/FirebaseContext';
-import { Loader2, Trophy, BarChart3 } from 'lucide-react';
-import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
 
 interface ProfileProps {
-  setMenuType?: (menuType: MenuType) => void;
+  setMenuType: (menuType: MenuType) => void;
 }
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
+  const { profile, updateUsername, updateTitle } = useFirebase();
   const { state } = useGame();
-  const { profile, loading, updateUsername, updateTitle } = useFirebase();
+  const [selectedTab, setSelectedTab] = useState("info");
   
-  // Handle player name change (updates Firebase profile)
-  const handleNameChange = (newName: string) => {
-    if (profile && newName.trim() !== profile.username) {
-      updateUsername(newName);
-    }
-  };
-  
-  // Handle title change
-  const handleTitleChange = (titleId: string) => {
-    if (profile && titleId.trim() !== profile.title) {
-      updateTitle(titleId);
-    }
-  };
-  
-  if (loading) {
+  if (!profile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] p-4">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-        <p className="mt-2 text-slate-300">Loading your profile...</p>
+      <div className="p-4 text-center">
+        <p>Loading profile...</p>
       </div>
     );
   }
   
-  // Get level info from total coins earned (used as XP)
-  const exp = profile?.exp || state.totalEarned || 0;
-  const { currentLevel, nextLevel } = getLevelFromExp(exp);
-  
-  // Fallback player data (used if Firebase profile not loaded)
-  const playerData = {
-    name: profile?.username || "Cosmic Explorer",
-    title: profile?.title || "space_pilot", // Default title ID
-    level: profile?.level || currentLevel.level,
-    exp: exp,
-    maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
-    coins: state.coins,
-    gems: 500, // Mock value, would come from state in real implementation
-    essence: state.essence,
-    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
-  };
-  
-  const handleAchievementsClick = () => {
-    // Navigate to achievements menu if setMenuType prop is available
-    if (setMenuType) {
-      setMenuType('achievements');
+  const handleNameChange = (newName: string) => {
+    if (newName && newName !== profile.username) {
+      updateUsername(newName);
     }
   };
   
-  const handleLeaderboardClick = () => {
-    // Navigate to leaderboard menu if setMenuType prop is available
-    if (setMenuType) {
-      setMenuType('leaderboard');
+  const handleTitleChange = (titleId: string) => {
+    if (titleId && titleId !== profile.title) {
+      updateTitle(titleId);
     }
   };
+  
+  const levelData = getLevelFromExp(profile.exp || 0);
   
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
-        <DialogTitle className="text-center text-xl">Player Profile</DialogTitle>
+        <DialogTitle className="text-center text-xl">Profile</DialogTitle>
+        <DialogDescription className="text-center text-slate-300">
+          View and edit your cosmic explorer profile
+        </DialogDescription>
       </DialogHeader>
       
-      <div className="p-4 space-y-4">
-        {/* Enhanced player card with currency info and UID */}
+      <div className="p-4">
+        {/* Player Card */}
         <PlayerCard 
-          playerName={playerData.name}
-          playerTitle={playerData.title}
-          playerLevel={playerData.level}
-          playerExp={playerData.exp}
-          playerMaxExp={playerData.maxExp}
-          coins={playerData.coins}
-          gems={playerData.gems}
-          essence={playerData.essence}
+          playerName={profile.username}
+          playerTitle={profile.title}
+          playerLevel={profile.level || 1}
+          playerExp={profile.exp || 0}
+          playerMaxExp={levelData.nextLevel ? levelData.nextLevel.expRequired : levelData.currentLevel.expRequired}
+          coins={profile.coins || 0}
+          gems={profile.gems || 0}
+          essence={profile.essence || 0}
           onNameChange={handleNameChange}
-          userId={playerData.userId}
+          userId={profile.userId}
         />
         
-        {/* Navigation buttons */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <button 
-            onClick={handleAchievementsClick}
-            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <Trophy size={20} />
-            <span>Achievements</span>
-          </button>
+        {/* Tabs */}
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mt-4">
+          <TabsList className="grid grid-cols-2 bg-slate-800/50">
+            <TabsTrigger value="info">Info</TabsTrigger>
+            <TabsTrigger value="friends">Friends</TabsTrigger>
+          </TabsList>
           
-          <button 
-            onClick={handleLeaderboardClick}
-            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <BarChart3 size={20} />
-            <span>Leaderboard</span>
-          </button>
-        </div>
-        
-        {/* Friends list component */}
-        <PlayerFriends />
+          <TabsContent value="info" className="p-4 bg-indigo-900/20 rounded-md mt-4 border border-indigo-500/20">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Player ID</h3>
+                <div className="bg-slate-800/50 p-2 rounded-md text-slate-300 text-sm">
+                  {profile.userId}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Achievements</h3>
+                <div className="bg-slate-800/50 p-2 rounded-md text-slate-300 text-sm">
+                  {profile.achievements?.length || 0} / 50 Unlocked
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-2 w-full text-indigo-300 hover:text-indigo-200"
+                  onClick={() => setMenuType("achievements")}
+                >
+                  View Achievements
+                </Button>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Titles</h3>
+                <div className="bg-slate-800/50 p-2 rounded-md text-slate-300 text-sm">
+                  {profile.unlockedTitles?.length || 0} Titles Unlocked
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="friends" className="p-4 bg-indigo-900/20 rounded-md mt-4 border border-indigo-500/20">
+            <PlayerFriends friends={profile.friends || []} />
+          </TabsContent>
+        </Tabs>
       </div>
       
-      <div className="p-4 mt-auto border-t border-indigo-500/20">
+      <div className="p-4 border-t border-indigo-500/20">
         <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
           Back
         </DialogClose>

@@ -42,9 +42,7 @@ export interface UserProfile {
   exp: number;
   totalCoins: number;
   title: string;
-  portrait: string;
   unlockedTitles: string[];
-  unlockedPortraits: string[];
   achievements: string[];
   createdAt: any; // Use serverTimestamp in Firestore
   lastLogin: any; // Use serverTimestamp in Firestore
@@ -59,9 +57,7 @@ interface FirebaseContextType {
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   updateUsername: (username: string) => Promise<void>;
   updateTitle: (titleId: string) => Promise<void>;
-  updatePortrait: (portraitId: string) => Promise<void>;
   unlockTitle: (titleId: string) => Promise<void>;
-  unlockPortrait: (portraitId: string) => Promise<void>;
   syncUserData: () => Promise<void>;
   updateGems: (amount: number) => Promise<void>;
 }
@@ -85,7 +81,18 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { state } = useGame();
+  
+  // Define a ref to store the game state
+  const gameStateRef = React.useRef<any>(null);
+  
+  // Try to get the game state in a way that doesn't throw if the context isn't available
+  try {
+    const { state } = useGame();
+    gameStateRef.current = state;
+  } catch (err) {
+    // Silent catch - the GameProvider might not be available yet
+    console.log("GameContext not available yet, will sync later");
+  }
 
   // Set up sync interval (60 minutes)
   useEffect(() => {
@@ -100,14 +107,14 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, 60 * 60 * 1000); // 60 minutes in milliseconds
     
     return () => clearInterval(syncInterval);
-  }, [user, profile, state]);
+  }, [user, profile, gameStateRef.current]);
 
   // Sync user data with Firebase
   const syncUserData = async () => {
-    if (!user || !state) return;
+    if (!user || !gameStateRef.current) return;
     
     try {
-      await syncGameProgress(user.uid, state);
+      await syncGameProgress(user.uid, gameStateRef.current);
       console.log("Full profile sync completed:", new Date().toISOString());
     } catch (err) {
       console.error("Error syncing user data:", err);
@@ -146,9 +153,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             exp: 0,
             totalCoins: 0,
             title: "space_pilot",
-            portrait: "default",
             unlockedTitles: ["space_pilot"],
-            unlockedPortraits: ["default"],
             achievements: [],
             createdAt: serverTimestamp(), // Server-side timestamp
             lastLogin: serverTimestamp(), // Server-side timestamp
@@ -205,21 +210,10 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     await updateProfile({ title: titleId });
   };
 
-  const updatePortrait = async (portraitId: string) => {
-    if (!portraitId.trim() || !profile || !profile.unlockedPortraits.includes(portraitId)) return;
-    await updateProfile({ portrait: portraitId });
-  };
-
   const unlockTitle = async (titleId: string) => {
     if (!titleId.trim() || !profile || profile.unlockedTitles.includes(titleId)) return;
     const updatedTitles = [...profile.unlockedTitles, titleId];
     await updateProfile({ unlockedTitles: updatedTitles });
-  };
-
-  const unlockPortrait = async (portraitId: string) => {
-    if (!portraitId.trim() || !profile || profile.unlockedPortraits.includes(portraitId)) return;
-    const updatedPortraits = [...profile.unlockedPortraits, portraitId];
-    await updateProfile({ unlockedPortraits: updatedPortraits });
   };
 
   const updateGems = async (amount: number) => {
@@ -240,9 +234,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     updateProfile,
     updateUsername,
     updateTitle,
-    updatePortrait,
     unlockTitle,
-    unlockPortrait,
     syncUserData,
     updateGems
   };
