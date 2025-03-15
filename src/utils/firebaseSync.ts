@@ -21,27 +21,18 @@ export const syncGameProgress = async (
     const exp = gameState.totalEarned || 0;
     const { currentLevel } = getLevelFromExp(exp);
     
-    // Prepare data to update
-    const dataToUpdate = {
+    // Only sync important metrics that should be saved between sessions
+    await updateDoc(userDocRef, {
       level: currentLevel.level,
       exp: exp,
-      coins: gameState.coins || 0,
-      essence: gameState.essence || 0,
+      coins: gameState.coins,
+      essence: gameState.essence,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,
-      lastSync: serverTimestamp(),
       lastLogin: serverTimestamp()
-    };
-    
-    // Log what we're syncing to Firebase
-    console.log("Syncing game progress to Firebase:", {
-      uid,
-      ...dataToUpdate,
-      timestamp: new Date().toISOString()
     });
     
-    // Update the document in Firebase
-    await updateDoc(userDocRef, dataToUpdate);
+    console.log("Game progress synced with Firebase for user:", uid);
   } catch (error) {
     console.error("Error syncing game progress:", error);
   }
@@ -60,15 +51,8 @@ export const syncAchievements = async (
     const db = getFirestore();
     const userDocRef = doc(db, 'users', uid);
     
-    console.log("Syncing achievements to Firebase:", {
-      uid,
-      achievements: achievementIds,
-      timestamp: new Date().toISOString()
-    });
-    
     await updateDoc(userDocRef, {
-      achievements: achievementIds,
-      lastSync: serverTimestamp()
+      achievements: achievementIds
     });
   } catch (error) {
     console.error("Error syncing achievements:", error);
@@ -88,20 +72,37 @@ export const updatePlayerTitle = async (
     const db = getFirestore();
     const userDocRef = doc(db, 'users', uid);
     
-    console.log("Updating player title in Firebase:", {
-      uid,
-      titleId,
-      timestamp: new Date().toISOString()
-    });
-    
     await updateDoc(userDocRef, {
-      title: titleId,
-      lastSync: serverTimestamp()
+      title: titleId
     });
     
     return true;
   } catch (error) {
     console.error("Error updating player title:", error);
+    return false;
+  }
+};
+
+/**
+ * Update player portrait/border
+ */
+export const updatePlayerPortrait = async (
+  uid: string,
+  portraitId: string
+) => {
+  if (!uid || !portraitId) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    await updateDoc(userDocRef, {
+      portrait: portraitId
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating player portrait:", error);
     return false;
   }
 };
@@ -123,15 +124,8 @@ export const unlockPlayerTitle = async (
     // Don't add duplicates
     if (currentTitles.includes(titleId)) return true;
     
-    console.log("Unlocking player title in Firebase:", {
-      uid,
-      titleId,
-      timestamp: new Date().toISOString()
-    });
-    
     await updateDoc(userDocRef, {
-      unlockedTitles: [...currentTitles, titleId],
-      lastSync: serverTimestamp()
+      unlockedTitles: [...currentTitles, titleId]
     });
     
     return true;
@@ -142,32 +136,55 @@ export const unlockPlayerTitle = async (
 };
 
 /**
- * Update player's gem count
+ * Unlock a new portrait for the user
  */
-export const updatePlayerGems = async (
+export const unlockPlayerPortrait = async (
   uid: string,
-  gemAmount: number
+  portraitId: string,
+  currentPortraits: string[]
 ) => {
-  if (!uid) return;
+  if (!uid || !portraitId) return;
   
   try {
     const db = getFirestore();
     const userDocRef = doc(db, 'users', uid);
     
-    console.log("Updating player gems in Firebase:", {
-      uid,
-      gemAmount,
-      timestamp: new Date().toISOString()
-    });
+    // Don't add duplicates
+    if (currentPortraits.includes(portraitId)) return true;
     
     await updateDoc(userDocRef, {
-      gems: gemAmount,
-      lastSync: serverTimestamp()
+      unlockedPortraits: [...currentPortraits, portraitId]
     });
     
     return true;
   } catch (error) {
-    console.error("Error updating player gems:", error);
+    console.error("Error unlocking player portrait:", error);
+    return false;
+  }
+};
+
+/**
+ * Add a friend to the user's friend list
+ */
+export const addFriend = async (
+  uid: string,
+  friendId: string
+) => {
+  if (!uid || !friendId) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    // This is a simplified version - in a real app, 
+    // you would need to handle friend requests and confirmations
+    await updateDoc(userDocRef, {
+      friends: increment(1) // Array union would be better but this is a simplified example
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error adding friend:", error);
     return false;
   }
 };

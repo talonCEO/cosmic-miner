@@ -30,7 +30,15 @@ const AnimatedRoutes = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Index />
+              <FirebaseProvider>
+                <GameProvider>
+                  <AdProvider>
+                    <AudioProvider>
+                      <Index />
+                    </AudioProvider>
+                  </AdProvider>
+                </GameProvider>
+              </FirebaseProvider>
             </motion.div>
           } 
         />
@@ -58,15 +66,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <FirebaseProvider>
-          <GameProvider>
-            <AdProvider>
-              <AudioProvider>
-                <AnimatedRoutes />
-              </AudioProvider>
-            </AdProvider>
-          </GameProvider>
-        </FirebaseProvider>
+        <AnimatedRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

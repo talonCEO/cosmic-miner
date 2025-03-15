@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,8 +9,6 @@ import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
 import { gemPackages, BoostItem as BoostItemType } from './types/premiumStore';
 import { useMemo } from 'react';
-import { useFirebase } from '@/context/FirebaseContext';
-import { useToast } from '@/components/ui/use-toast';
 
 // Helper function to get placeholder images based on item name
 const getPlaceholderImage = (itemName: string): string => {
@@ -18,17 +16,19 @@ const getPlaceholderImage = (itemName: string): string => {
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 };
 
-export interface PremiumStoreProps {
+interface PremiumStoreProps {
+  playerGems: number;
   boostItems: BoostItemType[];
+  onBuyGemPackage: (packageId: string, amount: number) => void;
   onBuyBoostItem: (itemId: string) => void;
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ 
+  playerGems, 
   boostItems, 
+  onBuyGemPackage, 
   onBuyBoostItem 
 }) => {
-  const { profile, updateGems, syncUserData } = useFirebase();
-  const { toast } = useToast();
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: BoostItemType | null;
@@ -103,9 +103,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     });
   };
 
-  // Get player gems from Firebase profile
-  const playerGems = profile?.gems || 0;
-
   // Map of boost IDs to icons
   const boostIcons = {
     boost_no_ads: <Ban className="w-5 h-5 text-yellow-400" />,
@@ -136,86 +133,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />
     }));
   }, [boostItems]);
-
-  // Handle buying gem packages via Google Play
-  const handleBuyGemPackage = async (packageId: string, amount: number) => {
-    try {
-      // In a real implementation with Capacitor, this would use a plugin like
-      // @capacitor/google-play-billing or similar to initiate a purchase
-      
-      console.log(`Initiating Google Play purchase for package: ${packageId}`);
-      
-      // Update Firebase with the new gem amount
-      if (updateGems) {
-        await updateGems(amount);
-        
-        // Also sync all game data
-        await syncUserData();
-        
-        showGemUnlockAnimation(amount);
-        
-        toast({
-          title: "Purchase successful!",
-          description: `${amount} gems added to your account`,
-          variant: "default",
-        });
-        
-        console.log(`Purchase completed - ${amount} gems added to account`);
-      }
-    } catch (error) {
-      console.error('Purchase failed:', error);
-      toast({
-        title: "Purchase failed",
-        description: "There was an error processing your purchase",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Handle buying boost items
-  const handleBuyBoostItem = async (itemId: string) => {
-    const item = boostItems.find(item => item.id === itemId);
-    if (!item || !item.purchasable) return;
-    
-    // Check if player has enough gems
-    if (playerGems < item.cost) {
-      toast({
-        title: "Not enough gems",
-        description: "You don't have enough gems to purchase this item",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      // Update Firebase with reduced gem count
-      if (updateGems) {
-        await updateGems(-item.cost);
-        
-        // Process the item purchase
-        onBuyBoostItem(itemId);
-        showUnlockAnimation(item);
-        
-        // Sync all game data
-        await syncUserData();
-        
-        toast({
-          title: "Item purchased!",
-          description: `${item.name} has been added to your account`,
-          variant: "default",
-        });
-        
-        console.log(`Boost item purchased: ${item.name} for ${item.cost} gems`);
-      }
-    } catch (error) {
-      console.error('Boost purchase failed:', error);
-      toast({
-        title: "Purchase failed",
-        description: "There was an error processing your purchase",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <>
@@ -342,7 +259,10 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 <GemPackage 
                   key={pack.id} 
                   pack={pack} 
-                  onPurchase={() => handleBuyGemPackage(pack.id, pack.amount)}
+                  onPurchase={() => {
+                    onBuyGemPackage(pack.id, pack.amount);
+                    showGemUnlockAnimation(pack.amount);
+                  }}
                 />
               ))}
             </div>
@@ -368,7 +288,10 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                   key={item.id} 
                   item={item} 
                   playerGems={playerGems}
-                  onPurchase={(itemId) => handleBuyBoostItem(itemId)}
+                  onPurchase={(itemId) => {
+                    onBuyBoostItem(itemId);
+                    showUnlockAnimation(item);
+                  }}
                   showUnlockAnimation={showUnlockAnimation}
                 />
               ))}

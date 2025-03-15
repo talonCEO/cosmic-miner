@@ -7,7 +7,6 @@ import {
 import { useGame } from '@/context/GameContext';
 import { MenuType } from './menu/types';
 import { BoostItem as BoostItemType, initialBoostItems } from './menu/types/premiumStore';
-import { useFirebase } from '@/context/FirebaseContext';
 import MenuButton from './menu/MenuButton';
 import MainMenu from './menu/MainMenu';
 import Achievements from './menu/Achievements';
@@ -25,25 +24,18 @@ interface GameMenuProps {
 
 const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) => {
   const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
-  const { syncUserData } = useFirebase();
   const [activeMenuType, setActiveMenuType] = useState<MenuType>("none");
+  const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
   const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
   
   // Initialize boost items with icons on component mount
   useEffect(() => {
+    // We'll initialize the boost items here
     // In a real implementation, this would load from persistent storage
     if (boostItems.length === 0) {
       setBoostItems(initialBoostItems);
     }
   }, [boostItems.length]);
-  
-  // Sync game data periodically
-  useEffect(() => {
-    if (syncUserData) {
-      // Initial sync
-      syncUserData();
-    }
-  }, [syncUserData]);
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -63,30 +55,30 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const handlePrestige = () => {
     const essenceReward = calculatePotentialEssenceReward();
     prestige();
-    
-    // Sync with Firebase after prestige
-    if (syncUserData) {
-      syncUserData();
-    }
-    
     setActiveMenuType("none");
   };
 
   const handleBuyManager = (managerId: string, name: string) => {
     buyManager(managerId);
-    
-    // Sync with Firebase after purchase
-    if (syncUserData) {
-      syncUserData();
-    }
   };
 
   const handleBuyArtifact = (artifactId: string, name: string) => {
     buyArtifact(artifactId);
-    
-    // Sync with Firebase after purchase
-    if (syncUserData) {
-      syncUserData();
+  };
+  
+  // Handle buying gem packages via Google Play
+  const handleBuyGemPackage = async (packageId: string, amount: number) => {
+    try {
+      // In a real implementation with Capacitor, this would use a plugin like
+      // @capacitor/google-play-billing or similar to initiate a purchase
+      
+      // For now, simulate a successful purchase
+      console.log(`Initiating Google Play purchase for package: ${packageId}`);
+      
+      // After successful purchase, update the gems
+      setPlayerGems(prev => prev + amount);
+    } catch (error) {
+      console.error('Purchase failed:', error);
     }
   };
 
@@ -94,6 +86,11 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const handleBuyBoostItem = (itemId: string) => {
     const item = boostItems.find(item => item.id === itemId);
     if (!item || !item.purchasable) return;
+    
+    // Check if player has enough gems
+    if (playerGems < item.cost) {
+      return;
+    }
     
     // For the "No Ads" item, mark it as permanently purchased
     if (item.id === 'boost_no_ads') {
@@ -117,13 +114,11 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       );
     }
     
+    // Deduct gems
+    setPlayerGems(prev => prev - item.cost);
+    
     // Apply the boost effect (in a real implementation)
     // This would modify game state based on the item's effect
-    
-    // Sync with Firebase after purchase
-    if (syncUserData) {
-      syncUserData();
-    }
   };
   
   const potentialEssenceReward = calculatePotentialEssenceReward();
@@ -186,7 +181,9 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
         
         {activeMenuType === "premium" && (
           <PremiumStore 
+            playerGems={playerGems}
             boostItems={boostItems}
+            onBuyGemPackage={handleBuyGemPackage}
             onBuyBoostItem={handleBuyBoostItem}
           />
         )}

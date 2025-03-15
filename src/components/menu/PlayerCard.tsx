@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -99,7 +98,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
         
         {/* Middle column: Player info */}
-        <div className="ml-3 flex-1 pt-2">
+        <div className="ml-3 flex-1 pt-2"> {/* Added pt-2 for top padding */}
           {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
               <Input 
@@ -131,7 +130,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           )}
           
-          <div className="flex items-center gap-2 mb-1 pt-3">
+          <div className="flex items-center gap-2 mb-1 pt-3"> {/* Added pt-1 for level display padding */}
             <div className="text-white text-xs font-medium">
               Level {currentLevel.level}
             </div>
