@@ -85,7 +85,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex">
         {/* Left column: Avatar and Title */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center pt-2">
           <Avatar className="h-16 w-16 border-2 border-amber-500/50 mb-1">
             <AvatarImage src="/placeholder.svg" alt="Player avatar" />
             <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
@@ -130,7 +130,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           )}
           
-          <div className="flex items-center gap-2 mb-1 pt-1"> {/* Added pt-1 for level display padding */}
+          <div className="flex items-center gap-2 mb-1 pt-3"> {/* Added pt-1 for level display padding */}
             <div className="text-white text-xs font-medium">
               Level {currentLevel.level}
             </div>
