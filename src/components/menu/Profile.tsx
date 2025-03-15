@@ -16,6 +16,13 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
   const { profile, loading, updateUsername, updateTitle } = useFirebase();
+
+  // Log context values for debugging
+  useEffect(() => {
+    console.log('Profile Loading State:', loading);
+    console.log('Game State:', state);
+    console.log('Firebase Profile:', profile);
+  }, [state, profile, loading]);
   
   // Handle player name change (updates Firebase profile)
   const handleNameChange = (newName: string) => {
@@ -31,32 +38,35 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     }
   };
   
-  // Get level info from total coins earned (used as XP)
-  const exp = profile?.exp || state.totalEarned || 0;
+  // Get level info from total coins earned (used as XP), with fallback
+  const exp = profile?.exp || state?.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
-  // Fallback player data (used regardless of loading state)
+  // Fallback player data with defensive defaults
   const playerData = {
-    name: profile?.username || "Elon",
-    title: profile?.title || "space_pilot", // Default title ID
-    level: profile?.level || currentLevel.level,
+    name: profile?.username || "Cosmic Explorer",
+    title: profile?.title || "space_pilot",
+    level: profile?.level || currentLevel?.level || 1,
     exp: exp,
-    maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
-    coins: state.coins,
-    gems: state.gems || 1, // Use state.gems if available, fallback to 500
-    essence: state.essence,
+    maxExp: nextLevel ? nextLevel.expRequired : (currentLevel?.expRequired || 1000) + 1000,
+    coins: state?.coins || 0,
+    gems: state?.gems || 500,
+    essence: state?.essence || 0,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
+
+  // Log playerData to verify its values
+  useEffect(() => {
+    console.log('Player Data:', playerData);
+  }, [playerData]);
   
   const handleAchievementsClick = () => {
-    // Navigate to achievements menu if setMenuType prop is available
     if (setMenuType) {
       setMenuType('achievements');
     }
   };
   
   const handleLeaderboardClick = () => {
-    // Navigate to leaderboard menu if setMenuType prop is available
     if (setMenuType) {
       setMenuType('leaderboard');
     }
