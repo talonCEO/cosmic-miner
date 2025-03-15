@@ -107,37 +107,6 @@ export const updatePlayerTitle = async (
 };
 
 /**
- * Update player portrait/border
- */
-export const updatePlayerPortrait = async (
-  uid: string,
-  portraitId: string
-) => {
-  if (!uid || !portraitId) return;
-  
-  try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
-    
-    console.log("Updating player portrait in Firebase:", {
-      uid,
-      portraitId,
-      timestamp: new Date().toISOString()
-    });
-    
-    await updateDoc(userDocRef, {
-      portrait: portraitId,
-      lastSync: serverTimestamp()
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error updating player portrait:", error);
-    return false;
-  }
-};
-
-/**
  * Unlock a new title for the user
  */
 export const unlockPlayerTitle = async (
@@ -168,41 +137,6 @@ export const unlockPlayerTitle = async (
     return true;
   } catch (error) {
     console.error("Error unlocking player title:", error);
-    return false;
-  }
-};
-
-/**
- * Unlock a new portrait for the user
- */
-export const unlockPlayerPortrait = async (
-  uid: string,
-  portraitId: string,
-  currentPortraits: string[]
-) => {
-  if (!uid || !portraitId) return;
-  
-  try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
-    
-    // Don't add duplicates
-    if (currentPortraits.includes(portraitId)) return true;
-    
-    console.log("Unlocking player portrait in Firebase:", {
-      uid,
-      portraitId,
-      timestamp: new Date().toISOString()
-    });
-    
-    await updateDoc(userDocRef, {
-      unlockedPortraits: [...currentPortraits, portraitId],
-      lastSync: serverTimestamp()
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error unlocking player portrait:", error);
     return false;
   }
 };

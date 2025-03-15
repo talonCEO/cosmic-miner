@@ -1,7 +1,7 @@
 
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
-import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
+import { unlockPlayerTitle } from "@/utils/firebaseSync";
 
 /**
  * Check if player leveled up and handle rewards
@@ -10,22 +10,19 @@ import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
  * @param oldExp Previous experience points
  * @param newExp New experience points
  * @param unlockedTitles Array of already unlocked titles
- * @param unlockedPortraits Array of already unlocked portraits
  */
 export const handleLevelUp = async (
   uid: string,
   oldExp: number,
   newExp: number,
-  unlockedTitles: string[] = [],
-  unlockedPortraits: string[] = []
+  unlockedTitles: string[] = []
 ): Promise<{
   newLevel: number,
   rewards: {
     skillPoints?: number,
     essence?: number,
     gems?: number,
-    unlockedTitle?: string,
-    unlockedPortrait?: string
+    unlockedTitle?: string
   }
 }> => {
   // Get old and new level data
@@ -45,8 +42,7 @@ export const handleLevelUp = async (
     skillPoints: 0,
     essence: 0,
     gems: 0,
-    unlockedTitle: undefined as string | undefined,
-    unlockedPortrait: undefined as string | undefined
+    unlockedTitle: undefined as string | undefined
   };
   
   // Calculate the total rewards for all levels gained
@@ -64,13 +60,6 @@ export const handleLevelUp = async (
         await unlockPlayerTitle(uid, levelData.rewards.unlocksTitle, unlockedTitles);
         rewards.unlockedTitle = levelData.rewards.unlocksTitle;
         unlockedTitles.push(levelData.rewards.unlocksTitle);
-      }
-      
-      // Handle portrait unlocks
-      if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
-        await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
-        rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
-        unlockedPortraits.push(levelData.rewards.unlocksPortrait);
       }
     }
     
@@ -102,12 +91,6 @@ export const handleLevelUp = async (
   if (rewards.unlockedTitle) {
     toast.success(`New Title Unlocked!`, {
       description: `You can now use the "${rewards.unlockedTitle}" title.`
-    });
-  }
-  
-  if (rewards.unlockedPortrait) {
-    toast.success(`New Avatar Border Unlocked!`, {
-      description: `You can now use the "${rewards.unlockedPortrait}" border.`
     });
   }
   
