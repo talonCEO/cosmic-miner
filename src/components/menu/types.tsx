@@ -37,6 +37,11 @@ export interface InventoryItem {
   obtained: number; // timestamp
 }
 
+
+
+
+
+
 // Game boost items manifest - centralized list of all available boosts
 export const INVENTORY_ITEMS = {
   // Resource items (non-usable)
@@ -84,6 +89,11 @@ export const INVENTORY_ITEMS = {
     stackable: true,
     obtained: Date.now()
   },
+
+
+
+
+
   
   // Original boost items (usable)
   DOUBLE_COINS: {
@@ -100,7 +110,8 @@ export const INVENTORY_ITEMS = {
     },
     usable: true,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    cost: 100 // Suggested gem cost
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -115,7 +126,8 @@ export const INVENTORY_ITEMS = {
     },
     usable: true,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    cost: 50 // Suggested gem cost
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
@@ -131,7 +143,8 @@ export const INVENTORY_ITEMS = {
     },
     usable: true,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    cost: 100 // Suggested gem cost
   },
 
   // New boosts as requested
@@ -199,7 +212,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 200 // Suggested gem cost
+    cost: 150 // Suggested gem cost
   },
   PERMA_PASSIVE: {
     id: 'boost-perma-passive',
@@ -215,7 +228,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 250 // Suggested gem cost
+    cost: 200 // Suggested gem cost
   },
   NO_ADS: {
     id: 'boost-no-ads',
@@ -231,7 +244,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: false, // Only one purchase needed
     obtained: Date.now(),
-    cost: 500, // High cost for one-time purchase
+    cost: 1000, // High cost for one-time purchase
     maxPurchases: 1 // Limit to one
   },
   AUTO_BUY: {
@@ -248,7 +261,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: false, // Only one purchase needed
     obtained: Date.now(),
-    cost: 300, // High cost for one-time purchase
+    cost: 800, // High cost for one-time purchase
     maxPurchases: 1 // Limit to one
   },
   INVENTORY_EXPANSION: {
@@ -265,7 +278,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 150, // Moderate cost per expansion
+    cost: 500, // Moderate cost per expansion
     maxPurchases: 5 // Limit to 5 expansions
   }
 };
