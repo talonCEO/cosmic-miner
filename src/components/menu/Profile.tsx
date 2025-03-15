@@ -43,7 +43,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: state.gems || 500, // Use state.gems if available, fallback to 500
+    gems: state.gems || 1, // Use state.gems if available, fallback to 500
     essence: state.essence,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
