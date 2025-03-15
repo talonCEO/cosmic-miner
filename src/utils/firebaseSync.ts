@@ -1,5 +1,5 @@
 
-import { getFirestore, doc, updateDoc, increment, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { GameState } from '@/context/GameContext';
 import { UserProfile } from '@/context/FirebaseContext';
 import { getLevelFromExp } from '@/data/playerProgressionData';
@@ -11,7 +11,7 @@ export const syncGameProgress = async (
   uid: string, 
   gameState: GameState
 ) => {
-  if (!uid) return false;
+  if (!uid) return;
   
   try {
     const db = getFirestore();
@@ -26,7 +26,6 @@ export const syncGameProgress = async (
       level: currentLevel.level,
       exp: exp,
       coins: gameState.coins,
-      gems: gameState.gems,
       essence: gameState.essence,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,
@@ -34,32 +33,8 @@ export const syncGameProgress = async (
     });
     
     console.log("Game progress synced with Firebase for user:", uid);
-    return true;
   } catch (error) {
     console.error("Error syncing game progress:", error);
-    return false;
-  }
-};
-
-/**
- * Fetch user data from Firebase and return it
- */
-export const fetchUserData = async (uid: string): Promise<Partial<UserProfile> | null> => {
-  if (!uid) return null;
-  
-  try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
-    const userDoc = await getDoc(userDocRef);
-    
-    if (userDoc.exists()) {
-      return userDoc.data() as UserProfile;
-    }
-    
-    return null;
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    return null;
   }
 };
 
@@ -91,7 +66,7 @@ export const updatePlayerTitle = async (
   uid: string,
   titleId: string
 ) => {
-  if (!uid || !titleId) return false;
+  if (!uid || !titleId) return;
   
   try {
     const db = getFirestore();
@@ -115,7 +90,7 @@ export const updatePlayerPortrait = async (
   uid: string,
   portraitId: string
 ) => {
-  if (!uid || !portraitId) return false;
+  if (!uid || !portraitId) return;
   
   try {
     const db = getFirestore();
@@ -140,7 +115,7 @@ export const unlockPlayerTitle = async (
   titleId: string,
   currentTitles: string[]
 ) => {
-  if (!uid || !titleId) return false;
+  if (!uid || !titleId) return;
   
   try {
     const db = getFirestore();
@@ -168,7 +143,7 @@ export const unlockPlayerPortrait = async (
   portraitId: string,
   currentPortraits: string[]
 ) => {
-  if (!uid || !portraitId) return false;
+  if (!uid || !portraitId) return;
   
   try {
     const db = getFirestore();
@@ -195,7 +170,7 @@ export const addFriend = async (
   uid: string,
   friendId: string
 ) => {
-  if (!uid || !friendId) return false;
+  if (!uid || !friendId) return;
   
   try {
     const db = getFirestore();
@@ -210,74 +185,6 @@ export const addFriend = async (
     return true;
   } catch (error) {
     console.error("Error adding friend:", error);
-    return false;
-  }
-};
-
-/**
- * Sync user level up with Firebase
- */
-export const syncLevelUp = async (
-  uid: string,
-  newLevel: number,
-  newExp: number,
-  rewards: any
-) => {
-  if (!uid) return false;
-  
-  try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
-    
-    const updateData: any = {
-      level: newLevel,
-      exp: newExp
-    };
-    
-    // Add any rewards to the update
-    if (rewards.skillPoints) {
-      updateData.skillPoints = increment(rewards.skillPoints);
-    }
-    
-    if (rewards.essence) {
-      updateData.essence = increment(rewards.essence);
-    }
-    
-    if (rewards.gems) {
-      updateData.gems = increment(rewards.gems);
-    }
-    
-    await updateDoc(userDocRef, updateData);
-    
-    return true;
-  } catch (error) {
-    console.error("Error syncing level up:", error);
-    return false;
-  }
-};
-
-/**
- * Update gems after purchase
- */
-export const updateGems = async (
-  uid: string, 
-  newGemCount: number
-) => {
-  if (!uid) return false;
-  
-  try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
-    
-    await updateDoc(userDocRef, {
-      gems: newGemCount,
-      lastUpdated: serverTimestamp()
-    });
-    
-    console.log("Gems updated in Firebase for user:", uid);
-    return true;
-  } catch (error) {
-    console.error("Error updating gems:", error);
     return false;
   }
 };

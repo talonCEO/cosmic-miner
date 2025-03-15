@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFirebase } from "@/context/FirebaseContext";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
 import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
@@ -15,23 +16,19 @@ const getPlaceholderImage = (itemName: string): string => {
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 };
 
-export interface PremiumStoreProps {
-  playerGems?: number; // Make this optional and use Firebase profile instead
+interface PremiumStoreProps {
+  playerGems: number;
   boostItems: BoostItemType[];
   onBuyGemPackage: (packageId: string, amount: number) => void;
   onBuyBoostItem: (itemId: string) => void;
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ 
+  playerGems, 
   boostItems, 
   onBuyGemPackage, 
-  onBuyBoostItem,
-  playerGems: propPlayerGems // Rename to avoid conflict
+  onBuyBoostItem 
 }) => {
-  const { profile } = useFirebase();
-  // Use gems from profile or from props (fallback)
-  const playerGems = profile?.gems !== undefined ? profile.gems : (propPlayerGems || 0);
-  
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: BoostItemType | null;

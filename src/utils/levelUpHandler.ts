@@ -1,7 +1,7 @@
 
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
-import { unlockPlayerTitle, unlockPlayerPortrait, syncLevelUp } from "@/utils/firebaseSync";
+import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
 
 /**
  * Check if player leveled up and handle rewards
@@ -66,15 +66,12 @@ export const handleLevelUp = async (
         unlockedTitles.push(levelData.rewards.unlocksTitle);
       }
       
-      // Portrait unlocks are currently commented out in the data file
-      // This code is kept for future implementation
-      /* 
+      // Handle portrait unlocks
       if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
         await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
         rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
         unlockedPortraits.push(levelData.rewards.unlocksPortrait);
       }
-      */
     }
     
     // Show toast for each level up
@@ -82,9 +79,6 @@ export const handleLevelUp = async (
       description: "Your cosmic mining skills have improved!"
     });
   }
-  
-  // Sync level up with Firebase
-  await syncLevelUp(uid, newLevelData.currentLevel.level, newExp, rewards);
   
   // Show reward notifications
   if (rewards.skillPoints) {

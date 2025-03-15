@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -20,9 +19,6 @@ import {
   collection
 } from 'firebase/firestore';
 import { firebaseConfig } from '@/config/firebase';
-import { syncGameProgress, updateGems } from '@/utils/firebaseSync';
-import { gameContextHolder } from './GameContext';
-import { toast } from 'sonner';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -49,7 +45,6 @@ export interface UserProfile {
   achievements: string[];
   createdAt: any; // Use serverTimestamp in Firestore
   lastLogin: any; // Use serverTimestamp in Firestore
-  hasChangedUsername: boolean; // Track if the user has used their free username change
 }
 
 interface FirebaseContextType {
@@ -58,14 +53,11 @@ interface FirebaseContextType {
   loading: boolean;
   error: string | null;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
-  updateUsername: (username: string) => Promise<{ success: boolean; message?: string }>;
+  updateUsername: (username: string) => Promise<void>;
   updateTitle: (titleId: string) => Promise<void>;
   updatePortrait: (portraitId: string) => Promise<void>;
   unlockTitle: (titleId: string) => Promise<void>;
   unlockPortrait: (portraitId: string) => Promise<void>;
-  addGems: (amount: number) => Promise<void>;
-  spendGems: (amount: number) => Promise<boolean>;
-  syncToFirebase: () => Promise<void>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
@@ -74,7 +66,7 @@ const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined
 const generateUserId = async (): Promise<string> => {
   let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
   const q = query(collection(db, "users"), where("userId", "==", newId));
-  let querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(q);
   
   while (!querySnapshot.empty) {
     newId = Math.floor(10000000 + Math.random() * 90000000).toString();
@@ -89,7 +81,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastSyncTime, setLastSyncTime] = useState<number>(Date.now());
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -126,7 +117,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             achievements: [],
             createdAt: serverTimestamp(), // Server-side timestamp
             lastLogin: serverTimestamp(), // Server-side timestamp
-            hasChangedUsername: false,
           };
 
           await setDoc(userDocRef, newUserProfile);
@@ -146,85 +136,16 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     return () => unsubscribe();
   }, []);
 
-  // Sync profile to Firebase every 60 minutes
-  useEffect(() => {
-    if (!user || !profile) return;
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-      // Check if it's been at least 60 minutes since the last sync
-      if (now - lastSyncTime >= 60 * 60 * 1000) {
-        syncToFirebase();
-        setLastSyncTime(now);
-        console.log("Periodic profile sync to Firebase completed");
-      }
-    }, 60 * 1000); // Check every minute
-
-    return () => clearInterval(interval);
-  }, [user, profile, lastSyncTime]);
-
-  const syncToFirebase = async () => {
-    if (!user || !gameContextHolder.current) return;
-    
-    try {
-      const gameState = gameContextHolder.current.state;
-      const success = await syncGameProgress(user.uid, gameState);
-      
-      if (success) {
-        console.log("Game state successfully synced to Firebase");
-      } else {
-        console.error("Failed to sync game state to Firebase");
-      }
-    } catch (error) {
-      console.error("Error during Firebase sync:", error);
-    }
-  };
-
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
     const userDocRef = doc(db, "users", user.uid);
     await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() });
     setProfile((prev) => (prev ? { ...prev, ...data } : null));
-    setLastSyncTime(Date.now()); // Update last sync time
   };
 
-  const updateUsername = async (username: string): Promise<{ success: boolean; message?: string }> => {
-    if (!username.trim() || !profile) return { success: false, message: "Invalid username" };
-    
-    // Check if this is a free change or if the user has enough gems
-    if (!profile.hasChangedUsername) {
-      // First change is free
-      await updateProfile({ username, hasChangedUsername: true });
-      
-      // Update game state if needed
-      if (gameContextHolder.current) {
-        await syncToFirebase();
-      }
-      
-      return { success: true, message: "Username updated for free" };
-    } else {
-      // Subsequent changes cost 200 gems
-      if (profile.gems >= 200) {
-        const newGemCount = profile.gems - 200;
-        await updateProfile({ username, gems: newGemCount });
-        
-        // Update the gems in the game state
-        if (gameContextHolder.current) {
-          gameContextHolder.current.dispatch({
-            type: 'UPDATE_PROFILE_DATA',
-            payload: { gems: newGemCount }
-          });
-          await syncToFirebase();
-        }
-        
-        return { success: true, message: "Username updated for 200 gems" };
-      } else {
-        return { 
-          success: false, 
-          message: "Not enough gems. Username changes after the first one cost 200 gems." 
-        };
-      }
-    }
+  const updateUsername = async (username: string) => {
+    if (!username.trim()) return;
+    await updateProfile({ username });
   };
 
   const updateTitle = async (titleId: string) => {
@@ -249,72 +170,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     await updateProfile({ unlockedPortraits: updatedPortraits });
   };
 
-  const addGems = async (amount: number) => {
-    if (!profile || !user || amount <= 0) return;
-    
-    try {
-      const newGemCount = profile.gems + amount;
-      
-      // Update Firebase
-      const success = await updateGems(user.uid, newGemCount);
-      
-      if (success) {
-        // Update local profile state
-        setProfile(prev => prev ? { ...prev, gems: newGemCount } : null);
-        
-        // Update game state
-        if (gameContextHolder.current) {
-          gameContextHolder.current.dispatch({
-            type: 'UPDATE_PROFILE_DATA',
-            payload: { gems: newGemCount }
-          });
-        }
-        
-        toast.success(`Added ${amount} gems to your account!`);
-      }
-    } catch (error) {
-      console.error("Error adding gems:", error);
-      toast.error("Failed to add gems to your account");
-    }
-  };
-
-  const spendGems = async (amount: number): Promise<boolean> => {
-    if (!profile || !user || amount <= 0) return false;
-    
-    try {
-      if (profile.gems < amount) {
-        toast.error(`Not enough gems. You need ${amount} gems.`);
-        return false;
-      }
-      
-      const newGemCount = profile.gems - amount;
-      
-      // Update Firebase
-      const success = await updateGems(user.uid, newGemCount);
-      
-      if (success) {
-        // Update local profile state
-        setProfile(prev => prev ? { ...prev, gems: newGemCount } : null);
-        
-        // Update game state
-        if (gameContextHolder.current) {
-          gameContextHolder.current.dispatch({
-            type: 'UPDATE_PROFILE_DATA',
-            payload: { gems: newGemCount }
-          });
-        }
-        
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error("Error spending gems:", error);
-      toast.error("Failed to process gem transaction");
-      return false;
-    }
-  };
-
   const value = {
     user,
     profile,
@@ -326,9 +181,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     updatePortrait,
     unlockTitle,
     unlockPortrait,
-    addGems,
-    spendGems,
-    syncToFirebase
   };
 
   return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;

@@ -9,8 +9,6 @@ import { useFirebase } from '@/context/FirebaseContext';
 import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
-import { toast } from 'sonner';
-import { updatePlayerTitle } from '@/utils/firebaseSync';
 
 interface ProfileProps {
   setMenuType?: (menuType: MenuType) => void;
@@ -18,31 +16,19 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
-  const { profile, loading, updateUsername } = useFirebase();
+  const { profile, loading, updateUsername, updateTitle } = useFirebase();
   
   // Handle player name change (updates Firebase profile)
-  const handleNameChange = async (newName: string) => {
+  const handleNameChange = (newName: string) => {
     if (profile && newName.trim() !== profile.username) {
-      const result = await updateUsername(newName);
-      
-      if (result.success) {
-        toast.success(result.message || "Username updated!");
-      } else {
-        toast.error(result.message || "Failed to update username");
-      }
+      updateUsername(newName);
     }
   };
   
   // Handle title change
-  const handleTitleChange = async (titleId: string) => {
-    if (profile && profile.userId && titleId.trim() !== profile.title) {
-      const success = await updatePlayerTitle(profile.userId, titleId);
-      
-      if (success) {
-        toast.success("Title updated successfully!");
-      } else {
-        toast.error("Failed to update title");
-      }
+  const handleTitleChange = (titleId: string) => {
+    if (profile && titleId.trim() !== profile.title) {
+      updateTitle(titleId);
     }
   };
   
@@ -57,21 +43,19 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   
   // Get level info from total coins earned (used as XP)
   const exp = profile?.exp || state.totalEarned || 0;
-  const roundedExp = Math.round(exp); // Round to the nearest whole number
-  const { currentLevel, nextLevel } = getLevelFromExp(roundedExp);
+  const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
   // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
     title: profile?.title || "space_pilot", // Default title ID
     level: profile?.level || currentLevel.level,
-    exp: roundedExp,
+    exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: profile?.gems || state.gems || 0, // Use Firebase profile gems, then game state gems, or default to 0
+    gems: 500, // Mock value, would come from state in real implementation
     essence: state.essence,
-    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
-    hasChangedUsername: profile?.hasChangedUsername || false
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
   
   const handleAchievementsClick = () => {
@@ -107,8 +91,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           essence={playerData.essence}
           onNameChange={handleNameChange}
           userId={playerData.userId}
-          hasChangedUsername={playerData.hasChangedUsername}
-          onTitleChange={handleTitleChange}
         />
         
         {/* Navigation buttons */}
