@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass } from 'lucide-react';
+import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass, Percent, VideoOff, PackagePlus, Box, DollarSign } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
 import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
-import { gemPackages, BoostItem as BoostItemType } from './types/premiumStore';
+import { gemPackages } from './types/premiumStore'; // Assuming gemPackages is still defined here
 import { useMemo } from 'react';
-import { useGame } from '@/context/GameContext'; // Import useGame
+import { useGame } from '@/context/GameContext';
+import { INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
 // Helper function to get placeholder images based on item name
 const getPlaceholderImage = (itemName: string): string => {
@@ -16,20 +17,14 @@ const getPlaceholderImage = (itemName: string): string => {
 };
 
 interface PremiumStoreProps {
-  boostItems: BoostItemType[];
   onBuyGemPackage: (packageId: string, amount: number) => void;
-  onBuyBoostItem: (itemId: string) => void;
 }
 
-const PremiumStore: React.FC<PremiumStoreProps> = ({ 
-  boostItems, 
-  onBuyGemPackage, 
-  onBuyBoostItem 
-}) => {
-  const { state, addGems } = useGame(); // Access global gems and addGems
+const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
+  const { state, addGems, addItem } = useGame(); // Access gems, addGems, and addItem
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
-    item: BoostItemType | null;
+    item: typeof INVENTORY_ITEMS[keyof typeof INVENTORY_ITEMS] | null;
     isGemPackage?: boolean;
     gemAmount?: number;
   }>({
@@ -37,26 +32,18 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     item: null
   });
 
-  // Calculate when the shop will refresh
-  const earliestRefreshTime = useMemo(() => {
-    const purchasedItems = boostItems.filter(item => item.purchased && item.refreshTime && !item.isPermanent);
-    if (purchasedItems.length === 0) return null;
-    const times = purchasedItems.map(item => item.refreshTime || 0).sort((a, b) => a - b);
-    return times[0];
-  }, [boostItems]);
+  // Filter boost items from INVENTORY_ITEMS (excluding resources)
+  const boostItems = useMemo(() => {
+    return Object.values(INVENTORY_ITEMS)
+      .filter(item => item.type === 'boost')
+      .map(item => ({
+        ...item,
+        purchased: state.boosts[item.id]?.purchased || 0, // Track purchases from GameState
+        maxPurchases: item.maxPurchases || Infinity, // Use defined maxPurchases or unlimited
+      }));
+  }, [state.boosts]);
 
-  // Format the next refresh time
-  const formattedRefreshTime = useMemo(() => {
-    if (!earliestRefreshTime) return null;
-    const now = Date.now();
-    const timeDiff = earliestRefreshTime - now;
-    if (timeDiff <= 0) return "Ready to refresh";
-    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m`;
-  }, [earliestRefreshTime]);
-
-  const showUnlockAnimation = (item: BoostItemType) => {
+  const showUnlockAnimation = (item: typeof INVENTORY_ITEMS[keyof typeof INVENTORY_ITEMS]) => {
     setUnlockAnimation({
       show: true,
       item,
@@ -83,34 +70,44 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     });
   };
 
-  // Map of boost IDs to icons
+  // Map of boost IDs to icons (updated to match INVENTORY_ITEMS)
   const boostIcons = {
-    boost_no_ads: <Ban className="w-5 h-5 text-yellow-400" />,
-    boost_quantum_accelerator: <Zap className="w-5 h-5 text-yellow-400" />,
-    boost_nebula_enhancer: <ArrowUp className="w-5 h-5 text-yellow-400" />,
-    boost_cosmic_catalyst: <Gauge className="w-5 h-5 text-yellow-400" />,
-    boost_void_extractor: <Clock className="w-5 h-5 text-yellow-400" />,
-    boost_supernova_surge: <Star className="w-5 h-5 text-yellow-400" />,
-    boost_galactic_magnet: <Magnet className="w-5 h-5 text-yellow-400" />,
-    boost_temporal_distortion: <Clock className="w-5 h-5 text-yellow-400" />,
-    boost_stellar_fusion: <Bolt className="w-5 h-5 text-yellow-400" />,
-    boost_dark_matter_infusion: <Target className="w-5 h-5 text-yellow-400" />,
-    boost_asteroid_locator: <Compass className="w-5 h-5 text-yellow-400" />,
-    boost_wormhole_generator: <Rocket className="w-5 h-5 text-yellow-400" />
+    'boost-double-coins': <CircleDollarSign className="w-5 h-5 text-green-400" />,
+    'boost-time-warp': <Clock className="w-5 h-5 text-blue-400" />,
+    'boost-auto-tap': <Zap className="w-5 h-5 text-yellow-400" />,
+    'boost-tap-boost': <Zap className="w-5 h-5 text-purple-400" />,
+    'boost-cheap-upgrades': <Percent className="w-5 h-5 text-green-400" />,
+    'boost-essence-boost': <Sparkles className="w-5 h-5 text-amber-400" />,
+    'boost-perma-tap': <DollarSign className="w-5 h-5 text-red-400" />,
+    'boost-perma-passive': <Star className="w-5 h-5 text-yellow-400" />,
+    'boost-no-ads': <VideoOff className="w-5 h-5 text-gray-400" />,
+    'boost-auto-buy': <PackagePlus className="w-5 h-5 text-blue-400" />,
+    'boost-inventory-expansion': <Box className="w-5 h-5 text-cyan-400" />,
   };
 
   const gemImageUrl = 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 
   const sortedBoostItems = useMemo(() => {
     return boostItems.sort((a, b) => {
-      if (a.id === 'boost_no_ads') return -1;
-      if (b.id === 'boost_no_ads') return 1;
-      return 0;
+      if (a.id === 'boost-no-ads') return -1; // Prioritize No Ads
+      if (b.id === 'boost-no-ads') return 1;
+      return a.cost - b.cost; // Sort by cost otherwise
     }).map(item => ({
       ...item,
-      icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />
+      icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
+      effect: item.effect ? `${item.description} (Value: ${item.effect.value}${item.effect.duration ? `, Duration: ${item.effect.duration}s` : ''})` : item.description,
     }));
   }, [boostItems]);
+
+  const onBuyBoostItem = (itemId: string) => {
+    const item = sortedBoostItems.find(i => i.id === itemId);
+    if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
+
+    // Deduct gems and add item to inventory
+    addGems(-item.cost);
+    addItem(createInventoryItem(item));
+    showUnlockAnimation(item);
+  };
 
   return (
     <>
@@ -177,7 +174,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                   {unlockAnimation.isGemPackage ? `${unlockAnimation.gemAmount} Gems` : unlockAnimation.item?.name}
                 </h2>
                 <p className="text-green-400 font-semibold mb-8">
-                  {unlockAnimation.isGemPackage ? "Added to your account" : unlockAnimation.item?.effect}
+                  {unlockAnimation.isGemPackage ? "Added to your account" : unlockAnimation.item?.description}
                 </p>
               </motion.div>
             </motion.div>
@@ -195,7 +192,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
               </h3>
               <div className="flex items-center">
                 <Gem className="w-5 h-5 text-yellow-400 mr-1" />
-                <span className="text-yellow-400 font-bold">{state.gems}</span> {/* Use global gems */}
+                <span className="text-yellow-400 font-bold">{state.gems}</span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -219,21 +216,17 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 Boost Items
               </h3>
             </div>
-            {formattedRefreshTime && (
-              <div className="flex items-center justify-end mb-3">
-                <span className="text-xs text-gray-400">Refreshes in: {formattedRefreshTime}</span>
-              </div>
-            )}
             <div className="grid grid-cols-3 gap-3">
               {sortedBoostItems.map(item => (
                 <BoostItem 
                   key={item.id} 
-                  item={item} 
-                  playerGems={state.gems} // Pass global gems
-                  onPurchase={(itemId) => {
-                    onBuyBoostItem(itemId);
-                    showUnlockAnimation(item);
-                  }}
+                  item={{
+                    ...item,
+                    purchased: state.boosts[item.id]?.purchased || 0, // Reflect current purchases
+                    isPermanent: !item.effect?.duration, // Permanent if no duration
+                  }} 
+                  playerGems={state.gems}
+                  onPurchase={() => onBuyBoostItem(item.id)}
                   showUnlockAnimation={showUnlockAnimation}
                 />
               ))}
