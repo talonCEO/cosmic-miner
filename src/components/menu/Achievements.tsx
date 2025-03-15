@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Award } from 'lucide-react';
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GameState } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
