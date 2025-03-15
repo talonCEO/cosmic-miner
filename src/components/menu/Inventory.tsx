@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -143,7 +142,6 @@ const Inventory: React.FC = () => {
   
   // Add test boosts to player inventory when component mounts
   useEffect(() => {
-    // Only add the boosts if they don't already exist in the inventory
     const hasDoubleCoins = state.inventory.some(item => item.id === INVENTORY_ITEMS.DOUBLE_COINS.id);
     const hasTimeWarp = state.inventory.some(item => item.id === INVENTORY_ITEMS.TIME_WARP.id);
     const hasAutoTap = state.inventory.some(item => item.id === INVENTORY_ITEMS.AUTO_TAP.id);
@@ -170,7 +168,7 @@ const Inventory: React.FC = () => {
       },
       {
         ...INVENTORY_ITEMS.GEMS,
-        quantity: 500, // Use actual gems from state when available
+        quantity: state.gems // Updated to use state.gems
       },
       {
         ...INVENTORY_ITEMS.ESSENCE,
@@ -185,7 +183,7 @@ const Inventory: React.FC = () => {
     // Combine resource items with actual inventory items
     const combinedInventory = [...resourceItems, ...state.inventory];
     setVirtualInventory(combinedInventory);
-  }, [state.coins, state.essence, state.skillPoints, state.inventory]);
+  }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]); // Added state.gems to dependency array
   
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
