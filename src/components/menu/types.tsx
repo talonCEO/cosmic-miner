@@ -1,6 +1,6 @@
-
+// src/types/index.ts
 import React from 'react';
-import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign } from 'lucide-react';
+import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
 
@@ -85,7 +85,7 @@ export const INVENTORY_ITEMS = {
     obtained: Date.now()
   },
   
-  // Boost items (usable)
+  // Original boost items (usable)
   DOUBLE_COINS: {
     id: 'boost-double-coins',
     name: 'Double Coins',
@@ -132,22 +132,152 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now()
+  },
+
+  // New boosts as requested
+  TAP_BOOST: {
+    id: 'boost-tap-boost',
+    name: 'Tap Boost',
+    description: 'Increases tap power by 5x for 100 taps',
+    type: 'boost' as const,
+    rarity: 'rare' as const,
+    icon: <Zap className="text-purple-400" />,
+    effect: {
+      type: 'coinsPerClick',
+      value: 5,
+      duration: 100 // 100 taps
+    },
+    usable: true,
+    stackable: true,
+    obtained: Date.now(),
+    cost: 75 // Suggested gem cost
+  },
+  CHEAP_UPGRADES: {
+    id: 'boost-cheap-upgrades',
+    name: 'Cheap Upgrades',
+    description: 'Reduces upgrade costs by 10% for 10 minutes',
+    type: 'boost' as const,
+    rarity: 'rare' as const,
+    icon: <Percent className="text-green-400" />,
+    effect: {
+      type: 'upgradeCostReduction',
+      value: 0.9, // Multiplier (10% reduction)
+      duration: 10 * 60 // 10 minutes
+    },
+    usable: true,
+    stackable: true,
+    obtained: Date.now(),
+    cost: 50 // Suggested gem cost
+  },
+  ESSENCE_BOOST: {
+    id: 'boost-essence-boost',
+    name: 'Essence Boost',
+    description: 'Increases potential essence reward this prestige by 25%',
+    type: 'boost' as const,
+    rarity: 'epic' as const,
+    icon: <Sparkles className="text-amber-400" />,
+    effect: {
+      type: 'essenceMultiplier',
+      value: 1.25 // 25% increase
+    },
+    usable: true,
+    stackable: true,
+    obtained: Date.now(),
+    cost: 100 // Suggested gem cost
+  },
+  PERMA_TAP: {
+    id: 'boost-perma-tap',
+    name: 'Permanent Tap Boost',
+    description: 'Permanently increases base tap power by +1',
+    type: 'boost' as const,
+    rarity: 'legendary' as const,
+    icon: <DollarSign className="text-red-400" />,
+    effect: {
+      type: 'coinsPerClickBase',
+      value: 1
+    },
+    usable: true,
+    stackable: true,
+    obtained: Date.now(),
+    cost: 200 // Suggested gem cost
+  },
+  PERMA_PASSIVE: {
+    id: 'boost-perma-passive',
+    name: 'Permanent Passive Boost',
+    description: 'Permanently increases base passive income by +1',
+    type: 'boost' as const,
+    rarity: 'legendary' as const,
+    icon: <Star className="text-yellow-400" />,
+    effect: {
+      type: 'coinsPerSecondBase',
+      value: 1
+    },
+    usable: true,
+    stackable: true,
+    obtained: Date.now(),
+    cost: 250 // Suggested gem cost
+  },
+  NO_ADS: {
+    id: 'boost-no-ads',
+    name: 'No Ads',
+    description: 'Permanently removes ads from the game',
+    type: 'boost' as const,
+    rarity: 'legendary' as const,
+    icon: <VideoOff className="text-gray-400" />,
+    effect: {
+      type: 'noAds',
+      value: 1
+    },
+    usable: true,
+    stackable: false, // Only one purchase needed
+    obtained: Date.now(),
+    cost: 500, // High cost for one-time purchase
+    maxPurchases: 1 // Limit to one
+  },
+  AUTO_BUY: {
+    id: 'boost-auto-buy',
+    name: 'Auto Buy',
+    description: 'Unlocks the auto-buy feature permanently',
+    type: 'boost' as const,
+    rarity: 'epic' as const,
+    icon: <PackagePlus className="text-blue-400" />,
+    effect: {
+      type: 'unlockAutoBuy',
+      value: 1
+    },
+    usable: true,
+    stackable: false, // Only one purchase needed
+    obtained: Date.now(),
+    cost: 300, // High cost for one-time purchase
+    maxPurchases: 1 // Limit to one
+  },
+  INVENTORY_EXPANSION: {
+    id: 'boost-inventory-expansion',
+    name: 'Inventory Expansion',
+    description: 'Increases inventory capacity by 5 slots',
+    type: 'boost' as const,
+    rarity: 'rare' as const,
+    icon: <Box className="text-cyan-400" />,
+    effect: {
+      type: 'inventoryCapacity',
+      value: 5
+    },
+    usable: true,
+    stackable: true,
+    obtained: Date.now(),
+    cost: 150, // Moderate cost per expansion
+    maxPurchases: 5 // Limit to 5 expansions
   }
 };
 
 /**
  * Helper function to create a new inventory item
- * 
- * Usage example:
- * const newItem = createInventoryItem(INVENTORY_ITEMS.DOUBLE_COINS, 3);
- * gameContext.addItem(newItem);
- * 
  * @param itemTemplate The template item from INVENTORY_ITEMS
  * @param quantity Number of items to create (defaults to 1)
  * @returns A new InventoryItem object ready to be added to player inventory
  */
 export function createInventoryItem(
-  itemTemplate: Omit<InventoryItem, 'quantity'>, 
+  itemTemplate: Omit<InventoryItem, 'quantity'>,
   quantity: number = 1
 ): InventoryItem {
   return {
