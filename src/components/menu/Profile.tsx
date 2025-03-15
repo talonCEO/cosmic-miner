@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -6,7 +5,7 @@ import { formatNumber } from '@/utils/gameLogic';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
 import { useFirebase } from '@/context/FirebaseContext';
-import { Loader2, Trophy, BarChart3 } from 'lucide-react';
+import { Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
 
@@ -32,20 +31,11 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     }
   };
   
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] p-4">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-        <p className="mt-2 text-slate-300">Loading your profile...</p>
-      </div>
-    );
-  }
-  
   // Get level info from total coins earned (used as XP)
   const exp = profile?.exp || state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
-  // Fallback player data (used if Firebase profile not loaded)
+  // Fallback player data (used regardless of loading state)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
     title: profile?.title || "space_pilot", // Default title ID
@@ -53,7 +43,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: 500, // Mock value, would come from state in real implementation
+    gems: state.gems || 500, // Use state.gems if available, fallback to 500
     essence: state.essence,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
