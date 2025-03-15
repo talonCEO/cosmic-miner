@@ -17,6 +17,7 @@ import PremiumStore from './menu/PremiumStore';
 import Profile from './menu/Profile';
 import Inventory from './menu/Inventory';
 import Leaderboard from './menu/Leaderboard';
+import { useFirebase } from '@/context/FirebaseContext';
 
 interface GameMenuProps {
   menuType?: 'main' | 'premium';
@@ -24,8 +25,8 @@ interface GameMenuProps {
 
 const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) => {
   const { state, prestige, calculatePotentialEssenceReward, buyManager, buyArtifact } = useGame();
+  const { profile } = useFirebase();
   const [activeMenuType, setActiveMenuType] = useState<MenuType>("none");
-  const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
   const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
   
   // Initialize boost items with icons on component mount
@@ -75,8 +76,10 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       // For now, simulate a successful purchase
       console.log(`Initiating Google Play purchase for package: ${packageId}`);
       
-      // After successful purchase, update the gems
-      setPlayerGems(prev => prev + amount);
+      // After successful purchase, update the gems using FirebaseContext
+      if (profile) {
+        await useFirebase().addGems(amount);
+      }
     } catch (error) {
       console.error('Purchase failed:', error);
     }
@@ -86,6 +89,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const handleBuyBoostItem = (itemId: string) => {
     const item = boostItems.find(item => item.id === itemId);
     if (!item || !item.purchasable) return;
+    
+    const playerGems = profile?.gems || 0;
     
     // Check if player has enough gems
     if (playerGems < item.cost) {
@@ -114,8 +119,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       );
     }
     
-    // Deduct gems
-    setPlayerGems(prev => prev - item.cost);
+    // Deduct gems using the FirebaseContext
+    useFirebase().spendGems(item.cost);
     
     // Apply the boost effect (in a real implementation)
     // This would modify game state based on the item's effect
@@ -181,7 +186,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
         
         {activeMenuType === "premium" && (
           <PremiumStore 
-            playerGems={playerGems}
             boostItems={boostItems}
             onBuyGemPackage={handleBuyGemPackage}
             onBuyBoostItem={handleBuyBoostItem}
