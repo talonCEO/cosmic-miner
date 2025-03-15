@@ -10,20 +10,20 @@ import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
-// Custom SVG imports from '@/assets/images/icons/'
-import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.svg';
-import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.svg';
-import NeuralMiningIcon from '@/assets/images/icons/neural-mining.svg';
-import GravitonShieldIcon from '@/assets/images/icons/graviton-shield.svg';
-import LaserExtractionIcon from '@/assets/images/icons/laser-extraction.svg';
-import DarkMatterIcon from '@/assets/images/icons/dark-matter.svg';
-import GalacticScannerIcon from '@/assets/images/icons/galactic-scanner.svg';
-import PlasmaExcavatorIcon from '@/assets/images/icons/plasma-excavator.svg';
-import NanoBotSwarmIcon from '@/assets/images/icons/nano-bot-swarm.svg';
-import InterstellarNavIcon from '@/assets/images/icons/interstellar-nav.svg';
-import SupernovaCoreIcon from '@/assets/images/icons/supernova-core.svg';
-import QuantumTunnelIcon from '@/assets/images/icons/quantum-tunnel.svg';
-import CosmicSingularityIcon from '@/assets/images/icons/cosmic-singularity.svg';
+// GameContext.tsx (partial)
+import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
+import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
+import NeuralMiningIcon from '@/assets/images/icons/neural-mining.png';
+import GravitonShieldIcon from '@/assets/images/icons/graviton-shield.png';
+import LaserExtractionIcon from '@/assets/images/icons/laser-extraction.png';
+import DarkMatterIcon from '@/assets/images/icons/dark-matter.png';
+import GalacticScannerIcon from '@/assets/images/icons/galactic-scanner.png';
+import PlasmaExcavatorIcon from '@/assets/images/icons/plasma-excavator.png';
+import NanoBotSwarmIcon from '@/assets/images/icons/nano-bot-swarm.png';
+import InterstellarNavIcon from '@/assets/images/icons/interstellar-nav.png';
+import SupernovaCoreIcon from '@/assets/images/icons/supernova-core.png';
+import QuantumTunnelIcon from '@/assets/images/icons/quantum-tunnel.png';
+import CosmicSingularityIcon from '@/assets/images/icons/cosmic-singularity.png';
 
 // Achievement interface
 export interface Achievement {
@@ -142,28 +142,25 @@ const updatedUpgradesList = upgradesList.map(upgrade => ({
   coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 0.5
 }));
 
-// Initial abilities with custom SVGs
+// Initial abilities with PNGs
 const initialAbilities: Ability[] = [
-  // Tier 1 (row 1) - Center ability (unlocked by default)
   {
     id: "ability-1",
     name: "Asteroid Drill",
     description: "Just a rusty old drill that somehow still works. The user manual was written in crayon.",
     cost: 0,
-    icon: <AsteroidDrillIcon className="text-yellow-300" width={24} height={24} />,
+    icon: <img src={AsteroidDrillIcon} alt="Asteroid Drill" className="w-6 h-6" />,
     unlocked: true,
     requiredAbilities: [],
     row: 1,
     column: 2
   },
-  
-  // Tier 2 (row 2) - Three abilities requiring Tier 1
   {
     id: "ability-2",
     name: "Quantum Vibration Enhancer",
     description: "Uses quantum vibration technology to increase mining efficiency. Tap power increased by 50% and passive income by 25%.",
     cost: 3,
-    icon: <QuantumVibrationIcon className="text-blue-300" width={24} height={24} />,
+    icon: <img src={QuantumVibrationIcon} alt="Quantum Vibration Enhancer" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -174,7 +171,7 @@ const initialAbilities: Ability[] = [
     name: "Neural Mining Matrix",
     description: "Connects your brain directly to mining operations. Increases all income by 40% and reduces upgrade costs by 5%.",
     cost: 3,
-    icon: <NeuralMiningIcon className="text-purple-300" width={24} height={24} />,
+    icon: <img src={NeuralMiningIcon} alt="Neural Mining Matrix" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -185,20 +182,18 @@ const initialAbilities: Ability[] = [
     name: "Graviton Shield Generator",
     description: "Creates a force field that optimizes mining operations. Reduces upgrade costs by 15% and increases passive income by 20%.",
     cost: 3,
-    icon: <GravitonShieldIcon className="text-green-300" width={24} height={24} />,
+    icon: <img src={GravitonShieldIcon} alt="Graviton Shield Generator" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
     column: 3
   },
-  
-  // Tier 3 (row 3) - Three abilities requiring Tier 2
   {
     id: "ability-5",
     name: "Laser-Guided Extraction System",
     description: "Precision mining laser technology. 15% chance of critical strike for 5x normal mining yield per tap.",
     cost: 5,
-    icon: <LaserExtractionIcon className="text-red-300" width={24} height={24} />,
+    icon: <img src={LaserExtractionIcon} alt="Laser-Guided Extraction System" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-2"],
     row: 3,
@@ -209,7 +204,7 @@ const initialAbilities: Ability[] = [
     name: "Dark Matter Attractor",
     description: "Harnesses the power of dark matter to attract valuable elements. Increases all income by 45% and passive income by 30%.",
     cost: 5,
-    icon: <DarkMatterIcon className="text-amber-300" width={24} height={24} />,
+    icon: <img src={DarkMatterIcon} alt="Dark Matter Attractor" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-3"],
     row: 3,
@@ -220,20 +215,18 @@ const initialAbilities: Ability[] = [
     name: "Galactic Achievement Scanner",
     description: "Scans the galaxy for achievement opportunities. Gain 2 extra skill points per achievement and 15% more essence.",
     cost: 5,
-    icon: <GalacticScannerIcon className="text-yellow-300" width={24} height={24} />,
+    icon: <img src={GalacticScannerIcon} alt="Galactic Achievement Scanner" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-4"],
     row: 3,
     column: 3
   },
-  
-  // Tier 4 (row 4) - Three abilities requiring Tier 3
   {
     id: "ability-8",
     name: "Plasma Discharge Excavator",
     description: "Uses controlled plasma bursts to break down asteroids. Boosts tap value by 85% and passive income by 55%.",
     cost: 8,
-    icon: <PlasmaExcavatorIcon className="text-blue-300" width={24} height={24} />,
+    icon: <img src={PlasmaExcavatorIcon} alt="Plasma Discharge Excavator" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-5"],
     row: 4,
@@ -244,7 +237,7 @@ const initialAbilities: Ability[] = [
     name: "Nano-Bot Mining Swarm",
     description: "Deploys microscopic robots that optimize resource extraction. Reduces upgrade costs by 30% and increases passive income by 65%.",
     cost: 8,
-    icon: <NanoBotSwarmIcon className="text-green-300" width={24} height={24} />,
+    icon: <img src={NanoBotSwarmIcon} alt="Nano-Bot Mining Swarm" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-6"],
     row: 4,
@@ -255,20 +248,18 @@ const initialAbilities: Ability[] = [
     name: "Interstellar Navigation AI",
     description: "Advanced AI system that identifies the richest asteroid fields. Increases global income by 55% and essence rewards by 20%.",
     cost: 8,
-    icon: <InterstellarNavIcon className="text-purple-300" width={24} height={24} />,
+    icon: <img src={InterstellarNavIcon} alt="Interstellar Navigation AI" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-7"],
     row: 4,
     column: 3
   },
-  
-  // Tier 5 (row 5) - Three abilities requiring Tier 4
   {
     id: "ability-11",
     name: "Supernova Core Extractor",
     description: "Harvests energy from the remnants of exploded stars. Boosts tap value by 120% and all income by 80%.",
     cost: 12,
-    icon: <SupernovaCoreIcon className="text-yellow-300" width={24} height={24} />,
+    icon: <img src={SupernovaCoreIcon} alt="Supernova Core Extractor" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-8"],
     row: 5,
@@ -279,7 +270,7 @@ const initialAbilities: Ability[] = [
     name: "Quantum Tunneling Drill",
     description: "Creates wormholes directly to valuable resources. Reduces all upgrade costs by 45% and doubles passive income.",
     cost: 12,
-    icon: <QuantumTunnelIcon className="text-blue-300" width={24} height={24} />,
+    icon: <img src={QuantumTunnelIcon} alt="Quantum Tunneling Drill" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-9"],
     row: 5,
@@ -290,7 +281,7 @@ const initialAbilities: Ability[] = [
     name: "Cosmic Singularity Engine",
     description: "Harnesses the power of a controlled black hole. Increases essence gain by 35% and all income by 100%.",
     cost: 12,
-    icon: <CosmicSingularityIcon className="text-purple-300" width={24} height={24} />,
+    icon: <img src={CosmicSingularityIcon} alt="Cosmic Singularity Engine" className="w-6 h-6" />,
     unlocked: false,
     requiredAbilities: ["ability-10"],
     row: 5,
