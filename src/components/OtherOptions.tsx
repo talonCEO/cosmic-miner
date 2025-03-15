@@ -4,59 +4,17 @@ import { useGame } from '@/context/GameContext';
 import PerkButton from './PerkButton';
 import { artifacts } from '@/utils/artifactsData';
 import { useBoostManager } from '@/hooks/useBoostManager';
-import { 
-  Beaker, 
-  Star, 
-  Diamond,
-  Zap,
-  DollarSign,
-  BarChart,
-  Clock,
-  Shield,
-  TrendingUp,
-  Battery,
-  Sparkles,
-  Trophy,
-  Settings,
-  Users,
-  Lightbulb,
-  Brain,
-  Heart,
-} from 'lucide-react';
+import Artifact1Icon from '@/assets/images/icons/artifact1.png';
+import Artifact2Icon from '@/assets/images/icons/artifact2.png';
+import Artifact3Icon from '@/assets/images/icons/artifact3.png';
 
 const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
   const { getHighestUnlockedPerkValue, formatEffectDescription } = useBoostManager();
   
-  // Unique icons for artifact perks (different from managers)
-  const artifactPerkIcons = [
-    <Zap size={16} className="text-yellow-400" />,
-    <DollarSign size={16} className="text-green-500" />,
-    <BarChart size={16} className="text-blue-400" />,
-    <Clock size={16} className="text-amber-300" />,
-    <Shield size={16} className="text-red-400" />,
-    <TrendingUp size={16} className="text-indigo-400" />,
-    <Battery size={16} className="text-cyan-300" />,
-    <Sparkles size={16} className="text-amber-400" />,
-    <Trophy size={16} className="text-yellow-500" />,
-    <Settings size={16} className="text-gray-400" />,
-    <Users size={16} className="text-green-300" />,
-    <Lightbulb size={16} className="text-orange-400" />,
-    <Brain size={16} className="text-blue-500" />,
-    <Heart size={16} className="text-pink-400" />,
-    <Star size={16} className="text-purple-500" />,
-    <Diamond size={16} className="text-teal-400" />,
-  ];
-
-  // Flatten all perks across all artifacts and assign icons
-  const allPerks = artifacts.flatMap(artifact => 
-    artifact.perks ? artifact.perks.map(perk => ({ ...perk, artifactId: artifact.id })) : []
-  );
-  
-  const perkIconMap = new Map<string, React.ReactNode>();
-  allPerks.forEach((perk, index) => {
-    perkIconMap.set(perk.id, artifactPerkIcons[index % artifactPerkIcons.length]);
-  });
+  const handleUnlockPerk = (perkId: string, parentId: string) => {
+    unlockPerk(perkId, parentId);
+  };
   
   return (
     <div className="w-full max-w-md mx-auto pb-8">
@@ -81,11 +39,11 @@ const ArtifactsTab: React.FC = () => {
                 <AvatarImage src={artifact.avatar} alt={artifact.name} />
                 <AvatarFallback className="bg-purple-900/50 text-purple-300 rounded-xl">
                   {artifact.id.includes("artifact-1") ? (
-                    <Diamond size={24} />
+                    <img src={Artifact1Icon} alt="Artifact 1" className="w-6 h-6" />
                   ) : artifact.id.includes("artifact-2") ? (
-                    <Star size={24} />
+                    <img src={Artifact2Icon} alt="Artifact 2" className="w-6 h-6" />
                   ) : (
-                    <Beaker size={24} />
+                    <img src={Artifact3Icon} alt="Artifact 3" className="w-6 h-6" />
                   )}
                 </AvatarFallback>
               </Avatar>
@@ -107,9 +65,8 @@ const ArtifactsTab: React.FC = () => {
                       key={perk.id}
                       perk={perk}
                       parentId={artifact.id}
-                      onUnlock={unlockPerk}
+                      onUnlock={handleUnlockPerk}
                       disabled={!isOwned}
-                      icon={perkIconMap.get(perk.id)}
                     />
                   ))}
                 </div>
