@@ -10,8 +10,9 @@ const Header: React.FC = () => {
   const { state } = useGame();
   const { profile } = useFirebase();
   
-  // Get the gem count from the profile, default to 0 if not available
-  const gemCount = profile?.gems || 0;
+  // Get the gem count from the profile or game state
+  // Priority: Firebase profile gems, then game state gems
+  const gemCount = profile?.gems !== undefined ? profile.gems : state.gems;
   
   return (
     <header className="w-full py-2 px-6 sticky top-0 z-30 mb-2">
@@ -49,7 +50,7 @@ const Header: React.FC = () => {
             <div className="flex items-center">
               <Gem size={16} className="text-purple-400 mr-1 animate-pulse" />
               <span className="text-sm text-slate-400 mr-1">Gems:</span>
-              <p className="text-lg font-medium text-purple-300">{gemCount}</p>
+              <p className="text-lg font-medium text-purple-300">{formatNumber(gemCount)}</p>
             </div>
             
             <div className="flex items-center">

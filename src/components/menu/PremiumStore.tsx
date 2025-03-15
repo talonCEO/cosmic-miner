@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
+import { useFirebase } from "@/context/FirebaseContext";
 import { motion, AnimatePresence } from 'framer-motion';
 import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
@@ -17,18 +17,19 @@ const getPlaceholderImage = (itemName: string): string => {
 };
 
 interface PremiumStoreProps {
-  playerGems: number;
   boostItems: BoostItemType[];
   onBuyGemPackage: (packageId: string, amount: number) => void;
   onBuyBoostItem: (itemId: string) => void;
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ 
-  playerGems, 
   boostItems, 
   onBuyGemPackage, 
   onBuyBoostItem 
 }) => {
+  const { profile } = useFirebase();
+  const playerGems = profile?.gems || 0;
+  
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: BoostItemType | null;

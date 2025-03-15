@@ -20,6 +20,9 @@ import {
   collection
 } from 'firebase/firestore';
 import { firebaseConfig } from '@/config/firebase';
+import { syncGameProgress, updateGems } from '@/utils/firebaseSync';
+import { gameContextHolder } from './GameContext';
+import { toast } from 'sonner';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -62,6 +65,7 @@ interface FirebaseContextType {
   unlockPortrait: (portraitId: string) => Promise<void>;
   addGems: (amount: number) => Promise<void>;
   spendGems: (amount: number) => Promise<boolean>;
+  syncToFirebase: () => Promise<void>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
@@ -150,7 +154,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       const now = Date.now();
       // Check if it's been at least 60 minutes since the last sync
       if (now - lastSyncTime >= 60 * 60 * 1000) {
-        updateProfile({});
+        syncToFirebase();
         setLastSyncTime(now);
         console.log("Periodic profile sync to Firebase completed");
       }
@@ -158,6 +162,23 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     return () => clearInterval(interval);
   }, [user, profile, lastSyncTime]);
+
+  const syncToFirebase = async () => {
+    if (!user || !gameContextHolder.current) return;
+    
+    try {
+      const gameState = gameContextHolder.current.state;
+      const success = await syncGameProgress(user.uid, gameState);
+      
+      if (success) {
+        console.log("Game state successfully synced to Firebase");
+      } else {
+        console.error("Failed to sync game state to Firebase");
+      }
+    } catch (error) {
+      console.error("Error during Firebase sync:", error);
+    }
+  };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
@@ -174,11 +195,28 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (!profile.hasChangedUsername) {
       // First change is free
       await updateProfile({ username, hasChangedUsername: true });
+      
+      // Update game state if needed
+      if (gameContextHolder.current) {
+        await syncToFirebase();
+      }
+      
       return { success: true, message: "Username updated for free" };
     } else {
       // Subsequent changes cost 200 gems
       if (profile.gems >= 200) {
-        await updateProfile({ username, gems: profile.gems - 200 });
+        const newGemCount = profile.gems - 200;
+        await updateProfile({ username, gems: newGemCount });
+        
+        // Update the gems in the game state
+        if (gameContextHolder.current) {
+          gameContextHolder.current.dispatch({
+            type: 'UPDATE_PROFILE_DATA',
+            payload: { gems: newGemCount }
+          });
+          await syncToFirebase();
+        }
+        
         return { success: true, message: "Username updated for 200 gems" };
       } else {
         return { 
@@ -212,18 +250,69 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const addGems = async (amount: number) => {
-    if (!profile || amount <= 0) return;
-    const newGemCount = profile.gems + amount;
-    await updateProfile({ gems: newGemCount });
+    if (!profile || !user || amount <= 0) return;
+    
+    try {
+      const newGemCount = profile.gems + amount;
+      
+      // Update Firebase
+      const success = await updateGems(user.uid, newGemCount);
+      
+      if (success) {
+        // Update local profile state
+        setProfile(prev => prev ? { ...prev, gems: newGemCount } : null);
+        
+        // Update game state
+        if (gameContextHolder.current) {
+          gameContextHolder.current.dispatch({
+            type: 'UPDATE_PROFILE_DATA',
+            payload: { gems: newGemCount }
+          });
+        }
+        
+        toast.success(`Added ${amount} gems to your account!`);
+      }
+    } catch (error) {
+      console.error("Error adding gems:", error);
+      toast.error("Failed to add gems to your account");
+    }
   };
 
   const spendGems = async (amount: number): Promise<boolean> => {
-    if (!profile || amount <= 0) return false;
-    if (profile.gems < amount) return false;
+    if (!profile || !user || amount <= 0) return false;
     
-    const newGemCount = profile.gems - amount;
-    await updateProfile({ gems: newGemCount });
-    return true;
+    try {
+      if (profile.gems < amount) {
+        toast.error(`Not enough gems. You need ${amount} gems.`);
+        return false;
+      }
+      
+      const newGemCount = profile.gems - amount;
+      
+      // Update Firebase
+      const success = await updateGems(user.uid, newGemCount);
+      
+      if (success) {
+        // Update local profile state
+        setProfile(prev => prev ? { ...prev, gems: newGemCount } : null);
+        
+        // Update game state
+        if (gameContextHolder.current) {
+          gameContextHolder.current.dispatch({
+            type: 'UPDATE_PROFILE_DATA',
+            payload: { gems: newGemCount }
+          });
+        }
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Error spending gems:", error);
+      toast.error("Failed to process gem transaction");
+      return false;
+    }
   };
 
   const value = {
@@ -238,7 +327,8 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     unlockTitle,
     unlockPortrait,
     addGems,
-    spendGems
+    spendGems,
+    syncToFirebase
   };
 
   return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;

@@ -57,7 +57,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   
   // Get level info from total coins earned (used as XP)
   const exp = profile?.exp || state.totalEarned || 0;
-  const roundedExp = Math.round(exp); // Round to nearest whole number
+  const roundedExp = Math.round(exp); // Round to the nearest whole number
   const { currentLevel, nextLevel } = getLevelFromExp(roundedExp);
   
   // Fallback player data (used if Firebase profile not loaded)
@@ -68,7 +68,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     exp: roundedExp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: profile?.gems || 0, // Use Firebase profile gems or default to 0
+    gems: profile?.gems || state.gems || 0, // Use Firebase profile gems, then game state gems, or default to 0
     essence: state.essence,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
     hasChangedUsername: profile?.hasChangedUsername || false
