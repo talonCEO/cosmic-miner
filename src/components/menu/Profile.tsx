@@ -9,6 +9,7 @@ import { useFirebase } from '@/context/FirebaseContext';
 import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
+import { toast } from 'sonner';
 
 interface ProfileProps {
   setMenuType?: (menuType: MenuType) => void;
@@ -16,12 +17,18 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
-  const { profile, loading, updateUsername, updateTitle } = useFirebase();
+  const { profile, loading, updateUsername } = useFirebase();
   
   // Handle player name change (updates Firebase profile)
-  const handleNameChange = (newName: string) => {
+  const handleNameChange = async (newName: string) => {
     if (profile && newName.trim() !== profile.username) {
-      updateUsername(newName);
+      const result = await updateUsername(newName);
+      
+      if (result.success) {
+        toast.success(result.message || "Username updated!");
+      } else {
+        toast.error(result.message || "Failed to update username");
+      }
     }
   };
   
@@ -43,19 +50,21 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   
   // Get level info from total coins earned (used as XP)
   const exp = profile?.exp || state.totalEarned || 0;
-  const { currentLevel, nextLevel } = getLevelFromExp(exp);
+  const roundedExp = Math.round(exp); // Round to nearest whole number
+  const { currentLevel, nextLevel } = getLevelFromExp(roundedExp);
   
   // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
     title: profile?.title || "space_pilot", // Default title ID
     level: profile?.level || currentLevel.level,
-    exp: exp,
+    exp: roundedExp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: 500, // Mock value, would come from state in real implementation
+    gems: profile?.gems || 0, // Use Firebase profile gems or default to 0
     essence: state.essence,
-    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
+    hasChangedUsername: profile?.hasChangedUsername || false
   };
   
   const handleAchievementsClick = () => {
@@ -91,6 +100,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           essence={playerData.essence}
           onNameChange={handleNameChange}
           userId={playerData.userId}
+          hasChangedUsername={playerData.hasChangedUsername}
         />
         
         {/* Navigation buttons */}

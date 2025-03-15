@@ -26,6 +26,7 @@ export const syncGameProgress = async (
       level: currentLevel.level,
       exp: exp,
       coins: gameState.coins,
+      gems: gameState.gems || 0, // Add gems to the sync
       essence: gameState.essence,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,
@@ -185,6 +186,48 @@ export const addFriend = async (
     return true;
   } catch (error) {
     console.error("Error adding friend:", error);
+    return false;
+  }
+};
+
+/**
+ * Sync user level up with Firebase
+ */
+export const syncLevelUp = async (
+  uid: string,
+  newLevel: number,
+  newExp: number,
+  rewards: any
+) => {
+  if (!uid) return;
+  
+  try {
+    const db = getFirestore();
+    const userDocRef = doc(db, 'users', uid);
+    
+    const updateData: any = {
+      level: newLevel,
+      exp: newExp
+    };
+    
+    // Add any rewards to the update
+    if (rewards.skillPoints) {
+      updateData.skillPoints = increment(rewards.skillPoints);
+    }
+    
+    if (rewards.essence) {
+      updateData.essence = increment(rewards.essence);
+    }
+    
+    if (rewards.gems) {
+      updateData.gems = increment(rewards.gems);
+    }
+    
+    await updateDoc(userDocRef, updateData);
+    
+    return true;
+  } catch (error) {
+    console.error("Error syncing level up:", error);
     return false;
   }
 };

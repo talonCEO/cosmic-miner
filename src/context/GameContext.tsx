@@ -10,6 +10,8 @@ import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
+import { useFirebase } from './FirebaseContext';
+import { syncGameProgress } from '@/utils/firebaseSync';
 
 // Achievement interface
 export interface Achievement {
@@ -931,9 +933,9 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const gameContextHolder: { current: GameContextType | null } = { current: null };
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user, profile, updateProfile } = useFirebase();
   const [state, dispatch] = useReducer(gameReducer, initialState);
   
-  // Load saved game state on initial render
   useEffect(() => {
     const loadSavedGameState = async () => {
       try {
@@ -1011,7 +1013,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     loadSavedGameState();
     
-    // Load AdMob on initial render
     const initAds = async () => {
       try {
         await adMobService.initialize();
@@ -1024,20 +1025,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initAds();
   }, []);
   
-  // Save game state periodically
   useEffect(() => {
     const saveInterval = setInterval(() => {
       StorageService.saveGameState(state);
     }, 30000); // Save every 30 seconds
     
-    // Also save when component unmounts
     return () => {
       clearInterval(saveInterval);
       StorageService.saveGameState(state);
     };
   }, [state]);
   
-  // Game tick effect for passive income and auto features
   useEffect(() => {
     const tickInterval = setInterval(() => {
       dispatch({ type: 'TICK' });
@@ -1046,7 +1044,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(tickInterval);
   }, []);
   
-  // Check for achievements periodically
   useEffect(() => {
     const achievementInterval = setInterval(() => {
       dispatch({ type: 'CHECK_ACHIEVEMENTS' });
@@ -1055,14 +1052,40 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(achievementInterval);
   }, []);
   
-  // Calculate maximum affordable purchase amount using GameMechanics
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const syncInterval = setInterval(() => {
+      syncGameProgress(user.uid, state);
+      console.log('Periodic game sync to Firebase completed');
+    }, 60 * 60 * 1000); // 60 minutes
+
+    return () => clearInterval(syncInterval);
+  }, [user, state]);
+
+  useEffect(() => {
+    if (user?.uid && state.totalClicks > 0) {
+      if (profile && !state.loadedFromProfile && profile.coins > 0) {
+        dispatch({
+          type: 'SET_PROFILE_DATA',
+          payload: {
+            coins: profile.coins,
+            totalEarned: profile.totalCoins,
+            essence: profile.essence,
+            skillPoints: profile.skillPoints,
+            gems: profile.gems || 0,
+          },
+        });
+      }
+    }
+  }, [user, profile, state.totalClicks, state.loadedFromProfile]);
+
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
     
     const costReduction = GameMechanics.calculateCostReduction(state);
     
-    // Use GameMechanics utility function
     return GameMechanics.calculateMaxAffordableQuantity(
       state.coins,
       upgrade.baseCost * costReduction,
@@ -1070,13 +1093,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       UPGRADE_COST_GROWTH
     );
   };
-  
-  // Calculate potential essence reward for prestige using GameMechanics
+
   const calculatePotentialEssenceReward = (): number => {
     return GameMechanics.calculateEssenceReward(state.totalEarned, state);
   };
-  
-  // Game actions
+
   const click = () => dispatch({ type: 'CLICK' });
   const addCoins = (amount: number) => dispatch({ type: 'ADD_COINS', amount });
   const addEssence = (amount: number) => dispatch({ type: 'ADD_ESSENCE', amount });
@@ -1094,7 +1115,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const useItem = (itemId: string) => dispatch({ type: 'USE_ITEM', itemId });
   const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
   const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
-  
+
   const contextValue = {
     state,
     dispatch,
@@ -1118,10 +1139,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     addItem,
     removeItem
   };
-  
-  // Store the context in the global holder for access without hooks
+
   gameContextHolder.current = contextValue;
-  
+
   return (
     <GameContext.Provider value={contextValue}>
       {children}

@@ -4,9 +4,14 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
 import { Gem, Bitcoin } from 'lucide-react';
+import { useFirebase } from '@/context/FirebaseContext';
 
 const Header: React.FC = () => {
   const { state } = useGame();
+  const { profile } = useFirebase();
+  
+  // Get the gem count from the profile, default to 0 if not available
+  const gemCount = profile?.gems || 0;
   
   return (
     <header className="w-full py-2 px-6 sticky top-0 z-30 mb-2">
@@ -44,7 +49,7 @@ const Header: React.FC = () => {
             <div className="flex items-center">
               <Gem size={16} className="text-purple-400 mr-1 animate-pulse" />
               <span className="text-sm text-slate-400 mr-1">Gems:</span>
-              <p className="text-lg font-medium text-purple-300">500</p>
+              <p className="text-lg font-medium text-purple-300">{gemCount}</p>
             </div>
             
             <div className="flex items-center">

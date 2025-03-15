@@ -1,7 +1,7 @@
 
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
-import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
+import { unlockPlayerTitle, unlockPlayerPortrait, syncLevelUp } from "@/utils/firebaseSync";
 
 /**
  * Check if player leveled up and handle rewards
@@ -79,6 +79,9 @@ export const handleLevelUp = async (
       description: "Your cosmic mining skills have improved!"
     });
   }
+  
+  // Sync level up with Firebase
+  await syncLevelUp(uid, newLevelData.currentLevel.level, newExp, rewards);
   
   // Show reward notifications
   if (rewards.skillPoints) {

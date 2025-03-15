@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -5,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Check, Lock, Gift } from 'lucide-react';
 import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
+import { toast } from 'sonner';
+import { useFirebase } from '@/context/FirebaseContext';
 
 interface PlayerCardProps {
   playerName: string;
@@ -17,6 +20,7 @@ interface PlayerCardProps {
   essence: number;
   onNameChange: (newName: string) => void;
   userId?: string; // Make optional for backward compatibility
+  hasChangedUsername?: boolean; // Whether the user has used their free name change
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -29,12 +33,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   gems,
   essence,
   onNameChange,
-  userId
+  userId,
+  hasChangedUsername = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
+  const { spendGems } = useFirebase();
   
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
   
@@ -51,8 +57,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     return Math.floor(10000000 + Math.random() * 90000000).toString();
   }, []);
   
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     if (name.trim()) {
+      // Show payment info if this is not the first change
+      if (hasChangedUsername) {
+        toast.info("Username changes after the first one cost 200 gems.");
+      }
+      
       onNameChange(name);
       setIsEditing(false);
     }
@@ -64,7 +75,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     } else if (amount >= 1000) {
       return `${(Math.round(amount / 100) / 10).toFixed(1)}K`;
     }
-    return amount.toFixed(1);
+    return amount.toFixed(0); // Round to whole number
   };
 
   const handleChestClick = () => {
@@ -78,7 +89,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     if (!nextLevel) {
       return "Max Level";
     }
-    return `${playerExp}/${nextLevel.expRequired}`;
+    return `${Math.round(playerExp)}/${nextLevel.expRequired}`;
   };
   
   return (
@@ -127,6 +138,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                 <Edit2 size={14} className="text-slate-300" />
               </Button>
               <h3 className="text-sm font-semibold text-white">{playerName}</h3>
+              {hasChangedUsername && (
+                <div className="ml-2 text-xs text-amber-300">(200 gems to change)</div>
+              )}
             </div>
           )}
           
