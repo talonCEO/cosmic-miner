@@ -37,7 +37,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   
   // Fallback player data (used regardless of loading state)
   const playerData = {
-    name: profile?.username || "Cosmic Explorer",
+    name: profile?.username || "Elon",
     title: profile?.title || "space_pilot", // Default title ID
     level: profile?.level || currentLevel.level,
     exp: exp,
