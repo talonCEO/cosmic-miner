@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -5,7 +6,7 @@ import { formatNumber } from '@/utils/gameLogic';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
 import { useFirebase } from '@/context/FirebaseContext';
-import { Trophy, BarChart3 } from 'lucide-react';
+import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
 
@@ -16,13 +17,6 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
   const { profile, loading, updateUsername, updateTitle } = useFirebase();
-
-  // Log context values for debugging
-  useEffect(() => {
-    console.log('Profile Loading State:', loading);
-    console.log('Game State:', state);
-    console.log('Firebase Profile:', profile);
-  }, [state, profile, loading]);
   
   // Handle player name change (updates Firebase profile)
   const handleNameChange = (newName: string) => {
@@ -38,35 +32,41 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     }
   };
   
-  // Get level info from total coins earned (used as XP), with fallback
-  const exp = profile?.exp || state?.totalEarned || 0;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <p className="mt-2 text-slate-300">Loading your profile...</p>
+      </div>
+    );
+  }
+  
+  // Get level info from total coins earned (used as XP)
+  const exp = profile?.exp || state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
-  // Fallback player data with defensive defaults
+  // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
-    title: profile?.title || "space_pilot",
-    level: profile?.level || currentLevel?.level || 1,
+    title: profile?.title || "space_pilot", // Default title ID
+    level: profile?.level || currentLevel.level,
     exp: exp,
-    maxExp: nextLevel ? nextLevel.expRequired : (currentLevel?.expRequired || 1000) + 1000,
-    coins: state?.coins || 0,
-    gems: state?.gems || 500,
-    essence: state?.essence || 0,
+    maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
+    coins: state.coins,
+    gems: 500, // Mock value, would come from state in real implementation
+    essence: state.essence,
     userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
-
-  // Log playerData to verify its values
-  useEffect(() => {
-    console.log('Player Data:', playerData);
-  }, [playerData]);
   
   const handleAchievementsClick = () => {
+    // Navigate to achievements menu if setMenuType prop is available
     if (setMenuType) {
       setMenuType('achievements');
     }
   };
   
   const handleLeaderboardClick = () => {
+    // Navigate to leaderboard menu if setMenuType prop is available
     if (setMenuType) {
       setMenuType('leaderboard');
     }
