@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -19,6 +20,8 @@ import {
   collection
 } from 'firebase/firestore';
 import { firebaseConfig } from '@/config/firebase';
+import { useGame } from './GameContext';
+import { syncGameProgress } from '@/utils/firebaseSync';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -45,6 +48,7 @@ export interface UserProfile {
   achievements: string[];
   createdAt: any; // Use serverTimestamp in Firestore
   lastLogin: any; // Use serverTimestamp in Firestore
+  lastSync: any; // Track the last time data was synced
 }
 
 interface FirebaseContextType {
@@ -58,6 +62,8 @@ interface FirebaseContextType {
   updatePortrait: (portraitId: string) => Promise<void>;
   unlockTitle: (titleId: string) => Promise<void>;
   unlockPortrait: (portraitId: string) => Promise<void>;
+  syncUserData: () => Promise<void>;
+  updateGems: (amount: number) => Promise<void>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
@@ -65,13 +71,11 @@ const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined
 // Generate a unique 8-digit user ID
 const generateUserId = async (): Promise<string> => {
   let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-  const q = query(collection(db, "users"), where("userId", "==", newId));
-  const querySnapshot = await getDocs(q);
+  let querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
   
   while (!querySnapshot.empty) {
     newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-    const newQuery = query(collection(db, "users"), where("userId", "==", newId));
-    querySnapshot = await getDocs(newQuery);
+    querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
   }
   return newId;
 };
@@ -81,6 +85,35 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { state } = useGame();
+
+  // Set up sync interval (60 minutes)
+  useEffect(() => {
+    if (!user || !profile) return;
+    
+    // Sync immediately when profile is loaded
+    syncUserData();
+    
+    // Set up 60-minute sync interval
+    const syncInterval = setInterval(() => {
+      syncUserData();
+    }, 60 * 60 * 1000); // 60 minutes in milliseconds
+    
+    return () => clearInterval(syncInterval);
+  }, [user, profile, state]);
+
+  // Sync user data with Firebase
+  const syncUserData = async () => {
+    if (!user || !state) return;
+    
+    try {
+      await syncGameProgress(user.uid, state);
+      console.log("Full profile sync completed:", new Date().toISOString());
+    } catch (err) {
+      console.error("Error syncing user data:", err);
+      setError("Failed to sync user data");
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -92,8 +125,10 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
-          setProfile(userDoc.data() as UserProfile);
+          const userData = userDoc.data() as UserProfile;
+          setProfile(userData);
           await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+          console.log("User profile loaded:", userData.username);
         } else {
           const newUserId = await generateUserId();
           const defaultUsername = `Player${newUserId.substring(0, 4)}`;
@@ -117,6 +152,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             achievements: [],
             createdAt: serverTimestamp(), // Server-side timestamp
             lastLogin: serverTimestamp(), // Server-side timestamp
+            lastSync: serverTimestamp(), // Server-side timestamp
           };
 
           await setDoc(userDocRef, newUserProfile);
@@ -138,14 +174,30 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
-    const userDocRef = doc(db, "users", user.uid);
-    await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() });
-    setProfile((prev) => (prev ? { ...prev, ...data } : null));
+    
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const updatedData = { 
+        ...data, 
+        lastLogin: serverTimestamp() 
+      };
+      
+      await updateDoc(userDocRef, updatedData);
+      setProfile((prev) => (prev ? { ...prev, ...data } : null));
+      
+      console.log("Profile updated with data:", updatedData);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("Failed to update profile");
+    }
   };
 
   const updateUsername = async (username: string) => {
     if (!username.trim()) return;
     await updateProfile({ username });
+    
+    // Sync all game data when username is changed
+    await syncUserData();
   };
 
   const updateTitle = async (titleId: string) => {
@@ -170,6 +222,16 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     await updateProfile({ unlockedPortraits: updatedPortraits });
   };
 
+  const updateGems = async (amount: number) => {
+    if (!profile) return;
+    
+    const newGemAmount = Math.max(0, profile.gems + amount);
+    await updateProfile({ gems: newGemAmount });
+    
+    // Sync all game data when gems are updated
+    await syncUserData();
+  };
+
   const value = {
     user,
     profile,
@@ -181,6 +243,8 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     updatePortrait,
     unlockTitle,
     unlockPortrait,
+    syncUserData,
+    updateGems
   };
 
   return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;
