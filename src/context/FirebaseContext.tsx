@@ -20,16 +20,14 @@ import {
 } from 'firebase/firestore';
 import { firebaseConfig } from '@/config/firebase';
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// User profile interface
 export interface UserProfile {
   uid: string;
   username: string;
-  userId: string; // 8-digit unique ID
+  userId: string;
   coins: number;
   gems: number;
   essence: number;
@@ -43,8 +41,8 @@ export interface UserProfile {
   unlockedTitles: string[];
   unlockedPortraits: string[];
   achievements: string[];
-  createdAt: any; // Use serverTimestamp in Firestore
-  lastLogin: any; // Use serverTimestamp in Firestore
+  createdAt: any;
+  lastLogin: any;
 }
 
 interface FirebaseContextType {
@@ -62,7 +60,6 @@ interface FirebaseContextType {
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
-// Generate a unique 8-digit user ID
 const generateUserId = async (): Promise<string> => {
   let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
   const q = query(collection(db, "users"), where("userId", "==", newId));
@@ -83,7 +80,9 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("FirebaseProvider mounted");
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user?.uid || "null");
       setLoading(true);
 
       if (user) {
@@ -93,7 +92,8 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (userDoc.exists()) {
           setProfile(userDoc.data() as UserProfile);
-          await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+          await updateDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+          console.log("Profile loaded:", userDoc.data());
         } else {
           const newUserId = await generateUserId();
           const defaultUsername = `Player${newUserId.substring(0, 4)}`;
@@ -115,17 +115,18 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             unlockedTitles: ["space_pilot"],
             unlockedPortraits: ["default"],
             achievements: [],
-            createdAt: serverTimestamp(), // Server-side timestamp
-            lastLogin: serverTimestamp(), // Server-side timestamp
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
           };
 
           await setDoc(userDocRef, newUserProfile);
           setProfile(newUserProfile);
-          console.log("New anonymous user created:", user.uid);
+          console.log("New user created:", newUserProfile);
         }
       } else {
+        console.log("Signing in anonymously");
         await signInAnonymously(auth).catch((err) => {
-          console.error("Error signing in anonymously:", err);
+          console.error("Sign-in error:", err.message);
           setError("Failed to create anonymous account");
         });
       }
@@ -133,40 +134,57 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log("Cleaning up auth listener");
+      unsubscribe();
+    };
   }, []);
 
   const updateProfile = async (data: Partial<UserProfile>) => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user, skipping update");
+      return;
+    }
     const userDocRef = doc(db, "users", user.uid);
-    await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() });
-    setProfile((prev) => (prev ? { ...prev, ...data } : null));
+    try {
+      await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() }, { merge: true });
+      console.log("Profile updated in Firestore:", data);
+      setProfile((prev) => (prev ? { ...prev, ...data } : null));
+    } catch (err) {
+      console.error("Update error:", err.message);
+      setError("Failed to update profile");
+    }
   };
 
   const updateUsername = async (username: string) => {
     if (!username.trim()) return;
+    console.log("Updating username:", username);
     await updateProfile({ username });
   };
 
   const updateTitle = async (titleId: string) => {
     if (!titleId.trim() || !profile || !profile.unlockedTitles.includes(titleId)) return;
+    console.log("Updating title:", titleId);
     await updateProfile({ title: titleId });
   };
 
   const updatePortrait = async (portraitId: string) => {
     if (!portraitId.trim() || !profile || !profile.unlockedPortraits.includes(portraitId)) return;
+    console.log("Updating portrait:", portraitId);
     await updateProfile({ portrait: portraitId });
   };
 
   const unlockTitle = async (titleId: string) => {
     if (!titleId.trim() || !profile || profile.unlockedTitles.includes(titleId)) return;
     const updatedTitles = [...profile.unlockedTitles, titleId];
+    console.log("Unlocking title:", titleId);
     await updateProfile({ unlockedTitles: updatedTitles });
   };
 
   const unlockPortrait = async (portraitId: string) => {
     if (!portraitId.trim() || !profile || profile.unlockedPortraits.includes(portraitId)) return;
     const updatedPortraits = [...profile.unlockedPortraits, portraitId];
+    console.log("Unlocking portrait:", portraitId);
     await updateProfile({ unlockedPortraits: updatedPortraits });
   };
 
