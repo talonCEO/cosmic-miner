@@ -71,6 +71,13 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
           </div>
         </div>
       </ScrollArea>
+
+        <div className="p-4 border-t border-indigo-500/20 mt-auto">
+        <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
+          Back
+        </DialogClose>
+      </div>
+      
     </>
   );
 };
