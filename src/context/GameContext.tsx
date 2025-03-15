@@ -57,6 +57,7 @@ export interface GameState {
   unlockedPerks: string[];
   inventory: InventoryItem[];
   inventoryCapacity: number;
+  gems: number; // Add this line
 }
 
 // Upgrade interface
@@ -107,7 +108,8 @@ type GameAction =
   | { type: 'USE_ITEM'; itemId: string }
   | { type: 'ADD_ITEM'; item: InventoryItem }
   | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
-  | { type: 'SET_MENU_TYPE'; menuType: string };
+  | { type: 'SET_MENU_TYPE'; menuType: string }
+  | { type: 'ADD_GEMS'; amount: number }; // Add this line
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -303,6 +305,7 @@ const initialState: GameState = {
   unlockedPerks: [],
   inventory: [],
   inventoryCapacity: 100,
+  gems: 0 // Add this line
 };
 
 // Game reducer with updated mechanics
@@ -324,6 +327,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         coins: Math.max(0, state.coins + action.amount), // Ensure coins never go below 0
         totalEarned: state.totalEarned + action.amount
+      };
+    case 'ADD_GEMS': // Add this block
+      return {
+        ...state,
+        gems: state.gems + action.amount
       };
     case 'ADD_ESSENCE':
       return {
@@ -541,7 +549,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         prestigeCount: state.prestigeCount + 1,
         skillPoints: state.skillPoints, // Retain skill points after prestige
         abilities: state.abilities, // Retain abilities after prestige
-        unlockedPerks: state.unlockedPerks // Retain unlocked perks
+        unlockedPerks: state.unlockedPerks, // Retain unlocked perks
+        gems: state.gems
       };
     }
     case 'BUY_MANAGER': {
@@ -924,6 +933,7 @@ interface GameContextType {
   useItem: (itemId: string) => void;
   addItem: (item: InventoryItem) => void;
   removeItem: (itemId: string, quantity?: number) => void;
+  addGems: (amount: number) => void; // Add this line
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1094,6 +1104,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const useItem = (itemId: string) => dispatch({ type: 'USE_ITEM', itemId });
   const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
   const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
+  const addGems = (amount: number) => dispatch({ type: 'ADD_GEMS', amount });
   
   const contextValue = {
     state,
@@ -1116,7 +1127,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     handleClick,
     useItem,
     addItem,
-    removeItem
+    removeItem,
+    addGems
   };
   
   // Store the context in the global holder for access without hooks
