@@ -62,13 +62,11 @@ const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined
 
 const generateUserId = async (): Promise<string> => {
   let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-  const q = query(collection(db, "users"), where("userId", "==", newId));
-  const querySnapshot = await getDocs(q);
+  let querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
   
   while (!querySnapshot.empty) {
     newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-    const newQuery = query(collection(db, "users"), where("userId", "==", newId));
-    querySnapshot = await getDocs(newQuery);
+    querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
   }
   return newId;
 };
