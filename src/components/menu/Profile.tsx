@@ -10,6 +10,7 @@ import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
 import { toast } from 'sonner';
+import { updatePlayerTitle } from '@/utils/firebaseSync';
 
 interface ProfileProps {
   setMenuType?: (menuType: MenuType) => void;
@@ -33,9 +34,15 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   };
   
   // Handle title change
-  const handleTitleChange = (titleId: string) => {
-    if (profile && titleId.trim() !== profile.title) {
-      updateTitle(titleId);
+  const handleTitleChange = async (titleId: string) => {
+    if (profile && profile.userId && titleId.trim() !== profile.title) {
+      const success = await updatePlayerTitle(profile.userId, titleId);
+      
+      if (success) {
+        toast.success("Title updated successfully!");
+      } else {
+        toast.error("Failed to update title");
+      }
     }
   };
   
@@ -101,6 +108,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           onNameChange={handleNameChange}
           userId={playerData.userId}
           hasChangedUsername={playerData.hasChangedUsername}
+          onTitleChange={handleTitleChange}
         />
         
         {/* Navigation buttons */}

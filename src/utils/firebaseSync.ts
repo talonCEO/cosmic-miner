@@ -26,7 +26,7 @@ export const syncGameProgress = async (
       level: currentLevel.level,
       exp: exp,
       coins: gameState.coins,
-      gems: gameState.gems || 0, // Add gems to the sync
+      gems: gameState.gems || 0, // Get gems from GameState
       essence: gameState.essence,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,

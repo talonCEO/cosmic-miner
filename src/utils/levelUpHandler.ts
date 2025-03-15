@@ -66,12 +66,15 @@ export const handleLevelUp = async (
         unlockedTitles.push(levelData.rewards.unlocksTitle);
       }
       
-      // Handle portrait unlocks
+      // Portrait unlocks are currently commented out in the data file
+      // This code is kept for future implementation
+      /* 
       if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
         await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
         rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
         unlockedPortraits.push(levelData.rewards.unlocksPortrait);
       }
+      */
     }
     
     // Show toast for each level up

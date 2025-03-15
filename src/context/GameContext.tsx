@@ -59,6 +59,8 @@ export interface GameState {
   unlockedPerks: string[];
   inventory: InventoryItem[];
   inventoryCapacity: number;
+  gems: number;
+  profileLoaded: boolean;
 }
 
 // Upgrade interface
@@ -109,7 +111,8 @@ type GameAction =
   | { type: 'USE_ITEM'; itemId: string }
   | { type: 'ADD_ITEM'; item: InventoryItem }
   | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
-  | { type: 'SET_MENU_TYPE'; menuType: string };
+  | { type: 'SET_MENU_TYPE'; menuType: string }
+  | { type: 'UPDATE_PROFILE_DATA'; payload: { coins?: number; totalEarned?: number; essence?: number; skillPoints?: number; gems?: number; } };
 
 // Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
@@ -305,6 +308,8 @@ const initialState: GameState = {
   unlockedPerks: [],
   inventory: [],
   inventoryCapacity: 100,
+  gems: 0,
+  profileLoaded: false
 };
 
 // Game reducer with updated mechanics
@@ -899,6 +904,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // This is handled by the GameMenu component
       return state;
     }
+    case 'UPDATE_PROFILE_DATA': {
+      return {
+        ...state,
+        coins: action.payload.coins ?? state.coins,
+        totalEarned: action.payload.totalEarned ?? state.totalEarned,
+        essence: action.payload.essence ?? state.essence,
+        skillPoints: action.payload.skillPoints ?? state.skillPoints,
+        gems: action.payload.gems ?? state.gems,
+        profileLoaded: true
+      };
+    }
     default:
       return state;
   }
@@ -1065,9 +1081,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     if (user?.uid && state.totalClicks > 0) {
-      if (profile && !state.loadedFromProfile && profile.coins > 0) {
+      if (profile && !state.profileLoaded && profile.coins > 0) {
         dispatch({
-          type: 'SET_PROFILE_DATA',
+          type: 'UPDATE_PROFILE_DATA',
           payload: {
             coins: profile.coins,
             totalEarned: profile.totalCoins,
@@ -1078,7 +1094,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
       }
     }
-  }, [user, profile, state.totalClicks, state.loadedFromProfile]);
+  }, [user, profile, state.totalClicks, state.profileLoaded]);
 
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
