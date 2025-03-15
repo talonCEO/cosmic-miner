@@ -1,6 +1,4 @@
-
 import React, { useRef, useState } from 'react';
-import { Shield, Zap, Brain, Star, TargetIcon, HandCoins, Trophy, CloudLightning, Gem, Sparkles, Rocket, Gauge, Compass, Flower, Flame } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useToast } from '@/hooks/use-toast';
@@ -180,7 +178,10 @@ const TechTree: React.FC = () => {
           {/* Skill Points Display */}
           <div className="mb-6 flex flex-col items-center justify-center gap-2 bg-blue-600/20 p-3 rounded-lg border border-blue-500/30 relative z-10">
             <div className="flex items-center gap-2">
-              <Gem className="text-blue-400" size={24} />
+              {/* Note: Keeping Gem icon here as it's not part of abilities */}
+              <svg width={24} height={24} className="text-blue-400">
+                <path d="M12 2L2 9L12 16L22 9L12 2Z" fill="currentColor" />
+              </svg>
               <span className="text-blue-300 font-semibold text-xl">{state.skillPoints} Skill Points</span>
             </div>
             <p className="text-xs text-blue-300 mt-1 text-center">
