@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,25 +9,26 @@ import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
 import { gemPackages, BoostItem as BoostItemType } from './types/premiumStore';
 import { useMemo } from 'react';
-import { useGame } from '@/context/GameContext'; // Import useGame
 
 // Helper function to get placeholder images based on item name
 const getPlaceholderImage = (itemName: string): string => {
+  // Use a common gem image for all items as a placeholder
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 };
 
 interface PremiumStoreProps {
+  playerGems: number;
   boostItems: BoostItemType[];
   onBuyGemPackage: (packageId: string, amount: number) => void;
   onBuyBoostItem: (itemId: string) => void;
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ 
+  playerGems, 
   boostItems, 
   onBuyGemPackage, 
   onBuyBoostItem 
 }) => {
-  const { state, addGems } = useGame(); // Access global gems and addGems
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: BoostItemType | null;
@@ -37,22 +39,33 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     item: null
   });
 
-  // Calculate when the shop will refresh
+  // Calculate when the shop will refresh - 8 hours from the earliest purchased item
   const earliestRefreshTime = useMemo(() => {
     const purchasedItems = boostItems.filter(item => item.purchased && item.refreshTime && !item.isPermanent);
     if (purchasedItems.length === 0) return null;
-    const times = purchasedItems.map(item => item.refreshTime || 0).sort((a, b) => a - b);
+    
+    const times = purchasedItems
+      .map(item => item.refreshTime || 0)
+      .sort((a, b) => a - b);
+    
     return times[0];
   }, [boostItems]);
-
+  
   // Format the next refresh time
   const formattedRefreshTime = useMemo(() => {
     if (!earliestRefreshTime) return null;
+    
     const now = Date.now();
     const timeDiff = earliestRefreshTime - now;
-    if (timeDiff <= 0) return "Ready to refresh";
+    
+    if (timeDiff <= 0) {
+      // Shop should refresh now
+      return "Ready to refresh";
+    }
+    
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    
     return `${hours}h ${minutes}m`;
   }, [earliestRefreshTime]);
 
@@ -62,7 +75,11 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       item,
       isGemPackage: false
     });
-    setTimeout(() => hideUnlockAnimation(), 3000);
+    
+    // Auto-hide the animation after 3 seconds
+    setTimeout(() => {
+      hideUnlockAnimation();
+    }, 3000);
   };
 
   const showGemUnlockAnimation = (amount: number) => {
@@ -72,8 +89,11 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       isGemPackage: true,
       gemAmount: amount
     });
-    addGems(amount); // Update global gems
-    setTimeout(() => hideUnlockAnimation(), 3000);
+    
+    // Auto-hide the animation after 3 seconds
+    setTimeout(() => {
+      hideUnlockAnimation();
+    }, 3000);
   };
 
   const hideUnlockAnimation = () => {
@@ -99,8 +119,10 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     boost_wormhole_generator: <Rocket className="w-5 h-5 text-yellow-400" />
   };
 
+  // Always use this gem image for consistency
   const gemImageUrl = 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 
+  // Ensure no ads boost is always first
   const sortedBoostItems = useMemo(() => {
     return boostItems.sort((a, b) => {
       if (a.id === 'boost_no_ads') return -1;
@@ -132,14 +154,29 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 25,
+                delay: 0.1
+              }}
             >
               <div className="relative">
+                {/* Glow effect */}
                 <motion.div 
                   className="absolute inset-0 rounded-full bg-amber-500/30 blur-xl"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 0.8, 0.5]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
                 />
+                
+                {/* Particle effects */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {[...Array(12)].map((_, i) => (
                     <motion.div
@@ -151,14 +188,27 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                         y: Math.sin(i * 30 * (Math.PI / 180)) * 100,
                         opacity: [0, 1, 0]
                       }}
-                      transition={{ duration: 1.5 + (i % 3) * 0.5, repeat: Infinity, repeatType: "loop", ease: "easeOut", delay: i * 0.1 }}
+                      transition={{ 
+                        duration: 1.5 + (i % 3) * 0.5,
+                        repeat: Infinity,
+                        repeatType: "loop",
+                        ease: "easeOut",
+                        delay: i * 0.1
+                      }}
                     />
                   ))}
                 </div>
+                
                 <motion.div
                   className="w-40 h-40 rounded-full overflow-hidden border-4 border-amber-500 shadow-lg shadow-amber-500/50 z-10 relative"
-                  animate={{ boxShadow: ["0 0 20px 0px #f59e0b50", "0 0 40px 10px #f59e0b80", "0 0 20px 0px #f59e0b50"] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                  animate={{ 
+                    boxShadow: ["0 0 20px 0px #f59e0b50", "0 0 40px 10px #f59e0b80", "0 0 20px 0px #f59e0b50"]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
                 >
                   <img 
                     src={unlockAnimation.isGemPackage ? gemImageUrl : (unlockAnimation.item ? getPlaceholderImage(unlockAnimation.item.name) : gemImageUrl)}
@@ -167,6 +217,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                   />
                 </motion.div>
               </div>
+              
               <motion.div
                 className="text-center"
                 initial={{ opacity: 0, y: 20 }}
@@ -174,10 +225,14 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 transition={{ delay: 0.3 }}
               >
                 <h2 className="text-2xl font-bold text-amber-400 mb-2">
-                  {unlockAnimation.isGemPackage ? `${unlockAnimation.gemAmount} Gems` : unlockAnimation.item?.name}
+                  {unlockAnimation.isGemPackage 
+                    ? `${unlockAnimation.gemAmount} Gems`
+                    : unlockAnimation.item?.name}
                 </h2>
                 <p className="text-green-400 font-semibold mb-8">
-                  {unlockAnimation.isGemPackage ? "Added to your account" : unlockAnimation.item?.effect}
+                  {unlockAnimation.isGemPackage 
+                    ? "Added to your account"
+                    : unlockAnimation.item?.effect}
                 </p>
               </motion.div>
             </motion.div>
@@ -195,9 +250,10 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
               </h3>
               <div className="flex items-center">
                 <Gem className="w-5 h-5 text-yellow-400 mr-1" />
-                <span className="text-yellow-400 font-bold">{state.gems}</span> {/* Use global gems */}
+                <span className="text-yellow-400 font-bold">{playerGems}</span>
               </div>
             </div>
+            
             <div className="grid grid-cols-3 gap-3">
               {gemPackages.map(pack => (
                 <GemPackage 
@@ -219,17 +275,19 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                 Boost Items
               </h3>
             </div>
+            
             {formattedRefreshTime && (
               <div className="flex items-center justify-end mb-3">
                 <span className="text-xs text-gray-400">Refreshes in: {formattedRefreshTime}</span>
               </div>
             )}
+            
             <div className="grid grid-cols-3 gap-3">
               {sortedBoostItems.map(item => (
                 <BoostItem 
                   key={item.id} 
                   item={item} 
-                  playerGems={state.gems} // Pass global gems
+                  playerGems={playerGems}
                   onPurchase={(itemId) => {
                     onBuyBoostItem(itemId);
                     showUnlockAnimation(item);

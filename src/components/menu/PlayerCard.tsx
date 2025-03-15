@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Check, Lock, Gift } from 'lucide-react';
 import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
-import { useGame } from '@/context/GameContext'; // Import useGame
-import { useToast } from '@/components/ui/use-toast'; // Import useToast for feedback
 
 interface PlayerCardProps {
   playerName: string;
@@ -15,6 +13,7 @@ interface PlayerCardProps {
   playerExp: number;
   playerMaxExp: number;
   coins: number;
+  gems: number;
   essence: number;
   onNameChange: (newName: string) => void;
   userId?: string; // Make optional for backward compatibility
@@ -27,23 +26,25 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   playerExp,
   playerMaxExp,
   coins,
+  gems,
   essence,
   onNameChange,
   userId
 }) => {
-  const { state, addGems } = useGame(); // Access global gems and addGems
-  const { toast } = useToast(); // For user feedback
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
-  const [nameChangeCount, setNameChangeCount] = useState(0); // Track name changes
   
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
   
   useEffect(() => {
     const title = getTitleById(playerTitle);
-    setTitleDisplay(title ? title.name : playerTitle);
+    if (title) {
+      setTitleDisplay(title.name);
+    } else {
+      setTitleDisplay(playerTitle);
+    }
   }, [playerTitle]);
   
   const playerUID = userId || React.useMemo(() => {
@@ -51,35 +52,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   }, []);
   
   const handleSaveName = () => {
-    if (!name.trim()) {
-      toast({
-        title: "Invalid Name",
-        description: "Name cannot be empty.",
-        variant: "destructive",
-      });
-      return;
+    if (name.trim()) {
+      onNameChange(name);
+      setIsEditing(false);
     }
-
-    const nameChangeCost = nameChangeCount === 0 ? 0 : 200; // First change free, then 200 gems
-    if (nameChangeCost > 0 && state.gems < nameChangeCost) {
-      toast({
-        title: "Insufficient Gems",
-        description: "You need 200 gems to change your name again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (nameChangeCost > 0) {
-      addGems(-nameChangeCost); // Deduct gems for subsequent changes
-    }
-    onNameChange(name);
-    setNameChangeCount(prev => prev + 1); // Increment name change count
-    setIsEditing(false);
-    toast({
-      title: "Name Updated",
-      description: `Your name has been changed to "${name}".`,
-    });
   };
   
   const formatCurrency = (amount: number) => {
@@ -102,9 +78,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     if (!nextLevel) {
       return "Max Level";
     }
-    // Round playerExp to nearest decimal place
-    const roundedExp = Math.round(playerExp * 10) / 10;
-    return `${roundedExp}/${nextLevel.expRequired}`;
+    return `${playerExp}/${nextLevel.expRequired}`;
   };
   
   return (
@@ -124,7 +98,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
         
         {/* Middle column: Player info */}
-        <div className="ml-3 flex-1 pt-2">
+        <div className="ml-3 flex-1 pt-2"> {/* Added pt-2 for top padding */}
           {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
               <Input 
@@ -153,16 +127,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                 <Edit2 size={14} className="text-slate-300" />
               </Button>
               <h3 className="text-sm font-semibold text-white">{playerName}</h3>
-              {nameChangeCount > 0 && (
-                <span className="text-xs text-purple-400 ml-2">(200 gems to rename)</span>
-              )}
             </div>
           )}
           
-          <div className="flex items-center gap-2 mb-1 pt-3">
+          <div className="flex items-center gap-2 mb-1 pt-3"> {/* Added pt-1 for level display padding */}
             <div className="text-white text-xs font-medium">
               Level {currentLevel.level}
             </div>
+            
             {currentLevel.rewards && (
               <div className="text-xs text-amber-400">
                 {currentLevel.rewards.skillPoints ? `+${currentLevel.rewards.skillPoints} SP` : ''}
@@ -212,7 +184,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-purple-400 text-xs font-semibold">Gems:</span>
-              <span className="text-white text-xs">{formatCurrency(state.gems)}</span> {/* Use global gems */}
+              <span className="text-white text-xs">{formatCurrency(gems)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-blue-400 text-xs font-semibold">Essence:</span>
@@ -223,9 +195,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       </div>
     </div>
   );
-};
-
-export default PlayerCard;
 };
 
 export default PlayerCard;

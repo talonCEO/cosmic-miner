@@ -1,48 +1,35 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { BoostItem as BoostItemType } from './types/premiumStore';
 import { useToast } from '@/components/ui/use-toast';
-import { useGame } from '@/context/GameContext'; // Import useGame
 
 interface BoostItemProps {
   item: BoostItemType;
-  onPurchase: (itemId: string) => void; // Callback for external logic (e.g., applying boost)
+  playerGems: number;
+  onPurchase: (itemId: string) => void;
   showUnlockAnimation: (item: BoostItemType) => void;
 }
 
 const BoostItem: React.FC<BoostItemProps> = ({ 
   item, 
+  playerGems, 
   onPurchase, 
   showUnlockAnimation 
 }) => {
-  const { state, addGems } = useGame(); // Access global state and addGems
   const { toast } = useToast();
-  const canAfford = state.gems >= item.cost; // Use global gems
+  const canAfford = playerGems >= item.cost;
   
   const handlePurchase = () => {
     if (!item.purchasable) {
-      toast({
-        title: "Not Available",
-        description: "This item cannot be purchased.",
-        variant: "destructive",
-      });
       return;
     }
     
     if (!canAfford) {
-      toast({
-        title: "Insufficient Gems",
-        description: "You don’t have enough gems to buy this item.",
-        variant: "destructive",
-      });
       return;
     }
     
-    // Deduct gems from global state
-    addGems(-item.cost);
-    // Trigger external purchase logic (e.g., marking item as purchased)
     onPurchase(item.id);
-    // Show the unlock animation
     showUnlockAnimation(item);
   };
 
