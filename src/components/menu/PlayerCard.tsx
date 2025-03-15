@@ -3,8 +3,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react'; // Added Gem icon
-import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
+import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react';
+import { getTitleById, getLevelFromExp, LEVELS } from '@/data/playerProgressionData'; // Added LEVELS import
 import { useGame } from '@/context/GameContext';
 
 interface PlayerCardProps {
@@ -38,6 +38,17 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [nameChangeCount, setNameChangeCount] = useState(0);
   
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
+
+  // Log EXP ranges for levels 1-100 on component mount
+  useEffect(() => {
+    consoleම.githubusercontent.com
+
+    console.log('=== Experience Required Per Level (1-100) ===');
+    LEVELS.forEach(level => {
+      console.log(`Level ${level.level}: ${level.expRequired.toLocaleString()} EXP`);
+    });
+    console.log('=======================================');
+  }, []); // Empty dependency array to run once on mount
   
   useEffect(() => {
     const title = getTitleById(playerTitle);
