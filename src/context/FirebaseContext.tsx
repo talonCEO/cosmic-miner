@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -12,11 +13,7 @@ import {
   getDoc, 
   setDoc, 
   updateDoc, 
-  serverTimestamp,
-  query,
-  where,
-  getDocs,
-  collection
+  serverTimestamp 
 } from 'firebase/firestore';
 import { firebaseConfig } from '@/config/firebase';
 
@@ -38,13 +35,13 @@ export interface UserProfile {
   level: number;
   exp: number;
   totalCoins: number;
-  title: string;
-  portrait: string;
-  unlockedTitles: string[];
-  unlockedPortraits: string[];
-  achievements: string[];
-  createdAt: any; // Use serverTimestamp in Firestore
-  lastLogin: any; // Use serverTimestamp in Firestore
+  title: string;      // Current selected title
+  portrait: string;   // Current selected portrait/border
+  unlockedTitles: string[];     // Array of unlocked title IDs
+  unlockedPortraits: string[];  // Array of unlocked portrait IDs
+  achievements: string[];       // Array of completed achievement IDs
+  createdAt: Date;
+  lastLogin: Date;
 }
 
 interface FirebaseContextType {
@@ -62,18 +59,9 @@ interface FirebaseContextType {
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
-// Generate a unique 8-digit user ID
-const generateUserId = async (): Promise<string> => {
-  let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-  const q = query(collection(db, "users"), where("userId", "==", newId));
-  const querySnapshot = await getDocs(q);
-  
-  while (!querySnapshot.empty) {
-    newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-    const newQuery = query(collection(db, "users"), where("userId", "==", newId));
-    querySnapshot = await getDocs(newQuery);
-  }
-  return newId;
+// Generate a random 8-digit user ID
+const generateUserId = (): string => {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
 };
 
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -82,92 +70,156 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // When the app initializes, sign in anonymously and listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
-
+      
       if (user) {
         setUser(user);
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          setProfile(userDoc.data() as UserProfile);
-          await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-        } else {
-          const newUserId = await generateUserId();
-          const defaultUsername = `Player${newUserId.substring(0, 4)}`;
-
-          const newUserProfile: UserProfile = {
-            uid: user.uid,
-            username: defaultUsername,
-            userId: newUserId,
-            coins: 0,
-            gems: 0,
-            essence: 0,
-            skillPoints: 0,
-            friends: [],
-            level: 1,
-            exp: 0,
-            totalCoins: 0,
-            title: "space_pilot",
-            portrait: "default",
-            unlockedTitles: ["space_pilot"],
-            unlockedPortraits: ["default"],
-            achievements: [],
-            createdAt: serverTimestamp(), // Server-side timestamp
-            lastLogin: serverTimestamp(), // Server-side timestamp
-          };
-
-          await setDoc(userDocRef, newUserProfile);
-          setProfile(newUserProfile);
-          console.log("New anonymous user created:", user.uid);
+        try {
+          // Check if user profile exists
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            // User exists, update the profile
+            const userData = userDoc.data() as UserProfile;
+            setProfile(userData);
+            
+            // Update last login timestamp
+            await updateDoc(userDocRef, {
+              lastLogin: serverTimestamp()
+            });
+          } else {
+            // New user, create profile
+            const newUserId = generateUserId();
+            const defaultUsername = `Player${newUserId.substring(0, 4)}`;
+            
+            const newUserProfile: UserProfile = {
+              uid: user.uid,
+              username: defaultUsername,
+              userId: newUserId,
+              coins: 0,
+              gems: 0,
+              essence: 0,
+              skillPoints: 0,
+              friends: [],
+              level: 1,
+              exp: 0,
+              totalCoins: 0,
+              title: 'space_pilot', // Default title
+              portrait: 'default',  // Default portrait
+              unlockedTitles: ['space_pilot'], // Start with default title
+              unlockedPortraits: ['default'],  // Start with default portrait
+              achievements: [],
+              createdAt: new Date(),
+              lastLogin: new Date()
+            };
+            
+            await setDoc(userDocRef, newUserProfile);
+            setProfile(newUserProfile);
+            
+            console.log("New anonymous user created:", user.uid);
+          }
+        } catch (err) {
+          console.error("Error fetching user data:", err);
+          setError("Failed to load user profile");
         }
       } else {
-        await signInAnonymously(auth).catch((err) => {
+        // No user signed in, sign in anonymously
+        try {
+          await signInAnonymously(auth);
+        } catch (err) {
           console.error("Error signing in anonymously:", err);
           setError("Failed to create anonymous account");
-        });
+        }
       }
-
+      
       setLoading(false);
     });
-
+    
+    // Cleanup subscription
     return () => unsubscribe();
   }, []);
 
+  // Function to update user profile
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
-    const userDocRef = doc(db, "users", user.uid);
-    await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() });
-    setProfile((prev) => (prev ? { ...prev, ...data } : null));
+    
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        ...data,
+        lastLogin: serverTimestamp()
+      });
+      
+      // Update local state
+      setProfile(prev => prev ? { ...prev, ...data } : null);
+      
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("Failed to update profile");
+    }
   };
 
+  // Function to update username
   const updateUsername = async (username: string) => {
     if (!username.trim()) return;
     await updateProfile({ username });
+    console.log("Username updated successfully");
   };
 
+  // Function to update title
   const updateTitle = async (titleId: string) => {
-    if (!titleId.trim() || !profile || !profile.unlockedTitles.includes(titleId)) return;
-    await updateProfile({ title: titleId });
+    if (!titleId.trim()) return;
+    
+    // Check if the title is unlocked
+    if (profile && profile.unlockedTitles.includes(titleId)) {
+      await updateProfile({ title: titleId });
+      console.log("Title updated successfully");
+    } else {
+      console.error("Cannot select title that isn't unlocked");
+      setError("This title is not unlocked yet");
+    }
   };
 
+  // Function to update portrait
   const updatePortrait = async (portraitId: string) => {
-    if (!portraitId.trim() || !profile || !profile.unlockedPortraits.includes(portraitId)) return;
-    await updateProfile({ portrait: portraitId });
+    if (!portraitId.trim()) return;
+    
+    // Check if the portrait is unlocked
+    if (profile && profile.unlockedPortraits.includes(portraitId)) {
+      await updateProfile({ portrait: portraitId });
+      console.log("Portrait updated successfully");
+    } else {
+      console.error("Cannot select portrait that isn't unlocked");
+      setError("This portrait is not unlocked yet");
+    }
   };
 
+  // Function to unlock a new title
   const unlockTitle = async (titleId: string) => {
-    if (!titleId.trim() || !profile || profile.unlockedTitles.includes(titleId)) return;
+    if (!titleId.trim() || !profile) return;
+    
+    // Don't add duplicates
+    if (profile.unlockedTitles.includes(titleId)) return;
+    
     const updatedTitles = [...profile.unlockedTitles, titleId];
     await updateProfile({ unlockedTitles: updatedTitles });
+    console.log(`New title unlocked: ${titleId}`);
   };
 
+  // Function to unlock a new portrait
   const unlockPortrait = async (portraitId: string) => {
-    if (!portraitId.trim() || !profile || profile.unlockedPortraits.includes(portraitId)) return;
+    if (!portraitId.trim() || !profile) return;
+    
+    // Don't add duplicates
+    if (profile.unlockedPortraits.includes(portraitId)) return;
+    
     const updatedPortraits = [...profile.unlockedPortraits, portraitId];
     await updateProfile({ unlockedPortraits: updatedPortraits });
+    console.log(`New portrait unlocked: ${portraitId}`);
   };
 
   const value = {
@@ -180,14 +232,20 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     updateTitle,
     updatePortrait,
     unlockTitle,
-    unlockPortrait,
+    unlockPortrait
   };
 
-  return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;
+  return (
+    <FirebaseContext.Provider value={value}>
+      {children}
+    </FirebaseContext.Provider>
+  );
 };
 
 export const useFirebase = () => {
   const context = useContext(FirebaseContext);
-  if (context === undefined) throw new Error("useFirebase must be used within a FirebaseProvider");
+  if (context === undefined) {
+    throw new Error('useFirebase must be used within a FirebaseProvider');
+  }
   return context;
 };
