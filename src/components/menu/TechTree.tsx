@@ -178,7 +178,6 @@ const TechTree: React.FC = () => {
           {/* Skill Points Display */}
           <div className="mb-6 flex flex-col items-center justify-center gap-2 bg-blue-600/20 p-3 rounded-lg border border-blue-500/30 relative z-10">
             <div className="flex items-center gap-2">
-              {/* Note: Keeping Gem icon here as it's not part of abilities */}
               <svg width={24} height={24} className="text-blue-400">
                 <path d="M12 2L2 9L12 16L22 9L12 2Z" fill="currentColor" />
               </svg>
@@ -208,7 +207,7 @@ const TechTree: React.FC = () => {
                         <button
                           onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
                           disabled={!canUnlockAbility(ability)}
-                          className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative
+                          className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative overflow-hidden
                             ${ability.unlocked
                               ? `bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20 ${justUnlocked.includes(ability.id) ? 'animate-burst' : ''}`
                               : canUnlockAbility(ability)
