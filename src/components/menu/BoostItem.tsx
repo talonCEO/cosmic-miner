@@ -2,11 +2,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { BoostItem as BoostItemType } from './types/premiumStore';
 import { useToast } from '@/components/ui/use-toast';
-import { useGame } from '@/context/GameContext'; // Import useGame
+import { useGame } from '@/context/GameContext';
 
 interface BoostItemProps {
-  item: BoostItemType;
-  onPurchase: (itemId: string) => void; // Callback for external logic (e.g., applying boost)
+  item: BoostItemType & { purchased: number; maxPurchases: number }; // Updated to use number for purchased
+  onPurchase: (itemId: string) => void;
   showUnlockAnimation: (item: BoostItemType) => void;
 }
 
@@ -15,9 +15,10 @@ const BoostItem: React.FC<BoostItemProps> = ({
   onPurchase, 
   showUnlockAnimation 
 }) => {
-  const { state, addGems } = useGame(); // Access global state and addGems
+  const { state, addGems } = useGame();
   const { toast } = useToast();
-  const canAfford = state.gems >= item.cost; // Use global gems
+  const canAfford = state.gems >= item.cost;
+  const isMaxed = item.purchased >= item.maxPurchases;
   
   const handlePurchase = () => {
     if (!item.purchasable) {
@@ -37,17 +38,22 @@ const BoostItem: React.FC<BoostItemProps> = ({
       });
       return;
     }
+
+    if (isMaxed) {
+      toast({
+        title: "Max Purchases Reached",
+        description: "You’ve purchased the maximum amount of this item.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Deduct gems from global state
     addGems(-item.cost);
-    // Trigger external purchase logic (e.g., marking item as purchased)
     onPurchase(item.id);
-    // Show the unlock animation
     showUnlockAnimation(item);
   };
 
-  // For permanent items that have been purchased
-  const isPermanentAndPurchased = item.isPermanent && item.purchased;
+  const isPermanentAndPurchased = item.isPermanent && item.purchased > 0;
 
   return (
     <div 
@@ -55,7 +61,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
         item.purchasable ? 
           'border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-yellow-900/40' : 
           'border-gray-500/30 bg-gradient-to-br from-gray-900/40 to-gray-800/40'
-      } ${!item.purchasable || isPermanentAndPurchased ? 'opacity-50' : 'hover:from-amber-900/50 hover:to-yellow-900/50'} transition-colors`}
+      } ${!item.purchasable || isMaxed ? 'opacity-50' : 'hover:from-amber-900/50 hover:to-yellow-900/50'} transition-colors`}
     >
       <div className="flex items-start gap-2 mb-2">
         <div className="p-2 rounded-md bg-amber-900/50 text-yellow-400 shrink-0">
@@ -73,20 +79,22 @@ const BoostItem: React.FC<BoostItemProps> = ({
         <div className="flex items-center gap-1 mb-2">
           <span className="text-yellow-400 text-sm font-bold">{item.cost}</span>
           <span className="text-xs text-yellow-400">gems</span>
+          {item.maxPurchases !== Infinity && (
+            <span className="text-xs text-gray-400 ml-1">({item.purchased}/{item.maxPurchases})</span>
+          )}
         </div>
         <Button
           size="sm"
           variant={canAfford ? "default" : "secondary"}
           className={`px-2 py-1 h-auto text-xs w-full ${
-            item.purchasable && canAfford && !isPermanentAndPurchased ? 
+            item.purchasable && canAfford && !isMaxed ? 
               'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600' : 
               'bg-gray-700'
           }`}
           onClick={handlePurchase}
-          disabled={!item.purchasable || !canAfford || isPermanentAndPurchased}
+          disabled={!item.purchasable || !canAfford || isMaxed}
         >
-          {isPermanentAndPurchased ? "Purchased" : 
-            item.purchased ? "Purchased" : "Purchase"}
+          {isMaxed ? "Maxed" : isPermanentAndPurchased ? "Purchased" : "Purchase"}
         </Button>
       </div>
     </div>
