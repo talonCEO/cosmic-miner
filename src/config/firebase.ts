@@ -1,5 +1,3 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 
 // Firebase configuration
 // Replace these placeholder values with your actual Firebase project configuration
@@ -13,9 +11,6 @@ export const firebaseConfig = {
   measurementId: "G-4CGEFHDVKP"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 // IMPORTANT: Replace the values above with your actual Firebase project details.
 // These can be found in your Firebase project settings in the Firebase console.
