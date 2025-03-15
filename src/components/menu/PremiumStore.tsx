@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
 import GemPackage from './GemPackage';
 import BoostItem from './BoostItem';
-import { gemPackages } from './types/premiumStore'; // Assuming gemPackages is still defined here
+import { gemPackages } from './types/premiumStore';
 import { useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
@@ -21,7 +21,7 @@ interface PremiumStoreProps {
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
-  const { state, addGems, addItem } = useGame(); // Access gems, addGems, and addItem
+  const { state, addGems, addItem } = useGame();
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: typeof INVENTORY_ITEMS[keyof typeof INVENTORY_ITEMS] | null;
@@ -38,8 +38,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
       .filter(item => item.type === 'boost')
       .map(item => ({
         ...item,
-        purchased: state.boosts[item.id]?.purchased || 0, // Track purchases from GameState
-        maxPurchases: item.maxPurchases || Infinity, // Use defined maxPurchases or unlimited
+        purchased: state.boosts[item.id]?.purchased || 0,
+        maxPurchases: item.maxPurchases || Infinity,
       }));
   }, [state.boosts]);
 
@@ -59,7 +59,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
       isGemPackage: true,
       gemAmount: amount
     });
-    addGems(amount); // Update global gems
+    addGems(amount);
     setTimeout(() => hideUnlockAnimation(), 3000);
   };
 
@@ -70,9 +70,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     });
   };
 
-  // Map of boost IDs to icons (updated to match INVENTORY_ITEMS)
+  // Map of boost IDs to icons (fixed CircleDollarSign to DollarSign)
   const boostIcons = {
-    'boost-double-coins': <CircleDollarSign className="w-5 h-5 text-green-400" />,
+    'boost-double-coins': <DollarSign className="w-5 h-5 text-green-400" />,
     'boost-time-warp': <Clock className="w-5 h-5 text-blue-400" />,
     'boost-auto-tap': <Zap className="w-5 h-5 text-yellow-400" />,
     'boost-tap-boost': <Zap className="w-5 h-5 text-purple-400" />,
@@ -89,9 +89,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const sortedBoostItems = useMemo(() => {
     return boostItems.sort((a, b) => {
-      if (a.id === 'boost-no-ads') return -1; // Prioritize No Ads
+      if (a.id === 'boost-no-ads') return -1;
       if (b.id === 'boost-no-ads') return 1;
-      return a.cost - b.cost; // Sort by cost otherwise
+      return a.cost - b.cost;
     }).map(item => ({
       ...item,
       icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
@@ -103,7 +103,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
     if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
 
-    // Deduct gems and add item to inventory
     addGems(-item.cost);
     addItem(createInventoryItem(item));
     showUnlockAnimation(item);
@@ -222,8 +221,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
                   key={item.id} 
                   item={{
                     ...item,
-                    purchased: state.boosts[item.id]?.purchased || 0, // Reflect current purchases
-                    isPermanent: !item.effect?.duration, // Permanent if no duration
+                    purchased: state.boosts[item.id]?.purchased || 0,
+                    isPermanent: !item.effect?.duration,
                   }} 
                   playerGems={state.gems}
                   onPurchase={() => onBuyBoostItem(item.id)}
