@@ -11,7 +11,6 @@ import { useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
-// Helper function to get placeholder images based on item name
 const getPlaceholderImage = (itemName: string): string => {
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 };
@@ -32,7 +31,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     item: null
   });
 
-  // Filter boost items from INVENTORY_ITEMS (excluding resources)
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
       .filter(item => item.type === 'boost')
@@ -70,7 +68,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     });
   };
 
-  // Map of boost IDs to icons (fixed CircleDollarSign to DollarSign)
   const boostIcons = {
     'boost-double-coins': <DollarSign className="w-5 h-5 text-green-400" />,
     'boost-time-warp': <Clock className="w-5 h-5 text-blue-400" />,
@@ -88,16 +85,40 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
   const gemImageUrl = 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 
   const sortedBoostItems = useMemo(() => {
-    return boostItems.sort((a, b) => {
-      if (a.id === 'boost-no-ads') return -1;
-      if (b.id === 'boost-no-ads') return 1;
-      return a.cost - b.cost;
-    }).map(item => ({
-      ...item,
-      icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
+    const items = boostItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
       effect: item.effect ? `${item.description} (Value: ${item.effect.value}${item.effect.duration ? `, Duration: ${item.effect.duration}s` : ''})` : item.description,
+      cost: item.cost,
+      icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
+      purchasable: state.gems >= item.cost && item.purchased < (item.maxPurchases || Infinity),
+      purchased: item.purchased, // Number of purchases
+      isPermanent: !item.effect?.duration,
+      maxPurchases: item.maxPurchases || Infinity,
     }));
-  }, [boostItems]);
+
+    // Custom sorting: No Ads, Auto Buy, Inventory Slots first unless maxed out
+    const priorityOrder = ['boost-no-ads', 'boost-auto-buy', 'boost-inventory-expansion'];
+    return items.sort((a, b) => {
+      const aPriority = priorityOrder.indexOf(a.id);
+      const bPriority = priorityOrder.indexOf(b.id);
+
+      const aMaxed = a.purchased >= a.maxPurchases;
+      const bMaxed = b.purchased >= b.maxPurchases;
+
+      // If both maxed or neither maxed, sort by priority or cost
+      if (aMaxed === bMaxed) {
+        if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+        if (aPriority !== -1) return -1;
+        if (bPriority !== -1) return 1;
+        return a.cost - b.cost;
+      }
+
+      // Maxed items go to the end
+      return aMaxed ? 1 : -1;
+    });
+  }, [boostItems, state.gems]);
 
   const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
@@ -183,7 +204,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
       <ScrollArea className="h-[60vh]">
         <div className="p-4">
-          {/* Section 1: Gem Packages */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold border-b border-amber-500/30 pb-1">
@@ -208,7 +228,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
             </div>
           </div>
           
-          {/* Section 2: Boost Items */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold border-b border-amber-500/30 pb-1">
@@ -219,11 +238,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
               {sortedBoostItems.map(item => (
                 <BoostItem 
                   key={item.id} 
-                  item={{
-                    ...item,
-                    purchased: state.boosts[item.id]?.purchased || 0,
-                    isPermanent: !item.effect?.duration,
-                  }} 
+                  item={item} 
                   playerGems={state.gems}
                   onPurchase={() => onBuyBoostItem(item.id)}
                   showUnlockAnimation={showUnlockAnimation}
