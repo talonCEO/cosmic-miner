@@ -19,14 +19,14 @@ interface PremiumStoreProps {
 }
 
 interface StoreBoostItem extends InventoryItem {
-  cost: number;
-  maxPurchases: number;
+  cost: number; // Required for all boosts in the store
+  maxPurchases?: number; // Optional, defaults to Infinity
   purchasable: boolean;
   purchased: number;
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
-  const { state, addGems, addItem } = useGame();
+  const { state, addGems, addItem, dispatch } = useGame();
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
     item: InventoryItem | null;
@@ -40,17 +40,41 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
-      .filter((item): item is InventoryItem & { cost: number; maxPurchases: number } => 
-        item.type === 'boost' && item.usable && 'cost' in item && 'maxPurchases' in item
+      .filter((item): item is InventoryItem & { cost: number } => 
+        item.type === 'boost' && 'cost' in item // Only require type 'boost' and cost
       )
-      .map(item => ({
-        ...item,
-        purchased: state.boosts[item.id]?.purchased || 0,
-        maxPurchases: item.maxPurchases,
-        purchasable: state.gems >= item.cost && (state.boosts[item.id]?.purchased || 0) < item.maxPurchases,
-        quantity: 1,
-      } as StoreBoostItem));
+      .map(item => {
+        const purchased = state.boosts[item.id]?.purchased || 0;
+        const maxPurchases = 
+          item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
+          item.id === 'boost-inventory-expansion' ? 5 : Infinity;
+        return {
+          ...item,
+          purchased,
+          maxPurchases,
+          purchasable: state.gems >= item.cost && purchased < maxPurchases,
+          quantity: 1,
+        } as StoreBoostItem;
+      });
   }, [state.boosts, state.gems]);
+
+  const sortedBoostItems = useMemo(() => {
+    const priorityOrder = ['boost-no-ads', 'boost-auto-buy', 'boost-inventory-expansion'];
+    return [...boostItems].sort((a, b) => {
+      const aPriority = priorityOrder.indexOf(a.id);
+      const bPriority = priorityOrder.indexOf(b.id);
+      const aMaxed = a.purchased >= (a.maxPurchases || Infinity);
+      const bMaxed = b.purchased >= (b.maxPurchases || Infinity);
+
+      if (aMaxed === bMaxed) {
+        if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+        if (aPriority !== -1) return -1;
+        if (bPriority !== -1) return 1;
+        return a.cost - b.cost;
+      }
+      return aMaxed ? 1 : -1;
+    });
+  }, [boostItems]);
 
   const showUnlockAnimation = (item: InventoryItem) => {
     setUnlockAnimation({
@@ -80,34 +104,32 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     });
   };
 
-  const sortedBoostItems = useMemo(() => {
-    const priorityOrder = ['boost-no-ads', 'boost-auto-buy', 'boost-inventory-expansion'];
-    return [...boostItems].sort((a, b) => {
-      const aPriority = priorityOrder.indexOf(a.id);
-      const bPriority = priorityOrder.indexOf(b.id);
-
-      const aMaxed = a.purchased >= a.maxPurchases;
-      const bMaxed = b.purchased >= b.maxPurchases;
-
-      if (aMaxed === bMaxed) {
-        if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
-        if (aPriority !== -1) return -1;
-        if (bPriority !== -1) return 1;
-        return a.cost - b.cost;
-      }
-
-      return aMaxed ? 1 : -1;
-    });
-  }, [boostItems]);
-
   const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
-    if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
+    if (!item || state.gems < item.cost || item.purchased >= (item.maxPurchases || Infinity)) return;
 
     addGems(-item.cost);
-    const inventoryItem: InventoryItem = { ...item, quantity: 1 };
-    addItem(inventoryItem);
-    showUnlockAnimation(inventoryItem);
+
+    // Special handling for auto-buy, no-ads, and inventory-expansion
+    switch (item.id) {
+      case 'boost-auto-buy':
+        dispatch({ type: 'TOGGLE_AUTO_BUY' }); // Sets autoBuy to true (assuming it’s initially false)
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        break;
+      case 'boost-no-ads':
+        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'hasNoAds', value: true });
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        break;
+      case 'boost-inventory-expansion':
+        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 5 });
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        break;
+      default:
+        const inventoryItem: InventoryItem = { ...item, quantity: 1 };
+        addItem(inventoryItem);
+        showUnlockAnimation(inventoryItem);
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count for all boosts
+    }
   };
 
   return (
@@ -217,12 +239,18 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
             </div>
             <div className="grid grid-cols-3 gap-3">
               {sortedBoostItems.map(item => (
-                <BoostItem 
-                  key={item.id} 
-                  item={item}
-                  onPurchase={onBuyBoostItem}
-                  showUnlockAnimation={showUnlockAnimation}
-                />
+                <div
+                  key={item.id}
+                  className={`transition-opacity duration-300 ${
+                    item.purchasable ? '' : 'opacity-50 pointer-events-none'
+                  }`}
+                >
+                  <BoostItem 
+                    item={item}
+                    onPurchase={onBuyBoostItem}
+                    showUnlockAnimation={showUnlockAnimation}
+                  />
+                </div>
               ))}
             </div>
           </div>
