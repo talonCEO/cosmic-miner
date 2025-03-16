@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -45,7 +44,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const exp = profile?.exp || state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
-  // Fallback player data (used if Firebase profile not loaded)
+  // Player data with gems sourced from GameContext state
   const playerData = {
     name: profile?.username || "Cosmic Explorer",
     title: profile?.title || "space_pilot", // Default title ID
@@ -53,9 +52,9 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: 500, // Mock value, would come from state in real implementation
+    gems: state.gems, // Updated to use state.gems from GameContext
     essence: state.essence,
-    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
   };
   
   const handleAchievementsClick = () => {
