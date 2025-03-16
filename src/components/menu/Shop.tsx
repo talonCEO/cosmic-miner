@@ -39,9 +39,14 @@ interface ArtifactItemProps {
   cost: number;
 }
 
-// Use the specific artifact item props for ArtifactShopItem
-interface ArtifactShopItemProps {
-  artifact: ArtifactItemProps;
+// ArtifactShopItem should match the component prop structure
+interface ShopItemProps {
+  id: string;
+  name: string;
+  description: string;
+  bonus: string;
+  avatar: string;
+  cost: number;
   isOwned: boolean;
   canAfford: boolean;
   onBuy: () => void;
@@ -84,14 +89,12 @@ const Shop: React.FC<ShopProps> = ({
             {managers.map((manager) => (
               <ShopItem
                 key={manager.id}
-                item={{
-                  id: manager.id,
-                  name: manager.name,
-                  description: manager.description,
-                  bonus: manager.bonus || "",
-                  avatar: manager.avatar || "",
-                  cost: manager.cost
-                }}
+                id={manager.id}
+                name={manager.name}
+                description={manager.description}
+                bonus={manager.bonus || ""}
+                avatar={manager.avatar || ""}
+                cost={manager.cost}
                 isOwned={ownedManagers.includes(manager.id)}
                 canAfford={essence >= manager.cost}
                 onBuy={() => onBuyManager(manager.id, manager.name)}
@@ -108,14 +111,12 @@ const Shop: React.FC<ShopProps> = ({
             {artifacts.map((artifact) => (
               <ArtifactShopItem
                 key={artifact.id}
-                artifact={{
-                  id: artifact.id,
-                  name: artifact.name,
-                  description: artifact.description,
-                  bonus: artifact.bonus || "",
-                  avatar: artifact.avatar || "",
-                  cost: artifact.cost
-                }}
+                id={artifact.id}
+                name={artifact.name}
+                description={artifact.description}
+                bonus={artifact.bonus || ""}
+                avatar={artifact.avatar || ""}
+                cost={artifact.cost}
                 isOwned={ownedArtifacts.includes(artifact.id)}
                 canAfford={essence >= artifact.cost}
                 onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
@@ -140,4 +141,4 @@ const Shop: React.FC<ShopProps> = ({
 };
 
 export default Shop;
-export type { ArtifactShopItemProps, ManagerItemProps, ArtifactItemProps };
+export type { ShopItemProps, ManagerItemProps, ArtifactItemProps };

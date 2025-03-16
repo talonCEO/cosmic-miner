@@ -20,38 +20,31 @@ import {
 } from 'lucide-react';
 
 interface ArtifactShopItemProps {
-  id: string;
-  name: string;
-  description: string;
-  bonus: string;
-  avatar: string;
-  cost: number;
+  artifact: {
+    id: string;
+    name: string;
+    description: string;
+    bonus: string;
+    avatar: string;
+    cost: number;
+  };
   isOwned: boolean;
   canAfford: boolean;
   onBuy: () => void;
-  additionalInfo?: string;
-  icon?: React.ReactNode;
 }
 
 // Placeholder: Assuming this is used in a parent component
 const artifacts = []; // Replace with actual import from '@/utils/artifactsData'
 
 const ArtifactShopItem: React.FC<ArtifactShopItemProps> = ({ 
-  id, 
-  name, 
-  description, 
-  bonus, 
-  avatar, 
-  cost, 
+  artifact, 
   isOwned, 
   canAfford, 
-  onBuy,
-  additionalInfo,
-  icon,
+  onBuy
 }) => {
   return (
     <div 
-      key={id} 
+      key={artifact.id} 
       className={`rounded-lg border p-3 transition ${
         isOwned 
           ? "border-green-500/30 bg-green-900/10" 
@@ -62,21 +55,17 @@ const ArtifactShopItem: React.FC<ArtifactShopItemProps> = ({
     >
       <div className="flex items-center gap-2 mb-2">
         <Avatar className="h-10 w-10 rounded-full flex-shrink-0">
-          <AvatarImage src={avatar} alt={name} />
+          <AvatarImage src={artifact.avatar} alt={artifact.name} />
           <AvatarFallback className="bg-purple-700/50">
-            {name.substring(0, 2)}
+            {artifact.name.substring(0, 2)}
           </AvatarFallback>
         </Avatar>
         <div className="overflow-hidden">
-          <h3 className="font-medium text-sm truncate">{name}</h3>
-          <p className="text-xs text-slate-300 truncate">{description}</p>
+          <h3 className="font-medium text-sm truncate">{artifact.name}</h3>
+          <p className="text-xs text-slate-300 truncate">{artifact.description}</p>
         </div>
       </div>
-      <p className="text-xs text-purple-400 mb-2 break-words">{bonus}</p>
-      
-      {additionalInfo && (
-        <p className="text-xs text-amber-400 mb-2">{additionalInfo}</p>
-      )}
+      <p className="text-xs text-purple-400 mb-2 break-words">{artifact.bonus}</p>
       
       {isOwned ? (
         <div className="bg-green-900/20 text-green-400 text-center py-1 rounded text-sm font-medium">
@@ -93,8 +82,8 @@ const ArtifactShopItem: React.FC<ArtifactShopItemProps> = ({
           disabled={!canAfford}
         >
           <span className="flex items-center justify-center gap-1">
-            {icon || <Flame size={12} className="text-white" />}
-            <span>{cost}</span>
+            <Flame size={12} className="text-white" />
+            <span>{artifact.cost}</span>
           </span>
         </button>
       )}
@@ -137,17 +126,17 @@ const ArtifactShopExample: React.FC = () => {
       {artifacts.map(artifact => (
         <ArtifactShopItem
           key={artifact.id}
-          id={artifact.id}
-          name={artifact.name}
-          description={artifact.description}
-          bonus={artifact.bonus}
-          avatar={artifact.avatar}
-          cost={artifact.cost}
+          artifact={{
+            id: artifact.id,
+            name: artifact.name,
+            description: artifact.description,
+            bonus: artifact.bonus,
+            avatar: artifact.avatar,
+            cost: artifact.cost
+          }}
           isOwned={isOwned(artifact.id)}
           canAfford={canAfford(artifact.cost)}
           onBuy={() => handleBuy(artifact.id)}
-          additionalInfo={artifact.additionalInfo}
-          icon={artifactIconMap.get(artifact.id)}
         />
       ))}
     </div>
@@ -155,4 +144,4 @@ const ArtifactShopExample: React.FC = () => {
 };
 
 export default ArtifactShopItem;
-// Export ArtifactShopExample separately if needed
+export type { ArtifactShopItemProps };

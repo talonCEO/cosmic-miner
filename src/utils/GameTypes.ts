@@ -209,7 +209,12 @@ export interface Upgrade {
   icon?: string;
   coinsPerSecondBonus?: number;
   coinsPerClickBonus?: number;
+  multiplierBonus?: number; // Added this field to fix the TS error
   unlocked?: boolean;
+  unlocksAt?: {
+    upgradeId: string;
+    level: number;
+  };
 }
 
 // Export for backward compatibility
