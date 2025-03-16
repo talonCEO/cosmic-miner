@@ -1,6 +1,8 @@
+
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
 import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
+import { LevelReward } from "@/utils/GameTypes";
 
 /**
  * Check if player leveled up and handle rewards
@@ -66,10 +68,10 @@ export const handleLevelUp = async (
       }
       
       // Handle portrait unlocks
-      if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
-        await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
-        rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
-        unlockedPortraits.push(levelData.rewards.unlocksPortrait);
+      if ((levelData.rewards as LevelReward).unlocksPortrait && !unlockedPortraits.includes((levelData.rewards as LevelReward).unlocksPortrait!)) {
+        await unlockPlayerPortrait(uid, (levelData.rewards as LevelReward).unlocksPortrait!, unlockedPortraits);
+        rewards.unlockedPortrait = (levelData.rewards as LevelReward).unlocksPortrait;
+        unlockedPortraits.push((levelData.rewards as LevelReward).unlocksPortrait!);
       }
     }
     
@@ -115,16 +117,6 @@ export const handleLevelUp = async (
     rewards
   };
 };
-
-// Define the rewards interface
-interface LevelReward {
-  coins?: number;
-  essence?: number;
-  skillPoints?: number;
-  gems?: number;
-  unlocksTitle?: string;
-  unlocksPortrait?: string;
-}
 
 export const calculateExperienceRequired = (level: number): number => {
   // Base experience required for level 1

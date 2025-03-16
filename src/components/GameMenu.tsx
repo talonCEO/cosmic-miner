@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -5,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { MenuType } from './menu/types';
-import { BoostItemType } from './menu/BoostItem';
+import { BoostItemType } from './menu/types/boostItem';
 import { initialBoostItems } from './menu/types/premiumStore';
 import MenuButton from './menu/MenuButton';
 import MainMenu from './menu/MainMenu';
@@ -83,7 +84,7 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       setBoostItems(items => 
         items.map(i => 
           i.id === itemId 
-            ? { ...i, purchased: true, purchasable: false } 
+            ? { ...i, purchased: 1, purchasable: false } 
             : i
         )
       );
@@ -93,7 +94,7 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       setBoostItems(items => 
         items.map(i => 
           i.id === itemId 
-            ? { ...i, purchased: true, purchasable: false, refreshTime } 
+            ? { ...i, purchased: 1, purchasable: false, refreshTime } 
             : i
         )
       );

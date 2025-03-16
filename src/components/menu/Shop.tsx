@@ -1,18 +1,18 @@
 
 import React from 'react';
-import { Sparkles, Lock } from 'lucide-react';
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogClose, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatNumber } from '@/utils/gameLogic';
+import { Sparkles } from 'lucide-react';
 import ShopItem from './ShopItem';
 import ArtifactShopItem from './ArtifactShopItem';
-import { Manager } from '@/utils/managersData';
-import { GameState } from '@/context/GameContext';
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { GameStateType } from '@/utils/GameTypes';
 
 interface ShopProps {
   essence: number;
-  managers: Manager[];
-  artifacts: GameState['artifacts'];
+  managers: any[];
+  artifacts: any[];
   ownedManagers: string[];
   ownedArtifacts: string[];
   onBuyManager: (managerId: string, name: string) => void;
@@ -31,81 +31,68 @@ const Shop: React.FC<ShopProps> = ({
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
-        <DialogTitle className="text-xl">Shop</DialogTitle>
-      </DialogHeader>
-      
-      <ScrollArea className="h-[60vh]">
-        <div className="p-4">
-          <div className="flex items-center mb-4 bg-indigo-900/30 rounded-lg p-2">
-            <Sparkles size={16} className="text-purple-400 mr-1" />
-            <p className="font-medium text-purple-300">{formatNumber(essence)} Essence Available</p>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-center border-b border-indigo-500/30 pb-1">Managers</h3>
-              {managers.map(manager => {
-                const isOwned = ownedManagers.includes(manager.id);
-                const canAfford = essence >= manager.cost;
-                
-                // Count how many perks this manager has
-                const perksCount = manager.perks ? manager.perks.length : 0;
-                let perksInfo = "";
-                if (perksCount > 0 && manager.id !== "manager-default") {
-                  perksInfo = `Includes ${perksCount} unlockable perks`;
-                }
-                
-                return (
-                  <ShopItem
-                    key={manager.id}
-                    id={manager.id}
-                    name={manager.name}
-                    description={manager.description}
-                    bonus={manager.bonus}
-                    avatar={manager.avatar}
-                    cost={manager.cost}
-                    isOwned={isOwned}
-                    canAfford={canAfford}
-                    onBuy={() => onBuyManager(manager.id, manager.name)}
-                    additionalInfo={perksInfo}
-                  />
-                );
-              })}
-            </div>
-            
-            <div className="space-y-3">
-              <h3 className="font-semibold text-center border-b border-indigo-500/30 pb-1">Artifacts</h3>
-              {artifacts.map(artifact => {
-                const isOwned = ownedArtifacts.includes(artifact.id);
-                const canAfford = essence >= artifact.cost;
-                
-                // Count how many perks this artifact has
-                const perksCount = artifact.perks ? artifact.perks.length : 0;
-                let perksInfo = "";
-                if (perksCount > 0 && artifact.id !== "artifact-default") {
-                  perksInfo = `Includes ${perksCount} unlockable perks`;
-                }
-                
-                return (
-                  <ArtifactShopItem
-                    key={artifact.id}
-                    id={artifact.id}
-                    name={artifact.name}
-                    description={artifact.description}
-                    bonus={artifact.bonus}
-                    avatar={artifact.avatar}
-                    cost={artifact.cost}
-                    isOwned={isOwned}
-                    canAfford={canAfford}
-                    onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
-                    additionalInfo={perksInfo}
-                  />
-                );
-              })}
-            </div>
+        <div className="flex items-center justify-between">
+          <DialogTitle className="text-xl">Essence Shop</DialogTitle>
+          <div className="flex items-center gap-1 bg-purple-900/30 px-3 py-1 rounded-full border border-purple-500/30">
+            <Sparkles size={16} className="text-purple-400" />
+            <span className="font-medium text-purple-200">{formatNumber(essence)}</span>
           </div>
         </div>
-      </ScrollArea>
+        <DialogDescription className="text-slate-400 mt-1">
+          Spend essence to unlock powerful managers and artifacts
+        </DialogDescription>
+      </DialogHeader>
+
+      <Tabs defaultValue="managers" className="w-full">
+        <div className="px-4 pt-3">
+          <TabsList className="w-full bg-slate-800/50 border border-slate-700/50">
+            <TabsTrigger value="managers" className="w-1/2">Managers</TabsTrigger>
+            <TabsTrigger value="artifacts" className="w-1/2">Artifacts</TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <ScrollArea className="h-[50vh]">
+          <TabsContent value="managers" className="px-4 py-3 space-y-3">
+            {managers.map((manager) => (
+              <ShopItem
+                key={manager.id}
+                item={manager}
+                isOwned={ownedManagers.includes(manager.id)}
+                canAfford={essence >= manager.cost}
+                onBuy={() => onBuyManager(manager.id, manager.name)}
+              />
+            ))}
+            {managers.length === 0 && (
+              <div className="text-center py-12 text-slate-500">
+                <p>No managers available</p>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="artifacts" className="px-4 py-3 space-y-3">
+            {artifacts.map((artifact) => (
+              <ArtifactShopItem
+                key={artifact.id}
+                artifact={artifact}
+                isOwned={ownedArtifacts.includes(artifact.id)}
+                canAfford={essence >= artifact.cost}
+                onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
+              />
+            ))}
+            {artifacts.length === 0 && (
+              <div className="text-center py-12 text-slate-500">
+                <p>No artifacts available</p>
+              </div>
+            )}
+          </TabsContent>
+        </ScrollArea>
+        
+        <div className="p-4 border-t border-indigo-500/20 mt-3">
+          <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
+            Back
+          </DialogClose>
+        </div>
+      </Tabs>
     </>
   );
 };

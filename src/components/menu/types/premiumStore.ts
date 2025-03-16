@@ -1,6 +1,5 @@
 
-import { ReactNode } from 'react';
-import { BoostItemType } from '@/components/menu/BoostItem';
+import { BoostItemType } from './boostItem';
 
 // Use string paths instead of direct imports
 const gemImagePaths = {
@@ -10,8 +9,6 @@ const gemImagePaths = {
   Gems4: '/src/assets/images/icons/gems4.png',
   Gems5: '/src/assets/images/icons/gems5.png',
   Gems6: '/src/assets/images/icons/gems6.png',
-  Gems7: '/src/assets/images/icons/gems7.png',
-  Gems8: '/src/assets/images/icons/gems8.png',
 };
 
 export interface GemPackage {

@@ -2,11 +2,11 @@
 import React from 'react';
 import { Award } from 'lucide-react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { GameState } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Achievement } from '@/utils/GameTypes';
 
 interface AchievementsProps {
-  achievements: GameState['achievements'];
+  achievements: Achievement[];
 }
 
 const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
