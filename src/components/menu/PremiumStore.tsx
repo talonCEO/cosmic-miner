@@ -5,8 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
 import GemPackage from './GemPackage';
-import BoostItem, { BoostItemType } from './BoostItem';
-import { gemPackages, PremiumStoreProps } from './types/premiumStore';
+import BoostItem from './BoostItem';
+import { gemPackages } from './types/premiumStore';
 import { useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
@@ -15,25 +15,34 @@ const getPlaceholderImage = (itemName: string): string => {
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
 };
 
-const PremiumStore: React.FC<PremiumStoreProps> = ({ 
-  playerGems = 0, 
-  boostItems = [], 
-  onBuyGemPackage, 
-  onBuyBoostItem 
-}) => {
+interface PremiumStoreProps {
+  onBuyGemPackage: (packageId: string, amount: number) => void;
+}
+
+const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
   const { state, addGems, addItem } = useGame();
   const [unlockAnimation, setUnlockAnimation] = useState<{
     show: boolean;
-    item: BoostItemType | null;
+    item: typeof INVENTORY_ITEMS[keyof typeof INVENTORY_ITEMS] | null;
     isGemPackage?: boolean;
     gemAmount?: number;
-    image?: string;
+    image?: string; // Added to store gem package image
   }>({
     show: false,
     item: null,
   });
 
-  const showUnlockAnimation = (item: BoostItemType) => {
+  const boostItems = useMemo(() => {
+    return Object.values(INVENTORY_ITEMS)
+      .filter(item => item.type === 'boost')
+      .map(item => ({
+        ...item,
+        purchased: state.boosts[item.id]?.purchased || 0,
+        maxPurchases: item.maxPurchases || Infinity,
+      }));
+  }, [state.boosts]);
+
+  const showUnlockAnimation = (item: typeof INVENTORY_ITEMS[keyof typeof INVENTORY_ITEMS]) => {
     setUnlockAnimation({
       show: true,
       item,
@@ -48,7 +57,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       item: null,
       isGemPackage: true,
       gemAmount: amount,
-      image,
+      image, // Store the gem package image
     });
     addGems(amount);
     setTimeout(() => hideUnlockAnimation(), 3000);
@@ -75,26 +84,22 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     'boost-inventory-expansion': <Box className="w-5 h-5 text-cyan-400" />,
   };
 
-  const availableBoostItems = useMemo(() => {
-    return Object.values(INVENTORY_ITEMS)
-      .filter(item => item.type === 'boost')
-      .map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        effect: item.effect ? `${item.effect.type} (Value: ${item.effect.value})` : item.description,
-        cost: item.cost || 100,
-        icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
-        purchasable: state.gems >= (item.cost || 100),
-        purchased: state.boosts ? (state.boosts[item.id]?.purchased || 0) : 0,
-        isPermanent: item.stackable === false,
-        maxPurchases: item.maxPurchases || Infinity,
-      })) as BoostItemType[];
-  }, [state.gems, state.boosts]);
-
   const sortedBoostItems = useMemo(() => {
+    const items = boostItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      effect: item.effect ? `${item.description} (Value: ${item.effect.value}${item.effect.duration ? `, Duration: ${item.effect.duration}s` : ''})` : item.description,
+      cost: item.cost,
+      icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
+      purchasable: state.gems >= item.cost && item.purchased < (item.maxPurchases || Infinity),
+      purchased: item.purchased,
+      isPermanent: !item.effect?.duration,
+      maxPurchases: item.maxPurchases || Infinity,
+    }));
+
     const priorityOrder = ['boost-no-ads', 'boost-auto-buy', 'boost-inventory-expansion'];
-    return [...availableBoostItems].sort((a, b) => {
+    return items.sort((a, b) => {
       const aPriority = priorityOrder.indexOf(a.id);
       const bPriority = priorityOrder.indexOf(b.id);
 
@@ -110,23 +115,14 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
 
       return aMaxed ? 1 : -1;
     });
-  }, [availableBoostItems]);
+  }, [boostItems, state.gems]);
 
-  const handleBuyBoostItem = (itemId: string) => {
+  const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
     if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
 
     addGems(-item.cost);
-    
-    const originalItem = Object.values(INVENTORY_ITEMS).find(i => i.id === itemId);
-    if (originalItem) {
-      addItem(createInventoryItem(originalItem));
-    }
-    
-    if (onBuyBoostItem) {
-      onBuyBoostItem(itemId);
-    }
-    
+    addItem(createInventoryItem(item));
     showUnlockAnimation(item);
   };
 
@@ -222,7 +218,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
                   pack={pack} 
                   onPurchase={() => {
                     onBuyGemPackage(pack.id, pack.amount);
-                    showGemUnlockAnimation(pack.amount, pack.image);
+                    showGemUnlockAnimation(pack.amount, pack.image); // Pass the image to the animation
                   }}
                 />
               ))}
@@ -239,8 +235,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
               {sortedBoostItems.map(item => (
                 <BoostItem 
                   key={item.id} 
-                  item={item}
-                  onPurchase={handleBuyBoostItem}
+                  item={item} 
+                  playerGems={state.gems}
+                  onPurchase={() => onBuyBoostItem(item.id)}
                   showUnlockAnimation={showUnlockAnimation}
                 />
               ))}

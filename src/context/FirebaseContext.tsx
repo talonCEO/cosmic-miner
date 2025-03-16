@@ -1,5 +1,28 @@
-
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getAuth, 
+  signInAnonymously, 
+  onAuthStateChanged, 
+  User as FirebaseUser 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  collection
+} from 'firebase/firestore';
+import { firebaseConfig } from '@/config/firebase';
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export interface UserProfile {
   uid: string;
@@ -23,10 +46,9 @@ export interface UserProfile {
 }
 
 interface FirebaseContextType {
-  user: any | null;
+  user: FirebaseUser | null;
   profile: UserProfile | null;
   loading: boolean;
-  isLoading: boolean; // Add this for compatibility with old code
   error: string | null;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   updateUsername: (username: string) => Promise<void>;
@@ -38,61 +60,82 @@ interface FirebaseContextType {
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
+const generateUserId = async (): Promise<string> => {
+  let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
+  let querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
+  
+  while (!querySnapshot.empty) {
+    newId = Math.floor(10000000 + Math.random() * 90000000).toString();
+    querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
+  }
+  return newId;
+};
+
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Generate a mock user ID
-    const mockUserId = localStorage.getItem('mockUserId') || 
-                       Math.floor(10000000 + Math.random() * 90000000).toString();
-    localStorage.setItem('mockUserId', mockUserId);
-    
-    // Create a mock user
-    const mockUser = {
-      uid: mockUserId,
-      isAnonymous: true
+    console.log("FirebaseProvider mounted");
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user?.uid || "null");
+      setLoading(true);
+
+      if (user) {
+        setUser(user);
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          setProfile(userDoc.data() as UserProfile);
+          await updateDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+          console.log("Profile loaded:", userDoc.data());
+        } else {
+          const newUserId = await generateUserId();
+          const defaultUsername = `Player${newUserId.substring(0, 4)}`;
+
+          const newUserProfile: UserProfile = {
+            uid: user.uid,
+            username: defaultUsername,
+            userId: newUserId,
+            coins: 0,
+            gems: 0,
+            essence: 0,
+            skillPoints: 0,
+            friends: [],
+            level: 1,
+            exp: 0,
+            totalCoins: 0,
+            title: "space_pilot",
+            portrait: "default",
+            unlockedTitles: ["space_pilot"],
+            unlockedPortraits: ["default"],
+            achievements: [],
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+          };
+
+          await setDoc(userDocRef, newUserProfile);
+          setProfile(newUserProfile);
+          console.log("New user created:", newUserProfile);
+        }
+      } else {
+        console.log("Signing in anonymously");
+        await signInAnonymously(auth).catch((err) => {
+          console.error("Sign-in error:", err.message);
+          setError("Failed to create anonymous account");
+        });
+      }
+
+      setLoading(false);
+    });
+
+    return () => {
+      console.log("Cleaning up auth listener");
+      unsubscribe();
     };
-    setUser(mockUser);
-    
-    // Load profile from localStorage
-    const savedProfile = localStorage.getItem('player_profile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    } else {
-      // Create default profile
-      const newUserId = localStorage.getItem('mockUserId') || 
-                       Math.floor(10000000 + Math.random() * 90000000).toString();
-      const defaultUsername = `Player${newUserId.substring(0, 4)}`;
-
-      const newUserProfile: UserProfile = {
-        uid: mockUser.uid,
-        username: defaultUsername,
-        userId: newUserId,
-        coins: 0,
-        gems: 0,
-        essence: 0,
-        skillPoints: 0,
-        friends: [],
-        level: 1,
-        exp: 0,
-        totalCoins: 0,
-        title: "space_pilot",
-        portrait: "default",
-        unlockedTitles: ["space_pilot"],
-        unlockedPortraits: ["default"],
-        achievements: [],
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-      };
-
-      localStorage.setItem('player_profile', JSON.stringify(newUserProfile));
-      setProfile(newUserProfile);
-    }
-    
-    setLoading(false);
   }, []);
 
   const updateProfile = async (data: Partial<UserProfile>) => {
@@ -100,19 +143,12 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       console.log("No user, skipping update");
       return;
     }
-    
+    const userDocRef = doc(db, "users", user.uid);
     try {
-      const currentProfile = profile || JSON.parse(localStorage.getItem('player_profile') || '{}');
-      const updatedProfile = { 
-        ...currentProfile, 
-        ...data, 
-        lastLogin: new Date().toISOString() 
-      };
-      
-      localStorage.setItem('player_profile', JSON.stringify(updatedProfile));
-      console.log("Profile updated in localStorage:", data);
-      setProfile(updatedProfile);
-    } catch (err: any) {
+      await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() }, { merge: true });
+      console.log("Profile updated in Firestore:", data);
+      setProfile((prev) => (prev ? { ...prev, ...data } : null));
+    } catch (err) {
       console.error("Update error:", err.message);
       setError("Failed to update profile");
     }
@@ -154,7 +190,6 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     user,
     profile,
     loading,
-    isLoading: loading, // Add for compatibility
     error,
     updateProfile,
     updateUsername,

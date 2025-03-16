@@ -1,6 +1,6 @@
 
 import { Storage } from '@capacitor/storage';
-import { GameStateType } from '@/utils/GameTypes';
+import { GameState } from '@/context/GameContext';
 
 const GAME_STATE_KEY = 'cosmic_miner_game_state';
 
@@ -12,7 +12,7 @@ export const StorageService = {
    * Save the game state to persistent storage
    * @param gameState The current game state to save
    */
-  saveGameState: async (gameState: GameStateType): Promise<void> => {
+  saveGameState: async (gameState: GameState): Promise<void> => {
     try {
       // Create a simplified version of the state to avoid circular references
       const stateToSave = {
@@ -54,7 +54,7 @@ export const StorageService = {
    * Load the game state from persistent storage
    * @returns The saved game state or null if no state was found
    */
-  loadGameState: async (): Promise<Partial<GameStateType> | null> => {
+  loadGameState: async (): Promise<Partial<GameState> | null> => {
     try {
       const { value } = await Storage.get({ key: GAME_STATE_KEY });
       

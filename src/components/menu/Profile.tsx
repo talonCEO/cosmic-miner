@@ -9,7 +9,6 @@ import { useFirebase } from '@/context/FirebaseContext';
 import { Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
 import { MenuType } from './types';
-import { syncGameProgress } from '@/utils/firebaseSync';
 
 interface ProfileProps {
   setMenuType?: (menuType: MenuType) => void;
@@ -17,87 +16,23 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
-  const { profile, loading } = useFirebase();
-  const [localProfile, setLocalProfile] = useState<any>(null);
+  const { profile, loading, updateUsername, updateTitle } = useFirebase();
   
-  // Initialize local profile from localStorage or create new one
-  useEffect(() => {
-    const savedProfile = localStorage.getItem('player_profile');
-    
-    if (savedProfile) {
-      setLocalProfile(JSON.parse(savedProfile));
-    } else {
-      // Create a default profile if none exists
-      const exp = state.totalEarned || 0;
-      const { currentLevel, nextLevel } = getLevelFromExp(exp);
-      
-      const defaultProfile = {
-        userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-        username: "Cosmic Explorer",
-        level: currentLevel.level,
-        exp: exp,
-        coins: state.coins,
-        essence: state.essence || 0,
-        skillPoints: state.skillPoints || 0,
-        totalCoins: state.totalEarned || 0,
-        title: "space_pilot",
-        lastLogin: new Date().toISOString(),
-        unlockedTitles: ["space_pilot"],
-        unlockedPortraits: ["default"],
-        achievements: []
-      };
-      
-      localStorage.setItem('player_profile', JSON.stringify(defaultProfile));
-      setLocalProfile(defaultProfile);
-    }
-  }, []);
-  
-  // Sync game state to local profile periodically
-  useEffect(() => {
-    const syncInterval = setInterval(() => {
-      if (localProfile?.userId) {
-        syncGameProgress(localProfile.userId, state);
-        // Update local profile after sync
-        const savedProfile = localStorage.getItem('player_profile');
-        if (savedProfile) {
-          setLocalProfile(JSON.parse(savedProfile));
-        }
-      }
-    }, 10000); // Sync every 10 seconds
-    
-    return () => clearInterval(syncInterval);
-  }, [localProfile, state]);
-  
-  // Handle player name change (updates local storage)
+  // Handle player name change (updates Firebase profile)
   const handleNameChange = (newName: string) => {
-    if (localProfile && newName.trim() !== localProfile.username) {
-      const updatedProfile = { ...localProfile, username: newName };
-      localStorage.setItem('player_profile', JSON.stringify(updatedProfile));
-      setLocalProfile(updatedProfile);
-      
-      // Also update Firebase if available
-      if (profile) {
-        // Firebase update code would go here if we were using it
-      }
+    if (profile && newName.trim() !== profile.username) {
+      updateUsername(newName);
     }
   };
   
   // Handle title change
   const handleTitleChange = (titleId: string) => {
-    if (localProfile && titleId.trim() !== localProfile.title) {
-      const updatedProfile = { ...localProfile, title: titleId };
-      localStorage.setItem('player_profile', JSON.stringify(updatedProfile));
-      setLocalProfile(updatedProfile);
-      
-      // Also update Firebase if available
-      if (profile) {
-        // Firebase update code would go here if we were using it
-      }
+    if (profile && titleId.trim() !== profile.title) {
+      updateTitle(titleId);
     }
   };
   
-  // If no local profile yet, show loading
-  if (!localProfile) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px] p-4">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
@@ -107,20 +42,20 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   }
   
   // Get level info from total coins earned (used as XP)
-  const exp = localProfile.exp || state.totalEarned || 0;
+  const exp = profile?.exp || state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
-  // Player data from local storage
+  // Fallback player data (used if Firebase profile not loaded)
   const playerData = {
-    name: localProfile.username || "Cosmic Explorer",
-    title: localProfile.title || "space_pilot", // Default title ID
-    level: localProfile.level || currentLevel.level,
+    name: profile?.username || "Cosmic Explorer",
+    title: profile?.title || "space_pilot", // Default title ID
+    level: profile?.level || currentLevel.level,
     exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: state.gems || 0, // Use game state for gems
-    essence: state.essence || 0,
-    userId: localProfile.userId
+    gems: 500, // Mock value, would come from state in real implementation
+    essence: state.essence,
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString()
   };
   
   const handleAchievementsClick = () => {
@@ -136,13 +71,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
       setMenuType('leaderboard');
     }
   };
-  
-  // Mock friends data
-  const friendsData = [
-    { id: '1', name: 'CosmicMiner42', level: 27, online: true },
-    { id: '2', name: 'StardustCollector', level: 19, online: false },
-    { id: '3', name: 'GalacticDriller', level: 31, online: true }
-  ];
   
   return (
     <>
@@ -185,7 +113,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
         </div>
         
         {/* Friends list component */}
-        <PlayerFriends friends={friendsData} />
+        <PlayerFriends />
       </div>
       
       <div className="p-4 mt-auto border-t border-indigo-500/20">

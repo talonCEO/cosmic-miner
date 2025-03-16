@@ -1,15 +1,15 @@
+import { ReactNode } from 'react';
 
-import { BoostItemType } from './boostItem';
-
-// Use string paths instead of direct imports
-const gemImagePaths = {
-  Gems1: '/src/assets/images/icons/gems1.png',
-  Gems2: '/src/assets/images/icons/gems2.png',
-  Gems3: '/src/assets/images/icons/gems3.png',
-  Gems4: '/src/assets/images/icons/gems4.png',
-  Gems5: '/src/assets/images/icons/gems5.png',
-  Gems6: '/src/assets/images/icons/gems6.png',
-};
+// PNG imports for gem packages
+import Gems1 from '@/assets/images/icons/gems1.png';
+import Gems2 from '@/assets/images/icons/gems2.png';
+import Gems3 from '@/assets/images/icons/gems3.png';
+import Gems4 from '@/assets/images/icons/gems4.png';
+import Gems5 from '@/assets/images/icons/gems5.png';
+import Gems6 from '@/assets/images/icons/gems6.png';
+// Gems7 and Gems8 are unused unless you add more packages
+import Gems7 from '@/assets/images/icons/gems7.png';
+import Gems8 from '@/assets/images/icons/gems8.png';
 
 export interface GemPackage {
   id: string;
@@ -17,14 +17,21 @@ export interface GemPackage {
   amount: number;
   price: string;
   description: string;
-  image: string; // Image path as string
+  image: string; // Added image field for PNGs
 }
 
-export interface PremiumStoreProps {
-  playerGems?: number;
-  boostItems?: BoostItemType[];
-  onBuyGemPackage: (packageId: string, amount: number) => void;
-  onBuyBoostItem?: (itemId: string) => void;
+export interface BoostItem {
+  id: string;
+  name: string;
+  description: string;
+  effect: string;
+  cost: number;
+  icon: ReactNode;
+  purchasable: boolean;
+  purchased: boolean;
+  refreshTime?: number;
+  isPermanent?: boolean;
+  imageSrc?: string;
 }
 
 export const gemPackages: GemPackage[] = [
@@ -34,7 +41,7 @@ export const gemPackages: GemPackage[] = [
     amount: 100,
     price: "$0.99",
     description: "A small pouch of precious space gems",
-    image: gemImagePaths.Gems1,
+    image: Gems1,
   },
   {
     id: "gems_medium",
@@ -42,7 +49,7 @@ export const gemPackages: GemPackage[] = [
     amount: 550,
     price: "$4.99",
     description: "A glowing collection of rare gems",
-    image: gemImagePaths.Gems2,
+    image: Gems2,
   },
   {
     id: "gems_large",
@@ -50,7 +57,7 @@ export const gemPackages: GemPackage[] = [
     amount: 1200,
     price: "$9.99",
     description: "An impressive chest of premium gems",
-    image: gemImagePaths.Gems3,
+    image: Gems3,
   },
   {
     id: "gems_huge",
@@ -58,7 +65,7 @@ export const gemPackages: GemPackage[] = [
     amount: 2500,
     price: "$19.99",
     description: "A massive collection of exotic gems",
-    image: gemImagePaths.Gems4,
+    image: Gems4,
   },
   {
     id: "gems_mega",
@@ -66,7 +73,7 @@ export const gemPackages: GemPackage[] = [
     amount: 6500,
     price: "$49.99",
     description: "An extraordinary wealth of precious gems",
-    image: gemImagePaths.Gems5,
+    image: Gems5,
   },
   {
     id: "gems_ultra",
@@ -74,12 +81,12 @@ export const gemPackages: GemPackage[] = [
     amount: 15000,
     price: "$99.99",
     description: "The ultimate gem collection for space moguls",
-    image: gemImagePaths.Gems6,
+    image: Gems6,
   },
 ];
 
-// Initial boost items (base structure)
-export const initialBoostItems: BoostItemType[] = [
+// Initial boost items (unchanged)
+export const initialBoostItems = [
   {
     id: "boost_no_ads",
     name: "No Ads",
@@ -88,9 +95,8 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 250,
     icon: null,
     purchasable: true,
-    purchased: 0,
+    purchased: false,
     isPermanent: true,
-    maxPurchases: 1,
   },
   {
     id: "boost_quantum_accelerator",
@@ -100,8 +106,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 50,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_nebula_enhancer",
@@ -111,8 +116,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 75,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_cosmic_catalyst",
@@ -122,8 +126,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 100,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_void_extractor",
@@ -133,8 +136,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 125,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_supernova_surge",
@@ -144,8 +146,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 150,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_galactic_magnet",
@@ -155,8 +156,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 175,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_temporal_distortion",
@@ -166,8 +166,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 200,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_stellar_fusion",
@@ -177,8 +176,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 150,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_dark_matter_infusion",
@@ -188,8 +186,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 180,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_asteroid_locator",
@@ -199,8 +196,7 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 160,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
   {
     id: "boost_wormhole_generator",
@@ -210,7 +206,6 @@ export const initialBoostItems: BoostItemType[] = [
     cost: 220,
     icon: null,
     purchasable: true,
-    purchased: 0,
-    maxPurchases: Infinity,
+    purchased: false,
   },
 ];

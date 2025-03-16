@@ -2,7 +2,6 @@
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
 import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
-import { LevelReward } from "@/utils/GameTypes";
 
 /**
  * Check if player leveled up and handle rewards
@@ -68,10 +67,10 @@ export const handleLevelUp = async (
       }
       
       // Handle portrait unlocks
-      if ((levelData.rewards as LevelReward).unlocksPortrait && !unlockedPortraits.includes((levelData.rewards as LevelReward).unlocksPortrait!)) {
-        await unlockPlayerPortrait(uid, (levelData.rewards as LevelReward).unlocksPortrait!, unlockedPortraits);
-        rewards.unlockedPortrait = (levelData.rewards as LevelReward).unlocksPortrait;
-        unlockedPortraits.push((levelData.rewards as LevelReward).unlocksPortrait!);
+      if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
+        await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
+        rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
+        unlockedPortraits.push(levelData.rewards.unlocksPortrait);
       }
     }
     
@@ -116,15 +115,4 @@ export const handleLevelUp = async (
     newLevel: newLevelData.currentLevel.level,
     rewards
   };
-};
-
-export const calculateExperienceRequired = (level: number): number => {
-  // Base experience required for level 1
-  const baseExp = 100;
-  
-  // Experience scaling factor (higher = steeper curve)
-  const scalingFactor = 1.5;
-  
-  // Calculate experience required for this level
-  return Math.floor(baseExp * Math.pow(level, scalingFactor));
 };
