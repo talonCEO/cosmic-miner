@@ -3,14 +3,11 @@ import { ReactNode } from 'react';
 
 // PNG imports for gem packages
 import Gems1 from '@/assets/images/icons/gems1.png';
-import Gems2 from '@/assets/images/icons/gems2.png';
-import Gems3 from '@/assets/images/icons/gems3.png';
-import Gems4 from '@/assets/images/icons/gems4.png';
-import Gems5 from '@/assets/images/icons/gems5.png';
-import Gems6 from '@/assets/images/icons/gems6.png';
-// Gems7 and Gems8 are unused unless you add more packages
-import Gems7 from '@/assets/images/icons/gems7.png';
-import Gems8 from '@/assets/images/icons/gems8.png';
+import Gems2 from '@/assets/images/icons/gems4.png';
+import Gems3 from '@/assets/images/icons/gems5.png';
+import Gems4 from '@/assets/images/icons/gems6.png';
+import Gems5 from '@/assets/images/icons/gems7.png';
+import Gems6 from '@/assets/images/icons/gems8.png';
 
 export interface GemPackage {
   id: string;
