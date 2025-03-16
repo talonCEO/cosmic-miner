@@ -1,198 +1,126 @@
-
-import React, { useState, useEffect } from 'react';
-import { useFirebase } from '../../context/FirebaseContext';
+import React from 'react';
+import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useGame } from '@/context/GameContext';
+import { formatNumber } from '@/utils/gameLogic';
 import PlayerCard from './PlayerCard';
 import PlayerFriends from './PlayerFriends';
-import { StorageService } from '../../services/StorageService';
-import { toast } from 'sonner';
-import { useGameContext } from '../../context/GameContext';
-import { calculateLevelInfo } from '../../utils/levelUpHandler';
+import { useFirebase } from '@/context/FirebaseContext';
+import { Loader2, Trophy, BarChart3 } from 'lucide-react';
+import { getLevelFromExp, getTitleById } from '@/data/playerProgressionData';
+import { MenuType } from './types';
 
-const Profile = () => {
-  const { isLoading: firebaseLoading } = useFirebase();
-  const { gameState, updateGameState } = useGameContext();
-  const [isLoading, setIsLoading] = useState(true);
-  const [playerData, setPlayerData] = useState({
-    username: 'Cosmic Miner',
-    avatar: '/placeholder.svg',
-    level: 1,
-    experience: 0,
-    nextLevelExp: 100,
-    achievements: [],
-    friends: [],
-    stats: {
-      totalClicks: 0,
-      totalResources: 0,
-      totalUpgrades: 0,
-      totalPlayTime: 0,
+interface ProfileProps {
+  setMenuType?: (menuType: MenuType) => void;
+}
+
+const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
+  const { state } = useGame();
+  const { profile, loading, updateUsername, updateTitle } = useFirebase();
+  
+  // Handle player name change (updates Firebase profile)
+  const handleNameChange = (newName: string) => {
+    if (profile && newName.trim() !== profile.username) {
+      updateUsername(newName);
     }
-  });
-
-  useEffect(() => {
-    const loadPlayerData = async () => {
-      try {
-        // First try to get data from local storage
-        const storedData = await StorageService.getData('playerData');
-        
-        if (storedData) {
-          console.log('Loaded player data from local storage:', storedData);
-          
-          // Make sure level info is calculated correctly
-          const { level, experience, nextLevelExp } = calculateLevelInfo(
-            storedData.experience || 0, 
-            storedData.level || 1
-          );
-          
-          setPlayerData({
-            ...storedData,
-            level,
-            experience,
-            nextLevelExp
-          });
-          
-          // Update game state with loaded level and XP
-          updateGameState({
-            playerLevel: level,
-            playerExperience: experience,
-            playerNextLevelExperience: nextLevelExp
-          });
-        } else {
-          // If no stored data, initialize with gameState data
-          const { playerLevel, playerExperience } = gameState;
-          const { level, experience, nextLevelExp } = calculateLevelInfo(
-            playerExperience || 0, 
-            playerLevel || 1
-          );
-          
-          const initialPlayerData = {
-            ...playerData,
-            level,
-            experience,
-            nextLevelExp,
-            stats: {
-              totalClicks: gameState.clickCount || 0,
-              totalResources: gameState.resources || 0,
-              totalUpgrades: gameState.upgradesPurchased || 0,
-              totalPlayTime: gameState.playTime || 0,
-            }
-          };
-          
-          setPlayerData(initialPlayerData);
-          await StorageService.saveData('playerData', initialPlayerData);
-          
-          // Update game state
-          updateGameState({
-            playerLevel: level,
-            playerExperience: experience,
-            playerNextLevelExperience: nextLevelExp
-          });
-        }
-      } catch (error) {
-        console.error('Error loading player data:', error);
-        toast.error('Failed to load profile data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPlayerData();
-  }, [gameState, updateGameState]);
-
-  // Update player data whenever game state changes
-  useEffect(() => {
-    const updatePlayerDataFromGameState = async () => {
-      if (!isLoading) {
-        const { playerLevel, playerExperience, clickCount, resources, upgradesPurchased, playTime } = gameState;
-        
-        // Calculate level info
-        const { level, experience, nextLevelExp } = calculateLevelInfo(
-          playerExperience || 0, 
-          playerLevel || 1
-        );
-        
-        // Only update if there are actual changes
-        if (level !== playerData.level || 
-            experience !== playerData.experience || 
-            clickCount !== playerData.stats?.totalClicks ||
-            resources !== playerData.stats?.totalResources) {
-          
-          const updatedPlayerData = {
-            ...playerData,
-            level,
-            experience,
-            nextLevelExp,
-            stats: {
-              ...playerData.stats,
-              totalClicks: clickCount || 0,
-              totalResources: resources || 0,
-              totalUpgrades: upgradesPurchased || 0,
-              totalPlayTime: playTime || 0,
-            }
-          };
-          
-          setPlayerData(updatedPlayerData);
-          
-          // Save to local storage
-          await StorageService.saveData('playerData', updatedPlayerData);
-          
-          // If level increased, show a toast
-          if (level > playerData.level) {
-            toast.success(`Level Up! You are now level ${level}`);
-          }
-        }
-      }
-    };
-    
-    updatePlayerDataFromGameState();
-  }, [gameState, isLoading, playerData]);
-
-  if (isLoading) {
+  };
+  
+  // Handle title change
+  const handleTitleChange = (titleId: string) => {
+    if (profile && titleId.trim() !== profile.title) {
+      updateTitle(titleId);
+    }
+  };
+  
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center min-h-[300px] p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <p className="mt-2 text-slate-300">Loading your profile...</p>
       </div>
     );
   }
-
+  
+  // Get level info from total coins earned (used as XP)
+  const exp = profile?.exp || state.totalEarned || 0;
+  const { currentLevel, nextLevel } = getLevelFromExp(exp);
+  
+  // Player data with gems sourced from GameContext state
+  const playerData = {
+    name: profile?.username || "Cosmic Explorer",
+    title: profile?.title || "space_pilot", // Default title ID
+    level: profile?.level || currentLevel.level,
+    exp: exp,
+    maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
+    coins: state.coins,
+    gems: state.gems, // Updated to use state.gems from GameContext
+    essence: state.essence,
+    userId: profile?.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
+  };
+  
+  const handleAchievementsClick = () => {
+    // Navigate to achievements menu if setMenuType prop is available
+    if (setMenuType) {
+      setMenuType('achievements');
+    }
+  };
+  
+  const handleLeaderboardClick = () => {
+    // Navigate to leaderboard menu if setMenuType prop is available
+    if (setMenuType) {
+      setMenuType('leaderboard');
+    }
+  };
+  
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto">
-      <PlayerCard 
-        username={playerData.username} 
-        avatar={playerData.avatar} 
-        level={playerData.level}
-        experience={playerData.experience}
-        nextLevelExp={playerData.nextLevelExp}
-        achievements={playerData.achievements || []}
-      />
+    <>
+      <DialogHeader className="p-4 border-b border-indigo-500/20">
+        <DialogTitle className="text-center text-xl">Player Profile</DialogTitle>
+      </DialogHeader>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-lg">
-          <h3 className="text-xl font-bold mb-4">Player Stats</h3>
-          <ul className="space-y-2">
-            <li className="flex justify-between">
-              <span>Total Clicks:</span>
-              <span className="font-semibold">{playerData.stats?.totalClicks?.toLocaleString() || 0}</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Resources Collected:</span>
-              <span className="font-semibold">{playerData.stats?.totalResources?.toLocaleString() || 0}</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Upgrades Purchased:</span>
-              <span className="font-semibold">{playerData.stats?.totalUpgrades || 0}</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Play Time:</span>
-              <span className="font-semibold">
-                {Math.floor((playerData.stats?.totalPlayTime || 0) / 3600)}h {Math.floor(((playerData.stats?.totalPlayTime || 0) % 3600) / 60)}m
-              </span>
-            </li>
-          </ul>
+      <div className="p-4 space-y-4">
+        {/* Enhanced player card with currency info and UID */}
+        <PlayerCard 
+          playerName={playerData.name}
+          playerTitle={playerData.title}
+          playerLevel={playerData.level}
+          playerExp={playerData.exp}
+          playerMaxExp={playerData.maxExp}
+          coins={playerData.coins}
+          gems={playerData.gems}
+          essence={playerData.essence}
+          onNameChange={handleNameChange}
+          userId={playerData.userId}
+        />
+        
+        {/* Navigation buttons */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <button 
+            onClick={handleAchievementsClick}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Trophy size={20} />
+            <span>Achievements</span>
+          </button>
+          
+          <button 
+            onClick={handleLeaderboardClick}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <BarChart3 size={20} />
+            <span>Leaderboard</span>
+          </button>
         </div>
         
-        <PlayerFriends friends={playerData.friends || []} />
+        {/* Friends list component */}
+        <PlayerFriends />
       </div>
-    </div>
+      
+      <div className="p-4 mt-auto border-t border-indigo-500/20">
+        <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
+          Back
+        </DialogClose>
+      </div>
+    </>
   );
 };
 

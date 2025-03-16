@@ -1,60 +1,86 @@
 
-import { GameState } from "@/context/GameContext";
+import { Storage } from '@capacitor/storage';
+import { GameState } from '@/context/GameContext';
 
+const GAME_STATE_KEY = 'cosmic_miner_game_state';
+
+/**
+ * Service for handling persistent storage operations using Capacitor's Storage API
+ */
 export const StorageService = {
-  // Save game state to local storage
+  /**
+   * Save the game state to persistent storage
+   * @param gameState The current game state to save
+   */
   saveGameState: async (gameState: GameState): Promise<void> => {
     try {
-      localStorage.setItem("gameState", JSON.stringify(gameState));
+      // Create a simplified version of the state to avoid circular references
+      const stateToSave = {
+        coins: gameState.coins,
+        coinsPerClick: gameState.coinsPerClick,
+        coinsPerSecond: gameState.coinsPerSecond,
+        upgrades: gameState.upgrades,
+        totalClicks: gameState.totalClicks,
+        totalEarned: gameState.totalEarned,
+        autoBuy: gameState.autoBuy,
+        autoTap: gameState.autoTap,
+        essence: gameState.essence,
+        ownedManagers: gameState.ownedManagers,
+        ownedArtifacts: gameState.ownedArtifacts,
+        prestigeCount: gameState.prestigeCount,
+        incomeMultiplier: gameState.incomeMultiplier,
+        skillPoints: gameState.skillPoints,
+        abilities: gameState.abilities.map(ability => ({
+          id: ability.id,
+          unlocked: ability.unlocked
+        })),
+        unlockedPerks: gameState.unlockedPerks,
+        // Save the last timestamp when the game was saved
+        lastSavedAt: new Date().toISOString(),
+      };
+      
+      await Storage.set({
+        key: GAME_STATE_KEY,
+        value: JSON.stringify(stateToSave)
+      });
+      
+      console.log('Game state saved successfully');
     } catch (error) {
-      console.error("Error saving game state:", error);
+      console.error('Error saving game state:', error);
     }
   },
-
-  // Load game state from local storage
-  loadGameState: async (): Promise<any> => {
+  
+  /**
+   * Load the game state from persistent storage
+   * @returns The saved game state or null if no state was found
+   */
+  loadGameState: async (): Promise<Partial<GameState> | null> => {
     try {
-      const savedState = localStorage.getItem("gameState");
-      return savedState ? JSON.parse(savedState) : null;
+      const { value } = await Storage.get({ key: GAME_STATE_KEY });
+      
+      if (!value) {
+        console.log('No saved game state found');
+        return null;
+      }
+      
+      const savedState = JSON.parse(value);
+      console.log('Game state loaded successfully');
+      return savedState;
     } catch (error) {
-      console.error("Error loading game state:", error);
-      return null;
-    }
-  },
-
-  // Clear game state from local storage
-  clearGameState: async (): Promise<void> => {
-    try {
-      localStorage.removeItem("gameState");
-    } catch (error) {
-      console.error("Error clearing game state:", error);
-    }
-  },
-
-  // Backward compatibility methods for older code
-  saveData: async (key: string, data: any): Promise<void> => {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (error) {
-      console.error(`Error saving data for key ${key}:`, error);
-    }
-  },
-
-  getData: async (key: string): Promise<any> => {
-    try {
-      const savedData = localStorage.getItem(key);
-      return savedData ? JSON.parse(savedData) : null;
-    } catch (error) {
-      console.error(`Error getting data for key ${key}:`, error);
+      console.error('Error loading game state:', error);
       return null;
     }
   },
   
-  removeData: async (key: string): Promise<void> => {
+  /**
+   * Clear the saved game state from persistent storage
+   */
+  clearGameState: async (): Promise<void> => {
     try {
-      localStorage.removeItem(key);
+      await Storage.remove({ key: GAME_STATE_KEY });
+      console.log('Game state cleared successfully');
     } catch (error) {
-      console.error(`Error removing data for key ${key}:`, error);
+      console.error('Error clearing game state:', error);
     }
   }
 };

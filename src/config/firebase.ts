@@ -1,62 +1,18 @@
 
-// This is a stub file to prevent import errors.
-// In a real application, this would contain Firebase configuration.
-
-interface MockUser {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-}
-
-export const auth = {
-  onAuthStateChanged: (callback: (user: MockUser | null) => void) => {
-    // Mock implementation
-    const mockUser: MockUser = {
-      uid: "local-user",
-      displayName: "Cosmic Miner",
-      email: "player@example.com",
-      photoURL: null
-    };
-    
-    // Simulate a logged-in user
-    setTimeout(() => callback(mockUser), 500);
-    
-    return () => {}; // Unsubscribe function
-  },
-  signOut: async () => {
-    console.log("Mock sign out");
-    return Promise.resolve();
-  },
-  currentUser: {
-    uid: "local-user",
-    displayName: "Cosmic Miner",
-    email: "player@example.com",
-    photoURL: null
-  }
+// Firebase configuration
+// Replace these placeholder values with your actual Firebase project configuration
+export const firebaseConfig = {
+  apiKey: "AIzaSyCCkSGmRG61sFiNaYaNy4Wcls7EYPfqZZY",
+  authDomain: "cosmic-miner.firebaseapp.com",
+  projectId: "cosmic-miner",
+  storageBucket: "cosmic-miner.firebasestorage.app",
+  messagingSenderId: "541782087850",
+  appId: "1:541782087850:web:30107e6e600d31488058d3",
+  measurementId: "G-4CGEFHDVKP"
 };
 
-export const db = {
-  collection: (path: string) => ({
-    doc: (id: string) => ({
-      get: async () => ({
-        exists: false,
-        data: () => null
-      }),
-      set: async (data: any) => {
-        console.log(`Mock set data to ${path}/${id}:`, data);
-        return Promise.resolve();
-      },
-      update: async (data: any) => {
-        console.log(`Mock update data in ${path}/${id}:`, data);
-        return Promise.resolve();
-      }
-    }),
-    where: (field: string, op: string, value: any) => ({
-      get: async () => ({
-        empty: true,
-        docs: []
-      })
-    })
-  })
-};
+
+// IMPORTANT: Replace the values above with your actual Firebase project details.
+// These can be found in your Firebase project settings in the Firebase console.
+
+

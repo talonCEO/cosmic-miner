@@ -1,141 +1,209 @@
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getAuth, 
+  signInAnonymously, 
+  onAuthStateChanged, 
+  User as FirebaseUser 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  collection
+} from 'firebase/firestore';
+import { firebaseConfig } from '@/config/firebase';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { StorageService } from '@/services/StorageService';
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Define types for the Firebase context
 export interface UserProfile {
   uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-  level?: number;
-  experience?: number;
-  lastLogin?: number;
+  username: string;
+  userId: string;
+  coins: number;
+  gems: number;
+  essence: number;
+  skillPoints: number;
+  friends: string[];
+  level: number;
+  exp: number;
+  totalCoins: number;
+  title: string;
+  portrait: string;
+  unlockedTitles: string[];
+  unlockedPortraits: string[];
+  achievements: string[];
+  createdAt: any;
+  lastLogin: any;
 }
 
-export interface FirebaseContextType {
-  user: UserProfile | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  logout: () => Promise<void>;
-  syncGameData: () => Promise<void>;
-  getUserProfile: () => Promise<UserProfile | null>;
+interface FirebaseContextType {
+  user: FirebaseUser | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  error: string | null;
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  updateUsername: (username: string) => Promise<void>;
+  updateTitle: (titleId: string) => Promise<void>;
+  updatePortrait: (portraitId: string) => Promise<void>;
+  unlockTitle: (titleId: string) => Promise<void>;
+  unlockPortrait: (portraitId: string) => Promise<void>;
 }
 
-// Create context
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
-// Provider component
-export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load user data from local storage on mount
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const savedUser = await StorageService.getData('userProfile');
-        
-        if (savedUser) {
-          setUser(savedUser);
-        } else {
-          // If no user is found, create a mock user
-          const mockUser: UserProfile = {
-            uid: 'local-user',
-            displayName: 'Cosmic Miner',
-            email: 'player@example.com',
-            photoURL: null,
-            level: 1,
-            experience: 0,
-            lastLogin: Date.now()
-          };
-          
-          setUser(mockUser);
-          await StorageService.saveData('userProfile', mockUser);
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadUserData();
-  }, []);
-
-  // Mock logout function
-  const logout = async (): Promise<void> => {
-    try {
-      setUser(null);
-      await StorageService.removeData('userProfile');
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error logging out:', error);
-      return Promise.reject(error);
-    }
-  };
-
-  // Mock function to sync game data
-  const syncGameData = async (): Promise<void> => {
-    try {
-      const gameState = await StorageService.getData('gameState');
-      
-      if (gameState && user) {
-        // In a real implementation, this would save to Firebase
-        // For now, we just log and save to local storage
-        console.log('Syncing game data for user:', user.uid);
-        
-        // Update user profile with latest level/experience
-        const updatedUser = {
-          ...user,
-          level: gameState.level,
-          experience: gameState.experience,
-          lastLogin: Date.now()
-        };
-        
-        setUser(updatedUser);
-        await StorageService.saveData('userProfile', updatedUser);
-      }
-      
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error syncing game data:', error);
-      return Promise.reject(error);
-    }
-  };
-
-  // Mock function to get user profile
-  const getUserProfile = async (): Promise<UserProfile | null> => {
-    try {
-      const savedUser = await StorageService.getData('userProfile');
-      return savedUser;
-    } catch (error) {
-      console.error('Error getting user profile:', error);
-      return null;
-    }
-  };
-
-  return (
-    <FirebaseContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        logout,
-        syncGameData,
-        getUserProfile
-      }}
-    >
-      {children}
-    </FirebaseContext.Provider>
-  );
+const generateUserId = async (): Promise<string> => {
+  let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
+  let querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
+  
+  while (!querySnapshot.empty) {
+    newId = Math.floor(10000000 + Math.random() * 90000000).toString();
+    querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
+  }
+  return newId;
 };
 
-// Custom hook to use Firebase context
-export const useFirebase = (): FirebaseContextType => {
+export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log("FirebaseProvider mounted");
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user?.uid || "null");
+      setLoading(true);
+
+      if (user) {
+        setUser(user);
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          setProfile(userDoc.data() as UserProfile);
+          await updateDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+          console.log("Profile loaded:", userDoc.data());
+        } else {
+          const newUserId = await generateUserId();
+          const defaultUsername = `Player${newUserId.substring(0, 4)}`;
+
+          const newUserProfile: UserProfile = {
+            uid: user.uid,
+            username: defaultUsername,
+            userId: newUserId,
+            coins: 0,
+            gems: 0,
+            essence: 0,
+            skillPoints: 0,
+            friends: [],
+            level: 1,
+            exp: 0,
+            totalCoins: 0,
+            title: "space_pilot",
+            portrait: "default",
+            unlockedTitles: ["space_pilot"],
+            unlockedPortraits: ["default"],
+            achievements: [],
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+          };
+
+          await setDoc(userDocRef, newUserProfile);
+          setProfile(newUserProfile);
+          console.log("New user created:", newUserProfile);
+        }
+      } else {
+        console.log("Signing in anonymously");
+        await signInAnonymously(auth).catch((err) => {
+          console.error("Sign-in error:", err.message);
+          setError("Failed to create anonymous account");
+        });
+      }
+
+      setLoading(false);
+    });
+
+    return () => {
+      console.log("Cleaning up auth listener");
+      unsubscribe();
+    };
+  }, []);
+
+  const updateProfile = async (data: Partial<UserProfile>) => {
+    if (!user) {
+      console.log("No user, skipping update");
+      return;
+    }
+    const userDocRef = doc(db, "users", user.uid);
+    try {
+      await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() }, { merge: true });
+      console.log("Profile updated in Firestore:", data);
+      setProfile((prev) => (prev ? { ...prev, ...data } : null));
+    } catch (err) {
+      console.error("Update error:", err.message);
+      setError("Failed to update profile");
+    }
+  };
+
+  const updateUsername = async (username: string) => {
+    if (!username.trim()) return;
+    console.log("Updating username:", username);
+    await updateProfile({ username });
+  };
+
+  const updateTitle = async (titleId: string) => {
+    if (!titleId.trim() || !profile || !profile.unlockedTitles.includes(titleId)) return;
+    console.log("Updating title:", titleId);
+    await updateProfile({ title: titleId });
+  };
+
+  const updatePortrait = async (portraitId: string) => {
+    if (!portraitId.trim() || !profile || !profile.unlockedPortraits.includes(portraitId)) return;
+    console.log("Updating portrait:", portraitId);
+    await updateProfile({ portrait: portraitId });
+  };
+
+  const unlockTitle = async (titleId: string) => {
+    if (!titleId.trim() || !profile || profile.unlockedTitles.includes(titleId)) return;
+    const updatedTitles = [...profile.unlockedTitles, titleId];
+    console.log("Unlocking title:", titleId);
+    await updateProfile({ unlockedTitles: updatedTitles });
+  };
+
+  const unlockPortrait = async (portraitId: string) => {
+    if (!portraitId.trim() || !profile || profile.unlockedPortraits.includes(portraitId)) return;
+    const updatedPortraits = [...profile.unlockedPortraits, portraitId];
+    console.log("Unlocking portrait:", portraitId);
+    await updateProfile({ unlockedPortraits: updatedPortraits });
+  };
+
+  const value = {
+    user,
+    profile,
+    loading,
+    error,
+    updateProfile,
+    updateUsername,
+    updateTitle,
+    updatePortrait,
+    unlockTitle,
+    unlockPortrait,
+  };
+
+  return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;
+};
+
+export const useFirebase = () => {
   const context = useContext(FirebaseContext);
-  if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider');
-  }
+  if (context === undefined) throw new Error("useFirebase must be used within a FirebaseProvider");
   return context;
 };

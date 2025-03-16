@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import {
@@ -7,12 +6,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Lock } from 'lucide-react';
+import { Lock } from 'lucide-react'; // Added Lock import from lucide-react
 import Perk1Icon from '@/assets/images/icons/perk1.png';
 import Perk2Icon from '@/assets/images/icons/perk2.png';
 import Perk3Icon from '@/assets/images/icons/perk3.png';
 
-export interface PerkProps {
+interface PerkProps {
   perk: {
     id: string;
     name: string;
@@ -97,7 +96,7 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
             {perkIcon}
             {!isUnlocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-                <Lock className="w-3.5 h-3.5 text-gray-400" />
+                <Lock className="w-3.5 h-3.5 text-gray-400" /> {/* Reverted to lucide-react Lock */}
               </div>
             )}
           </button>

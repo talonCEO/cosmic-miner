@@ -1,108 +1,77 @@
 
 import React from 'react';
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { 
-  Trophy, Star, Rocket, Store, Brain, Gem, 
-  Settings, User, Package
-} from 'lucide-react';
-import { useGame } from '@/context/GameContext';
-import { MainMenuProps } from '@/utils/types';
+import { GraduationCap, ShoppingBasket, Network, Users, Package } from 'lucide-react';
+import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { MenuType } from './types';
+import MuteButton from '../MuteButton';
+import { useGame } from '@/context/GameContext';
+
+interface MainMenuProps {
+  setMenuType: (menuType: MenuType) => void;
+}
 
 const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
   const { state, dispatch } = useGame();
   
-  const handleMenuChange = (menuType: MenuType) => {
-    setMenuType(menuType);
-  };
-  
   return (
     <>
-      <DialogHeader className="p-4 border-b border-indigo-500/20">
-        <DialogTitle className="text-center text-xl">Deep Space Mining Corp.</DialogTitle>
+      <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
+        <div className="absolute top-4 left-4">
+          <MuteButton />
+        </div>
+        <DialogTitle className="text-center text-xl">Game Menu</DialogTitle>
+        <DialogDescription className="text-center text-slate-300">
+          Select an option to continue
+        </DialogDescription>
       </DialogHeader>
-      <div className="p-4 grid grid-cols-3 gap-3">
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("profile")}
-        >
-          <User className="h-6 w-6 mb-1 text-blue-400" />
-          <span className="text-xs">Profile</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("achievements")}
-        >
-          <Trophy className="h-6 w-6 mb-1 text-yellow-400" />
-          <span className="text-xs">Achievements</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("leaderboard")}
-        >
-          <Star className="h-6 w-6 mb-1 text-purple-400" />
-          <span className="text-xs">Ranks</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("inventory")}
-        >
-          <Package className="h-6 w-6 mb-1 text-amber-400" />
-          <span className="text-xs">Inventory</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("shop")}
-        >
-          <Store className="h-6 w-6 mb-1 text-green-400" />
-          <span className="text-xs">Shop</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("techTree")}
-        >
-          <Brain className="h-6 w-6 mb-1 text-indigo-400" />
-          <span className="text-xs">Tech Tree</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("prestige")}
-        >
-          <Rocket className="h-6 w-6 mb-1 text-red-400" />
-          <span className="text-xs">Prestige</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("premium")}
-        >
-          <Gem className="h-6 w-6 mb-1 text-pink-400" />
-          <span className="text-xs">Premium</span>
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className="flex flex-col items-center justify-center h-20 bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50"
-          onClick={() => handleMenuChange("settings")}
-        >
-          <Settings className="h-6 w-6 mb-1 text-slate-400" />
-          <span className="text-xs">Settings</span>
-        </Button>
+      <ScrollArea className="h-[50vh]">
+        <div className="flex flex-col p-4 gap-3">
+          <button 
+            onClick={() => setMenuType("profile")} 
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Users size={20} />
+            <span>Profile</span>
+          </button>
+          
+          <button 
+            onClick={() => setMenuType("inventory")} 
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Package size={20} />
+            <span>Inventory</span>
+          </button>
+          
+          <button 
+            onClick={() => setMenuType("techTree")} 
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Network size={20} />
+            <span>Tech Tree</span>
+          </button>
+          
+          <button 
+            onClick={() => setMenuType("prestige")} 
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <GraduationCap size={20} />
+            <span>Prestige</span>
+          </button>
+          
+          <button 
+            onClick={() => setMenuType("shop")} 
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <ShoppingBasket size={20} />
+            <span>Shop</span>
+          </button>
+        </div>
+      </ScrollArea>
+      <div className="p-4 border-t border-indigo-500/20">
+        <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
+          Back
+        </DialogClose>
       </div>
     </>
   );
