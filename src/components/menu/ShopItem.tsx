@@ -4,12 +4,14 @@ import { Sparkles } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ShopItemProps {
-  id: string;
-  name: string;
-  description: string;
-  bonus: string;
-  avatar: string;
-  cost: number;
+  item: {
+    id: string;
+    name: string;
+    description: string;
+    bonus: string;
+    avatar: string;
+    cost: number;
+  };
   isOwned: boolean;
   canAfford: boolean;
   onBuy: () => void;
@@ -17,12 +19,7 @@ interface ShopItemProps {
 }
 
 const ShopItem: React.FC<ShopItemProps> = ({ 
-  id, 
-  name, 
-  description, 
-  bonus, 
-  avatar, 
-  cost, 
+  item,
   isOwned, 
   canAfford, 
   onBuy,
@@ -30,7 +27,7 @@ const ShopItem: React.FC<ShopItemProps> = ({
 }) => {
   return (
     <div 
-      key={id} 
+      key={item.id} 
       className={`rounded-lg border p-3 transition ${
         isOwned 
           ? "border-green-500/30 bg-green-900/10" 
@@ -41,17 +38,17 @@ const ShopItem: React.FC<ShopItemProps> = ({
     >
       <div className="flex items-center gap-2 mb-2">
         <Avatar className="h-10 w-10 rounded-full flex-shrink-0">
-          <AvatarImage src={avatar} alt={name} />
+          <AvatarImage src={item.avatar} alt={item.name} />
           <AvatarFallback className="bg-indigo-700/50">
-            {name.substring(0, 2)}
+            {item.name.substring(0, 2)}
           </AvatarFallback>
         </Avatar>
         <div className="overflow-hidden">
-          <h3 className="font-medium text-sm truncate">{name}</h3>
-          <p className="text-xs text-slate-300 truncate">{description}</p>
+          <h3 className="font-medium text-sm truncate">{item.name}</h3>
+          <p className="text-xs text-slate-300 truncate">{item.description}</p>
         </div>
       </div>
-      <p className="text-xs text-indigo-400 mb-2 break-words">{bonus}</p>
+      <p className="text-xs text-indigo-400 mb-2 break-words">{item.bonus}</p>
       
       {additionalInfo && (
         <p className="text-xs text-amber-400 mb-2">{additionalInfo}</p>
@@ -73,7 +70,7 @@ const ShopItem: React.FC<ShopItemProps> = ({
         >
           <span className="flex items-center justify-center gap-1">
             <Sparkles size={12} />
-            <span>{cost}</span>
+            <span>{item.cost}</span>
           </span>
         </button>
       )}
@@ -82,3 +79,4 @@ const ShopItem: React.FC<ShopItemProps> = ({
 };
 
 export default ShopItem;
+export type { ShopItemProps };

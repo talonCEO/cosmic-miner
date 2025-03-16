@@ -1,5 +1,5 @@
 import { getFirestore, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
-import { GameState } from '@/context/GameContext';
+import { GameState } from '@/utils/GameTypes';
 import { UserProfile } from '@/context/FirebaseContext';
 import { getLevelFromExp } from '@/data/playerProgressionData';
 import { StorageService } from '@/services/StorageService';

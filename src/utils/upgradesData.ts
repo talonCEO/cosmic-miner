@@ -1,5 +1,4 @@
-
-import { Upgrade } from '@/context/GameContext';
+import { Upgrade } from '@/utils/GameTypes';
 
 // Categories
 export const UPGRADE_CATEGORIES = {

@@ -67,7 +67,7 @@ const Upgrades: React.FC = () => {
     
     const beforeLevel = upgrade.level;
     
-    buyUpgrade(upgradeId, quantity);
+    buyUpgrade(upgradeId);
     
     setTimeout(() => {
       const afterUpgrade = state.upgrades.find(u => u.id === upgradeId);
@@ -85,7 +85,7 @@ const Upgrades: React.FC = () => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) return;
     
-    const maxAmount = calculateMaxPurchaseAmount(upgradeId);
+    const maxAmount = calculateMaxPurchaseAmount(Number(upgradeId));
     if (maxAmount > 0) {
       handleBulkPurchase(upgradeId, maxAmount);
     }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Sparkles, Gem, X, Ban, Zap, ArrowUp, Gauge, Clock, Rocket, Bolt, Target, Magnet, Star, Flower, Cloud, Compass, Percent, VideoOff, PackagePlus, Box, DollarSign } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -28,7 +27,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     item: BoostItemType | null;
     isGemPackage?: boolean;
     gemAmount?: number;
-    image?: string; // Added to store gem package image
+    image?: string;
   }>({
     show: false,
     item: null,
@@ -49,7 +48,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
       item: null,
       isGemPackage: true,
       gemAmount: amount,
-      image, // Store the gem package image
+      image,
     });
     addGems(amount);
     setTimeout(() => hideUnlockAnimation(), 3000);
@@ -76,7 +75,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
     'boost-inventory-expansion': <Box className="w-5 h-5 text-cyan-400" />,
   };
 
-  // Convert inventory items to boost items
   const availableBoostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
       .filter(item => item.type === 'boost')
@@ -120,7 +118,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({
 
     addGems(-item.cost);
     
-    // Find original item to add to inventory
     const originalItem = Object.values(INVENTORY_ITEMS).find(i => i.id === itemId);
     if (originalItem) {
       addItem(createInventoryItem(originalItem));
