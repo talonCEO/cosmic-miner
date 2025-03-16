@@ -26,9 +26,10 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     item: typeof INVENTORY_ITEMS[keyof typeof INVENTORY_ITEMS] | null;
     isGemPackage?: boolean;
     gemAmount?: number;
+    image?: string; // Added to store gem package image
   }>({
     show: false,
-    item: null
+    item: null,
   });
 
   const boostItems = useMemo(() => {
@@ -45,17 +46,18 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     setUnlockAnimation({
       show: true,
       item,
-      isGemPackage: false
+      isGemPackage: false,
     });
     setTimeout(() => hideUnlockAnimation(), 3000);
   };
 
-  const showGemUnlockAnimation = (amount: number) => {
+  const showGemUnlockAnimation = (amount: number, image: string) => {
     setUnlockAnimation({
       show: true,
       item: null,
       isGemPackage: true,
-      gemAmount: amount
+      gemAmount: amount,
+      image, // Store the gem package image
     });
     addGems(amount);
     setTimeout(() => hideUnlockAnimation(), 3000);
@@ -64,7 +66,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
   const hideUnlockAnimation = () => {
     setUnlockAnimation({
       show: false,
-      item: null
+      item: null,
     });
   };
 
@@ -82,8 +84,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     'boost-inventory-expansion': <Box className="w-5 h-5 text-cyan-400" />,
   };
 
-  const gemImageUrl = 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
-
   const sortedBoostItems = useMemo(() => {
     const items = boostItems.map(item => ({
       id: item.id,
@@ -93,12 +93,11 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
       cost: item.cost,
       icon: boostIcons[item.id as keyof typeof boostIcons] || <Star className="w-5 h-5 text-yellow-400" />,
       purchasable: state.gems >= item.cost && item.purchased < (item.maxPurchases || Infinity),
-      purchased: item.purchased, // Number of purchases
+      purchased: item.purchased,
       isPermanent: !item.effect?.duration,
       maxPurchases: item.maxPurchases || Infinity,
     }));
 
-    // Custom sorting: No Ads, Auto Buy, Inventory Slots first unless maxed out
     const priorityOrder = ['boost-no-ads', 'boost-auto-buy', 'boost-inventory-expansion'];
     return items.sort((a, b) => {
       const aPriority = priorityOrder.indexOf(a.id);
@@ -107,7 +106,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
       const aMaxed = a.purchased >= a.maxPurchases;
       const bMaxed = b.purchased >= b.maxPurchases;
 
-      // If both maxed or neither maxed, sort by priority or cost
       if (aMaxed === bMaxed) {
         if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
         if (aPriority !== -1) return -1;
@@ -115,7 +113,6 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
         return a.cost - b.cost;
       }
 
-      // Maxed items go to the end
       return aMaxed ? 1 : -1;
     });
   }, [boostItems, state.gems]);
@@ -178,7 +175,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
                   transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
                 >
                   <img 
-                    src={unlockAnimation.isGemPackage ? gemImageUrl : (unlockAnimation.item ? getPlaceholderImage(unlockAnimation.item.name) : gemImageUrl)}
+                    src={unlockAnimation.isGemPackage ? unlockAnimation.image : (unlockAnimation.item ? getPlaceholderImage(unlockAnimation.item.name) : '')}
                     alt={unlockAnimation.isGemPackage ? "Gems" : (unlockAnimation.item?.name || "Item")}
                     className="w-full h-full object-cover"
                   />
@@ -221,7 +218,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
                   pack={pack} 
                   onPurchase={() => {
                     onBuyGemPackage(pack.id, pack.amount);
-                    showGemUnlockAnimation(pack.amount);
+                    showGemUnlockAnimation(pack.amount, pack.image); // Pass the image to the animation
                   }}
                 />
               ))}
