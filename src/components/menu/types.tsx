@@ -1,3 +1,4 @@
+
 // src/types/index.ts
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
@@ -35,12 +36,9 @@ export interface InventoryItem {
   usable: boolean;
   stackable: boolean;
   obtained: number; // timestamp
+  cost?: number; // Add cost property here
+  maxPurchases?: number; // Add maxPurchases property here
 }
-
-
-
-
-
 
 // Game boost items manifest - centralized list of all available boosts
 export const INVENTORY_ITEMS = {
@@ -89,11 +87,6 @@ export const INVENTORY_ITEMS = {
     stackable: true,
     obtained: Date.now()
   },
-
-
-
-
-
   
   // Original boost items (usable)
   DOUBLE_COINS: {
@@ -111,7 +104,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100 // Suggested gem cost
+    cost: 100 // Add cost here
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -127,7 +120,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50 // Suggested gem cost
+    cost: 50 // Add cost here
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
@@ -144,7 +137,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100 // Suggested gem cost
+    cost: 100 // Add cost here
   },
 
   // New boosts as requested
@@ -163,7 +156,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 75 // Suggested gem cost
+    cost: 75 // Add cost here
   },
   CHEAP_UPGRADES: {
     id: 'boost-cheap-upgrades',
@@ -180,7 +173,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50 // Suggested gem cost
+    cost: 50 // Add cost here
   },
   ESSENCE_BOOST: {
     id: 'boost-essence-boost',
@@ -196,7 +189,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100 // Suggested gem cost
+    cost: 100 // Add cost here
   },
   PERMA_TAP: {
     id: 'boost-perma-tap',
@@ -212,7 +205,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 150 // Suggested gem cost
+    cost: 150, // Add cost here
+    maxPurchases: 10 // Add maxPurchases limit
   },
   PERMA_PASSIVE: {
     id: 'boost-perma-passive',
@@ -228,7 +222,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 200 // Suggested gem cost
+    cost: 200, // Add cost here
+    maxPurchases: 10 // Add maxPurchases limit
   },
   NO_ADS: {
     id: 'boost-no-ads',

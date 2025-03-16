@@ -33,6 +33,7 @@ export interface BoostItem {
   refreshTime?: number;
   isPermanent?: boolean;
   imageSrc?: string;
+  maxPurchases?: number;
 }
 
 export const gemPackages: GemPackage[] = [
@@ -86,4 +87,4 @@ export const gemPackages: GemPackage[] = [
   },
 ];
 
-// Removed initialBoostItems array
+// Removed initialBoostItems array as requested

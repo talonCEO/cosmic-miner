@@ -22,7 +22,8 @@ const BoostItem: React.FC<BoostItemProps> = ({
 }) => {
   const { state, addGems } = useGame();
   const { toast } = useToast();
-  const canAfford = state.gems >= item.cost;
+  const cost = item.cost || 0;
+  const canAfford = state.gems >= cost;
   const isMaxed = item.purchased >= item.maxPurchases;
   
   const handlePurchase = () => {
@@ -53,7 +54,6 @@ const BoostItem: React.FC<BoostItemProps> = ({
       return;
     }
     
-    addGems(-item.cost);
     onPurchase(item.id);
     showUnlockAnimation(item);
   };
@@ -87,7 +87,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
       
       <div className="flex flex-col mt-auto">
         <div className="flex items-center gap-1 mb-2">
-          <span className="text-yellow-400 text-sm font-bold">{item.cost}</span>
+          <span className="text-yellow-400 text-sm font-bold">{cost}</span>
           <span className="text-xs text-yellow-400">gems</span>
           {item.maxPurchases !== Infinity && (
             <span className="text-xs text-gray-400 ml-1">({item.purchased}/{item.maxPurchases})</span>

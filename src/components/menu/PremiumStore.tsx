@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Sparkles, Gem, X } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,6 +40,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
         maxPurchases: item.maxPurchases || Infinity,
         purchasable: state.gems >= (item.cost || 0) && 
           (state.boosts[item.id]?.purchased || 0) < (item.maxPurchases || Infinity),
+        quantity: 1
       }));
   }, [state.boosts, state.gems]);
 
@@ -95,11 +95,18 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
-    if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
+    if (!item || state.gems < (item.cost || 0) || item.purchased >= item.maxPurchases) return;
 
-    addGems(-item.cost);
-    addItem(createInventoryItem(item));
-    showUnlockAnimation(item);
+    const itemCost = item.cost || 0;
+    addGems(-itemCost);
+    
+    const inventoryItem: InventoryItem = {
+      ...item,
+      quantity: 1,
+    };
+    
+    addItem(inventoryItem);
+    showUnlockAnimation(inventoryItem);
   };
 
   return (
