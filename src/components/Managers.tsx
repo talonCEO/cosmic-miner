@@ -6,10 +6,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Lock } from 'lucide-react'; // Added Lock import from lucide-react
 import Perk1Icon from '@/assets/images/icons/perk1.png';
 import Perk2Icon from '@/assets/images/icons/perk2.png';
 import Perk3Icon from '@/assets/images/icons/perk3.png';
-import LockIcon from '@/assets/images/icons/lock.png';
 
 interface PerkProps {
   perk: {
@@ -96,7 +96,7 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
             {perkIcon}
             {!isUnlocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-                <img src={LockIcon} alt="Lock" className="w-3.5 h-3.5" />
+                <Lock className="w-3.5 h-3.5 text-gray-400" /> {/* Reverted to lucide-react Lock */}
               </div>
             )}
           </button>
