@@ -1,7 +1,14 @@
-
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
 import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
+
+interface LevelUpRewards {
+  skillPoints?: number;
+  essence?: number;
+  gems?: number;
+  unlockedTitle?: string;
+  unlockedPortrait?: string;
+}
 
 /**
  * Check if player leveled up and handle rewards
@@ -20,19 +27,11 @@ export const handleLevelUp = async (
   unlockedPortraits: string[] = []
 ): Promise<{
   newLevel: number,
-  rewards: {
-    skillPoints?: number,
-    essence?: number,
-    gems?: number,
-    unlockedTitle?: string,
-    unlockedPortrait?: string
-  }
+  rewards: LevelUpRewards
 }> => {
-  // Get old and new level data
   const oldLevelData = getLevelFromExp(oldExp);
   const newLevelData = getLevelFromExp(newExp);
   
-  // If no level change, return early
   if (oldLevelData.currentLevel.level === newLevelData.currentLevel.level) {
     return { 
       newLevel: newLevelData.currentLevel.level,
@@ -40,33 +39,28 @@ export const handleLevelUp = async (
     };
   }
   
-  // Player leveled up! Handle all levels that were passed
-  const rewards = {
+  const rewards: LevelUpRewards = {
     skillPoints: 0,
     essence: 0,
     gems: 0,
-    unlockedTitle: undefined as string | undefined,
-    unlockedPortrait: undefined as string | undefined
+    unlockedTitle: undefined,
+    unlockedPortrait: undefined
   };
   
-  // Calculate the total rewards for all levels gained
   for (let level = oldLevelData.currentLevel.level + 1; level <= newLevelData.currentLevel.level; level++) {
-    const levelData = LEVELS[level - 1]; // Array is 0-indexed, levels start at 1
+    const levelData = LEVELS[level - 1];
     
     if (levelData.rewards) {
-      // Add numerical rewards
-      if (levelData.rewards.skillPoints) rewards.skillPoints += levelData.rewards.skillPoints;
-      if (levelData.rewards.essence) rewards.essence += levelData.rewards.essence;
-      if (levelData.rewards.gems) rewards.gems += levelData.rewards.gems;
+      if (levelData.rewards.skillPoints) rewards.skillPoints! += levelData.rewards.skillPoints;
+      if (levelData.rewards.essence) rewards.essence! += levelData.rewards.essence;
+      if (levelData.rewards.gems) rewards.gems! += levelData.rewards.gems;
       
-      // Handle title unlocks
       if (levelData.rewards.unlocksTitle && !unlockedTitles.includes(levelData.rewards.unlocksTitle)) {
         await unlockPlayerTitle(uid, levelData.rewards.unlocksTitle, unlockedTitles);
         rewards.unlockedTitle = levelData.rewards.unlocksTitle;
         unlockedTitles.push(levelData.rewards.unlocksTitle);
       }
       
-      // Handle portrait unlocks
       if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
         await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
         rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
@@ -74,13 +68,11 @@ export const handleLevelUp = async (
       }
     }
     
-    // Show toast for each level up
     toast.success(`Level Up! You reached level ${level}`, {
       description: "Your cosmic mining skills have improved!"
     });
   }
   
-  // Show reward notifications
   if (rewards.skillPoints) {
     toast.success(`Reward: ${rewards.skillPoints} Skill Points`, {
       description: "Use them in the Tech Tree to unlock new abilities!"
