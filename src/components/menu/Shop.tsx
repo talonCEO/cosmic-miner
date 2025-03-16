@@ -19,9 +19,29 @@ interface ShopProps {
   onBuyArtifact: (artifactId: string, name: string) => void;
 }
 
+// Define manager shop item props
+interface ManagerItemProps {
+  id: string;
+  name: string;
+  description: string;
+  bonus: string;
+  avatar: string;
+  cost: number;
+}
+
 // Define artifact shop item props
+interface ArtifactItemProps {
+  id: string;
+  name: string;
+  description: string;
+  bonus: string;
+  avatar: string;
+  cost: number;
+}
+
+// Use the specific artifact item props for ArtifactShopItem
 interface ArtifactShopItemProps {
-  artifact: any;
+  artifact: ArtifactItemProps;
   isOwned: boolean;
   canAfford: boolean;
   onBuy: () => void;
@@ -88,7 +108,14 @@ const Shop: React.FC<ShopProps> = ({
             {artifacts.map((artifact) => (
               <ArtifactShopItem
                 key={artifact.id}
-                artifact={artifact}
+                artifact={{
+                  id: artifact.id,
+                  name: artifact.name,
+                  description: artifact.description,
+                  bonus: artifact.bonus || "",
+                  avatar: artifact.avatar || "",
+                  cost: artifact.cost
+                }}
                 isOwned={ownedArtifacts.includes(artifact.id)}
                 canAfford={essence >= artifact.cost}
                 onBuy={() => onBuyArtifact(artifact.id, artifact.name)}
@@ -113,4 +140,4 @@ const Shop: React.FC<ShopProps> = ({
 };
 
 export default Shop;
-export type { ArtifactShopItemProps };
+export type { ArtifactShopItemProps, ManagerItemProps, ArtifactItemProps };

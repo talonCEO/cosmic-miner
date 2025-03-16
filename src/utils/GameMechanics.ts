@@ -1,4 +1,4 @@
-import { GameState, Ability } from '@/utils/GameTypes';
+import { GameStateType as GameState, Ability } from '@/utils/GameTypes';
 import { calculateClickMultiplier as utilsCalculateClickMultiplier } from '@/hooks/useGameMechanics';
 
 /**

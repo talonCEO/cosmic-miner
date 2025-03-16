@@ -1,4 +1,5 @@
-import { Achievement, GameState } from '@/utils/GameTypes';
+
+import { Achievement, GameStateType as GameState } from '@/utils/GameTypes';
 
 /**
  * Create all game achievements

@@ -1,3 +1,4 @@
+
 import { ReactNode } from 'react';
 
 // Define the GameState type
@@ -43,7 +44,6 @@ export type GameActionType =
   | { type: 'ADD_COINS', payload: number }
   | { type: 'SET_GEMS', payload: number }
   | { type: 'ADD_GEMS', payload: number }
-  | { type: 'SET_ESSENCE', payload: number }
   | { type: 'SET_ESSENCE', payload: number }
   | { type: 'ADD_ESSENCE', payload: number }
   | { type: 'SET_LEVEL', payload: number }
@@ -189,6 +189,7 @@ export interface Achievement {
     essence?: number;
     skillPoints?: number;
   };
+  checkCondition?: (state: GameStateType) => boolean;
 }
 
 // Define Upgrade interface
@@ -197,17 +198,19 @@ export interface Upgrade {
   name: string;
   description: string;
   baseCost: number;
+  cost: number; // Current cost after calculations
   level: number;
   maxLevel?: number;
   effect: {
     type: string;
     value: number;
   };
+  category?: string;
+  icon?: string;
+  coinsPerSecondBonus?: number;
+  coinsPerClickBonus?: number;
+  unlocked?: boolean;
 }
 
-// Export aliases for backward compatibility
+// Export for backward compatibility
 export type GameState = GameStateType;
-export type InventoryItem = InventoryItem;
-export type Achievement = Achievement;
-export type Upgrade = Upgrade;
-export type Ability = Ability;
