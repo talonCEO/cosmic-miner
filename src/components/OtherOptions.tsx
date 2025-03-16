@@ -4,9 +4,9 @@ import { useGame } from '@/context/GameContext';
 import PerkButton from './PerkButton';
 import { artifacts } from '@/utils/artifactsData';
 import { useBoostManager } from '@/hooks/useBoostManager';
-import Artifact1Icon from '@/assets/images/icons/artifact1.png';
-import Artifact2Icon from '@/assets/images/icons/artifact2.png';
-import Artifact3Icon from '@/assets/images/icons/artifact3.png';
+import Artifact1Icon from '@/assets/images/icons/perk1.png';
+import Artifact2Icon from '@/assets/images/icons/perk12.png';
+import Artifact3Icon from '@/assets/images/icons/perk13.png';
 
 const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
