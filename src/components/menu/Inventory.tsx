@@ -318,7 +318,7 @@ const Inventory: React.FC = () => {
           <span>Inventory</span>
         </DialogTitle>
         <div className="text-center text-slate-300 text-sm">
-          Space used: {inventoryUsed}/{inventoryCapacity}
+          Space used: {inventoryUsed}/1
         </div>
       </DialogHeader>
       
