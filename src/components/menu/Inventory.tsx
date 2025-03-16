@@ -133,183 +133,115 @@ const UseItemPopover: React.FC<{
   );
 };
 
-// Notification component
-const BoostNotification: React.FC<{ boost: { id: string; duration?: number; remainingTime?: number; activatedAt?: number }; onDismiss: (id: string) => void }> = ({ boost, onDismiss }) => {
-  const [timeLeft, setTimeLeft] = useState(boost.remainingTime || 0);
-
-  useEffect(() => {
-    if (!boost.duration) return;
-    const interval = setInterval(() => {
-      const now = Date.now() / 1000;
-      const remaining = boost.duration! - (now - (boost.activatedAt || 0));
-      setTimeLeft(remaining > 0 ? remaining : 0);
-      if (remaining <= 0) onDismiss(boost.id);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [boost, onDismiss]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
-  const boostInfo = {
-    'boost-double-coins': 'Coin income x2',
-    'boost-time-warp': '+120 min passive income',
-    'boost-auto-tap': 'Auto-tap 5x/sec',
-    'boost-tap-boost': 'Tap income x3',
-    'boost-cheap-upgrades': 'Upgrades -10%',
-    'boost-essence-boost': 'Essence reward +25%',
-    'boost-perma-tap': 'Tap power +1 (Permanent)',
-    'boost-perma-passive': 'Passive income +1 (Permanent)',
-  };
-
-  return (
-    <div className="bg-slate-800 border border-indigo-500/30 rounded-lg p-3 mb-2 flex items-center justify-between w-64">
-      <div>
-        <p className="text-white font-medium">{boostInfo[boost.id]}</p>
-        {boost.duration && <p className="text-sm text-slate-300">{formatTime(timeLeft)}</p>}
-      </div>
-      <button onClick={() => onDismiss(boost.id)} className="text-slate-400 hover:text-white">
-        <XCircle size={20} />
-      </button>
-    </div>
-  );
-};
-
 const Inventory: React.FC = () => {
-  const { state, useItem, addItem, activateBoost } = useGame();
+  const { state, dispatch, useItem, addItem } = useGame();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-
+  
   // Add test boosts to player inventory when component mounts
   useEffect(() => {
-    const initialBoosts = [
-      { item: INVENTORY_ITEMS.DOUBLE_COINS, qty: 3 },
-      { item: INVENTORY_ITEMS.TIME_WARP, qty: 2 },
-      { item: INVENTORY_ITEMS.AUTO_TAP, qty: 5 },
-      { item: INVENTORY_ITEMS.TAP_BOOST, qty: 4 },
-      { item: INVENTORY_ITEMS.CHEAP_UPGRADES, qty: 2 },
-      { item: INVENTORY_ITEMS.ESSENCE_BOOST, qty: 1 },
-      { item: INVENTORY_ITEMS.PERMA_TAP, qty: 1 },
-      { item: INVENTORY_ITEMS.PERMA_PASSIVE, qty: 1 },
-    ];
-
-    initialBoosts.forEach(({ item, qty }) => {
-      if (!state.inventory.some(i => i.id === item.id)) {
-        addItem(createInventoryItem(item, qty));
-      }
-    });
-  }, [addItem, state.inventory]);
-
+    const hasDoubleCoins = state.inventory.some(item => item.id === INVENTORY_ITEMS.DOUBLE_COINS.id);
+    const hasTimeWarp = state.inventory.some(item => item.id === INVENTORY_ITEMS.TIME_WARP.id);
+    const hasAutoTap = state.inventory.some(item => item.id === INVENTORY_ITEMS.AUTO_TAP.id);
+    
+    if (!hasDoubleCoins) {
+      addItem(createInventoryItem(INVENTORY_ITEMS.DOUBLE_COINS, 3));
+    }
+    
+    if (!hasTimeWarp) {
+      addItem(createInventoryItem(INVENTORY_ITEMS.TIME_WARP, 2));
+    }
+    
+    if (!hasAutoTap) {
+      addItem(createInventoryItem(INVENTORY_ITEMS.AUTO_TAP, 5));
+    }
+  }, []);
+  
   // Create virtual inventory with resource items
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
-      { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins) },
-      { ...INVENTORY_ITEMS.GEMS, quantity: state.gems },
-      { ...INVENTORY_ITEMS.ESSENCE, quantity: state.essence },
-      { ...INVENTORY_ITEMS.SKILL_POINTS, quantity: state.skillPoints },
+      {
+        ...INVENTORY_ITEMS.COINS,
+        quantity: Math.floor(state.coins)
+      },
+      {
+        ...INVENTORY_ITEMS.GEMS,
+        quantity: state.gems // Updated to use state.gems
+      },
+      {
+        ...INVENTORY_ITEMS.ESSENCE,
+        quantity: state.essence
+      },
+      {
+        ...INVENTORY_ITEMS.SKILL_POINTS,
+        quantity: state.skillPoints
+      }
     ];
-    setVirtualInventory([...resourceItems, ...state.inventory]);
-  }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
-
+    
+    // Combine resource items with actual inventory items
+    const combinedInventory = [...resourceItems, ...state.inventory];
+    setVirtualInventory(combinedInventory);
+  }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]); // Added state.gems to dependency array
+  
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
       setSelectedItem(item);
     }
   };
-
+  
   const handleUseConfirm = (item: InventoryItem, quantity: number) => {
-    if (!item.usable) return;
-
-    const newNotifications = [];
-    for (let i = 0; i < quantity; i++) {
-      switch (item.id) {
-        case 'boost-double-coins':
-          activateBoost(item.id, 900, 2); // 15 min, x2 multiplier
-          useItem(item.id);
-          break;
-        case 'boost-time-warp':
-          activateBoost(item.id, undefined, undefined, 7200); // Instant 120 min passive
-          useItem(item.id);
-          break;
-        case 'boost-auto-tap':
-          activateBoost(item.id, 300, 5); // 5 min, 5 taps/sec
-          useItem(item.id);
-          break;
-        case 'boost-tap-boost':
-          activateBoost(item.id, 300, 3); // 5 min, x3 multiplier
-          useItem(item.id);
-          break;
-        case 'boost-cheap-upgrades':
-          activateBoost(item.id, 600, 0.9); // 10 min, 10% reduction
-          useItem(item.id);
-          break;
-        case 'boost-essence-boost':
-          activateBoost(item.id); // Persistent until prestige
-          useItem(item.id);
-          break;
-        case 'boost-perma-tap':
-          activateBoost(item.id, undefined, undefined, 1); // Permanent +1 tap power
-          useItem(item.id);
-          break;
-        case 'boost-perma-passive':
-          activateBoost(item.id, undefined, undefined, 1); // Permanent +1 passive income
-          useItem(item.id);
-          break;
-        default:
-          useItem(item.id); // Fallback for non-boost items
+    if (item.usable) {
+      for (let i = 0; i < quantity; i++) {
+        useItem(item.id);
       }
-      const latestBoost = state.activeBoosts[state.activeBoosts.length - 1];
-      if (latestBoost) newNotifications.push(latestBoost);
+      setSelectedItem(null);
     }
-    setNotifications([...notifications, ...newNotifications]);
-    setSelectedItem(null);
   };
-
-  const dismissNotification = (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
-  };
-
+  
   // Filter and search logic
   const filteredItems = virtualInventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || item.type === filterType;
+    
     return matchesSearch && matchesFilter;
   });
-
-  const inventoryCapacity = state.inventoryCapacity || 25;
+  
+  const inventoryCapacity = state.inventoryCapacity || 100;
   const inventoryUsed = state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0);
-
+  
+  // Create a grid of 5x5 = 25 slots
   const renderInventoryGrid = () => {
     const slots = [];
-    const baseSlots = 25;
-    const expansionsPurchased = state.boosts['boost-inventory-expansion']?.purchased || 0;
-    const totalSlots = baseSlots + expansionsPurchased * 5;
+    const totalSlots = 25;
     
     for (let i = 0; i < totalSlots; i++) {
       if (i < filteredItems.length) {
         slots.push(
           <div key={i} className="aspect-square">
-            <ItemSlot item={filteredItems[i]} onItemClick={handleUseItem} />
+            <ItemSlot
+              item={filteredItems[i]}
+              onItemClick={handleUseItem}
+            />
           </div>
         );
       } else {
         slots.push(
           <div key={i} className="aspect-square">
-            <ItemSlot isEmpty={true} onItemClick={() => {}} />
+            <ItemSlot
+              isEmpty={true}
+              onItemClick={() => {}}
+            />
           </div>
         );
       }
     }
-    return <div className="grid grid-cols-5 gap-3">{slots}</div>;
+    
+    return slots;
   };
-
+  
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -354,12 +286,16 @@ const Inventory: React.FC = () => {
       
       <ScrollArea className="h-[50vh] p-4">
         {filteredItems.length > 0 ? (
-          renderInventoryGrid()
+          <div className="grid grid-cols-5 gap-3">
+            {renderInventoryGrid()}
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-40 text-slate-400">
             <Package size={40} className="mb-2 opacity-50" />
             <p className="text-center">
-              {searchTerm || filterType !== 'all' ? "No matching items found" : "Your inventory is empty"}
+              {searchTerm || filterType !== 'all' 
+                ? "No matching items found" 
+                : "Your inventory is empty"}
             </p>
           </div>
         )}
@@ -378,13 +314,6 @@ const Inventory: React.FC = () => {
           onClose={() => setSelectedItem(null)}
         />
       )}
-      
-      {/* Notification Area */}
-      <div className="fixed bottom-4 right-4 flex flex-col items-end space-y-2">
-        {notifications.map(boost => (
-          <BoostNotification key={boost.id + (boost.activatedAt || Math.random())} boost={boost} onDismiss={dismissNotification} />
-        ))}
-      </div>
     </>
   );
 };
