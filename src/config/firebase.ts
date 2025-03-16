@@ -1,18 +1,30 @@
 
-// Firebase configuration
-// Replace these placeholder values with your actual Firebase project configuration
-export const firebaseConfig = {
-  apiKey: "AIzaSyCCkSGmRG61sFiNaYaNy4Wcls7EYPfqZZY",
-  authDomain: "cosmic-miner.firebaseapp.com",
-  projectId: "cosmic-miner",
-  storageBucket: "cosmic-miner.firebasestorage.app",
-  messagingSenderId: "541782087850",
-  appId: "1:541782087850:web:30107e6e600d31488058d3",
-  measurementId: "G-4CGEFHDVKP"
+// This is a stub file to prevent import errors.
+// In a real application, this would contain Firebase configuration.
+
+export const auth = {
+  onAuthStateChanged: (callback: (user: any) => void) => {
+    // Mock implementation
+    callback(null);
+    return () => {}; // Unsubscribe function
+  },
+  signOut: async () => {
+    console.log("Mock sign out");
+    return Promise.resolve();
+  }
 };
 
-
-// IMPORTANT: Replace the values above with your actual Firebase project details.
-// These can be found in your Firebase project settings in the Firebase console.
-
-
+export const db = {
+  collection: (path: string) => ({
+    doc: (id: string) => ({
+      get: async () => ({
+        exists: false,
+        data: () => null
+      }),
+      set: async (data: any) => {
+        console.log(`Mock set data to ${path}/${id}:`, data);
+        return Promise.resolve();
+      }
+    })
+  })
+};
