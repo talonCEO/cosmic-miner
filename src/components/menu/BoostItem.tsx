@@ -1,13 +1,18 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { BoostItem as BoostItemType } from './types/premiumStore';
 import { useToast } from '@/components/ui/use-toast';
 import { useGame } from '@/context/GameContext';
+import { InventoryItem } from './types';
 
 interface BoostItemProps {
-  item: BoostItemType & { purchased: number; maxPurchases: number }; // Updated to use number for purchased
+  item: InventoryItem & { 
+    purchased: number; 
+    maxPurchases: number;
+    purchasable: boolean;
+  };
   onPurchase: (itemId: string) => void;
-  showUnlockAnimation: (item: BoostItemType) => void;
+  showUnlockAnimation: (item: InventoryItem) => void;
 }
 
 const BoostItem: React.FC<BoostItemProps> = ({ 
@@ -33,7 +38,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
     if (!canAfford) {
       toast({
         title: "Insufficient Gems",
-        description: "You don’t have enough gems to buy this item.",
+        description: "You don't have enough gems to buy this item.",
         variant: "destructive",
       });
       return;
@@ -42,7 +47,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
     if (isMaxed) {
       toast({
         title: "Max Purchases Reached",
-        description: "You’ve purchased the maximum amount of this item.",
+        description: "You've purchased the maximum amount of this item.",
         variant: "destructive",
       });
       return;
@@ -53,7 +58,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
     showUnlockAnimation(item);
   };
 
-  const isPermanentAndPurchased = item.isPermanent && item.purchased > 0;
+  const isPermanentAndPurchased = item.effect?.duration === undefined && item.purchased > 0;
 
   return (
     <div 
@@ -73,7 +78,12 @@ const BoostItem: React.FC<BoostItemProps> = ({
         </div>
       </div>
       
-      <p className="text-xs font-semibold text-green-400 mb-2 line-clamp-2">{item.effect}</p>
+      <p className="text-xs font-semibold text-green-400 mb-2 line-clamp-2">
+        {item.effect ? 
+          `${item.effect.type}: ${item.effect.value}${item.effect.duration ? ` (${item.effect.duration}s)` : ''}` : 
+          'No effect information'
+        }
+      </p>
       
       <div className="flex flex-col mt-auto">
         <div className="flex items-center gap-1 mb-2">
