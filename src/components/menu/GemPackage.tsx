@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface GemPackageProps {
@@ -7,7 +8,7 @@ interface GemPackageProps {
     amount: number;
     price: string;
     description: string;
-    image: string; // Added image field
+    image: string; // Image path as string
   };
   onPurchase: () => void;
 }
@@ -21,7 +22,7 @@ const GemPackage: React.FC<GemPackageProps> = ({ pack, onPurchase }) => {
       <img
         src={pack.image}
         alt={pack.name}
-        className="w-16 h-16 mb-2 object-contain" // Adjust size as needed (e.g., match 60x60 from TechTree.tsx)
+        className="w-16 h-16 mb-2 object-contain" 
       />
       <h3 className="text-sm font-medium text-amber-200 mb-1">{pack.name}</h3>
       <div className="text-yellow-400 font-semibold mb-1">{pack.amount} Gems</div>

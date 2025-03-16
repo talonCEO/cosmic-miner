@@ -117,7 +117,7 @@ export const handleLevelUp = async (
 };
 
 // Define the rewards interface
-interface LevelRewards {
+interface LevelReward {
   coins?: number;
   essence?: number;
   skillPoints?: number;

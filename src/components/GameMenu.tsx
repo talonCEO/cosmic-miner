@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -6,7 +5,8 @@ import {
 } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { MenuType } from './menu/types';
-import { BoostItem as BoostItemType, initialBoostItems } from './menu/types/premiumStore';
+import { BoostItemType } from './menu/BoostItem';
+import { initialBoostItems } from './menu/types/premiumStore';
 import MenuButton from './menu/MenuButton';
 import MainMenu from './menu/MainMenu';
 import Achievements from './menu/Achievements';
@@ -28,10 +28,7 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   const [playerGems, setPlayerGems] = useState<number>(500); // Start with 500 gems for testing
   const [boostItems, setBoostItems] = useState<BoostItemType[]>([]);
   
-  // Initialize boost items with icons on component mount
   useEffect(() => {
-    // We'll initialize the boost items here
-    // In a real implementation, this would load from persistent storage
     if (boostItems.length === 0) {
       setBoostItems(initialBoostItems);
     }
@@ -39,7 +36,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // Reset to main menu when dialog is closed externally
       setActiveMenuType("none");
     }
   };
@@ -66,33 +62,23 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     buyArtifact(artifactId);
   };
   
-  // Handle buying gem packages via Google Play
   const handleBuyGemPackage = async (packageId: string, amount: number) => {
     try {
-      // In a real implementation with Capacitor, this would use a plugin like
-      // @capacitor/google-play-billing or similar to initiate a purchase
-      
-      // For now, simulate a successful purchase
       console.log(`Initiating Google Play purchase for package: ${packageId}`);
-      
-      // After successful purchase, update the gems
       setPlayerGems(prev => prev + amount);
     } catch (error) {
       console.error('Purchase failed:', error);
     }
   };
 
-  // Handle buying boost items
   const handleBuyBoostItem = (itemId: string) => {
     const item = boostItems.find(item => item.id === itemId);
     if (!item || !item.purchasable) return;
     
-    // Check if player has enough gems
     if (playerGems < item.cost) {
       return;
     }
     
-    // For the "No Ads" item, mark it as permanently purchased
     if (item.id === 'boost_no_ads') {
       setBoostItems(items => 
         items.map(i => 
@@ -102,7 +88,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
         )
       );
     } else {
-      // For other items, mark as purchased and set refresh time
       const refreshTime = Date.now() + (8 * 60 * 60 * 1000);
       
       setBoostItems(items => 
@@ -114,16 +99,11 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
       );
     }
     
-    // Deduct gems
     setPlayerGems(prev => prev - item.cost);
-    
-    // Apply the boost effect (in a real implementation)
-    // This would modify game state based on the item's effect
   };
   
   const potentialEssenceReward = calculatePotentialEssenceReward();
   
-  // Handler for menu type changes from subcomponents
   const handleMenuChange = (menuType: MenuType) => {
     setActiveMenuType(menuType);
   };
