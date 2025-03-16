@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { BoostItemType } from '@/components/menu/BoostItem';
 
 // PNG imports for gem packages
 import Gems1 from '@/assets/images/icons/gems1.png';
@@ -20,18 +21,11 @@ export interface GemPackage {
   image: string; // Added image field for PNGs
 }
 
-export interface BoostItem {
-  id: string;
-  name: string;
-  description: string;
-  effect: string;
-  cost: number;
-  icon: ReactNode;
-  purchasable: boolean;
-  purchased: boolean;
-  refreshTime?: number;
-  isPermanent?: boolean;
-  imageSrc?: string;
+export interface PremiumStoreProps {
+  playerGems?: number;
+  boostItems?: BoostItemType[];
+  onBuyGemPackage: (packageId: string, amount: number) => void;
+  onBuyBoostItem?: (itemId: string) => void;
 }
 
 export const gemPackages: GemPackage[] = [
@@ -85,8 +79,8 @@ export const gemPackages: GemPackage[] = [
   },
 ];
 
-// Initial boost items (unchanged)
-export const initialBoostItems = [
+// Initial boost items (base structure)
+export const initialBoostItems: BoostItemType[] = [
   {
     id: "boost_no_ads",
     name: "No Ads",
@@ -95,8 +89,9 @@ export const initialBoostItems = [
     cost: 250,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: 0,
     isPermanent: true,
+    maxPurchases: 1,
   },
   {
     id: "boost_quantum_accelerator",

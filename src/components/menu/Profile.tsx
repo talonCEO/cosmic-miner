@@ -17,7 +17,7 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state } = useGame();
-  const { profile, loading, updateUsername, updateTitle } = useFirebase();
+  const { profile, loading } = useFirebase();
   const [localProfile, setLocalProfile] = useState<any>(null);
   
   // Initialize local profile from localStorage or create new one
@@ -37,7 +37,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
         level: currentLevel.level,
         exp: exp,
         coins: state.coins,
-        essence: state.essence,
+        essence: state.essence || 0,
         skillPoints: state.skillPoints || 0,
         totalCoins: state.totalEarned || 0,
         title: "space_pilot",
@@ -77,7 +77,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
       
       // Also update Firebase if available
       if (profile) {
-        updateUsername(newName);
+        // Firebase update code would go here if we were using it
       }
     }
   };
@@ -91,7 +91,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
       
       // Also update Firebase if available
       if (profile) {
-        updateTitle(titleId);
+        // Firebase update code would go here if we were using it
       }
     }
   };
@@ -110,7 +110,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const exp = localProfile.exp || state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
   
-  // Fallback player data (used if Firebase profile not loaded)
+  // Player data from local storage
   const playerData = {
     name: localProfile.username || "Cosmic Explorer",
     title: localProfile.title || "space_pilot", // Default title ID
@@ -118,8 +118,8 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     exp: exp,
     maxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: 500, // Mock value, would come from state in real implementation
-    essence: state.essence,
+    gems: state.gems || 0, // Use game state for gems
+    essence: state.essence || 0,
     userId: localProfile.userId
   };
   
@@ -136,6 +136,13 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
       setMenuType('leaderboard');
     }
   };
+  
+  // Mock friends data
+  const friendsData = [
+    { id: '1', name: 'CosmicMiner42', level: 27, online: true },
+    { id: '2', name: 'StardustCollector', level: 19, online: false },
+    { id: '3', name: 'GalacticDriller', level: 31, online: true }
+  ];
   
   return (
     <>
@@ -178,7 +185,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
         </div>
         
         {/* Friends list component */}
-        <PlayerFriends />
+        <PlayerFriends friends={friendsData} />
       </div>
       
       <div className="p-4 mt-auto border-t border-indigo-500/20">

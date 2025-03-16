@@ -1,11 +1,25 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { BoostItem as BoostItemType } from './types/premiumStore';
 import { useToast } from '@/components/ui/use-toast';
 import { useGame } from '@/context/GameContext';
 
+// Updated interfaces to resolve type errors
+export interface BoostItemType {
+  id: string;
+  name: string;
+  description: string;
+  effect: string;
+  cost: number;
+  icon: React.ReactNode;
+  purchasable: boolean;
+  purchased: number;
+  isPermanent?: boolean;
+  maxPurchases: number;
+}
+
 interface BoostItemProps {
-  item: BoostItemType & { purchased: number; maxPurchases: number }; // Updated to use number for purchased
+  item: BoostItemType;
   onPurchase: (itemId: string) => void;
   showUnlockAnimation: (item: BoostItemType) => void;
 }
@@ -33,7 +47,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
     if (!canAfford) {
       toast({
         title: "Insufficient Gems",
-        description: "You don’t have enough gems to buy this item.",
+        description: "You don't have enough gems to buy this item.",
         variant: "destructive",
       });
       return;
@@ -42,7 +56,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
     if (isMaxed) {
       toast({
         title: "Max Purchases Reached",
-        description: "You’ve purchased the maximum amount of this item.",
+        description: "You've purchased the maximum amount of this item.",
         variant: "destructive",
       });
       return;

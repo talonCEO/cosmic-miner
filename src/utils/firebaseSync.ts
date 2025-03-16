@@ -1,4 +1,3 @@
-
 import { getFirestore, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { GameState } from '@/context/GameContext';
 import { UserProfile } from '@/context/FirebaseContext';
@@ -6,7 +5,7 @@ import { getLevelFromExp } from '@/data/playerProgressionData';
 import { StorageService } from '@/services/StorageService';
 
 /**
- * Sync important game metrics with local storage instead of Firebase
+ * Sync important game metrics with local storage
  */
 export const syncGameProgress = async (
   uid: string, 
@@ -26,7 +25,7 @@ export const syncGameProgress = async (
       level: currentLevel.level,
       exp: exp,
       coins: gameState.coins,
-      essence: gameState.essence,
+      essence: gameState.essence || 0,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,
       title: localStorage.getItem('player_title') || "space_pilot",

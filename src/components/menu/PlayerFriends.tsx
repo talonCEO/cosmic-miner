@@ -4,8 +4,15 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from 'lucide-react';
 
+interface Friend {
+  id: string;
+  name: string;
+  level: number;
+  online: boolean;
+}
+
 interface PlayerFriendsProps {
-  friends?: any[];
+  friends?: Friend[];
 }
 
 const PlayerFriends: React.FC<PlayerFriendsProps> = ({ friends = [] }) => {
