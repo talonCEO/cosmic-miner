@@ -157,7 +157,7 @@ const Inventory: React.FC = () => {
     if (!hasAutoTap) {
       addItem(createInventoryItem(INVENTORY_ITEMS.AUTO_TAP, 5));
     }
-  }, []);
+  }, [addItem, state.inventory]); // Adjusted dependencies
   
   // Create virtual inventory with resource items
   useEffect(() => {
@@ -168,7 +168,7 @@ const Inventory: React.FC = () => {
       },
       {
         ...INVENTORY_ITEMS.GEMS,
-        quantity: state.gems // Updated to use state.gems
+        quantity: state.gems
       },
       {
         ...INVENTORY_ITEMS.ESSENCE,
@@ -183,7 +183,7 @@ const Inventory: React.FC = () => {
     // Combine resource items with actual inventory items
     const combinedInventory = [...resourceItems, ...state.inventory];
     setVirtualInventory(combinedInventory);
-  }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]); // Added state.gems to dependency array
+  }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
   
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
@@ -209,13 +209,17 @@ const Inventory: React.FC = () => {
     return matchesSearch && matchesFilter;
   });
   
-  const inventoryCapacity = state.inventoryCapacity || 100;
+  const inventoryCapacity = state.inventoryCapacity || 25; // Default to 25 if undefined
   const inventoryUsed = state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0);
   
-  // Create a grid of 5x5 = 25 slots
+  // Dynamic grid rendering based on inventory capacity
   const renderInventoryGrid = () => {
     const slots = [];
-    const totalSlots = 25;
+    const baseSlots = 25; // Starting capacity
+    const expansionsPurchased = state.boosts['boost-inventory-expansion']?.purchased || 0;
+    const totalSlots = baseSlots + expansionsPurchased * 5; // Add 5 slots per purchase
+    const columns = 5; // Fixed 5 columns
+    const rows = Math.ceil(totalSlots / columns); // Calculate rows dynamically
     
     for (let i = 0; i < totalSlots; i++) {
       if (i < filteredItems.length) {
@@ -239,7 +243,11 @@ const Inventory: React.FC = () => {
       }
     }
     
-    return slots;
+    return (
+      <div className="grid grid-cols-5 gap-3">
+        {slots}
+      </div>
+    );
   };
   
   return (
@@ -286,9 +294,7 @@ const Inventory: React.FC = () => {
       
       <ScrollArea className="h-[50vh] p-4">
         {filteredItems.length > 0 ? (
-          <div className="grid grid-cols-5 gap-3">
-            {renderInventoryGrid()}
-          </div>
+          renderInventoryGrid()
         ) : (
           <div className="flex flex-col items-center justify-center h-40 text-slate-400">
             <Package size={40} className="mb-2 opacity-50" />
