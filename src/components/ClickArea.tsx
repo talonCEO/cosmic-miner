@@ -1,9 +1,11 @@
+
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
 import { useBoostManager } from '@/hooks/useBoostManager';
+import { Flame } from 'lucide-react';
 
 // Particle effect when clicking
 interface ParticleProps {
@@ -60,7 +62,7 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 };
 
 const ClickArea: React.FC = () => {
-  const { state, click } = useGame();
+  const { state, increment } = useGame();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -109,7 +111,7 @@ const ClickArea: React.FC = () => {
     
     setParticles(prev => [...prev, ...newParticles]);
     
-    click();
+    increment();
     
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150);

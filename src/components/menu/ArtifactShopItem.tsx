@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import FlameIcon from '@/assets/images/icons/flame.png';
+import { Flame } from 'lucide-react';
 
 interface ArtifactShopItemProps {
   id: string;
@@ -76,7 +77,7 @@ const ArtifactShopItem: React.FC<ArtifactShopItemProps> = ({
           disabled={!canAfford}
         >
           <span className="flex items-center justify-center gap-1">
-            {icon || <img src={FlameIcon} alt="Flame" className="w-3 h-3" />}
+            {icon || <Flame size={14} className="text-amber-300" />}
             <span>{cost}</span>
           </span>
         </button>

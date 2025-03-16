@@ -48,5 +48,13 @@ export const StorageService = {
       console.error(`Error getting data for key ${key}:`, error);
       return null;
     }
+  },
+  
+  removeData: async (key: string): Promise<void> => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Error removing data for key ${key}:`, error);
+    }
   }
 };
