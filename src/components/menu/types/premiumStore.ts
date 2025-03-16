@@ -1,15 +1,5 @@
-import { ReactNode } from 'react';
 
-// PNG imports for gem packages
-import Gems1 from '@/assets/images/icons/gems1.png';
-import Gems2 from '@/assets/images/icons/gems2.png';
-import Gems3 from '@/assets/images/icons/gems3.png';
-import Gems4 from '@/assets/images/icons/gems4.png';
-import Gems5 from '@/assets/images/icons/gems5.png';
-import Gems6 from '@/assets/images/icons/gems6.png';
-// Gems7 and Gems8 are unused unless you add more packages
-import Gems7 from '@/assets/images/icons/gems7.png';
-import Gems8 from '@/assets/images/icons/gems8.png';
+import { ReactNode } from 'react';
 
 export interface GemPackage {
   id: string;
@@ -17,7 +7,6 @@ export interface GemPackage {
   amount: number;
   price: string;
   description: string;
-  image: string; // Added image field for PNGs
 }
 
 export interface BoostItem {
@@ -29,9 +18,9 @@ export interface BoostItem {
   icon: ReactNode;
   purchasable: boolean;
   purchased: boolean;
-  refreshTime?: number;
-  isPermanent?: boolean;
-  imageSrc?: string;
+  refreshTime?: number; // Timestamp when this item will refresh
+  isPermanent?: boolean; // If true, this item can only be purchased once and is permanently enabled
+  imageSrc?: string; // Optional image source for the boost
 }
 
 export const gemPackages: GemPackage[] = [
@@ -40,52 +29,46 @@ export const gemPackages: GemPackage[] = [
     name: "Asteroid Gems",
     amount: 100,
     price: "$0.99",
-    description: "A small pouch of precious space gems",
-    image: Gems1,
+    description: "A small pouch of precious space gems"
   },
   {
     id: "gems_medium",
     name: "Nebula Cache",
     amount: 550,
     price: "$4.99",
-    description: "A glowing collection of rare gems",
-    image: Gems2,
+    description: "A glowing collection of rare gems"
   },
   {
     id: "gems_large",
     name: "Galactic Hoard",
     amount: 1200,
     price: "$9.99",
-    description: "An impressive chest of premium gems",
-    image: Gems3,
+    description: "An impressive chest of premium gems"
   },
   {
     id: "gems_huge",
     name: "Cosmic Treasure",
     amount: 2500,
     price: "$19.99",
-    description: "A massive collection of exotic gems",
-    image: Gems4,
+    description: "A massive collection of exotic gems"
   },
   {
     id: "gems_mega",
     name: "Solar Fortune",
     amount: 6500,
     price: "$49.99",
-    description: "An extraordinary wealth of precious gems",
-    image: Gems5,
+    description: "An extraordinary wealth of precious gems"
   },
   {
     id: "gems_ultra",
     name: "Universal Vault",
     amount: 15000,
     price: "$99.99",
-    description: "The ultimate gem collection for space moguls",
-    image: Gems6,
-  },
+    description: "The ultimate gem collection for space moguls"
+  }
 ];
 
-// Initial boost items (unchanged)
+// Initial boost items with default values (not purchased, refreshable)
 export const initialBoostItems = [
   {
     id: "boost_no_ads",
@@ -93,10 +76,10 @@ export const initialBoostItems = [
     description: "Permanently removes all ads from the game",
     effect: "Never see ads again!",
     cost: 250,
-    icon: null,
+    icon: null, // Will be set in PremiumStore component
     purchasable: true,
     purchased: false,
-    isPermanent: true,
+    isPermanent: true
   },
   {
     id: "boost_quantum_accelerator",
@@ -104,9 +87,9 @@ export const initialBoostItems = [
     description: "Accelerates mining operations by manipulating quantum fields",
     effect: "2x tap income for 4 hours",
     cost: 50,
-    icon: null,
+    icon: null, // Will be set in PremiumStore component
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_nebula_enhancer",
@@ -116,7 +99,7 @@ export const initialBoostItems = [
     cost: 75,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_cosmic_catalyst",
@@ -126,7 +109,7 @@ export const initialBoostItems = [
     cost: 100,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_void_extractor",
@@ -136,7 +119,7 @@ export const initialBoostItems = [
     cost: 125,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_supernova_surge",
@@ -146,7 +129,7 @@ export const initialBoostItems = [
     cost: 150,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_galactic_magnet",
@@ -156,7 +139,7 @@ export const initialBoostItems = [
     cost: 175,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_temporal_distortion",
@@ -166,7 +149,7 @@ export const initialBoostItems = [
     cost: 200,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_stellar_fusion",
@@ -176,7 +159,7 @@ export const initialBoostItems = [
     cost: 150,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_dark_matter_infusion",
@@ -186,7 +169,7 @@ export const initialBoostItems = [
     cost: 180,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_asteroid_locator",
@@ -196,7 +179,7 @@ export const initialBoostItems = [
     cost: 160,
     icon: null,
     purchasable: true,
-    purchased: false,
+    purchased: false
   },
   {
     id: "boost_wormhole_generator",
@@ -206,6 +189,6 @@ export const initialBoostItems = [
     cost: 220,
     icon: null,
     purchasable: true,
-    purchased: false,
-  },
+    purchased: false
+  }
 ];

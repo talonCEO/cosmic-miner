@@ -1,6 +1,23 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import FlameIcon from '@/assets/images/icons/flame.png';
+import { 
+  Flame,
+  Key,
+  Lock,
+  Moon,
+  Sun,
+  Cloud,
+  Droplet,
+  Leaf,
+  Snowflake,
+  Wind,
+  Anchor,
+  Bell,
+  Camera,
+  Compass,
+  Feather,
+  Globe,
+} from 'lucide-react';
 
 interface ArtifactShopItemProps {
   id: string;
@@ -76,7 +93,7 @@ const ArtifactShopItem: React.FC<ArtifactShopItemProps> = ({
           disabled={!canAfford}
         >
           <span className="flex items-center justify-center gap-1">
-            {icon || <img src={FlameIcon} alt="Flame" className="w-3 h-3" />}
+            {icon || <Flame size={12} className="text-white" />}
             <span>{cost}</span>
           </span>
         </button>
@@ -87,6 +104,30 @@ const ArtifactShopItem: React.FC<ArtifactShopItemProps> = ({
 
 // Example parent wrapper for ArtifactShopItem
 const ArtifactShopExample: React.FC = () => {
+  const artifactIcons = [
+    <Flame size={12} className="text-orange-400" />,
+    <Key size={12} className="text-yellow-500" />,
+    <Lock size={12} className="text-gray-400" />,
+    <Moon size={12} className="text-indigo-400" />,
+    <Sun size={12} className="text-yellow-300" />,
+    <Cloud size={12} className="text-blue-300" />,
+    <Droplet size={12} className="text-cyan-400" />,
+    <Leaf size={12} className="text-green-400" />,
+    <Snowflake size={12} className="text-blue-500" />,
+    <Wind size={12} className="text-teal-300" />,
+    <Anchor size={12} className="text-gray-500" />,
+    <Bell size={12} className="text-amber-400" />,
+    <Camera size={12} className="text-purple-400" />,
+    <Compass size={12} className="text-red-400" />,
+    <Feather size={12} className="text-pink-300" />,
+    <Globe size={12} className="text-green-500" />,
+  ];
+
+  const artifactIconMap = new Map<string, React.ReactNode>();
+  artifacts.forEach((artifact, index) => {
+    artifactIconMap.set(artifact.id, artifactIcons[index % artifactIcons.length]);
+  });
+
   const isOwned = (id: string) => false;
   const canAfford = (cost: number) => true;
   const handleBuy = (id: string) => console.log(`Buying ${id}`);
@@ -106,6 +147,7 @@ const ArtifactShopExample: React.FC = () => {
           canAfford={canAfford(artifact.cost)}
           onBuy={() => handleBuy(artifact.id)}
           additionalInfo={artifact.additionalInfo}
+          icon={artifactIconMap.get(artifact.id)}
         />
       ))}
     </div>
@@ -113,3 +155,4 @@ const ArtifactShopExample: React.FC = () => {
 };
 
 export default ArtifactShopItem;
+// Export ArtifactShopExample separately if needed

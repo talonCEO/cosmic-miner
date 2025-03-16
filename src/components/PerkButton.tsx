@@ -1,15 +1,29 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
+import { 
+  Gem, 
+  TrendingUp, 
+  Zap, 
+  Sparkles, 
+  Trophy, 
+  Battery, 
+  ShieldCheck,
+  Settings, 
+  Users, 
+  BarChart, 
+  Clock,
+  Lightbulb,
+  Brain,
+  Diamond,
+  Lock
+} from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Lock } from 'lucide-react'; // Added Lock import from lucide-react
-import Perk1Icon from '@/assets/images/icons/perk1.png';
-import Perk2Icon from '@/assets/images/icons/perk2.png';
-import Perk3Icon from '@/assets/images/icons/perk3.png';
+} from "@/components/ui/tooltip"
 
 interface PerkProps {
   perk: {
@@ -44,16 +58,27 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
   
   const getPerkIcon = () => {
     if (icon) return icon;
-    switch (perk.cost) {
-      case 3:
-        return <img src={Perk1Icon} alt="Perk 1" className="w-4 h-4" />;
-      case 6:
-        return <img src={Perk2Icon} alt="Perk 2" className="w-4 h-4" />;
-      case 12:
-        return <img src={Perk3Icon} alt="Perk 3" className="w-4 h-4" />;
-      default:
-        return <img src={Perk1Icon} alt="Default Perk" className="w-4 h-4" />; // Fallback
-    }
+    
+    const categoryIcons: Record<string, React.ReactNode> = {
+      'production': <TrendingUp size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />,
+      'power': <Zap size={16} className="text-yellow-400" />,
+      'bonus': <Sparkles size={16} className="text-amber-400" />,
+      'collection': <Trophy size={16} className="text-green-400" />,
+      'energy': <Battery size={16} className="text-blue-400" />,
+      'protection': <ShieldCheck size={16} className="text-red-400" />,
+      'efficiency': <Settings size={16} className="text-cyan-400" />,
+      'management': <Users size={16} className="text-green-400" />,
+      'cost': <Gem size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />,
+      'optimization': <BarChart size={16} className="text-blue-400" />,
+      'time': <Clock size={16} className="text-amber-400" />
+    };
+    
+    if (perk.id.includes('quantum')) return <Brain size={16} className="text-blue-400" />;
+    if (perk.id.includes('crystal')) return <Diamond size={16} className="text-purple-400" />;
+    if (perk.id.includes('acceleration')) return <Zap size={16} className="text-yellow-400" />;
+    if (perk.id.includes('catalyst')) return <Lightbulb size={16} className="text-yellow-400" />;
+    
+    return categoryIcons[perk.category || 'bonus'] || <Gem size={16} className={isManagerPerk ? "text-indigo-400" : "text-purple-400"} />;
   };
   
   useEffect(() => {
@@ -96,7 +121,7 @@ const PerkButton: React.FC<PerkProps> = ({ perk, parentId, onUnlock, disabled = 
             {perkIcon}
             {!isUnlocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-                <Lock className="w-3.5 h-3.5 text-gray-400" /> {/* Reverted to lucide-react Lock */}
+                <Lock size={14} className="text-slate-300 opacity-90" />
               </div>
             )}
           </button>
