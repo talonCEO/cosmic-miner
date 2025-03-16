@@ -10,7 +10,6 @@ import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
-// GameContext.tsx (partial)
 import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
 import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
 import NeuralMiningIcon from '@/assets/images/icons/neural-mining.png';
@@ -25,7 +24,6 @@ import SupernovaCoreIcon from '@/assets/images/icons/supernova-core.png';
 import QuantumTunnelIcon from '@/assets/images/icons/quantum-tunnel.png';
 import CosmicSingularityIcon from '@/assets/images/icons/cosmic-singularity.png';
 
-// Achievement interface
 export interface Achievement {
   id: string;
   name: string;
@@ -34,7 +32,6 @@ export interface Achievement {
   checkCondition: (state: GameState) => boolean;
 }
 
-// Ability interface
 export interface Ability {
   id: string;
   name: string;
@@ -47,7 +44,6 @@ export interface Ability {
   column: number;
 }
 
-// Game state interface
 export interface GameState {
   coins: number;
   coinsPerClick: number;
@@ -81,7 +77,6 @@ export interface GameState {
   hasNoAds: boolean;
 }
 
-// Upgrade interface
 export interface Upgrade {
   id: string;
   name: string;
@@ -102,7 +97,6 @@ export interface Upgrade {
   category: string;
 }
 
-// Action types
 type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_COINS'; amount: number }
@@ -133,7 +127,6 @@ type GameAction =
   | { type: 'ADD_GEMS'; amount: number }
   | { type: 'ACTIVATE_BOOST'; boostId: string };
 
-// Updated upgrades with increased cost (50% more) and maxLevel
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
   maxLevel: 1000,
@@ -288,10 +281,8 @@ const initialAbilities: Ability[] = [
   }
 ];
 
-// Fixed growth rate for upgrade costs
-const UPGRADE_COST_GROWTH = 1.15; // 15% increase per level
+const UPGRADE_COST_GROWTH = 1.15;
 
-// Updated initial values with starting coins at 0 and coinsPerClick at 1
 const initialState: GameState = {
   coins: 0,
   coinsPerClick: 1,
@@ -322,13 +313,12 @@ const initialState: GameState = {
   hasNoAds: false,
 };
 
-// Game reducer with updated mechanics
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
       let totalClickAmount = GameMechanics.calculateTapValue(state);
       if (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses) {
-        totalClickAmount *= INVENTORY_ITEMS.TAP_BOOST.effect!.value; // 5x tap power
+        totalClickAmount *= INVENTORY_ITEMS.TAP_BOOST.effect!.value;
         state.boosts["boost-tap-boost"].remainingUses -= 1;
         if (state.boosts["boost-tap-boost"].remainingUses <= 0) {
           state.boosts["boost-tap-boost"].active = false;
@@ -383,7 +373,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         UPGRADE_COST_GROWTH
       ) * costReduction);
       if (state.boosts["boost-cheap-upgrades"]?.active) {
-        totalCost *= INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value; // 0.9 = 10% reduction
+        totalCost *= INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value;
       }
       
       if (state.coins < totalCost) return state;
@@ -456,7 +446,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const newBoosts = { ...state.boosts };
       Object.keys(newBoosts).forEach(boostId => {
         if (newBoosts[boostId].remainingTime) {
-          newBoosts[boostId].remainingTime -= 0.1; // 100ms tick
+          newBoosts[boostId].remainingTime -= 0.1;
           if (newBoosts[boostId].remainingTime <= 0) {
             newBoosts[boostId].active = false;
           }
@@ -477,7 +467,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (newState.autoTap) {
         const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
         const autoTapBoost = newBoosts["boost-auto-tap"]?.active 
-          ? calculateBaseCoinsPerClick(state) * INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1 // 5 taps/sec
+          ? calculateBaseCoinsPerClick(state) * INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1
           : 0;
         const autoTapAmount = autoTapBase + autoTapBoost;
 
@@ -943,7 +933,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   }
 };
 
-// Helper functions for boost effects
 const calculateIncomeMultiplier = (state: GameState) => {
   let multiplier = state.incomeMultiplier;
   if (state.boosts["boost-double-coins"]?.active) {
