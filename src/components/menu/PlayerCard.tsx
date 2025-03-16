@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react'; // Added Gem icon
+import { Edit2, Check, Lock, Gift, Gem, ArrowUp } from 'lucide-react'; // Added ArrowUp icon for level up animation
 import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 
@@ -36,13 +37,48 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
   const [nameChangeCount, setNameChangeCount] = useState(0);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [animProgress, setAnimProgress] = useState(0);
+  const [prevExp, setPrevExp] = useState(playerExp);
   
+  // Get real-time level data from the current experience
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
   
+  // Set title display
   useEffect(() => {
     const title = getTitleById(playerTitle);
     setTitleDisplay(title ? title.name : playerTitle);
   }, [playerTitle]);
+  
+  // Animate progress bar when experience changes
+  useEffect(() => {
+    if (playerExp !== prevExp) {
+      // Check if player has leveled up
+      const prevLevelData = getLevelFromExp(prevExp);
+      const newLevelData = getLevelFromExp(playerExp);
+      
+      if (newLevelData.currentLevel.level > prevLevelData.currentLevel.level) {
+        setShowLevelUp(true);
+        setTimeout(() => setShowLevelUp(false), 3000);
+      }
+      
+      // Animate progress bar
+      setAnimProgress(prevLevelData.progress);
+      const interval = setInterval(() => {
+        setAnimProgress(prev => {
+          if (prev >= progress) {
+            clearInterval(interval);
+            return progress;
+          }
+          return prev + 1;
+        });
+      }, 20);
+      
+      setPrevExp(playerExp);
+      
+      return () => clearInterval(interval);
+    }
+  }, [playerExp, prevExp, progress]);
   
   const playerUID = userId || React.useMemo(() => {
     return Math.floor(10000000 + Math.random() * 90000000).toString();
@@ -144,9 +180,15 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           )}
           
-          <div className="flex items-center gap-2 mb-1 pt-3">
-            <div className="text-white text-xs font-medium">
+          <div className="flex items-center gap-2 mb-1 pt-3 relative">
+            <div className="text-white text-xs font-medium flex items-center">
               Level {currentLevel.level}
+              {showLevelUp && (
+                <div className="absolute -top-4 left-12 flex items-center text-amber-400 animate-fade-in">
+                  <ArrowUp size={14} className="mr-1" />
+                  <span className="text-xs">Level Up!</span>
+                </div>
+              )}
             </div>
             {currentLevel.rewards && (
               <div className="text-xs text-amber-400">
@@ -161,7 +203,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               <span>XP</span>
               <span>{getNextLevelText()}</span>
             </div>
-            <Progress value={progress} className="h-1.5 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
+            <Progress 
+              value={animProgress} 
+              className="h-1.5 bg-slate-700/50" 
+              indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500 transition-all duration-500"
+            />
           </div>
         </div>
         
