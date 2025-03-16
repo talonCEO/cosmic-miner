@@ -1,102 +1,117 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { StorageService } from "../services/StorageService";
-import { GameState } from "./GameContext";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { StorageService } from '@/services/StorageService';
 
-// Define the user profile interface
+// Define types for the Firebase context
 export interface UserProfile {
   uid: string;
   displayName: string | null;
   email: string | null;
   photoURL: string | null;
-  createdAt: string;
-  lastLogin: string;
-  gameData?: any;
+  level?: number;
+  experience?: number;
+  lastLogin?: number;
 }
 
-// Define the authentication context
-interface FirebaseContextType {
+export interface FirebaseContextType {
   user: UserProfile | null;
-  loading: boolean;
-  error: string | null;
-  syncPlayerData: (playerData: any) => Promise<void>;
-  userLoaded: boolean;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  logout: () => Promise<void>;
+  syncGameData: () => Promise<void>;
+  getUserProfile: () => Promise<UserProfile | null>;
 }
 
-// Create the context
-const FirebaseContext = createContext<FirebaseContextType>({
-  user: null,
-  loading: true,
-  error: null,
-  syncPlayerData: async () => {},
-  userLoaded: false
-});
-
-// Custom hook to use the Firebase context
-export const useFirebase = () => useContext(FirebaseContext);
+// Create context
+const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
 // Provider component
-export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [userLoaded, setUserLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load user data from local storage when component mounts
+  // Load user data from local storage on mount
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        // Use local storage for user data instead of Firebase
-        const userData = await StorageService.getData("userData");
+        const savedUser = await StorageService.getData('userProfile');
         
-        if (userData) {
-          setUser(userData);
+        if (savedUser) {
+          setUser(savedUser);
         } else {
-          // Create a default user profile if none exists
-          const defaultUser: UserProfile = {
-            uid: "local-user",
-            displayName: "Cosmic Miner",
-            email: "player@example.com",
+          // If no user is found, create a mock user
+          const mockUser: UserProfile = {
+            uid: 'local-user',
+            displayName: 'Cosmic Miner',
+            email: 'player@example.com',
             photoURL: null,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
+            level: 1,
+            experience: 0,
+            lastLogin: Date.now()
           };
           
-          await StorageService.saveData("userData", defaultUser);
-          setUser(defaultUser);
+          setUser(mockUser);
+          await StorageService.saveData('userProfile', mockUser);
         }
-        
-        setUserLoaded(true);
-      } catch (err) {
-        console.error("Error loading user data:", err);
-        setError("Failed to load user data");
+      } catch (error) {
+        console.error('Error loading user data:', error);
       } finally {
-        // Always set loading to false so UI doesn't get stuck
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-
+    
     loadUserData();
   }, []);
 
-  // Sync player data with local storage
-  const syncPlayerData = async (playerData: any) => {
+  // Mock logout function
+  const logout = async (): Promise<void> => {
     try {
-      if (user) {
+      setUser(null);
+      await StorageService.removeData('userProfile');
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error logging out:', error);
+      return Promise.reject(error);
+    }
+  };
+
+  // Mock function to sync game data
+  const syncGameData = async (): Promise<void> => {
+    try {
+      const gameState = await StorageService.getData('gameState');
+      
+      if (gameState && user) {
+        // In a real implementation, this would save to Firebase
+        // For now, we just log and save to local storage
+        console.log('Syncing game data for user:', user.uid);
+        
+        // Update user profile with latest level/experience
         const updatedUser = {
           ...user,
-          gameData: playerData,
-          lastLogin: new Date().toISOString(),
+          level: gameState.level,
+          experience: gameState.experience,
+          lastLogin: Date.now()
         };
         
-        await StorageService.saveData("userData", updatedUser);
         setUser(updatedUser);
+        await StorageService.saveData('userProfile', updatedUser);
       }
-    } catch (err) {
-      console.error("Error syncing player data:", err);
-      setError("Failed to sync player data");
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error syncing game data:', error);
+      return Promise.reject(error);
+    }
+  };
+
+  // Mock function to get user profile
+  const getUserProfile = async (): Promise<UserProfile | null> => {
+    try {
+      const savedUser = await StorageService.getData('userProfile');
+      return savedUser;
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      return null;
     }
   };
 
@@ -104,13 +119,23 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({
     <FirebaseContext.Provider
       value={{
         user,
-        loading,
-        error,
-        syncPlayerData,
-        userLoaded
+        isLoading,
+        isAuthenticated: !!user,
+        logout,
+        syncGameData,
+        getUserProfile
       }}
     >
       {children}
     </FirebaseContext.Provider>
   );
+};
+
+// Custom hook to use Firebase context
+export const useFirebase = (): FirebaseContextType => {
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useFirebase must be used within a FirebaseProvider');
+  }
+  return context;
 };

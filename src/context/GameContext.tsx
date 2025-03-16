@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { createUpgrades, UPGRADE_CATEGORIES } from "@/utils/upgradesData";
-import { calculateExperienceRequired, calculateLevel } from "@/utils/levelUpHandler";
-import { createAchievements } from "@/utils/achievementsCreator";
+import { calculateExperienceRequired as calculateExpReq, calculateLevelInfo } from "@/utils/levelUpHandler";
 import { StorageService } from "@/services/StorageService";
+import { Perk } from "@/utils/types";
+import { UPGRADE_CATEGORIES } from "@/utils/upgradesData";
 
 // Define types
 export interface Upgrade {
@@ -19,6 +19,7 @@ export interface Upgrade {
   category: string;
   icon: string;
   multiplierBonus?: number;
+  unlocksAt?: number;
 }
 
 export interface Ability {
@@ -37,6 +38,7 @@ export interface Ability {
   row: number;
   column: number;
   requiredLevel: number;
+  requiredAbilities: string[];
 }
 
 export interface Artifact {
@@ -48,6 +50,43 @@ export interface Artifact {
   cost: number;
   bonusType: string;
   bonusValue: number;
+  effect?: {
+    type: string;
+    value: number;
+  };
+  perks?: Perk[];
+}
+
+export interface Manager {
+  id: string;
+  name: string;
+  description: string;
+  avatar: string;
+  cost: number;
+  effect?: {
+    type: string;
+    value: number;
+  };
+  perks?: Perk[];
+  boosts?: string[];
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  description: string;
+  type: 'resource' | 'boost' | 'reward' | 'gift' | 'consumable';
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  icon: React.ReactNode;
+  quantity: number;
+  effect?: {
+    type: string;
+    value: number;
+    duration?: number;
+  };
+  usable: boolean;
+  stackable: boolean;
+  obtained: number;
 }
 
 // Define achievement interface
@@ -75,6 +114,8 @@ export interface GameState {
   prestigePoints: number;
   multiplier: number;
   autoBuy: boolean;
+  autoTap: boolean;
+  incomeMultiplier: number;
   upgrades: Upgrade[];
   abilities: Ability[];
   artifacts: Artifact[];
@@ -83,7 +124,13 @@ export interface GameState {
   newAchievements: string[];
   activeBoosts: any[];
   gems: number;
-  // Add any additional state properties needed
+  essence: number;
+  inventory: InventoryItem[];
+  inventoryCapacity: number;
+  achievements?: Achievement[];
+  managers?: Manager[];
+  ownedManagers?: string[];
+  boosts?: any[];
 }
 
 // Define game context interface
@@ -96,15 +143,26 @@ export interface GameContextType {
   purchaseArtifact: (artifactId: string) => void;
   prestige: () => void;
   toggleAutoBuy: () => void;
+  toggleAutoTap: () => void;
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   addExperience: (amount: number) => void;
   unlockPerk: (perkId: string, parentId: string) => void;
   addCoins: (amount: number) => void;
   addGems: (amount: number) => void;
+  addEssence: (amount: number) => void;
   buyBoost: (boostId: string) => void;
   saveGame: () => Promise<void>;
   loadGame: () => Promise<void>;
   resetGame: () => void;
+  calculatePotentialEssenceReward: () => number;
+  buyManager: (managerId: string) => void;
+  buyArtifact: (artifactId: string) => void;
+  setIncomeMultiplier: (value: number) => void;
+  handleClick: () => void;
+  dispatch: (action: any) => void;
+  useItem: (itemId: string) => void;
+  addItem: (item: InventoryItem) => void;
+  updateGameState: (partialState: Partial<GameState>) => void;
 }
 
 // Create initial state
@@ -123,23 +181,75 @@ const initialState: GameState = {
   prestigePoints: 0,
   multiplier: 1,
   autoBuy: false,
-  upgrades: createUpgrades(),
+  autoTap: false,
+  incomeMultiplier: 1.0,
+  upgrades: [],
   abilities: [],
   artifacts: [],
   ownedArtifacts: [],
   unlockedPerks: [],
   newAchievements: [],
   activeBoosts: [],
-  gems: 0
+  gems: 0,
+  essence: 0,
+  inventory: [],
+  inventoryCapacity: 50,
+  achievements: [],
+  managers: [],
+  ownedManagers: [],
+  boosts: []
 };
 
 // Create context
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+// Helper functions
+const calculateExperienceRequired = (level: number): number => {
+  return calculateExpReq(level);
+};
+
+const calculateLevel = (experience: number): number => {
+  return calculateLevelInfo(experience).level;
+};
+
+// Mock function to create upgrades until we properly implement this
+const createUpgrades = (): Upgrade[] => {
+  return [
+    {
+      id: "upgrade-1",
+      name: "Basic Miner",
+      description: "Increases passive income",
+      baseCost: 10,
+      cost: 10,
+      level: 0,
+      maxLevel: 1000,
+      coinsPerSecondBonus: 0.1,
+      coinsPerClickBonus: 0,
+      unlocked: true,
+      category: UPGRADE_CATEGORIES.ELEMENT,
+      icon: "⛏️"
+    },
+    {
+      id: "upgrade-2",
+      name: "Better Pickaxe",
+      description: "Improves clicks",
+      baseCost: 15,
+      cost: 15,
+      level: 0,
+      maxLevel: 1000,
+      coinsPerSecondBonus: 0,
+      coinsPerClickBonus: 0.5,
+      unlocked: true,
+      category: UPGRADE_CATEGORIES.TAP,
+      icon: "🔨"
+    }
+  ];
+};
+
 // Provider component
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<GameState>({...initialState});
-  const [achievements, setAchievements] = useState<Achievement[]>(createAchievements());
+  const [state, setState] = useState<GameState>({...initialState, upgrades: createUpgrades()});
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   
   // Load game data
   useEffect(() => {
@@ -178,6 +288,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(saveInterval);
   }, [state]);
   
+  // Mock handler for updating game state (used by Profile component)
+  const updateGameState = useCallback((partialState: Partial<GameState>) => {
+    setState(prevState => ({
+      ...prevState,
+      ...partialState
+    }));
+  }, []);
+  
   // Actions
   const increment = useCallback(() => {
     setState(prevState => {
@@ -190,6 +308,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     });
   }, []);
+  
+  // Alias for increment for backward compatibility
+  const handleClick = useCallback(() => {
+    increment();
+  }, [increment]);
   
   const buyUpgrade = useCallback((upgradeId: string, quantity: number = 1) => {
     setState(prevState => {
@@ -299,26 +422,50 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
   
+  // Alias for backward compatibility
+  const buyArtifact = purchaseArtifact;
+  
+  // Mock implementation for managers
+  const buyManager = useCallback((managerId: string) => {
+    setState(prevState => {
+      const manager = prevState.managers?.find(m => m.id === managerId);
+      if (!manager || prevState.essence < manager.cost || prevState.ownedManagers?.includes(manager.id)) {
+        return prevState;
+      }
+      
+      return {
+        ...prevState,
+        essence: prevState.essence - manager.cost,
+        ownedManagers: [...(prevState.ownedManagers || []), manager.id]
+      };
+    });
+  }, []);
+  
   const prestige = useCallback(() => {
     setState(prevState => {
       const prestigePoints = prevState.prestigePoints + 1;
+      const essenceReward = calculatePotentialEssenceReward();
       
       // Reset game state to initial state
       return {
         ...initialState,
         prestigeCount: prevState.prestigeCount + 1,
         prestigePoints: prestigePoints,
+        essence: (prevState.essence || 0) + essenceReward,
         coins: 500,
         coinsPerClick: 5,
         coinsPerSecond: 0,
         upgrades: createUpgrades(),
         abilities: [],
-        artifacts: [],
+        artifacts: prevState.artifacts || [],
+        managers: prevState.managers || [],
         ownedArtifacts: [],
+        ownedManagers: [],
         unlockedPerks: [],
         newAchievements: [],
         activeBoosts: [],
-        gems: prevState.gems
+        gems: prevState.gems,
+        inventory: prevState.inventory || []
       };
     });
   }, []);
@@ -329,6 +476,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       autoBuy: !prevState.autoBuy
     }));
   }, []);
+  
+  const toggleAutoTap = useCallback(() => {
+    setState(prevState => ({
+      ...prevState,
+      autoTap: !prevState.autoTap
+    }));
+  }, []);
+  
+  const calculatePotentialEssenceReward = useCallback((): number => {
+    // Mock implementation
+    return Math.floor(Math.sqrt(state.totalEarned / 1000));
+  }, [state.totalEarned]);
   
   const calculateMaxPurchaseAmount = useCallback((upgradeId: string) => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
@@ -349,7 +508,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     return affordableQuantity;
-  }, [state.coins]);
+  }, [state.coins, state.upgrades]);
   
   const addExperience = useCallback((amount: number) => {
     setState(prevState => {
@@ -407,6 +566,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   }, []);
   
+  const addEssence = useCallback((amount: number) => {
+    setState(prevState => ({
+      ...prevState,
+      essence: (prevState.essence || 0) + amount
+    }));
+  }, []);
+  
+  const setIncomeMultiplier = useCallback((value: number) => {
+    setState(prevState => ({
+      ...prevState,
+      incomeMultiplier: value
+    }));
+  }, []);
+  
   const buyBoost = useCallback((boostId: string) => {
     setState(prevState => {
       // Find the boost in the available boosts
@@ -448,6 +621,61 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
   
+  // Mock implementations for inventory management
+  const useItem = useCallback((itemId: string) => {
+    setState(prevState => {
+      const itemIndex = prevState.inventory.findIndex(item => item.id === itemId);
+      if (itemIndex === -1) return prevState;
+      
+      const item = prevState.inventory[itemIndex];
+      const updatedInventory = [...prevState.inventory];
+      
+      // Apply item effect
+      let updatedState = { ...prevState };
+      
+      // Decrease quantity or remove item
+      if (item.quantity > 1) {
+        updatedInventory[itemIndex] = {
+          ...item,
+          quantity: item.quantity - 1
+        };
+      } else {
+        updatedInventory.splice(itemIndex, 1);
+      }
+      
+      return {
+        ...updatedState,
+        inventory: updatedInventory
+      };
+    });
+  }, []);
+  
+  const addItem = useCallback((item: InventoryItem) => {
+    setState(prevState => {
+      const existingItemIndex = prevState.inventory.findIndex(i => i.id === item.id);
+      
+      if (existingItemIndex !== -1 && item.stackable) {
+        // If item exists and is stackable, increase quantity
+        const updatedInventory = [...prevState.inventory];
+        updatedInventory[existingItemIndex] = {
+          ...updatedInventory[existingItemIndex],
+          quantity: updatedInventory[existingItemIndex].quantity + item.quantity
+        };
+        
+        return {
+          ...prevState,
+          inventory: updatedInventory
+        };
+      } else {
+        // Otherwise add as new item
+        return {
+          ...prevState,
+          inventory: [...prevState.inventory, item]
+        };
+      }
+    });
+  }, []);
+  
   const saveGame = useCallback(async () => {
     try {
       await StorageService.saveData("gameState", state);
@@ -473,8 +701,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
   
   const resetGame = useCallback(() => {
-    setState({...initialState});
+    setState({...initialState, upgrades: createUpgrades()});
     StorageService.saveData("gameState", initialState);
+  }, []);
+  
+  // Mock dispatcher for compatibility with some components
+  const dispatch = useCallback((action: any) => {
+    console.log("Dispatch action:", action);
+    // This is a placeholder - implement based on action type as needed
   }, []);
   
   // Check achievements
@@ -501,7 +735,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         newAchievements: [...prevState.newAchievements, ...unlockedAchievements]
       }));
     }
-  }, [state.totalClicks, state.totalEarned, state.coinsPerSecond]);
+  }, [state.totalClicks, state.totalEarned, state.coinsPerSecond, achievements]);
   
   return (
     <GameContext.Provider
@@ -522,7 +756,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         buyBoost,
         saveGame,
         loadGame,
-        resetGame
+        resetGame,
+        calculatePotentialEssenceReward,
+        buyManager,
+        buyArtifact,
+        addEssence,
+        toggleAutoTap,
+        setIncomeMultiplier,
+        handleClick,
+        dispatch,
+        useItem,
+        addItem,
+        updateGameState
       }}
     >
       {children}

@@ -1,54 +1,50 @@
 
 /**
- * Handles player leveling logic.
- * Base formula: nextLevelExperience = 100 * (level ^ 1.5)
+ * Calculate the experience required for a specific level
+ * @param level The player's current level
+ * @returns The experience needed to reach the next level
  */
-
-// Calculate experience needed for a specific level
-export const calculateExpForLevel = (level: number): number => {
-  return Math.floor(100 * Math.pow(level, 1.5));
+export const calculateExperienceRequired = (level: number): number => {
+  // Base experience required for level 1 to 2
+  const baseExperience = 100;
+  
+  // Each level requires 15% more experience than the previous
+  return Math.floor(baseExperience * Math.pow(1.15, level - 1));
 };
 
-// Calculate level information based on current experience and level
-export const calculateLevelInfo = (
-  currentExperience: number,
-  currentLevel: number
-) => {
-  let experience = currentExperience;
+/**
+ * Calculate the player's level based on their total experience
+ * @param experience The player's total accumulated experience
+ * @returns The calculated level information
+ */
+export const calculateLevelInfo = (experience: number, currentLevel: number = 1): { 
+  level: number; 
+  experience: number; 
+  nextLevelExp: number;
+  progress: number;
+} => {
+  // Start at level 1 or the provided current level
   let level = currentLevel;
-  let expForNextLevel = calculateExpForLevel(level);
+  let expForNextLevel = calculateExperienceRequired(level);
   
-  // Check if player should level up
+  // Loop until we find the correct level for this amount of experience
   while (experience >= expForNextLevel) {
-    // Level up
-    experience -= expForNextLevel;
-    level += 1;
-    
-    // Calculate new threshold
-    expForNextLevel = calculateExpForLevel(level);
+    level++;
+    expForNextLevel = calculateExperienceRequired(level);
   }
+  
+  // Calculate experience required for previous level
+  const prevLevelExp = level > 1 ? calculateExperienceRequired(level - 1) : 0;
+  
+  // Calculate progress to next level (0-1)
+  const expInCurrentLevel = experience - prevLevelExp;
+  const expRequiredForCurrentLevel = expForNextLevel - prevLevelExp;
+  const progress = expInCurrentLevel / expRequiredForCurrentLevel;
   
   return {
     level,
     experience,
-    nextLevelExp: expForNextLevel
+    nextLevelExp: expForNextLevel,
+    progress
   };
-};
-
-// Award experience to player
-export const awardExperience = (
-  currentLevel: number,
-  currentExperience: number,
-  expToAdd: number
-) => {
-  const updatedExp = currentExperience + expToAdd;
-  return calculateLevelInfo(updatedExp, currentLevel);
-};
-
-// Check if player leveled up
-export const checkLevelUp = (
-  prevLevel: number,
-  newLevel: number
-): boolean => {
-  return newLevel > prevLevel;
 };
