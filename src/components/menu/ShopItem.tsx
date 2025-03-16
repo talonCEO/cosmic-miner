@@ -27,7 +27,6 @@ const ShopItem: React.FC<ShopItemProps> = ({
 }) => {
   return (
     <div 
-      key={item.id} 
       className={`rounded-lg border p-3 transition ${
         isOwned 
           ? "border-green-500/30 bg-green-900/10" 

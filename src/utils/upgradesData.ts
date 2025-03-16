@@ -1,3 +1,4 @@
+
 import { Upgrade } from '@/utils/GameTypes';
 
 // Categories
@@ -52,7 +53,11 @@ const createElementUpgrade = (
     icon,
     unlocked: id === 1, // Only the first element is unlocked by default
     unlocksAt: id > 1 ? { upgradeId: `element-${id-1}`, level: 1 } : undefined,
-    category: UPGRADE_CATEGORIES.ELEMENT
+    category: UPGRADE_CATEGORIES.ELEMENT,
+    effect: {
+      type: 'element',
+      value: scaledPassiveValue
+    }
   };
 };
 
@@ -71,7 +76,11 @@ const createTapPowerUpgrade = (): Upgrade => {
     multiplierBonus: 0,
     icon: 'hand',
     unlocked: true, // Available from the start
-    category: UPGRADE_CATEGORIES.TAP
+    category: UPGRADE_CATEGORIES.TAP,
+    effect: {
+      type: 'tap',
+      value: 0.05
+    }
   };
 };
 

@@ -209,7 +209,7 @@ export interface Upgrade {
   icon?: string;
   coinsPerSecondBonus?: number;
   coinsPerClickBonus?: number;
-  multiplierBonus?: number; // Added this field to fix the TS error
+  multiplierBonus?: number;
   unlocked?: boolean;
   unlocksAt?: {
     upgradeId: string;
