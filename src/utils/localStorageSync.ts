@@ -1,11 +1,10 @@
 
-import { getFirestore, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { GameState } from '@/context/GameContext';
 import { UserProfile } from '@/context/FirebaseContext';
 import { getLevelFromExp } from '@/data/playerProgressionData';
 
 /**
- * Sync important game metrics with the Firebase database
+ * Sync important game metrics with localStorage
  */
 export const syncGameProgress = async (
   uid: string, 
@@ -14,25 +13,32 @@ export const syncGameProgress = async (
   if (!uid) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    // Get current profile from localStorage
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return;
+    
+    const profile = JSON.parse(profileData) as UserProfile;
     
     // Calculate level from total coins earned (used as experience)
     const exp = gameState.totalEarned || 0;
     const { currentLevel } = getLevelFromExp(exp);
     
-    // Only sync important metrics that should be saved between sessions
-    await updateDoc(userDocRef, {
+    // Update profile with game state
+    const updatedProfile = {
+      ...profile,
       level: currentLevel.level,
       exp: exp,
       coins: gameState.coins,
       essence: gameState.essence,
       skillPoints: gameState.skillPoints || 0,
       totalCoins: gameState.totalEarned || 0,
-      lastLogin: serverTimestamp()
-    });
+      lastLogin: new Date().toISOString()
+    };
     
-    console.log("Game progress synced with Firebase for user:", uid);
+    // Save updated profile
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+    
+    console.log("Game progress synced with localStorage for user:", uid);
   } catch (error) {
     console.error("Error syncing game progress:", error);
   }
@@ -48,12 +54,17 @@ export const syncAchievements = async (
   if (!uid || !achievementIds.length) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return;
     
-    await updateDoc(userDocRef, {
+    const profile = JSON.parse(profileData) as UserProfile;
+    
+    const updatedProfile = {
+      ...profile,
       achievements: achievementIds
-    });
+    };
+    
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
   } catch (error) {
     console.error("Error syncing achievements:", error);
   }
@@ -69,12 +80,17 @@ export const updatePlayerTitle = async (
   if (!uid || !titleId) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return false;
     
-    await updateDoc(userDocRef, {
+    const profile = JSON.parse(profileData) as UserProfile;
+    
+    const updatedProfile = {
+      ...profile,
       title: titleId
-    });
+    };
+    
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
     
     return true;
   } catch (error) {
@@ -93,12 +109,17 @@ export const updatePlayerPortrait = async (
   if (!uid || !portraitId) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return false;
     
-    await updateDoc(userDocRef, {
+    const profile = JSON.parse(profileData) as UserProfile;
+    
+    const updatedProfile = {
+      ...profile,
       portrait: portraitId
-    });
+    };
+    
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
     
     return true;
   } catch (error) {
@@ -118,15 +139,20 @@ export const unlockPlayerTitle = async (
   if (!uid || !titleId) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return false;
+    
+    const profile = JSON.parse(profileData) as UserProfile;
     
     // Don't add duplicates
     if (currentTitles.includes(titleId)) return true;
     
-    await updateDoc(userDocRef, {
+    const updatedProfile = {
+      ...profile,
       unlockedTitles: [...currentTitles, titleId]
-    });
+    };
+    
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
     
     return true;
   } catch (error) {
@@ -146,15 +172,20 @@ export const unlockPlayerPortrait = async (
   if (!uid || !portraitId) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return false;
+    
+    const profile = JSON.parse(profileData) as UserProfile;
     
     // Don't add duplicates
     if (currentPortraits.includes(portraitId)) return true;
     
-    await updateDoc(userDocRef, {
+    const updatedProfile = {
+      ...profile,
       unlockedPortraits: [...currentPortraits, portraitId]
-    });
+    };
+    
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
     
     return true;
   } catch (error) {
@@ -173,14 +204,18 @@ export const addFriend = async (
   if (!uid || !friendId) return;
   
   try {
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', uid);
+    const profileData = localStorage.getItem('userProfile');
+    if (!profileData) return false;
     
-    // This is a simplified version - in a real app, 
-    // you would need to handle friend requests and confirmations
-    await updateDoc(userDocRef, {
-      friends: increment(1) // Array union would be better but this is a simplified example
-    });
+    const profile = JSON.parse(profileData) as UserProfile;
+    
+    // This is a simplified version
+    const updatedProfile = {
+      ...profile,
+      friends: [...profile.friends, friendId]
+    };
+    
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
     
     return true;
   } catch (error) {

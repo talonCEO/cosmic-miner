@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Lock } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUnlockedPortraits, getUnlockedTitles, getLevelFromExp, portraits, titles } from '@/data/playerProgressionData';
+import { getUnlockedPortraits, getUnlockedTitles, getLevelFromExp, PORTRAITS, TITLES } from '@/data/playerProgressionData';
 
 interface EditCustomizationProps {
   onClose: () => void;
@@ -42,7 +43,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
               <SelectValue placeholder="Select Portrait" />
             </SelectTrigger>
             <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto">
-              {portraits.map(portrait => {
+              {PORTRAITS.map(portrait => {
                 const isUnlocked = unlockedPortraitIds.includes(portrait.id);
                 return (
                   <SelectItem
@@ -68,7 +69,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
               <SelectValue placeholder="Select Title" />
             </SelectTrigger>
             <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto">
-              {titles.map(title => {
+              {TITLES.map(title => {
                 const isUnlocked = unlockedTitleIds.includes(title.id);
                 return (
                   <SelectItem

@@ -1,6 +1,7 @@
+
 import { toast } from "sonner";
 import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
-import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
+import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/localStorageSync";
 
 interface LevelUpRewards {
   skillPoints?: number;

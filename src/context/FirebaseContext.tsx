@@ -1,28 +1,5 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  onAuthStateChanged, 
-  User as FirebaseUser 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
-  serverTimestamp,
-  query,
-  where,
-  getDocs,
-  collection
-} from 'firebase/firestore';
-import { firebaseConfig } from '@/config/firebase';
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 
 export interface UserProfile {
   uid: string;
@@ -46,7 +23,7 @@ export interface UserProfile {
 }
 
 interface FirebaseContextType {
-  user: FirebaseUser | null;
+  user: { uid: string } | null;
   profile: UserProfile | null;
   loading: boolean;
   error: string | null;
@@ -61,43 +38,38 @@ interface FirebaseContextType {
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
 const generateUserId = async (): Promise<string> => {
-  let newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-  let querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
-  
-  while (!querySnapshot.empty) {
-    newId = Math.floor(10000000 + Math.random() * 90000000).toString();
-    querySnapshot = await getDocs(query(collection(db, "users"), where("userId", "==", newId)));
-  }
-  return newId;
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
 };
 
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<{ uid: string } | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("FirebaseProvider mounted");
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed:", user?.uid || "null");
+    
+    const initializeUser = async () => {
       setLoading(true);
-
-      if (user) {
-        setUser(user);
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          setProfile(userDoc.data() as UserProfile);
-          await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-          console.log("Profile loaded:", userDoc.data());
+      try {
+        // Create anonymous user with a random UID
+        const uid = `anon-${Math.random().toString(36).substring(2, 15)}`;
+        const mockUser = { uid };
+        setUser(mockUser);
+        
+        // Load from localStorage or create new profile
+        const savedProfile = localStorage.getItem('userProfile');
+        
+        if (savedProfile) {
+          setProfile(JSON.parse(savedProfile) as UserProfile);
+          console.log("Profile loaded from localStorage");
         } else {
           const newUserId = await generateUserId();
           const defaultUsername = `Player${newUserId.substring(0, 4)}`;
 
           const newUserProfile: UserProfile = {
-            uid: user.uid,
+            uid: mockUser.uid,
             username: defaultUsername,
             userId: newUserId,
             coins: 0,
@@ -113,29 +85,23 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             unlockedTitles: ["space_pilot"],
             unlockedPortraits: ["default"],
             achievements: [],
-            createdAt: serverTimestamp(),
-            lastLogin: serverTimestamp(),
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString(),
           };
 
-          await setDoc(userDocRef, newUserProfile);
+          localStorage.setItem('userProfile', JSON.stringify(newUserProfile));
           setProfile(newUserProfile);
           console.log("New user created:", newUserProfile);
         }
-      } else {
-        console.log("Signing in anonymously");
-        await signInAnonymously(auth).catch((err) => {
-          console.error("Sign-in error:", err.message);
-          setError("Failed to create anonymous account");
-        });
+      } catch (err) {
+        console.error("Initialization error:", (err as Error).message);
+        setError("Failed to initialize user data");
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
-    });
-
-    return () => {
-      console.log("Cleaning up auth listener");
-      unsubscribe();
     };
+
+    initializeUser();
   }, []);
 
   const updateProfile = async (data: Partial<UserProfile>) => {
@@ -143,11 +109,12 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       console.log("No user, skipping update");
       return;
     }
-    const userDocRef = doc(db, "users", user.uid);
+    
     try {
-      await updateDoc(userDocRef, { ...data, lastLogin: serverTimestamp() });
-      console.log("Profile updated in Firestore:", data);
-      setProfile((prev) => (prev ? { ...prev, ...data } : null));
+      const updatedProfile = { ...profile, ...data, lastLogin: new Date().toISOString() } as UserProfile;
+      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      console.log("Profile updated in localStorage:", data);
+      setProfile(updatedProfile);
     } catch (err) {
       console.error("Update error:", (err as Error).message);
       setError("Failed to update profile");
