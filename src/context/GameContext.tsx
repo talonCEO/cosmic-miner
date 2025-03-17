@@ -99,7 +99,7 @@ export interface GameState {
   title: string;
   userId: string;
   portrait: string;
-  nameChangeCount: number; // Added
+  nameChangeCount: number;
 }
 
 type GameAction =
@@ -134,7 +134,7 @@ type GameAction =
   | { type: 'UPDATE_USERNAME'; username: string }
   | { type: 'UPDATE_TITLE'; title: string }
   | { type: 'UPDATE_PORTRAIT'; portrait: string }
-  | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number }; // Added
+  | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number };
 
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
@@ -324,7 +324,7 @@ const initialState: GameState = {
   title: "space_pilot",
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
   portrait: "default",
-  nameChangeCount: 0 // Added
+  nameChangeCount: 0
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
