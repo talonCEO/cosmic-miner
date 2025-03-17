@@ -140,7 +140,7 @@ const Upgrades: React.FC = () => {
               align="start"
               className="bg-slate-800 text-white border-slate-700 p-3 max-w-[200px] break-words"
             >
-              <p>Unlock Auto Buy after prestiging at least once</p>
+              <p>Purchase Auto Buy from the Premium Store to unlock</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
