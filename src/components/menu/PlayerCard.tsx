@@ -104,7 +104,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             <img
               src={portraitData?.pngPath}
               alt={portraitData?.name}
-              className="absolute h-24 w-24 -top-2 -left-2 z-20 rounded-full object-cover opacity-80"
+              className="absolute h-24 w-24 -top-0 -left-0 z-20 rounded-full object-cover opacity-80"
             />
             {/* 
               === Avatar (Foreground) ===
