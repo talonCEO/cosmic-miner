@@ -89,7 +89,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             - Size: Set to `h-28 w-28` to accommodate the larger portrait (adjust as needed).
             - Margin: `mb-1` adds space below; adjust to control vertical spacing.
           */}
-          <div className="relative h-28 w-28 mb-1">
+          <div className="relative h-24 w-24 mb-1">
             {/* 
               === Portrait Image ===
               - Size: `h-24 w-24` makes the portrait larger than the Avatar (previously h-20 w-20).
@@ -104,7 +104,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             <img
               src={portraitData?.pngPath}
               alt={portraitData?.name}
-              className="absolute h-24 w-24 -top-4 -left-4 z-0 rounded-full object-cover opacity-80"
+              className="absolute h-24 w-24 -top-2 -left-2 z-20 rounded-full object-cover opacity-80"
             />
             {/* 
               === Avatar (Foreground) ===
@@ -115,7 +115,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               - Z-Index: `z-10` ensures it stays above the portrait image.
               - Border: Kept `border-2 border-amber-500/50` for style; increase thickness with `border-4` if desired.
             */}
-            <Avatar className="absolute h-16 w-16 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+            <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
                 {playerName.substring(0, 2).toUpperCase()}
               </AvatarFallback>
