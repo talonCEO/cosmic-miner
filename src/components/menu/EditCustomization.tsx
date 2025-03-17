@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,21 +16,19 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
   const [selectedTitle, setSelectedTitle] = useState(state.title);
 
   const levelData = getLevelFromExp(state.totalEarned || 0);
-  // Add unlockAll: true to unlock everything
   const unlockedPortraitIds = getUnlockedPortraits(
     levelData.currentLevel.level, 
     state.achievements.map(a => a.id),
-    state.prestigeCount || 0, // Assuming prestigeCount is in state
-    true // Unlock all portraits
+    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
+    true // Unlock all portraits by default
   ).map(p => p.id);
   const unlockedTitleIds = getUnlockedTitles(
     levelData.currentLevel.level, 
     state.achievements.map(a => a.id),
-    state.prestigeCount || 0, // Assuming prestigeCount is in state
-    true // Unlock all titles
+    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
+    true // Unlock all titles by default
   ).map(t => t.id);
 
-  // Rest of the code remains unchanged
   const handleApply = () => {
     if (selectedPortrait !== state.portrait && unlockedPortraitIds.includes(selectedPortrait)) {
       updatePortrait(selectedPortrait);
@@ -39,11 +36,8 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
     if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
       updateTitle(selectedTitle);
     }
-    onClose();
+    onClose(); // Close after applying
   };
-
-  // ... rest of the component ...
-};
 
   return (
     <DialogContent className="max-w-[200px] max-h-[250px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
@@ -57,7 +51,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
             <SelectTrigger className="w-full h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white">
               <SelectValue placeholder="Select Portrait" />
             </SelectTrigger>
-            <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto">
+            <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto z-[10001]">
               {PORTRAITS.map(portrait => {
                 const isUnlocked = unlockedPortraitIds.includes(portrait.id);
                 return (
@@ -83,7 +77,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
             <SelectTrigger className="w-full h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white">
               <SelectValue placeholder="Select Title" />
             </SelectTrigger>
-            <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto">
+            <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto z-[10001]">
               {TITLES.map(title => {
                 const isUnlocked = unlockedTitleIds.includes(title.id);
                 return (
