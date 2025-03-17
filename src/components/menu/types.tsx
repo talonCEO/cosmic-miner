@@ -1,5 +1,3 @@
-
-// src/types/index.ts
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -35,14 +33,12 @@ export interface InventoryItem {
   };
   usable: boolean;
   stackable: boolean;
-  obtained: number; // timestamp
-  cost?: number; // Add cost property here
-  maxPurchases?: number; // Add maxPurchases property here
+  obtained: number;
+  cost?: number;
+  maxPurchases?: number;
 }
 
-// Game boost items manifest - centralized list of all available boosts
 export const INVENTORY_ITEMS = {
-  // Resource items (non-usable)
   COINS: {
     id: 'resource-coins',
     name: 'Coins',
@@ -87,8 +83,6 @@ export const INVENTORY_ITEMS = {
     stackable: true,
     obtained: Date.now()
   },
-  
-  // Original boost items (usable)
   DOUBLE_COINS: {
     id: 'boost-double-coins',
     name: 'Double Coins',
@@ -99,12 +93,12 @@ export const INVENTORY_ITEMS = {
     effect: {
       type: 'coinMultiplier',
       value: 2,
-      duration: 30 * 60 // 30 minutes in seconds
+      duration: 30 * 60
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100 // Add cost here
+    cost: 100
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -115,12 +109,12 @@ export const INVENTORY_ITEMS = {
     icon: <Clock className="text-blue-400" />,
     effect: {
       type: 'timeWarp',
-      value: 2 * 60 * 60, // 2 hours in seconds
+      value: 2 * 60 * 60,
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50 // Add cost here
+    cost: 50
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
@@ -131,16 +125,14 @@ export const INVENTORY_ITEMS = {
     icon: <Zap className="text-yellow-400" />,
     effect: {
       type: 'autoTap',
-      value: 5, // taps per second
-      duration: 10 * 60 // 10 minutes in seconds
+      value: 5,
+      duration: 10 * 60
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100 // Add cost here
+    cost: 100
   },
-
-  // New boosts as requested
   TAP_BOOST: {
     id: 'boost-tap-boost',
     name: 'Tap Boost',
@@ -151,12 +143,12 @@ export const INVENTORY_ITEMS = {
     effect: {
       type: 'coinsPerClick',
       value: 5,
-      duration: 100 // 100 taps
+      duration: 100
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 75 // Add cost here
+    cost: 75
   },
   CHEAP_UPGRADES: {
     id: 'boost-cheap-upgrades',
@@ -167,13 +159,13 @@ export const INVENTORY_ITEMS = {
     icon: <Percent className="text-green-400" />,
     effect: {
       type: 'upgradeCostReduction',
-      value: 0.9, // Multiplier (10% reduction)
-      duration: 10 * 60 // 10 minutes
+      value: 0.9,
+      duration: 10 * 60
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50 // Add cost here
+    cost: 50
   },
   ESSENCE_BOOST: {
     id: 'boost-essence-boost',
@@ -184,12 +176,12 @@ export const INVENTORY_ITEMS = {
     icon: <Sparkles className="text-amber-400" />,
     effect: {
       type: 'essenceMultiplier',
-      value: 1.25 // 25% increase
+      value: 1.25
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100 // Add cost here
+    cost: 100
   },
   PERMA_TAP: {
     id: 'boost-perma-tap',
@@ -205,8 +197,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 150, // Add cost here
-    maxPurchases: 10 // Add maxPurchases limit
+    cost: 150,
+    maxPurchases: 10
   },
   PERMA_PASSIVE: {
     id: 'boost-perma-passive',
@@ -222,8 +214,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 200, // Add cost here
-    maxPurchases: 10 // Add maxPurchases limit
+    cost: 200,
+    maxPurchases: 10
   },
   NO_ADS: {
     id: 'boost-no-ads',
@@ -237,10 +229,10 @@ export const INVENTORY_ITEMS = {
       value: 1
     },
     usable: true,
-    stackable: false, // Only one purchase needed
+    stackable: false,
     obtained: Date.now(),
-    cost: 1000, // High cost for one-time purchase
-    maxPurchases: 1 // Limit to one
+    cost: 1000,
+    maxPurchases: 1
   },
   AUTO_BUY: {
     id: 'boost-auto-buy',
@@ -254,10 +246,10 @@ export const INVENTORY_ITEMS = {
       value: 1
     },
     usable: true,
-    stackable: false, // Only one purchase needed
+    stackable: false,
     obtained: Date.now(),
-    cost: 800, // High cost for one-time purchase
-    maxPurchases: 1 // Limit to one
+    cost: 800,
+    maxPurchases: 1
   },
   INVENTORY_EXPANSION: {
     id: 'boost-inventory-expansion',
@@ -273,17 +265,11 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 500, // Moderate cost per expansion
-    maxPurchases: 5 // Limit to 5 expansions
+    cost: 500,
+    maxPurchases: 5
   }
 };
 
-/**
- * Helper function to create a new inventory item
- * @param itemTemplate The template item from INVENTORY_ITEMS
- * @param quantity Number of items to create (defaults to 1)
- * @returns A new InventoryItem object ready to be added to player inventory
- */
 export function createInventoryItem(
   itemTemplate: Omit<InventoryItem, 'quantity'>,
   quantity: number = 1
