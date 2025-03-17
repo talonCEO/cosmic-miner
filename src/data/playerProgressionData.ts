@@ -256,7 +256,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'level',
       value: 15
     },
-    pngPath: '@/assets/images/icons/nebula_voyager.png'
+    pngPath: '@/assets/images/icons/default.png'
   },
   {
     id: 'stellar_seeker',
@@ -268,7 +268,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'level',
       value: 30
     },
-    pngPath: '@/assets/images/icons/stellar_seeker.png'
+    pngPath: '@/assets/images/icons/default.png'
   },
   {
     id: 'galactic_guardian',
@@ -280,7 +280,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'level',
       value: 60
     },
-    pngPath: '@/assets/images/icons/galactic_guardian.png'
+    pngPath: '@/assets/images/icons/default.png'
   },
   {
     id: 'cosmic_overlord',
@@ -292,7 +292,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'achievement',
       achievementId: 'master_miner' // Assumes an achievement exists with this ID
     },
-    pngPath: '@/assets/images/icons/cosmic_overlord.png'
+    pngPath: '@/assets/images/icons/default.png'
   }
 ];
 
