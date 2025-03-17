@@ -83,12 +83,25 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex">
         <div className="flex flex-col items-center pt-2">
-          <Avatar className="h-16 w-16 border-2 border-amber-500/50">
-            <AvatarImage src={portraitData?.image} alt={portraitData?.name} />
-            <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
-              {playerName.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          {/* 
+            === Portrait Styling Adjustments ===
+            - Size: The `h-20 w-20` classes below make the Avatar larger (previously h-16 w-16).
+              Adjust these values (e.g., h-24 w-24 for even bigger) to change the size.
+            - Positioning: The `relative` parent div with `top-0 left-0` keeps the image centered.
+              Use `top-[value]` or `left-[value]` (e.g., top-2, left-2) to offset it.
+            - Border: `border-2 border-amber-500/50` adds a border. Increase `border-[size]` (e.g., border-4) for a thicker border.
+            - Z-Index: `z-10` ensures the Avatar stays below the image if layered. Adjust if needed.
+            - Rounding: Add `rounded-full` to the Avatar class for a circular shape, or `rounded-none` for square.
+            - Object Fit: `object-cover` ensures the image fills the space. Use `object-contain` to avoid cropping.
+          */}
+          <div className="relative h-20 w-20 mb-1">
+            <Avatar className="h-20 w-20 border-2 border-amber-500/50 absolute top-0 left-0 z-10">
+              <AvatarImage src={portraitData?.pngPath} alt={portraitData?.name} />
+              <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
+                {playerName.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
             {titleDisplay}
           </div>
