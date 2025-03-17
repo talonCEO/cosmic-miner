@@ -1,8 +1,8 @@
 import { Achievement, GameState } from '@/context/GameContext';
-import GemIcon from '@/assets/images/icons/gem.png';
-import BoostIcon from '@/assets/images/icons/boost.png';
-import TitleIcon from '@/assets/images/icons/title.png';
-import PortraitIcon from '@/assets/images/icons/portrait.png';
+import GemIcon from '@/assets/images/icons/gems1.png';
+import BoostIcon from '@/assets/images/icons/gems1.png';
+import TitleIcon from '@/assets/images/icons/gems1.png';
+import PortraitIcon from '@/assets/images/icons/gems1.png';
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 export const createAchievements = (): Achievement[] => {
