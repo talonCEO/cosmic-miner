@@ -190,7 +190,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                   <PenSquare size={14} className="text-slate-300" />
                 </Button>
               </DialogTrigger>
-              <EditCustomization />
+              <EditCustomization onClose={() => setIsCustomizationOpen(false)} />
             </Dialog>
             <Button
               size="icon"
