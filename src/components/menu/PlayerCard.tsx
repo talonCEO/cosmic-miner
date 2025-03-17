@@ -7,7 +7,7 @@ import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import EditCustomization from "@/components/menu/EditCustomization";
+import EditCustomization from './EditCustomization';
 
 interface PlayerCardProps {
   playerName: string;
@@ -41,8 +41,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
+  const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 
   const nameChangeCount = state.nameChangeCount || 0;
+  const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
+  const canEditName = isEditing || (nameChangeCost === 0 || state.gems >= nameChangeCost);
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
 
   useEffect(() => {
@@ -176,7 +179,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         {/* Right Column: Buttons and Currency */}
         <div className="ml-4 flex flex-col items-end relative min-w-20">
           <div className="absolute top-0 right-0 flex gap-2">
-            <Dialog>
+            <Dialog open={isCustomizationOpen} onOpenChange={setIsCustomizationOpen}>
               <DialogTrigger asChild>
                 <Button
                   size="icon"
@@ -195,8 +198,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               className="h-6 w-6 p-0"
               onClick={() => setIsEditing(true)}
               title="Edit Name"
+              disabled={!canEditName}
             >
-              <Edit2 size={14} className="text-slate-300" />
+              <Edit2 size={14} className={canEditName ? "text-slate-300" : "text-slate-500"} />
             </Button>
           </div>
 
