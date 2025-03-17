@@ -46,8 +46,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
         const maxPurchases =
           item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
           item.id === 'boost-inventory-expansion' ? 5 : Infinity;
-        // Define cost dynamically if not in INVENTORY_ITEMS
-        const cost = item.cost || 50; // Default cost, adjust as needed
+        const cost = item.cost || 50; // Fallback in case cost is missing
         return {
           ...item,
           cost,
@@ -120,7 +119,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
         dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
         break;
       case 'boost-inventory-expansion':
-        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 50 }); // Fixed value to match item
+        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 50 });
         dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
         break;
       default:
