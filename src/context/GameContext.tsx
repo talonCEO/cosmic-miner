@@ -31,8 +31,8 @@ export interface Achievement {
   unlocked: boolean;
   checkCondition: (state: GameState) => boolean;
   rewards?: {
-    type: 'gems' | 'boost' | 'title' | 'portrait';
-    value: number | string; // Number for gems/boost duration, string for title/portrait ID
+    type: 'gems' | 'boost' | 'title' | 'portrait' | 'inventory_item';
+    value: number | string; // Number for gems, string for boost/title/portrait ID
     image: string; // Path to reward image
   };
 }
@@ -326,9 +326,9 @@ const initialState: GameState = {
   boosts: {},
   hasNoAds: false,
   username: "Cosmic Explorer",
-  title: "space_pilot",
+  title: "space_pilot", // Only space_pilot unlocked by default
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-  portrait: "default",
+  portrait: "default", // Only default unlocked by default
   nameChangeCount: 0
 };
 
@@ -622,51 +622,79 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'UNLOCK_ACHIEVEMENT': {
       const achievementIndex = state.achievements.findIndex(a => a.id === action.achievementId);
-      
-      if (achievementIndex === -1 || state.achievements[achievementIndex].unlocked) {
-        return state;
-      }
-      
+      if (achievementIndex === -1 || state.achievements[achievementIndex].unlocked) return state;
+
       const newAchievements = [...state.achievements];
-      newAchievements[achievementIndex] = {
-        ...newAchievements[achievementIndex],
-        unlocked: true
-      };
-      
-      return {
+      newAchievements[achievementIndex] = { ...newAchievements[achievementIndex], unlocked: true };
+
+      let newState = {
         ...state,
         achievements: newAchievements,
-        achievementsChecked: {
-          ...state.achievementsChecked,
-          [action.achievementId]: true
-        },
+        achievementsChecked: { ...state.achievementsChecked, [action.achievementId]: true },
         skillPoints: state.skillPoints + 1
       };
+
+      const reward = newAchievements[achievementIndex].rewards;
+      if (reward) {
+        switch (reward.type) {
+          case 'gems':
+            newState.gems += reward.value as number;
+            break;
+          case 'boost':
+            newState.boosts['boost-generic'] = { active: true, remainingTime: reward.value as number, purchased: (state.boosts['boost-generic']?.purchased || 0) + 1 };
+            break;
+          case 'title':
+            newState.title = reward.value as string;
+            break;
+          case 'portrait':
+            newState.portrait = reward.value as string;
+            break;
+          case 'inventory_item':
+            newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
+            break;
+        }
+      }
+      return newState;
     }
     case 'CHECK_ACHIEVEMENTS': {
       const unlockableAchievements = state.achievements
         .filter(a => !a.unlocked && !state.achievementsChecked[a.id])
         .filter(a => a.checkCondition(state));
-      
-      if (unlockableAchievements.length === 0) {
-        return state;
-      }
-      
+      if (unlockableAchievements.length === 0) return state;
+
       const newAchievements = [...state.achievements];
       const newAchievementsChecked = { ...state.achievementsChecked };
-      
+      let newState = { ...state, achievements: newAchievements, achievementsChecked: newAchievementsChecked };
+
       unlockableAchievements.forEach(achievement => {
         const index = newAchievements.findIndex(a => a.id === achievement.id);
         newAchievements[index] = { ...newAchievements[index], unlocked: true };
         newAchievementsChecked[achievement.id] = true;
+
+        const reward = achievement.rewards;
+        if (reward) {
+          switch (reward.type) {
+            case 'gems':
+              newState.gems += reward.value as number;
+              break;
+            case 'boost':
+              newState.boosts['boost-generic'] = { active: true, remainingTime: reward.value as number, purchased: (newState.boosts['boost-generic']?.purchased || 0) + 1 };
+              break;
+            case 'title':
+              newState.title = reward.value as string;
+              break;
+            case 'portrait':
+              newState.portrait = reward.value as string;
+              break;
+            case 'inventory_item':
+              newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
+              break;
+          }
+        }
       });
-      
-      return {
-        ...state,
-        achievements: newAchievements,
-        achievementsChecked: newAchievementsChecked,
-        skillPoints: state.skillPoints + unlockableAchievements.length
-      };
+
+      newState.skillPoints += unlockableAchievements.length;
+      return newState;
     }
     case 'UNLOCK_ABILITY': {
       const abilityIndex = state.abilities.findIndex(a => a.id === action.abilityId);
