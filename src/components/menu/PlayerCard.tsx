@@ -3,7 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react'; // Added Gem icon
+import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react';
 import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 
@@ -14,9 +14,10 @@ interface PlayerCardProps {
   playerExp: number;
   playerMaxExp: number;
   coins: number;
+  gems: number; // Added to match Profile.tsx's playerData
   essence: number;
   onNameChange: (newName: string) => void;
-  userId?: string;
+  userId: string; // Made required to match Profile.tsx
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -26,9 +27,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   playerExp,
   playerMaxExp,
   coins,
+  gems,
   essence,
   onNameChange,
-  userId
+  userId,
 }) => {
   const { state, addGems } = useGame();
   const [isEditing, setIsEditing] = useState(false);
@@ -36,26 +38,22 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
   const [nameChangeCount, setNameChangeCount] = useState(0);
-  
+
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
-  
+
   useEffect(() => {
     const title = getTitleById(playerTitle);
     setTitleDisplay(title ? title.name : playerTitle);
   }, [playerTitle]);
-  
-  const playerUID = userId || React.useMemo(() => {
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
-  }, []);
-  
+
   const handleSaveName = () => {
     if (!name.trim()) {
-      return; // Silently fail if name is empty (no toast)
+      return; // Silently fail if name is empty
     }
 
     const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
     if (nameChangeCost > 0 && state.gems < nameChangeCost) {
-      return; // Silently fail if not enough gems (no toast)
+      return; // Silently fail if not enough gems
     }
 
     if (nameChangeCost > 0) {
@@ -65,7 +63,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     setNameChangeCount(prev => prev + 1);
     setIsEditing(false);
   };
-  
+
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
       return `${(Math.round(amount / 100000) / 10).toFixed(1)}M`;
@@ -81,7 +79,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       setIsChestAvailable(false);
     }
   };
-  
+
   const getNextLevelText = () => {
     if (!nextLevel) {
       return "Max Level";
@@ -89,7 +87,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     const roundedExp = Math.round(playerExp * 10) / 10;
     return `${roundedExp}/${nextLevel.expRequired}`;
   };
-  
+
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex">
@@ -105,20 +103,20 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             {titleDisplay}
           </div>
         </div>
-        
+
         {/* Middle column: Player info */}
         <div className="ml-3 flex-1 pt-2">
           {isEditing ? (
             <div className="flex items-center gap-2 mb-2">
-              <Input 
+              <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="h-7 text-white bg-indigo-700/50 border-indigo-500"
                 maxLength={15}
               />
-              <Button 
-                size="icon" 
-                variant="ghost" 
+              <Button
+                size="icon"
+                variant="ghost"
                 className="h-7 w-7 p-0"
                 onClick={handleSaveName}
               >
@@ -127,8 +125,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           ) : (
             <div className="flex items-center mb-2">
-              <Button 
-                size="icon" 
+              <Button
+                size="icon"
                 variant="ghost"
                 className="h-6 w-6 p-0 mr-1"
                 onClick={() => setIsEditing(true)}
@@ -143,7 +141,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               )}
             </div>
           )}
-          
+
           <div className="flex items-center gap-2 mb-1 pt-3">
             <div className="text-white text-xs font-medium">
               Level {currentLevel.level}
@@ -155,7 +153,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </div>
             )}
           </div>
-          
+
           <div className="space-y-0.5">
             <div className="flex justify-between text-xs text-slate-300">
               <span>XP</span>
@@ -164,26 +162,24 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             <Progress value={progress} className="h-1.5 bg-slate-700/50" indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500" />
           </div>
         </div>
-        
+
         {/* Right column: Treasure Chest Button above Currency info */}
         <div className="ml-4 flex flex-col items-end space-y-2">
           <Button
             variant="ghost"
             size="icon"
-            className={`h-10 w-10 p-0 transition-all ${
-              isChestAvailable ? 'opacity-100' : 'opacity-50'
-            }`}
+            className={`h-10 w-10 p-0 transition-all ${isChestAvailable ? 'opacity-100' : 'opacity-50'}`}
             onClick={handleChestClick}
             disabled={!isChestAvailable}
           >
             <div className="relative flex items-center justify-center h-full w-full">
-              <Gift 
-                size={24} 
+              <Gift
+                size={24}
                 className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`}
               />
               {!isChestAvailable && (
-                <Lock 
-                  size={16} 
+                <Lock
+                  size={16}
                   className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
                 />
               )}
@@ -197,7 +193,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-purple-400 text-xs font-semibold">Gems:</span>
-              <span className="text-white text-xs">{formatCurrency(state.gems)}</span>
+              <span className="text-white text-xs">{formatCurrency(gems)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-blue-400 text-xs font-semibold">Essence:</span>
