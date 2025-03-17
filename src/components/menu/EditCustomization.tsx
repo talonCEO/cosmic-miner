@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Lock } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
@@ -31,19 +32,27 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
     true
   ).map(t => t.id);
 
-  const nameChangeCost = 100; // Define cost here, adjust as needed
-  const canAffordNameChange = state.gems >= nameChangeCost;
+  const NAME_CHANGE_COST = 50;
+  const canAffordNameChange = state.gems >= NAME_CHANGE_COST;
 
   const handleNameChange = () => {
-    if (newName.trim() && newName !== state.username) {
-      if (canAffordNameChange) {
-        addGems(-nameChangeCost);
-        updateUsername(newName);
-        setMessage('');
-      } else {
-        setMessage('Not enough gems');
-      }
+    if (!newName.trim()) {
+      setMessage('Username cannot be empty');
+      return;
     }
+    if (newName === state.username) {
+      setMessage('This is already your username');
+      return;
+    }
+    if (!canAffordNameChange) {
+      setMessage('Insufficient Gems');
+      return;
+    }
+
+    addGems(-NAME_CHANGE_COST);
+    updateUsername(newName);
+    setMessage('Username updated!');
+    setTimeout(() => setMessage(''), 2000); // Clear message after 2s
   };
 
   const handleApply = () => {
@@ -57,7 +66,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
   };
 
   return (
-    <DialogContent className="max-w-[300px] max-h-[350px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
+    <DialogContent className="max-w-[200px] max-h-[300px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
       <DialogHeader className="p-2 border-b border-indigo-500/20">
         <DialogTitle className="text-center text-lg">Customize</DialogTitle>
       </DialogHeader>
@@ -65,23 +74,26 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
         <div>
           <label className="text-xs text-slate-300 mb-0.5 block">Username</label>
           <div className="flex items-center gap-2">
-            <input
-              type="text"
+            <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="w-full h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white rounded px-2"
+              className="h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white flex-1"
               placeholder="Enter new username"
             />
             <Button
               onClick={handleNameChange}
-              className={`h-8 px-2 text-xs ${canAffordNameChange ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 cursor-not-allowed'}`}
-              disabled={!canAffordNameChange || !newName.trim() || newName === state.username}
+              disabled={!canAffordNameChange || !newName.trim()}
+              className={`h-8 text-xs px-3 ${
+                canAffordNameChange && newName.trim()
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-gray-600 cursor-not-allowed'
+              }`}
             >
               Change
             </Button>
           </div>
           {message && (
-            <p className="text-xs text-red-400 mt-1">{message}</p>
+            <p className="text-xs text-center mt-1 text-red-400">{message}</p>
           )}
         </div>
         <div>
