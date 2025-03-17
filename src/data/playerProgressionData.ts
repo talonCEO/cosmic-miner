@@ -4,7 +4,7 @@
  * This file contains all the information related to player progression:
  * - Level thresholds and rewards
  * - Titles and their unlock requirements
- * - Portrait borders/effects and their unlock requirements (commented out)
+ * - Portraits and their unlock requirements
  */
 
 import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
@@ -22,7 +22,7 @@ export interface LevelData {
     skillPoints?: number;
     gems?: number;
     unlocksTitle?: string; // References title.id
-    // unlocksPortrait?: string; // References portrait.id (commented out)
+    unlocksPortrait?: string; // References portrait.id
   };
 }
 
@@ -55,19 +55,18 @@ export const generateLevelData = (): LevelData[] => {
       }
     }
     
-    // Specific milestone rewards
+    // Specific milestone rewards for titles
     if (i === 10) level.rewards = { ...level.rewards, unlocksTitle: 'space_rookie' };
     if (i === 25) level.rewards = { ...level.rewards, unlocksTitle: 'cosmic_explorer' };
     if (i === 50) level.rewards = { ...level.rewards, unlocksTitle: 'galactic_pioneer' };
     if (i === 75) level.rewards = { ...level.rewards, unlocksTitle: 'stellar_commander' };
     if (i === 100) level.rewards = { ...level.rewards, unlocksTitle: 'celestial_sovereign' };
     
-    // Portrait unlocks (commented out)
-    // if (i === 20) level.rewards = { ...level.rewards, unlocksPortrait: 'nebula_glow' };
-    // if (i === 40) level.rewards = { ...level.rewards, unlocksPortrait: 'cosmic_spark' };
-    // if (i === 60) level.rewards = { ...level.rewards, unlocksPortrait: 'stellar_halo' };
-    // if (i === 80) level.rewards = { ...level.rewards, unlocksPortrait: 'void_ripple' };
-    // if (i === 100) level.rewards = { ...level.rewards, unlocksPortrait: 'celestial_radiance' };
+    // Portrait unlocks
+    if (i === 15) level.rewards = { ...level.rewards, unlocksPortrait: 'nebula_voyager' };
+    if (i === 30) level.rewards = { ...level.rewards, unlocksPortrait: 'stellar_seeker' };
+    if (i === 60) level.rewards = { ...level.rewards, unlocksPortrait: 'galactic_guardian' };
+    if (i === 90) level.rewards = { ...level.rewards, unlocksPortrait: 'cosmic_overlord' };
     
     levels.push(level);
   }
@@ -218,122 +217,88 @@ export const TITLES: TitleData[] = [
 ];
 
 // =========================================
-// Portrait Borders/Effects (commented out)
+// Player Portraits
 // =========================================
-/*
+
 export interface PortraitData {
   id: string;
   name: string;
   description: string;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  unlockCriteria: string;
+  unlockCriteria: string;  // Human-readable unlock description
   unlockCondition: {
     type: 'level' | 'achievement' | 'purchase' | 'prestige' | 'collection' | 'starting';
-    value?: number;
-    achievementId?: string;
+    value?: number;        // Specific value needed (level number, count, etc)
+    achievementId?: string; // If unlocked by specific achievement
   };
-  borderClass?: string;           // Tailwind CSS classes
-  glowClass?: string;             // Tailwind CSS glow effect
-  animationClass?: string;        // Animation class
-  gradientColors?: string[];      // Array of colors for gradient
-  icon?: React.ReactNode;         // Optional icon component
-  shaderKey?: string;             // Reference to a shader in the shaders.ts file
+  pngPath: string;         // Path to the PNG file for rendering
 }
 
 export const PORTRAITS: PortraitData[] = [
   {
     id: 'default',
-    name: 'Standard Border',
-    description: 'Basic border for all cosmic miners',
+    name: 'Default',
+    description: 'The standard portrait for all cosmic miners starting their journey.',
     rarity: 'common',
-    unlockCriteria: 'Default starting border',
+    unlockCriteria: 'Default starting portrait for all players',
     unlockCondition: {
       type: 'starting'
     },
-    borderClass: 'border-2 border-slate-400'
+    pngPath: '/portraits/default.png'
   },
   {
-    id: 'nebula_glow',
-    name: 'Nebula Glow',
-    description: 'A mystical aura emanating from distant nebulae',
+    id: 'nebula_voyager',
+    name: 'Nebula Voyager',
+    description: 'A portrait glowing with the hues of distant nebulae, earned through exploration.',
     rarity: 'uncommon',
-    unlockCriteria: 'Reach Level 20',
+    unlockCriteria: 'Reach Level 15',
     unlockCondition: {
       type: 'level',
-      value: 20
+      value: 15
     },
-    borderClass: 'border-2',
-    glowClass: 'shadow-lg shadow-purple-500/50',
-    gradientColors: ['#8B5CF6', '#EC4899'],
-    icon: <Star className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+    pngPath: '/portraits/nebula_voyager.png'
   },
   {
-    id: 'cosmic_spark',
-    name: 'Cosmic Spark',
-    description: 'Surging energy from the heart of cosmic anomalies',
+    id: 'stellar_seeker',
+    name: 'Stellar Seeker',
+    description: 'A radiant portrait for those who pursue the stars relentlessly.',
     rarity: 'rare',
-    unlockCriteria: 'Reach Level 40',
+    unlockCriteria: 'Reach Level 30',
     unlockCondition: {
       type: 'level',
-      value: 40
+      value: 30
     },
-    borderClass: 'border-2',
-    glowClass: 'shadow-lg shadow-blue-500/50',
-    animationClass: 'animate-pulse',
-    gradientColors: ['#3B82F6', '#06B6D4'],
-    icon: <Zap className="absolute -top-1 -right-1 h-4 w-4 text-blue-400" />
+    pngPath: '/portraits/stellar_seeker.png'
   },
   {
-    id: 'stellar_halo',
-    name: 'Stellar Halo',
-    description: 'Radiance of a thousand distant stars',
+    id: 'galactic_guardian',
+    name: 'Galactic Guardian',
+    description: 'A majestic portrait awarded for protecting the galaxy’s riches.',
     rarity: 'epic',
     unlockCriteria: 'Reach Level 60',
     unlockCondition: {
       type: 'level',
       value: 60
     },
-    borderClass: 'border-3',
-    glowClass: 'shadow-xl shadow-amber-500/50',
-    animationClass: 'animate-border-pulse',
-    gradientColors: ['#F59E0B', '#EF4444'],
-    icon: <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-amber-400" />
+    pngPath: '/portraits/galactic_guardian.png'
   },
   {
-    id: 'void_ripple',
-    name: 'Void Ripple',
-    description: 'Mysterious energies from the edge of the universe',
-    rarity: 'epic',
-    unlockCriteria: 'Reach Level 80',
-    unlockCondition: {
-      type: 'level',
-      value: 80
-    },
-    borderClass: 'border-3',
-    glowClass: 'shadow-xl shadow-indigo-500/50',
-    animationClass: 'animate-border-flow',
-    gradientColors: ['#6366F1', '#A78BFA', '#EC4899'],
-    icon: <ShieldCheck className="absolute -top-1 -right-1 h-4 w-4 text-indigo-400" />
-  },
-  {
-    id: 'celestial_radiance',
-    name: 'Celestial Radiance',
-    description: 'The ultimate cosmic power, harnessed as a portrait border',
+    id: 'cosmic_overlord',
+    name: 'Cosmic Overlord',
+    description: 'A supreme portrait for the ultimate ruler of the cosmic mining empire.',
     rarity: 'legendary',
-    unlockCriteria: 'Reach Level 100',
+    unlockCriteria: 'Complete the "Master Miner" achievement',
     unlockCondition: {
-      type: 'level',
-      value: 100
+      type: 'achievement',
+      achievementId: 'master_miner' // Assumes an achievement exists with this ID
     },
-    borderClass: 'border-4',
-    glowClass: 'shadow-2xl shadow-yellow-500/50',
-    animationClass: 'animate-cosmic-pulse',
-    gradientColors: ['#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#3B82F6'],
-    icon: <Trophy className="absolute -top-1 -right-1 h-5 w-5 text-yellow-400" />,
-    shaderKey: 'glowShader'
+    pngPath: '/portraits/cosmic_overlord.png'
   }
 ];
-*/
+
+// =========================================
+// Helper Functions
+// =========================================
 
 /**
  * Helper function to get level data based on experience points
@@ -384,15 +349,13 @@ export const getTitleById = (id: string): TitleData | undefined => {
 };
 
 /**
- * Get a portrait by its ID (commented out)
+ * Get a portrait by its ID
  * @param id Portrait ID
  * @returns Portrait data or undefined if not found
  */
-/*
 export const getPortraitById = (id: string): PortraitData | undefined => {
   return PORTRAITS.find(portrait => portrait.id === id);
 };
-*/
 
 /**
  * Check if a player has unlocked a specific title based on their profile
@@ -430,14 +393,13 @@ export const isTitleUnlocked = (
 };
 
 /**
- * Check if a player has unlocked a specific portrait based on their profile (commented out)
+ * Check if a player has unlocked a specific portrait based on their profile
  * @param portraitId Portrait ID to check
  * @param userLevel Current user level
  * @param userAchievements Array of achievement IDs the user has completed
  * @param prestigeCount Number of times the user has prestiged
  * @returns Boolean indicating if the portrait is unlocked
  */
-/*
 export const isPortraitUnlocked = (
   portraitId: string, 
   userLevel: number, 
@@ -462,7 +424,6 @@ export const isPortraitUnlocked = (
       return false;
   }
 };
-*/
 
 /**
  * Get all titles unlocked by a player
@@ -482,13 +443,12 @@ export const getUnlockedTitles = (
 };
 
 /**
- * Get all portraits unlocked by a player (commented out)
+ * Get all portraits unlocked by a player
  * @param userLevel Current user level
  * @param userAchievements Array of achievement IDs the user has completed
  * @param prestigeCount Number of times the user has prestiged
  * @returns Array of unlocked portrait data
  */
-/*
 export const getUnlockedPortraits = (
   userLevel: number, 
   userAchievements: string[] = [],
@@ -498,69 +458,3 @@ export const getUnlockedPortraits = (
     isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount)
   );
 };
-*/
-
-// Add CSS classes for special border animations (commented out)
-/*
-export const portraitStyles = `
-.animate-border-pulse {
-  animation: border-pulse 2s ease-in-out infinite;
-}
-
-.animate-border-flow {
-  animation: border-flow 3s linear infinite;
-  background: linear-gradient(90deg, #6366F1, #A78BFA, #EC4899, #6366F1);
-  background-size: 300% 100%;
-}
-
-.animate-cosmic-pulse {
-  animation: cosmic-pulse 4s ease-in-out infinite;
-  background: linear-gradient(90deg, #F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6, #F59E0B);
-  background-size: 600% 100%;
-}
-
-@keyframes border-pulse {
-  0%, 100% {
-    border-color: rgba(139, 92, 246, 0.8);
-  }
-  50% {
-    border-color: rgba(236, 72, 153, 0.8);
-  }
-}
-
-@keyframes border-flow {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 100% 0%;
-  }
-}
-
-@keyframes cosmic-pulse {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 100% 0%;
-  }
-}
-
-.text-gradient-cosmic {
-  background: linear-gradient(90deg, #F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 400% 100%;
-  animation: cosmic-text-flow 4s linear infinite;
-}
-
-@keyframes cosmic-text-flow {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 400% 0%;
-  }
-}
-`;
-*/
