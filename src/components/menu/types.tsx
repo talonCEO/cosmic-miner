@@ -51,7 +51,7 @@ export const INVENTORY_ITEMS = {
     name: "Double Coins Boost",
     description: "Doubles your coin income for 60 seconds.",
     icon: <img src="/icons/double-coins.png" alt="Double Coins" className="w-8 h-8" />,
-    rarity: "green", // Changed to green
+    rarity: "green",
     stackable: true,
     usable: true,
     quantity: 1,
@@ -62,7 +62,7 @@ export const INVENTORY_ITEMS = {
     name: "Time Warp",
     description: "Grants 2 hours worth of passive income instantly.",
     icon: <img src="/icons/time-warp.png" alt="Time Warp" className="w-8 h-8" />,
-    rarity: "green", // Changed to green
+    rarity: "green",
     stackable: true,
     usable: true,
     quantity: 1,
@@ -73,7 +73,7 @@ export const INVENTORY_ITEMS = {
     name: "Auto-Tap Boost",
     description: "Automatically taps for you at 5x speed for 30 seconds.",
     icon: <img src="/icons/auto-tap.png" alt="Auto Tap" className="w-8 h-8" />,
-    rarity: "green", // Changed to green
+    rarity: "green",
     stackable: true,
     usable: true,
     quantity: 1,
@@ -117,7 +117,7 @@ export const INVENTORY_ITEMS = {
     name: "Tap Boost",
     description: "Increases tap value by 5x for the next 50 taps.",
     icon: <img src="/icons/tap-boost.png" alt="Tap Boost" className="w-8 h-8" />,
-    rarity: "green", // Changed to green
+    rarity: "green",
     stackable: true,
     usable: true,
     quantity: 1,
@@ -161,7 +161,7 @@ export const INVENTORY_ITEMS = {
     name: "Cheap Upgrades",
     description: "Reduces upgrade costs by 20% for 60 seconds.",
     icon: <img src="/icons/cheap-upgrades.png" alt="Cheap Upgrades" className="w-8 h-8" />,
-    rarity: "green", // Changed to green
+    rarity: "green",
     stackable: true,
     usable: true,
     quantity: 1,
