@@ -100,13 +100,11 @@ export interface GameState {
   title: string;
   userId: string;
   portrait: string; // References portrait.id from playerProgressionData, defaults to 'default'
-  nameChangeCount: number;
 }
 
 type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_COINS'; amount: number }
-  | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number }
   | { type: 'ADD_ESSENCE'; amount: number }
   | { type: 'BUY_UPGRADE'; upgradeId: string; quantity?: number }
   | { type: 'TOGGLE_AUTO_BUY' }
@@ -297,7 +295,6 @@ const initialState: GameState = {
   coins: 0,
   coinsPerClick: 1,
   coinsPerSecond: 0,
-  nameChangeCount: 0,
   upgrades: upgradesList.map(upgrade => ({
     ...upgrade
   })),
@@ -347,10 +344,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         totalEarned: state.totalEarned + totalClickAmount
       };
     }
-    case 'UPDATE_NAME_CHANGE_COUNT':
-      return { ...state, nameChangeCount: action.count };
-    default:
-      return state;
     case 'ADD_COINS':
       return {
         ...state,

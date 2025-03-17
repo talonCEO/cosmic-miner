@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Removed AvatarImage since we'll use a standalone <img>
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
+import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react';
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 
@@ -34,14 +34,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   userId,
   portrait,
 }) => {
-  const { state, addGems, dispatch } = useGame();
+  const { state, addGems } = useGame();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
-
-  // Use nameChangeCount from GameContext state instead of local state
-  const nameChangeCount = state.nameChangeCount || 0;
+  const [nameChangeCount, setNameChangeCount] = useState(0);
 
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
 
@@ -56,8 +54,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     if (nameChangeCost > 0 && state.gems < nameChangeCost) return;
     if (nameChangeCost > 0) addGems(-nameChangeCost);
     onNameChange(name);
-    // Update nameChangeCount in GameContext state
-    dispatch({ type: 'UPDATE_NAME_CHANGE_COUNT', count: nameChangeCount + 1 });
+    setNameChangeCount((prev) => prev + 1);
     setIsEditing(false);
   };
 
@@ -84,34 +81,40 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
-      <div className="flex relative">
-        {/* Edit Buttons at Top-Right */}
-        <div className="absolute top-0 right-0 flex gap-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-            onClick={() => setIsEditing(true)}
-          >
-            <PenSquare size={14} className="text-slate-300" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-            onClick={() => setIsEditing(true)}
-          >
-            <Edit2 size={14} className="text-slate-300" />
-          </Button>
-        </div>
-
+      <div className="flex">
         <div className="flex flex-col items-center pt-2">
+          {/* 
+            === Portrait Container ===
+            - This div is now `relative` to allow absolute positioning of the portrait and avatar.
+            - Size: Set to `h-28 w-28` to accommodate the larger portrait (adjust as needed).
+            - Margin: `mb-1` adds space below; adjust to control vertical spacing.
+          */}
           <div className="relative h-24 w-24 mb-1">
+            {/* 
+              === Portrait Image ===
+              - Size: `h-24 w-24` makes the portrait larger than the Avatar (previously h-20 w-20).
+                Increase to `h-28 w-28` or more for an even bigger portrait.
+              - Positioning: `absolute -top-4 -left-4` moves it up and left relative to the container.
+                Adjust `-top-[value]` (e.g., -top-6) to move further up, and `-left-[value]` (e.g., -left-6) to move further left.
+              - Z-Index: `z-0` places it behind the Avatar; increase to `z-10` to put it in front if needed.
+              - Rounding: `rounded-full` makes it circular; use `rounded-lg` or `rounded-none` for different shapes.
+              - Object Fit: `object-cover` ensures the image fills the space; use `object-contain` to show the full image without cropping.
+              - Opacity: Added `opacity-80` to slightly fade it, making the Avatar stand out; adjust or remove as desired.
+            */}
             <img
               src={portraitData?.pngPath}
               alt={portraitData?.name}
               className="absolute h-24 w-24 -top-0 -left-0 z-20 rounded-full object-cover opacity-80"
             />
+            {/* 
+              === Avatar (Foreground) ===
+              - Size: Reduced to `h-16 w-16` to be smaller than the portrait, creating a "surrounding" effect.
+                Adjust to `h-12 w-12` for a smaller center or `h-20 w-20` for a larger one.
+              - Positioning: `top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2` centers it within the container.
+                Tweak `top-[value]` or `left-[value]` to offset it manually if needed.
+              - Z-Index: `z-10` ensures it stays above the portrait image.
+              - Border: Kept `border-2 border-amber-500/50` for style; increase thickness with `border-4` if desired.
+            */}
             <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
                 {playerName.substring(0, 2).toUpperCase()}
@@ -138,6 +141,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           ) : (
             <div className="flex items-center mb-2">
+              <Button size="icon" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => setIsEditing(true)}>
+                <Edit2 size={14} className="text-slate-300" />
+              </Button>
               <h3 className="text-sm font-semibold text-white">{playerName}</h3>
               {nameChangeCount > 0 && (
                 <span className="flex items-center text-xs text-purple-400 ml-2">
@@ -147,7 +153,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </div>
           )}
 
-          <div className="flex items-center gap-2 mb-1 pt-3 relative">
+          <div className="flex items-center gap-2 mb-1 pt-3">
             <div className="text-white text-xs font-medium">Level {currentLevel.level}</div>
             {currentLevel.rewards && (
               <div className="text-xs text-amber-400">
@@ -155,24 +161,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                 {currentLevel.rewards.essence ? ` +${currentLevel.rewards.essence} Essence` : ''}
               </div>
             )}
-            {/* Treasure Chest Button: Inline with Level, Right-Aligned */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`absolute right-0 h-8 w-8 p-0 transition-all ${isChestAvailable ? 'opacity-100' : 'opacity-50'}`}
-              onClick={handleChestClick}
-              disabled={!isChestAvailable}
-            >
-              <div className="relative flex items-center justify-center h-full w-full">
-                <Gift size={20} className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`} />
-                {!isChestAvailable && (
-                  <Lock
-                    size={14}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
-                  />
-                )}
-              </div>
-            </Button>
           </div>
 
           <div className="space-y-0.5">
@@ -189,6 +177,24 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
 
         <div className="ml-4 flex flex-col items-end space-y-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-10 w-10 p-0 transition-all ${isChestAvailable ? 'opacity-100' : 'opacity-50'}`}
+            onClick={handleChestClick}
+            disabled={!isChestAvailable}
+          >
+            <div className="relative flex items-center justify-center h-full w-full">
+              <Gift size={24} className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`} />
+              {!isChestAvailable && (
+                <Lock
+                  size={16}
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
+                />
+              )}
+            </div>
+          </Button>
+
           <div className="flex flex-col justify-center space-y-1 min-w-20">
             <div className="flex items-center justify-between">
               <span className="text-amber-400 text-xs font-semibold">Coins:</span>
