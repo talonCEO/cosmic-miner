@@ -1,7 +1,6 @@
 
 import { AdMob, AdOptions, RewardAdOptions, RewardAdPluginEvents } from '@capacitor-community/admob';
 
-// Simple AdMobService that doesn't try to track listeners or handle complex event types
 class AdMobService {
   // Test ad IDs - replace with your real IDs in production
   private interstitialAdId = 'ca-app-pub-3940256099942544/1033173712'; // Test ID

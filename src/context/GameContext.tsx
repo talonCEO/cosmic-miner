@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAdContext } from './AdContext';
@@ -63,18 +64,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return newCoins < 0 ? 0 : newCoins;
     });
   };
-
-  // Calculate click power with tap multiplier
-  const calculateClickPower = useCallback(() => {
-    const baseClickPower = clickPower * prestigeMultiplier;
-    return baseClickPower * tapPowerMultiplier;
-  }, [clickPower, prestigeMultiplier, tapPowerMultiplier]);
-
-  // Calculate total income per second with income multiplier
-  const calculateTotalIncomePerSecond = useCallback(() => {
-    const baseIncome = totalPassiveIncome * prestigeMultiplier;
-    return baseIncome * incomeMultiplier;
-  }, [totalPassiveIncome, prestigeMultiplier, incomeMultiplier]);
 
   const addGems = (amount: number) => {
     setGems(prevGems => prevGems + amount);

@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useGameContext } from './GameContext';
-import AdMobService from '../services/AdMobService';
+import { adMobService } from '../services/AdMobService';
 
 // Define boost types
 export type BoostType = 'income' | 'gems' | 'timeWarp' | 'tapPower';
@@ -131,7 +131,7 @@ export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           // Calculate 120 minutes of income
           const minutesOfIncome = 120;
           const secondsOfIncome = minutesOfIncome * 60;
-          const incomePerSecond = gameContext.totalIncomePerSecond;
+          const incomePerSecond = calculateIncomePerSecond(gameContext);
           const totalIncome = incomePerSecond * secondsOfIncome;
           
           gameContext.addCoins(totalIncome);
@@ -159,11 +159,16 @@ export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }
   };
 
+  // Helper function to calculate income per second
+  const calculateIncomePerSecond = (context: any) => {
+    return context.totalPassiveIncome * context.prestigeMultiplier * context.incomeMultiplier;
+  };
+
   const showRewardedAd = async () => {
     try {
-      const adResult = await AdMobService.showRewardedAd();
+      const adResult = await adMobService.showRewardedAd();
       
-      if (adResult.rewarded) {
+      if (adResult) {
         // Select a random boost
         const randomIndex = Math.floor(Math.random() * boostOptions.length);
         const selectedBoost = boostOptions[randomIndex];

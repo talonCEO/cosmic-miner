@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGameContext } from '../context/GameContext';
 import { motion, useAnimation, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useInterval } from '@/hooks/useInterval';
 
@@ -8,10 +8,6 @@ interface AnimatedAsteroidProps {
   onClick: () => void;
   isAnimating: boolean;
 }
-
-const ASTEROID_SIZE = 350;
-const BASE_POINTS = 18; // More points for smoother shape
-const BASE_RADIUS = 150;
 
 // Create glowing orb component
 const GlowingOrb: React.FC<{
@@ -60,8 +56,11 @@ const cratersOverlap = (crater1: CraterType, crater2: CraterType): boolean => {
   return distance < (crater1.size + crater2.size);
 };
 
+const ASTEROID_SIZE = 350;
+const BASE_POINTS = 18; // More points for smoother shape
+const BASE_RADIUS = 150;
+
 const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimating }) => {
-  const { state } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Animation values with Framer Motion
@@ -334,7 +333,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
         }
       });
     }
-  }, [isAnimating]);
+  }, [isAnimating, scale]);
   
   return (
     <div className="w-full h-full relative flex items-center justify-center">

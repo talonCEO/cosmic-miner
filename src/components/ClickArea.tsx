@@ -1,11 +1,17 @@
 
 import React, { useState, useCallback } from 'react';
 import { useGameContext } from '../context/GameContext';
-import { AnimatedAsteroid } from './AnimatedAsteroid';
+import AnimatedAsteroid from './AnimatedAsteroid';
 
 const ClickArea: React.FC = () => {
-  const { addCoins, calculateClickPower, formatNumber, tapPowerMultiplier } = useGameContext();
+  const { addCoins, clickPower, formatNumber, tapPowerMultiplier, prestigeMultiplier } = useGameContext();
   const [clickCoordinates, setClickCoordinates] = useState<{ x: number; y: number }[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const calculateClickPower = () => {
+    const baseClickPower = clickPower * prestigeMultiplier;
+    return baseClickPower * tapPowerMultiplier;
+  };
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -14,6 +20,9 @@ const ClickArea: React.FC = () => {
     
     const clickValue = calculateClickPower();
     addCoins(clickValue);
+    
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 100);
     
     setClickCoordinates(prev => [...prev, { x, y }]);
     
@@ -29,7 +38,7 @@ const ClickArea: React.FC = () => {
       onClick={handleClick}
     >
       <div className="w-64 h-64 md:w-80 md:h-80 relative">
-        <AnimatedAsteroid />
+        <AnimatedAsteroid onClick={() => {}} isAnimating={isAnimating} />
       </div>
       
       {clickCoordinates.map((coord, index) => (

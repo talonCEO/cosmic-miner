@@ -27,6 +27,10 @@ const AdNotification = () => {
     switch (boostType) {
       case 'income':
         return '2x Income Boost';
+      case 'gems':
+        return 'Gems Received';
+      case 'timeWarp':
+        return 'Time Warp';
       case 'tapPower':
         return '5x Tap Power';
       default:
