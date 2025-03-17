@@ -113,8 +113,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     // Special handling for auto-buy, no-ads, and inventory-expansion
     switch (item.id) {
       case 'boost-auto-buy':
-        dispatch({ type: 'TOGGLE_AUTO_BUY' }); // Sets autoBuy to true (assuming it’s initially false)
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Only updates purchased count
         break;
       case 'boost-no-ads':
         dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'hasNoAds', value: true });
