@@ -109,7 +109,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               <img
                 src={portraitData.pngPath}
                 alt={portraitData.name}
-                className="h-16 w-16 absolute top-0 left-0 z-20 object-cover"
+                className="h-18 w-18 absolute top-0 left-0 z-20 object-cover"
               />
             )}
           </div>
