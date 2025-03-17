@@ -11,23 +11,40 @@ interface EditCustomizationProps {
 }
 
 const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
-  const { state, updatePortrait, updateTitle } = useGame();
+  const { state, updatePortrait, updateTitle, updateUsername, addGems } = useGame();
   const [selectedPortrait, setSelectedPortrait] = useState(state.portrait);
   const [selectedTitle, setSelectedTitle] = useState(state.title);
+  const [newName, setNewName] = useState(state.username);
+  const [message, setMessage] = useState<string>('');
 
   const levelData = getLevelFromExp(state.totalEarned || 0);
   const unlockedPortraitIds = getUnlockedPortraits(
-    levelData.currentLevel.level, 
+    levelData.currentLevel.level,
     state.achievements.map(a => a.id),
-    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
-    true // Unlock all portraits by default
+    state.prestigeCount || 0,
+    true
   ).map(p => p.id);
   const unlockedTitleIds = getUnlockedTitles(
-    levelData.currentLevel.level, 
+    levelData.currentLevel.level,
     state.achievements.map(a => a.id),
-    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
-    true // Unlock all titles by default
+    state.prestigeCount || 0,
+    true
   ).map(t => t.id);
+
+  const nameChangeCost = 100; // Define cost here, adjust as needed
+  const canAffordNameChange = state.gems >= nameChangeCost;
+
+  const handleNameChange = () => {
+    if (newName.trim() && newName !== state.username) {
+      if (canAffordNameChange) {
+        addGems(-nameChangeCost);
+        updateUsername(newName);
+        setMessage('');
+      } else {
+        setMessage('Not enough gems');
+      }
+    }
+  };
 
   const handleApply = () => {
     if (selectedPortrait !== state.portrait && unlockedPortraitIds.includes(selectedPortrait)) {
@@ -36,15 +53,37 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
     if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
       updateTitle(selectedTitle);
     }
-    onClose(); // Close after applying
+    onClose();
   };
 
   return (
-    <DialogContent className="max-w-[200px] max-h-[250px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
+    <DialogContent className="max-w-[300px] max-h-[350px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
       <DialogHeader className="p-2 border-b border-indigo-500/20">
         <DialogTitle className="text-center text-lg">Customize</DialogTitle>
       </DialogHeader>
       <div className="p-2 space-y-2">
+        <div>
+          <label className="text-xs text-slate-300 mb-0.5 block">Username</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="w-full h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white rounded px-2"
+              placeholder="Enter new username"
+            />
+            <Button
+              onClick={handleNameChange}
+              className={`h-8 px-2 text-xs ${canAffordNameChange ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 cursor-not-allowed'}`}
+              disabled={!canAffordNameChange || !newName.trim() || newName === state.username}
+            >
+              Change
+            </Button>
+          </div>
+          {message && (
+            <p className="text-xs text-red-400 mt-1">{message}</p>
+          )}
+        </div>
         <div>
           <label className="text-xs text-slate-300 mb-0.5 block">Portrait</label>
           <Select value={selectedPortrait} onValueChange={setSelectedPortrait}>
