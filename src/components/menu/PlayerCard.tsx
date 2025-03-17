@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Check, Lock, Gift, Gem } from 'lucide-react';
-import { getTitleById, getLevelFromExp } from '@/data/playerProgressionData';
+import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 
 interface PlayerCardProps {
@@ -14,10 +14,11 @@ interface PlayerCardProps {
   playerExp: number;
   playerMaxExp: number;
   coins: number;
-  gems: number; // Added to match Profile.tsx's playerData
+  gems: number;
   essence: number;
   onNameChange: (newName: string) => void;
-  userId: string; // Made required to match Profile.tsx
+  userId: string;
+  portrait: string; // Added portrait prop, defaults to 'default' in GameContext
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -31,6 +32,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   essence,
   onNameChange,
   userId,
+  portrait,
 }) => {
   const { state, addGems } = useGame();
   const [isEditing, setIsEditing] = useState(false);
@@ -88,17 +90,29 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     return `${roundedExp}/${nextLevel.expRequired}`;
   };
 
+  // Fetch the portrait data
+  const portraitData = getPortraitById(portrait) || getPortraitById('default'); // Fallback to 'default'
+
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex">
         {/* Left column: Avatar and Title */}
         <div className="flex flex-col items-center pt-2">
-          <Avatar className="h-16 w-16 border-2 border-amber-500/50 mb-1">
-            <AvatarImage src="/placeholder.svg" alt="Player avatar" />
-            <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
-              {playerName.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative h-16 w-16 mb-1">
+            <Avatar className="h-16 w-16 border-2 border-amber-500/50 absolute top-0 left-0 z-10">
+              <AvatarImage src="/placeholder.svg" alt="Player avatar" />
+              <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
+                {playerName.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {portraitData && (
+              <img
+                src={portraitData.pngPath}
+                alt={portraitData.name}
+                className="h-16 w-16 absolute top-0 left-0 z-20 object-cover"
+              />
+            )}
+          </div>
           <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
             {titleDisplay}
           </div>
