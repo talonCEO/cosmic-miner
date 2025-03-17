@@ -24,7 +24,7 @@ const EditCustomization: React.FC = () => {
   };
 
   return (
-    <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white">
+    <DialogContent className="sm:max-w-md backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
       <DialogHeader className="p-4 border-b border-indigo-500/20">
         <DialogTitle className="text-center text-xl">Edit Customization</DialogTitle>
       </DialogHeader>
@@ -69,9 +69,9 @@ const EditCustomization: React.FC = () => {
           <Button
             variant="outline"
             className="border-indigo-500 text-white hover:bg-indigo-700/50"
-            asChild
+            onClick={() => document.querySelector('dialog')?.close()} // Manual close
           >
-            <dialog-close>Close</dialog-close>
+            Close
           </Button>
         </div>
       </div>
