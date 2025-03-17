@@ -94,8 +94,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             - Rounding: Add `rounded-full` to the Avatar class for a circular shape, or `rounded-none` for square.
             - Object Fit: `object-cover` ensures the image fills the space. Use `object-contain` to avoid cropping.
           */}
-          <div className="relative h-20 w-20 mb-1">
-            <Avatar className="h-20 w-20 border-2 border-amber-500/50 absolute top-0 left-0 z-10">
+          {/* Portrait - Independent from the card */}
+          <div className="absolute top-[-20px] left-[-10px] z-20">
+            <Avatar className="h-28 w-28 border-4 border-amber-500/50 shadow-xl">
               <AvatarImage src={portraitData?.pngPath} alt={portraitData?.name} />
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
                 {playerName.substring(0, 2).toUpperCase()}
