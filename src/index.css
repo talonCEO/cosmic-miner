@@ -55,15 +55,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    color: #e0e0ff; /* Ensure text is visible on dark background */
-  }
-  
-  html, body, #root {
-    height: 100%;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-    background-color: #0a0a20;
   }
 }
 

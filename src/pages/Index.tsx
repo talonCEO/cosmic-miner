@@ -9,7 +9,7 @@ import AdNotification from '@/components/AdNotification';
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden relative bg-[#0a0a20]">
+    <div className="min-h-screen flex flex-col overflow-hidden relative">
       <SkiaBackground />
       
       <div className="relative z-10">
