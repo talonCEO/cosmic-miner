@@ -186,25 +186,6 @@ const Inventory: React.FC = () => {
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   const [notifications, setNotifications] = useState<BoostEffect[]>([]);
   
-  // Add test boosts to player inventory when component mounts
-  useEffect(() => {
-    const hasDoubleCoins = state.inventory.some(item => item.id === INVENTORY_ITEMS.DOUBLE_COINS.id);
-    const hasTimeWarp = state.inventory.some(item => item.id === INVENTORY_ITEMS.TIME_WARP.id);
-    const hasAutoTap = state.inventory.some(item => item.id === INVENTORY_ITEMS.AUTO_TAP.id);
-    
-    if (!hasDoubleCoins) {
-      addItem(createInventoryItem(INVENTORY_ITEMS.DOUBLE_COINS, 3));
-    }
-    
-    if (!hasTimeWarp) {
-      addItem(createInventoryItem(INVENTORY_ITEMS.TIME_WARP, 2));
-    }
-    
-    if (!hasAutoTap) {
-      addItem(createInventoryItem(INVENTORY_ITEMS.AUTO_TAP, 5));
-    }
-  }, [addItem, state.inventory]);
-  
   // Create virtual inventory with resource items
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
