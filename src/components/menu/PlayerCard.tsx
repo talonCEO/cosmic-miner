@@ -3,10 +3,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import EditCustomization from './EditCustomization';
 
 interface PlayerCardProps {
@@ -45,7 +45,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
   const nameChangeCount = state.nameChangeCount || 0;
   const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
-  const canEditName = isEditing || (nameChangeCost === 0 || state.gems >= nameChangeCost);
+  const canEditName = nameChangeCost === 0 || state.gems >= nameChangeCost;
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
 
   useEffect(() => {
@@ -65,6 +65,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     }
     onNameChange(name);
     dispatch({ type: 'UPDATE_NAME_CHANGE_COUNT', count: nameChangeCount + 1 });
+    setIsEditing(false);
+  };
+
+  const handleCancelName = () => {
+    setName(playerName);
     setIsEditing(false);
   };
 
@@ -114,17 +119,22 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         {/* Middle Column: Name, Level, XP */}
         <div className="ml-3 flex-1 pt-2">
           {isEditing ? (
-            <div className="flex items-center gap-2 mb-4">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-7 text-white bg-indigo-700/50 border-indigo-500"
-                maxLength={15}
-              />
-              <Button size="icon" variant="ghost" className="h-7 w-7 p-0" onClick={handleSaveName}>
-                <Check size={14} className="text-green-400" />
-              </Button>
-            </div>
+            <Dialog open={isEditing} onOpenChange={(open) => !open && handleCancelName()}>
+              <DialogContent className="bg-slate-900 border-indigo-500/30 p-4 rounded-xl max-w-xs">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-7 text-white bg-indigo-700/50 border-indigo-500"
+                    maxLength={15}
+                    autoFocus
+                  />
+                  <Button size="icon" className="h-7 w-7 bg-green-600 hover:bg-green-700" onClick={handleSaveName}>
+                    <Check size={14} className="text-white" />
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           ) : (
             <div className="mb-6 mt-2">
               <h3 className="text-m font-semibold text-white">{playerName}</h3>
@@ -190,7 +200,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                   <PenSquare size={14} className="text-slate-300" />
                 </Button>
               </DialogTrigger>
-              <EditCustomization onClose={() => setIsCustomizationOpen(false)} />
+              <EditCustomization isOpen={isCustomizationOpen} onClose={() => setIsCustomizationOpen(false)} />
             </Dialog>
             <Button
               size="icon"
