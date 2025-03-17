@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
+import { Edit2, Check, Lock, Gift, Gem, PenSquare, X } from 'lucide-react'; // Added X for close button
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 import EditCustomization from './EditCustomization';
@@ -36,7 +36,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   userId,
   portrait,
 }) => {
-  const { state, addGems, dispatch, updateUsername } = useGame(); // Added updateUsername for consistency
+  const { state, addGems, dispatch, updateUsername } = useGame();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
@@ -70,8 +70,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     if (cost > 0) {
       addGems(-cost);
     }
-    updateUsername(name); // Update in GameContext
-    onNameChange(name); // Notify parent
+    updateUsername(name);
+    onNameChange(name);
     dispatch({ type: 'UPDATE_NAME_CHANGE_COUNT', count: nameChangeCount + 1 });
     setIsEditing(false);
   };
@@ -126,40 +126,48 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
         {/* Middle Column: Name, Level, XP */}
         <div className="ml-3 flex-1 pt-2">
-          {isEditing ? (
-            <Dialog open={isEditing} onOpenChange={(open) => !open && handleCancelName()}>
-              <DialogContent 
-                className="bg-slate-900 border-indigo-500/30 p-4 rounded-xl max-w-xs z-[10003]"
-              >
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="h-7 text-white bg-indigo-700/50 border-indigo-500"
-                    maxLength={15}
-                    autoFocus
-                  />
-                  <Button size="icon" className="h-7 w-7 bg-green-600 hover:bg-green-700" onClick={handleSaveName}>
-                    <Check size={14} className="text-white" />
-                  </Button>
+          <div className="mb-6 mt-2 relative">
+            {isEditing ? (
+              <div className="absolute top-0 left-0 bg-slate-900 border-indigo-500/30 p-4 rounded-xl w-64 h-24 z-[10003] shadow-lg">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="absolute top-1 right-1 h-6 w-6 p-0 text-white"
+                  onClick={handleCancelName}
+                >
+                  <X size={16} />
+                </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-8 text-white bg-indigo-700/50 border-indigo-500 w-40"
+                      maxLength={15}
+                      autoFocus
+                    />
+                    <Button size="icon" className="h-8 w-8 bg-green-600 hover:bg-green-700" onClick={handleSaveName}>
+                      <Check size={16} className="text-white" />
+                    </Button>
+                  </div>
+                  {nameChangeCost > 0 && (
+                    <span className="text-purple-400 text-xs flex items-center">
+                      <Gem size={12} className="mr-1" /> Cost: {nameChangeCost}
+                    </span>
+                  )}
                 </div>
-                {nameChangeCost > 0 && (
-                  <span className="text-purple-400 text-xs mt-1 flex items-center">
-                    <Gem size={12} className="mr-1" /> Cost: {nameChangeCost}
+              </div>
+            ) : (
+              <div>
+                <h3 className="text-m font-semibold text-white">{playerName}</h3>
+                {nameChangeCount > 0 && (
+                  <span className="flex items-center text-xs text-purple-400 mt-1">
+                    <Gem size={12} className="mr-1" /> 200
                   </span>
                 )}
-              </DialogContent>
-            </Dialog>
-          ) : (
-            <div className="mb-6 mt-2">
-              <h3 className="text-m font-semibold text-white">{playerName}</h3>
-              {nameChangeCount > 0 && (
-                <span className="flex items-center text-xs text-purple-400 mt-1">
-                  <Gem size={12} className="mr-1" /> 200
-                </span>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-2 mb-1 pt-3 relative">
             <div className="text-white text-xs font-medium">Level {currentLevel.level}</div>
