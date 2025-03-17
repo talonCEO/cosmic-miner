@@ -28,12 +28,13 @@ export interface LevelData {
 
 /**
  * Experience curve calculation
- * Using a standard RPG-style curve: baseExp * (level ^ scalingFactor)
+ * Using a steeper RPG-style curve: baseExp * (level ^ scalingFactor)
+ * Increased scalingFactor from 1.5 to 2.0 for exponential difficulty
  */
 export const generateLevelData = (): LevelData[] => {
   const levels: LevelData[] = [];
   const baseExp = 150;      // Base experience for level 1
-  const scalingFactor = 1.5; // How quickly the curve increases
+  const scalingFactor = 2.0; // Increased from 1.5 to 2.0 for steeper exponential growth
   
   for (let i = 1; i <= 100; i++) {
     const level: LevelData = {
