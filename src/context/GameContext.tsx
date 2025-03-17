@@ -7,7 +7,7 @@ import { adMobService } from '@/services/AdMobService';
 import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
-import { StorageService } from '@/services/StorageService'; // Correct import
+import { StorageService } from '@/services/StorageService';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
 import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
@@ -99,7 +99,7 @@ export interface GameState {
   username: string;
   title: string;
   userId: string;
-  portrait: string; // References portrait.id from playerProgressionData
+  portrait: string; // References portrait.id from playerProgressionData, defaults to 'default'
 }
 
 type GameAction =
@@ -131,9 +131,9 @@ type GameAction =
   | { type: 'SET_MENU_TYPE'; menuType: string }
   | { type: 'ADD_GEMS'; amount: number }
   | { type: 'ACTIVATE_BOOST'; boostId: string }
-  | { type: 'UPDATE_USERNAME'; username: string } // Added for profile
-  | { type: 'UPDATE_TITLE'; title: string }     // Added for profile
-  | { type: 'UPDATE_PORTRAIT'; portrait: string }; // Added for portraits
+  | { type: 'UPDATE_USERNAME'; username: string }
+  | { type: 'UPDATE_TITLE'; title: string }
+  | { type: 'UPDATE_PORTRAIT'; portrait: string };
 
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
@@ -319,7 +319,6 @@ const initialState: GameState = {
   gems: 0,
   boosts: {},
   hasNoAds: false,
-  // Added profile fields
   username: "Cosmic Explorer",
   title: "space_pilot",
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
@@ -581,7 +580,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         boosts: newBoosts,
         hasNoAds: state.hasNoAds || state.boosts["boost-no-ads"]?.purchased > 0,
         inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * INVENTORY_ITEMS.INVENTORY_EXPANSION.effect!.value,
-        // Preserve profile fields
         username: state.username,
         title: state.title,
         userId: state.userId,
@@ -946,11 +944,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         },
       };
     }
-    case 'UPDATE_USERNAME': // Added for profile
+    case 'UPDATE_USERNAME':
       return { ...state, username: action.username };
-    case 'UPDATE_TITLE': // Added for profile
+    case 'UPDATE_TITLE':
       return { ...state, title: action.title };
-    case 'UPDATE_PORTRAIT': // Added for portraits
+    case 'UPDATE_PORTRAIT':
       return { ...state, portrait: action.portrait };
     default:
       return state;
@@ -1005,9 +1003,9 @@ interface GameContextType {
   removeItem: (itemId: string, quantity?: number) => void;
   addGems: (amount: number) => void;
   activateBoost: (boostId: string) => void;
-  updateUsername: (username: string) => void; // Added for profile
-  updateTitle: (title: string) => void;     // Added for profile
-  updatePortrait: (portrait: string) => void; // Added for portraits
+  updateUsername: (username: string) => void;
+  updateTitle: (title: string) => void;
+  updatePortrait: (portrait: string) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1062,7 +1060,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             artifacts: initialState.artifacts,
             boosts: savedState.boosts || {},
             hasNoAds: savedState.hasNoAds || false,
-            // Ensure profile fields are included
             username: savedState.username || initialState.username,
             title: savedState.title || initialState.title,
             userId: savedState.userId || initialState.userId,
