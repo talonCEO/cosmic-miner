@@ -95,11 +95,11 @@ export interface GameState {
     purchased: number;
   }>;
   hasNoAds: boolean;
-  // Added profile fields
   username: string;
   title: string;
   userId: string;
-  portrait: string; // References portrait.id from playerProgressionData, defaults to 'default'
+  portrait: string;
+  nameChangeCount: number; // Added
 }
 
 type GameAction =
@@ -133,7 +133,8 @@ type GameAction =
   | { type: 'ACTIVATE_BOOST'; boostId: string }
   | { type: 'UPDATE_USERNAME'; username: string }
   | { type: 'UPDATE_TITLE'; title: string }
-  | { type: 'UPDATE_PORTRAIT'; portrait: string };
+  | { type: 'UPDATE_PORTRAIT'; portrait: string }
+  | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number }; // Added
 
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
@@ -322,7 +323,8 @@ const initialState: GameState = {
   username: "Cosmic Explorer",
   title: "space_pilot",
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-  portrait: "default"
+  portrait: "default",
+  nameChangeCount: 0 // Added
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -583,7 +585,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         username: state.username,
         title: state.title,
         userId: state.userId,
-        portrait: state.portrait
+        portrait: state.portrait,
+        nameChangeCount: state.nameChangeCount
       };
     }
     case 'BUY_MANAGER': {
@@ -950,6 +953,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, title: action.title };
     case 'UPDATE_PORTRAIT':
       return { ...state, portrait: action.portrait };
+    case 'UPDATE_NAME_CHANGE_COUNT':
+      return { ...state, nameChangeCount: action.count };
     default:
       return state;
   }
@@ -1063,7 +1068,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             username: savedState.username || initialState.username,
             title: savedState.title || initialState.title,
             userId: savedState.userId || initialState.userId,
-            portrait: savedState.portrait || initialState.portrait
+            portrait: savedState.portrait || initialState.portrait,
+            nameChangeCount: savedState.nameChangeCount || 0
           };
           
           for (const key in restoredState) {
