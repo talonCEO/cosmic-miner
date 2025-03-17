@@ -245,7 +245,7 @@ export const PORTRAITS: PortraitData[] = [
     unlockCondition: {
       type: 'starting'
     },
-    pngPath: '1.png'
+    pngPath: 'default.png'
   },
   {
     id: 'nebula_voyager',
