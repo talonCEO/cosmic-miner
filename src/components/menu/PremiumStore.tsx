@@ -18,9 +18,9 @@ interface PremiumStoreProps {
   onBuyGemPackage: (packageId: string, amount: number) => void;
 }
 
-interface StoreBoostItem extends InventoryItem {
+export interface StoreBoostItem extends InventoryItem {
   cost: number; // Required for all boosts in the store
-  maxPurchases?: number; // Optional, defaults to Infinity
+  maxPurchases: number; // Required, not optional
   purchasable: boolean;
   purchased: number;
 }
@@ -40,19 +40,22 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
-      .filter((item): item is InventoryItem & { cost: number } => 
-        item.type === 'boost' && 'cost' in item // Only require type 'boost' and cost
+      .filter(item => 
+        item.type === 'boost' && typeof item.cost === 'number'
       )
       .map(item => {
         const purchased = state.boosts[item.id]?.purchased || 0;
         const maxPurchases = 
           item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
-          item.id === 'boost-inventory-expansion' ? 5 : Infinity;
+          item.id === 'boost-inventory-expansion' ? 5 : 
+          item.maxPurchases || Infinity;
+        
         return {
           ...item,
+          cost: item.cost || 0, // Ensure cost exists
           purchased,
-          maxPurchases,
-          purchasable: state.gems >= item.cost && purchased < maxPurchases,
+          maxPurchases, // Make sure this is not optional
+          purchasable: state.gems >= (item.cost || 0) && purchased < maxPurchases,
           quantity: 1,
         } as StoreBoostItem;
       });

@@ -1,4 +1,3 @@
-
 import { Upgrade } from '@/context/GameContext';
 
 // Categories
@@ -43,17 +42,20 @@ const createElementUpgrade = (
     id: `element-${id}`,
     name: `${element} (${symbol})`,
     description,
-    cost: scaledBaseCost,
     baseCost: scaledBaseCost,
+    cost: scaledBaseCost,
+    costMultiplier: BASE_COST_MULTIPLIER,
     level: 0,
     maxLevel: 1000,
+    baseValue: 0,
+    growthRate: 0,
+    category: UPGRADE_CATEGORIES.ELEMENT,
+    unlocked: id === 1, // Only the first element is unlocked by default
+    icon,
     coinsPerClickBonus: scaledClickValue,
     coinsPerSecondBonus: scaledPassiveValue,
     multiplierBonus: 0,
-    icon,
-    unlocked: id === 1, // Only the first element is unlocked by default
     unlocksAt: id > 1 ? { upgradeId: `element-${id-1}`, level: 1 } : undefined,
-    category: UPGRADE_CATEGORIES.ELEMENT
   };
 };
 
@@ -63,16 +65,19 @@ const createTapPowerUpgrade = (): Upgrade => {
     id: 'tap-power-1',
     name: 'Tap Power',
     description: 'Improves active mining efficiency meaning you earn more while on the job. Each level increases your tap power by 5%.',
-    cost: 100,
     baseCost: 100,
+    cost: 100,
+    costMultiplier: BASE_COST_MULTIPLIER,
     level: 0,
     maxLevel: 1000,
+    baseValue: 0,
+    growthRate: 0,
+    category: UPGRADE_CATEGORIES.TAP,
+    unlocked: true, // Available from the start
+    icon: 'hand',
     coinsPerClickBonus: 0.05, // Changed from 0.1 (10%) to 0.05 (5%)
     coinsPerSecondBonus: 0,
-    multiplierBonus: 0,
-    icon: 'hand',
-    unlocked: true, // Available from the start
-    category: UPGRADE_CATEGORIES.TAP
+    multiplierBonus: 0
   };
 };
 

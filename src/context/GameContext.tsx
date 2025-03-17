@@ -19,10 +19,17 @@ export interface Upgrade {
   baseCost: number;
   costMultiplier: number;
   level: number;
+  cost: number;
+  maxLevel: number;
   baseValue: number;
   growthRate: number;
   category: string;
   unlocked: boolean;
+  icon?: string;
+  coinsPerClickBonus?: number;
+  coinsPerSecondBonus?: number;
+  multiplierBonus?: number;
+  unlocksAt?: { upgradeId: string; level: number };
 }
 
 export interface Ability {
@@ -41,9 +48,12 @@ export interface Ability {
 }
 
 export interface BoostEffect {
+  id: string;
   type: string;
   value: number;
   duration?: number;
+  activatedAt?: number;
+  remainingTime?: number;
 }
 
 export interface GameState {
@@ -74,6 +84,10 @@ export interface GameState {
   hasNoAds: boolean;
   managers: any[];
   artifacts: any[];
+  inventory: any[];
+  activeBoosts: BoostEffect[];
+  username?: string;
+  userId?: string;
 }
 
 export interface GameContextType {
@@ -127,6 +141,13 @@ export interface UseGameReturnType {
   formatNumber: (number: number) => string;
   addItem: (item: any) => void;
   useItem: (itemId: string) => void;
+  buyUpgrade: (upgradeId: string, quantity: number) => void;
+  toggleAutoBuy: () => void;
+  calculateMaxPurchaseAmount: (upgradeId: string) => number;
+  activateBoost: (boostId: string, duration?: number, value?: number, immediateValue?: number) => void;
+  updateUsername: (name: string) => void;
+  handleClick: (value: number) => void;
+  unlockAbility: (abilityId: string) => void;
 }
 
 const GameStateContext = createContext<UseGameReturnType | undefined>(undefined);
@@ -173,7 +194,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     inventoryCapacity: 20,
     hasNoAds: false,
     managers: [],
-    artifacts: []
+    artifacts: [],
+    inventory: [],
+    activeBoosts: [],
+    username: 'Player',
+    userId: '12345678',
   };
 
   // Calculate the actual click power based on all multipliers
@@ -237,6 +262,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const mockUpdateTitle = () => {};
   const mockAddItem = () => {};
   const mockUseItem = () => {};
+  const mockBuyUpgrade = () => {};
+  const mockToggleAutoBuy = () => {};
+  const mockCalculateMaxPurchaseAmount = () => 0;
+  const mockActivateBoost = () => {};
+  const mockUpdateUsername = () => {};
+  const mockHandleClick = () => {};
+  const mockUnlockAbility = () => {};
 
   // Provide classic context values
   const contextValue: GameContextType = {
@@ -287,6 +319,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     formatNumber,
     addItem: mockAddItem,
     useItem: mockUseItem,
+    buyUpgrade: mockBuyUpgrade,
+    toggleAutoBuy: mockToggleAutoBuy,
+    calculateMaxPurchaseAmount: mockCalculateMaxPurchaseAmount,
+    activateBoost: mockActivateBoost,
+    updateUsername: mockUpdateUsername,
+    handleClick: mockHandleClick,
+    unlockAbility: mockUnlockAbility,
   };
 
   return (
