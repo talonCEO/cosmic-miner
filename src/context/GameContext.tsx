@@ -102,8 +102,10 @@ export interface GameState {
   hasNoAds: boolean;
   username: string;
   title: string;
+  unlockedTitles: string[]; // Added to track unlocked titles
   userId: string;
   portrait: string;
+  unlockedPortraits: string[]; // Added to track unlocked portraits
   nameChangeCount: number;
 }
 
@@ -326,9 +328,11 @@ const initialState: GameState = {
   boosts: {},
   hasNoAds: false,
   username: "Cosmic Explorer",
-  title: "space_pilot", // Only space_pilot unlocked by default
+  title: "space_pilot",
+  unlockedTitles: ["space_pilot"], // Only space_pilot unlocked by default
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-  portrait: "default", // Only default unlocked by default
+  portrait: "default",
+  unlockedPortraits: ["default"], // Only default unlocked by default
   nameChangeCount: 0
 };
 
@@ -589,8 +593,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * INVENTORY_ITEMS.INVENTORY_EXPANSION.effect!.value,
         username: state.username,
         title: state.title,
+        unlockedTitles: state.unlockedTitles, // Persist unlocked titles
         userId: state.userId,
         portrait: state.portrait,
+        unlockedPortraits: state.unlockedPortraits, // Persist unlocked portraits
         nameChangeCount: state.nameChangeCount
       };
     }
@@ -644,10 +650,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             newState.boosts['boost-generic'] = { active: true, remainingTime: reward.value as number, purchased: (state.boosts['boost-generic']?.purchased || 0) + 1 };
             break;
           case 'title':
-            newState.title = reward.value as string;
+            newState.unlockedTitles = [...newState.unlockedTitles, reward.value as string]; // Unlock title
+            newState.title = reward.value as string; // Equip immediately
             break;
           case 'portrait':
-            newState.portrait = reward.value as string;
+            newState.unlockedPortraits = [...newState.unlockedPortraits, reward.value as string]; // Unlock portrait
+            newState.portrait = reward.value as string; // Equip immediately
             break;
           case 'inventory_item':
             newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
@@ -681,9 +689,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
               newState.boosts['boost-generic'] = { active: true, remainingTime: reward.value as number, purchased: (newState.boosts['boost-generic']?.purchased || 0) + 1 };
               break;
             case 'title':
+              newState.unlockedTitles = [...newState.unlockedTitles, reward.value as string];
               newState.title = reward.value as string;
               break;
             case 'portrait':
+              newState.unlockedPortraits = [...newState.unlockedPortraits, reward.value as string];
               newState.portrait = reward.value as string;
               break;
             case 'inventory_item':
@@ -983,8 +993,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'UPDATE_USERNAME':
       return { ...state, username: action.username };
     case 'UPDATE_TITLE':
+      if (!state.unlockedTitles.includes(action.title)) return state; // Restrict to unlocked titles
       return { ...state, title: action.title };
     case 'UPDATE_PORTRAIT':
+      if (!state.unlockedPortraits.includes(action.portrait)) return state; // Restrict to unlocked portraits
       return { ...state, portrait: action.portrait };
     case 'UPDATE_NAME_CHANGE_COUNT':
       return { ...state, nameChangeCount: action.count };
@@ -1100,8 +1112,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             hasNoAds: savedState.hasNoAds || false,
             username: savedState.username || initialState.username,
             title: savedState.title || initialState.title,
+            unlockedTitles: savedState.unlockedTitles || initialState.unlockedTitles, // Restore unlocked titles
             userId: savedState.userId || initialState.userId,
             portrait: savedState.portrait || initialState.portrait,
+            unlockedPortraits: savedState.unlockedPortraits || initialState.unlockedPortraits, // Restore unlocked portraits
             nameChangeCount: savedState.nameChangeCount || 0
           };
           
