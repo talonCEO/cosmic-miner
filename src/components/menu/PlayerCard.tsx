@@ -127,8 +127,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="mb-4"> {/* Increased mb-2 to mb-4 */}
-              <h3 className="text-sm font-semibold text-white">{playerName}</h3>
+            <div className="mb-6 mt-2"> {/* Increased mb-2 to mb-4 */}
+              <h3 className="text-m font-semibold text-white">{playerName}</h3>
               {nameChangeCount > 0 && (
                 <span className="flex items-center text-xs text-purple-400 mt-1">
                   <Gem size={12} className="mr-1" /> 200
