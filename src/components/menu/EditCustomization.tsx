@@ -1,178 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
+import React, { useState } from 'react';
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Lock, Gift, PenSquare } from 'lucide-react'; // Removed Gem
-import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Lock } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import EditCustomization from './EditCustomization';
+import { getUnlockedPortraits, getUnlockedTitles, getLevelFromExp, PORTRAITS, TITLES } from '@/data/playerProgressionData';
 
-interface PlayerCardProps {
-  playerName: string;
-  playerTitle: string;
-  playerLevel: number;
-  playerExp: number;
-  playerMaxExp: number;
-  coins: number;
-  gems: number;
-  essence: number;
-  onNameChange: (newName: string) => void;
-  userId: string;
-  portrait: string;
+interface EditCustomizationProps {
+  onClose: () => void;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({
-  playerName,
-  playerTitle,
-  playerLevel,
-  playerExp,
-  playerMaxExp,
-  coins,
-  gems,
-  essence,
-  onNameChange,
-  userId,
-  portrait,
-}) => {
-  const { state } = useGame();
-  const [isChestAvailable, setIsChestAvailable] = useState(false);
-  const [titleDisplay, setTitleDisplay] = useState(playerTitle);
-  const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
+const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
+  const { state, updatePortrait, updateTitle } = useGame();
+  const [selectedPortrait, setSelectedPortrait] = useState(state.portrait);
+  const [selectedTitle, setSelectedTitle] = useState(state.title);
 
-  const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
+  const levelData = getLevelFromExp(state.totalEarned || 0);
+  const unlockedPortraitIds = getUnlockedPortraits(
+    levelData.currentLevel.level, 
+    state.achievements.map(a => a.id),
+    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
+    true // Unlock all portraits by default
+  ).map(p => p.id);
+  const unlockedTitleIds = getUnlockedTitles(
+    levelData.currentLevel.level, 
+    state.achievements.map(a => a.id),
+    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
+    true // Unlock all titles by default
+  ).map(t => t.id);
 
-  useEffect(() => {
-    const title = getTitleById(playerTitle);
-    setTitleDisplay(title ? title.name : playerTitle);
-  }, [playerTitle]);
-
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) return `${(Math.round(amount / 100000) / 10).toFixed(1)}M`;
-    if (amount >= 1000) return `${(Math.round(amount / 100) / 10).toFixed(1)}K`;
-    return amount.toFixed(1);
-  };
-
-  const handleChestClick = () => {
-    if (isChestAvailable) {
-      console.log('Treasure chest opened!');
-      setIsChestAvailable(false);
+  const handleApply = () => {
+    if (selectedPortrait !== state.portrait && unlockedPortraitIds.includes(selectedPortrait)) {
+      updatePortrait(selectedPortrait);
     }
+    if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
+      updateTitle(selectedTitle);
+    }
+    onClose(); // Close after applying
   };
-
-  const getNextLevelText = () => {
-    if (!nextLevel) return "Max Level";
-    const roundedExp = Math.round(playerExp * 10) / 10;
-    return `${roundedExp}/${nextLevel.expRequired}`;
-  };
-
-  const portraitData = getPortraitById(portrait) || getPortraitById('default');
 
   return (
-    <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
-      <div className="flex relative">
-        {/* Left Column: Portrait */}
-        <div className="flex flex-col items-center pt-2">
-          <div className="relative w-24 h-24 mb-1 overflow-visible">
-            <img
-              src={portraitData?.pngPath}
-              alt={portraitData?.name}
-              className="absolute h-24 w-24 -top-0 -left-0 z-[10002] rounded-full object-cover opacity-80"
-            />
-            <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/ pleasing-y-1/2 z-[10001]">
-              <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
-                {playerName.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-          <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
-            {titleDisplay}
-          </div>
+    <DialogContent className="max-w-[200px] max-h-[250px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
+      <DialogHeader className="p-2 border-b border-indigo-500/20">
+        <DialogTitle className="text-center text-lg">Customize</DialogTitle>
+      </DialogHeader>
+      <div className="p-2 space-y-2">
+        <div>
+          <label className="text-xs text-slate-300 mb-0.5 block">Portrait</label>
+          <Select value={selectedPortrait} onValueChange={setSelectedPortrait}>
+            <SelectTrigger className="w-full h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white">
+              <SelectValue placeholder="Select Portrait" />
+            </SelectTrigger>
+            <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto z-[10001]">
+              {PORTRAITS.map(portrait => {
+                const isUnlocked = unlockedPortraitIds.includes(portrait.id);
+                return (
+                  <SelectItem
+                    key={portrait.id}
+                    value={portrait.id}
+                    className={`text-sm flex items-center ${isUnlocked ? '' : 'opacity-50 cursor-not-allowed'}`}
+                    disabled={!isUnlocked}
+                  >
+                    <div className="flex items-center w-full">
+                      <span>{portrait.name}</span>
+                      {!isUnlocked && <Lock size={12} className="ml-auto text-gray-400" />}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
         </div>
-
-        {/* Middle Column: Name, Level, XP */}
-        <div className="ml-3 flex-1 pt-2">
-          <div className="mb-6 mt-2">
-            <h3 className="text-m font-semibold text-white">{playerName}</h3>
-            {/* Removed gem cost display */}
-          </div>
-
-          <div className="flex items-center gap-2 mb-1 pt-3 relative">
-            <div className="text-white text-xs font-medium">Level {currentLevel.level}</div>
-            {currentLevel.rewards && (
-              <div className="text-xs text-amber-400">
-                {currentLevel.rewards.skillPoints ? `+${currentLevel.rewards.skillPoints} SP` : ''}
-                {currentLevel.rewards.essence ? ` +${currentLevel.rewards.essence} Essence` : ''}
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`absolute right-0 h-8 w-8 p-0 transition-all ${isChestAvailable ? 'opacity-100' : 'opacity-50'}`}
-              onClick={handleChestClick}
-              disabled={!isChestAvailable}
-            >
-              <div className="relative flex items-center justify-center h-full w-full">
-                <Gift size={20} className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`} />
-                {!isChestAvailable && (
-                  <Lock
-                    size={14}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
-                  />
-                )}
-              </div>
-            </Button>
-          </div>
-
-          <div className="space-y-0.5">
-            <div className="flex justify-between text-xs text-slate-300">
-              <span>XP</span>
-              <span>{getNextLevelText()}</span>
-            </div>
-            <Progress
-              value={progress}
-              className="h-1.5 bg-slate-700/50"
-              indicatorClassName="bg-gradient-to-r from-amber-500 to-yellow-500"
-            />
-          </div>
+        <div>
+          <label className="text-xs text-slate-300 mb-0.5 block">Title</label>
+          <Select value={selectedTitle} onValueChange={setSelectedTitle}>
+            <SelectTrigger className="w-full h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white">
+              <SelectValue placeholder="Select Title" />
+            </SelectTrigger>
+            <SelectContent className="bg-indigo-900 text-white border-indigo-500 max-h-40 overflow-y-auto z-[10001]">
+              {TITLES.map(title => {
+                const isUnlocked = unlockedTitleIds.includes(title.id);
+                return (
+                  <SelectItem
+                    key={title.id}
+                    value={title.id}
+                    className={`text-sm flex items-center ${isUnlocked ? '' : 'opacity-50 cursor-not-allowed'}`}
+                    disabled={!isUnlocked}
+                  >
+                    <div className="flex items-center w-full">
+                      <span>{title.name}</span>
+                      {!isUnlocked && <Lock size={12} className="ml-auto text-gray-400" />}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
         </div>
-
-        {/* Right Column: Buttons and Currency */}
-        <div className="ml-4 flex flex-col items-end relative min-w-20">
-          <div className="absolute top-0 right-0 flex gap-2">
-            <Dialog open={isCustomizationOpen} onOpenChange={setIsCustomizationOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6 p-0"
-                  title="Customize Profile"
-                >
-                  <PenSquare size={14} className="text-slate-300" />
-                </Button>
-              </DialogTrigger>
-              <EditCustomization isOpen={isCustomizationOpen} onClose={() => setIsCustomizationOpen(false)} />
-            </Dialog>
-          </div>
-
-          <div className="absolute bottom-0 right-0 flex flex-col justify-end space-y-1">
-            <div className="flex items-center justify-between min-w-20">
-              <span className="text-amber-400 text-xs font-semibold">Coins:</span>
-              <span className="text-white text-xs">{formatCurrency(coins)}</span>
-            </div>
-            <div className="flex items-center justify-between min-w-20">
-              <span className="text-purple-400 text-xs font-semibold">Gems:</span>
-              <span className="text-white text-xs">{formatCurrency(gems)}</span>
-            </div>
-            <div className="flex items-center justify-between min-w-20">
-              <span className="text-blue-400 text-xs font-semibold">Essence:</span>
-              <span className="text-white text-xs">{formatCurrency(essence)}</span>
-            </div>
-          </div>
+        <div className="flex justify-end gap-1 pt-1">
+          <Button
+            onClick={handleApply}
+            className="bg-indigo-600 text-white hover:bg-indigo-700 text-xs h-7 px-2"
+          >
+            Apply
+          </Button>
+          <Button
+            onClick={onClose}
+            className="bg-indigo-600 text-white hover:bg-indigo-700 text-xs h-7 px-2"
+          >
+            Close
+          </Button>
         </div>
       </div>
-    </div>
+    </DialogContent>
   );
 };
 
-export default PlayerCard;
+export default EditCustomization;
