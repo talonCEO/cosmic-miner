@@ -11,10 +11,10 @@ import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
 
 // Static imports for portrait images
 import DefaultImage from '@/assets/images/icons/default.png';
-import NebulaVoyagerImage from '@/assets/images/icons/nebula_voyager.png';
-import StellarSeekerImage from '@/assets/images/icons/stellar_seeker.png';
-import GalacticGuardianImage from '@/assets/images/icons/galactic_guardian.png';
-import CosmicOverlordImage from '@/assets/images/icons/cosmic_overlord.png';
+import NebulaVoyagerImage from '@/assets/images/icons/default.png';
+import StellarSeekerImage from '@/assets/images/icons/default.png';
+import GalacticGuardianImage from '@/assets/images/icons/default.png';
+import CosmicOverlordImage from '@/assets/images/icons/default.png';
 
 // =========================================
 // Level Data (1-100)
