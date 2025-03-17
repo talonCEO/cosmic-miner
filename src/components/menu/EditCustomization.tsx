@@ -17,9 +17,21 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
   const [selectedTitle, setSelectedTitle] = useState(state.title);
 
   const levelData = getLevelFromExp(state.totalEarned || 0);
-  const unlockedPortraitIds = getUnlockedPortraits(levelData.currentLevel.level, state.achievements.map(a => a.id)).map(p => p.id);
-  const unlockedTitleIds = getUnlockedTitles(levelData.currentLevel.level, state.achievements.map(a => a.id)).map(t => t.id);
+  // Add unlockAll: true to unlock everything
+  const unlockedPortraitIds = getUnlockedPortraits(
+    levelData.currentLevel.level, 
+    state.achievements.map(a => a.id),
+    state.prestigeCount || 0, // Assuming prestigeCount is in state
+    true // Unlock all portraits
+  ).map(p => p.id);
+  const unlockedTitleIds = getUnlockedTitles(
+    levelData.currentLevel.level, 
+    state.achievements.map(a => a.id),
+    state.prestigeCount || 0, // Assuming prestigeCount is in state
+    true // Unlock all titles
+  ).map(t => t.id);
 
+  // Rest of the code remains unchanged
   const handleApply = () => {
     if (selectedPortrait !== state.portrait && unlockedPortraitIds.includes(selectedPortrait)) {
       updatePortrait(selectedPortrait);
@@ -27,8 +39,11 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
     if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
       updateTitle(selectedTitle);
     }
-    onClose(); // Close after applying
+    onClose();
   };
+
+  // ... rest of the component ...
+};
 
   return (
     <DialogContent className="max-w-[200px] max-h-[250px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
