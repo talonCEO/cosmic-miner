@@ -19,8 +19,8 @@ interface PremiumStoreProps {
 }
 
 interface StoreBoostItem extends InventoryItem {
-  cost: number; // Required for all boosts in the store
-  maxPurchases?: number; // Optional, defaults to Infinity
+  cost: number;
+  maxPurchases?: number;
   purchasable: boolean;
   purchased: number;
 }
@@ -40,19 +40,19 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
-      .filter((item): item is InventoryItem & { cost: number } => 
-        item.type === 'boost' && 'cost' in item // Only require type 'boost' and cost
-      )
+      .filter(item => item.id.startsWith('boost-')) // Filter boosts by ID
       .map(item => {
         const purchased = state.boosts[item.id]?.purchased || 0;
-        const maxPurchases = 
+        const maxPurchases =
           item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
           item.id === 'boost-inventory-expansion' ? 5 : Infinity;
+        const cost = item.cost || 50; // Fallback in case cost is missing
         return {
           ...item,
+          cost,
           purchased,
           maxPurchases,
-          purchasable: state.gems >= item.cost && purchased < maxPurchases,
+          purchasable: state.gems >= cost && purchased < maxPurchases,
           quantity: 1,
         } as StoreBoostItem;
       });
@@ -110,24 +110,23 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
     addGems(-item.cost);
 
-    // Special handling for auto-buy, no-ads, and inventory-expansion
     switch (item.id) {
       case 'boost-auto-buy':
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Only updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
         break;
       case 'boost-no-ads':
         dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'hasNoAds', value: true });
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
         break;
       case 'boost-inventory-expansion':
-        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 5 });
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 50 });
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
         break;
       default:
         const inventoryItem: InventoryItem = { ...item, quantity: 1 };
         addItem(inventoryItem);
         showUnlockAnimation(inventoryItem);
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count for all boosts
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
     }
   };
 
@@ -237,20 +236,24 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
               </h3>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              {sortedBoostItems.map(item => (
-                <div
-                  key={item.id}
-                  className={`transition-opacity duration-300 ${
-                    item.purchasable ? '' : 'opacity-50 pointer-events-none'
-                  }`}
-                >
-                  <BoostItem 
-                    item={item}
-                    onPurchase={onBuyBoostItem}
-                    showUnlockAnimation={showUnlockAnimation}
-                  />
-                </div>
-              ))}
+              {sortedBoostItems.length ? (
+                sortedBoostItems.map(item => (
+                  <div
+                    key={item.id}
+                    className={`transition-opacity duration-300 ${
+                      item.purchasable ? '' : 'opacity-50 pointer-events-none'
+                    }`}
+                  >
+                    <BoostItem 
+                      item={item}
+                      onPurchase={onBuyBoostItem}
+                      showUnlockAnimation={showUnlockAnimation}
+                    />
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 col-span-3 text-center">No boost items available</p>
+              )}
             </div>
           </div>
         </div>
