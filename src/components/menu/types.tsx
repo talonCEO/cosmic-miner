@@ -16,6 +16,7 @@ export interface InventoryItem {
   usable: boolean;
   quantity: number;
   effect?: InventoryItemEffect;
+  cost?: number; // Added as optional, but defined for boosts
 }
 
 export const createInventoryItem = (item: InventoryItem, quantity: number): InventoryItem => ({
@@ -56,6 +57,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "coinMultiplier", value: 2, duration: 60 },
+    cost: 50, // Added
   },
   TIME_WARP: {
     id: "boost-time-warp",
@@ -67,6 +69,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "timeWarp", value: 7200 },
+    cost: 75, // Added
   },
   AUTO_TAP: {
     id: "boost-auto-tap",
@@ -78,6 +81,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "autoTap", value: 5, duration: 30 },
+    cost: 60, // Added
   },
   NO_ADS: {
     id: "boost-no-ads",
@@ -89,6 +93,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "noAds", value: 1 },
+    cost: 200, // Added
   },
   AUTO_BUY: {
     id: "boost-auto-buy",
@@ -100,6 +105,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "unlockAutoBuy", value: 1 },
+    cost: 150, // Added
   },
   INVENTORY_EXPANSION: {
     id: "boost-inventory-expansion",
@@ -111,6 +117,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "inventoryCapacity", value: 50 },
+    cost: 100, // Added
   },
   TAP_BOOST: {
     id: "boost-tap-boost",
@@ -122,6 +129,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "coinsPerClick", value: 5, duration: 50 },
+    cost: 40, // Added
   },
   ESSENCE_BOOST: {
     id: "boost-essence-boost",
@@ -133,6 +141,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "essence", value: 1.5 },
+    cost: 120, // Added
   },
   PERMA_TAP: {
     id: "boost-perma-tap",
@@ -144,6 +153,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "coinsPerClick", value: 10 },
+    cost: 180, // Added
   },
   PERMA_PASSIVE: {
     id: "boost-perma-passive",
@@ -155,6 +165,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "coins", value: 100 },
+    cost: 200, // Added
   },
   CHEAP_UPGRADES: {
     id: "boost-cheap-upgrades",
@@ -166,5 +177,6 @@ export const INVENTORY_ITEMS = {
     usable: true,
     quantity: 1,
     effect: { type: "coinMultiplier", value: 0.8, duration: 60 },
+    cost: 45, // Added
   },
 };
