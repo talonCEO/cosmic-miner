@@ -427,34 +427,44 @@ export const isPortraitUnlocked = (
 };
 
 /**
- * Get all titles unlocked by a player
+ * Get all titles unlocked by a player (or all titles if unlockAll is true)
  * @param userLevel Current user level
  * @param userAchievements Array of achievement IDs the user has completed
  * @param prestigeCount Number of times the user has prestiged
+ * @param unlockAll Optional flag to unlock all titles regardless of conditions
  * @returns Array of unlocked title data
  */
 export const getUnlockedTitles = (
   userLevel: number, 
   userAchievements: string[] = [],
-  prestigeCount: number = 0
+  prestigeCount: number = 0,
+  unlockAll: boolean = false // New parameter
 ): TitleData[] => {
+  if (unlockAll) {
+    return TITLES; // Return all titles if unlockAll is true
+  }
   return TITLES.filter(title => 
     isTitleUnlocked(title.id, userLevel, userAchievements, prestigeCount)
   );
 };
 
 /**
- * Get all portraits unlocked by a player
+ * Get all portraits unlocked by a player (or all portraits if unlockAll is true)
  * @param userLevel Current user level
  * @param userAchievements Array of achievement IDs the user has completed
  * @param prestigeCount Number of times the user has prestiged
+ * @param unlockAll Optional flag to unlock all portraits regardless of conditions
  * @returns Array of unlocked portrait data
  */
 export const getUnlockedPortraits = (
   userLevel: number, 
   userAchievements: string[] = [],
-  prestigeCount: number = 0
+  prestigeCount: number = 0,
+  unlockAll: boolean = false // New parameter
 ): PortraitData[] => {
+  if (unlockAll) {
+    return PORTRAITS; // Return all portraits if unlockAll is true
+  }
   return PORTRAITS.filter(portrait => 
     isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount)
   );
