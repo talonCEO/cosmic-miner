@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Award } from 'lucide-react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -50,15 +49,35 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                     : "border-slate-700/30 bg-slate-800/20 opacity-60"
                 }`}
               >
+                {/* Icon */}
                 <div className="w-12 h-12 rounded-full bg-indigo-600/30 flex items-center justify-center mr-3 flex-shrink-0">
                   <Award size={24} className={achievement.unlocked ? "text-yellow-400" : "text-slate-400"} />
                 </div>
-                <div>
+                {/* Details */}
+                <div className="flex-1">
                   <h3 className="font-medium text-base">
                     {achievement.name}
                     {achievement.unlocked && <span className="text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full ml-2">Unlocked</span>}
                   </h3>
                   <p className="text-sm text-slate-300 mt-1">{achievement.description}</p>
+                </div>
+                {/* Rewards */}
+                <div className="w-16 flex items-center justify-center ml-3">
+                  {achievement.rewards && (
+                    <div className="text-center">
+                      <img
+                        src={achievement.rewards.image}
+                        alt={achievement.rewards.type}
+                        className="w-8 h-8 mx-auto"
+                      />
+                      <span className="text-xs text-slate-300">
+                        {achievement.rewards.type === 'gems' ? `${achievement.rewards.value} Gems` :
+                         achievement.rewards.type === 'boost' ? `${achievement.rewards.value / 3600}h Boost` :
+                         achievement.rewards.type === 'title' ? 'Title' :
+                         'Portrait'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -72,12 +91,11 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
         </div>
       </ScrollArea>
 
-        <div className="p-4 border-t border-indigo-500/20 mt-auto">
+      <div className="p-4 border-t border-indigo-500/20 mt-auto">
         <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
           Back
         </DialogClose>
       </div>
-      
     </>
   );
 };
