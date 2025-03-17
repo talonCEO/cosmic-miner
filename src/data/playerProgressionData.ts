@@ -245,7 +245,7 @@ export const PORTRAITS: PortraitData[] = [
     unlockCondition: {
       type: 'starting'
     },
-    pngPath: 'default.png'
+    pngPath: '1.png'
   },
   {
     id: 'nebula_voyager',
@@ -257,7 +257,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'level',
       value: 15
     },
-    pngPath: 'default.png'
+    pngPath: '2.png'
   },
   {
     id: 'stellar_seeker',
@@ -269,7 +269,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'level',
       value: 30
     },
-    pngPath: 'default.png'
+    pngPath: '3.png'
   },
   {
     id: 'galactic_guardian',
@@ -281,7 +281,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'level',
       value: 60
     },
-    pngPath: 'default.png'
+    pngPath: '4.png'
   },
   {
     id: 'cosmic_overlord',
@@ -293,7 +293,7 @@ export const PORTRAITS: PortraitData[] = [
       type: 'achievement',
       achievementId: 'master_miner' // Assumes an achievement exists with this ID
     },
-    pngPath: 'default.png'
+    pngPath: '5.png'
   }
 ];
 
@@ -438,7 +438,7 @@ export const getUnlockedTitles = (
   userLevel: number, 
   userAchievements: string[] = [],
   prestigeCount: number = 0,
-  unlockAll: boolean = false // New parameter
+  unlockAll: boolean = false
 ): TitleData[] => {
   if (unlockAll) {
     return TITLES; // Return all titles if unlockAll is true
@@ -460,7 +460,7 @@ export const getUnlockedPortraits = (
   userLevel: number, 
   userAchievements: string[] = [],
   prestigeCount: number = 0,
-  unlockAll: boolean = false // New parameter
+  unlockAll: boolean = false
 ): PortraitData[] => {
   if (unlockAll) {
     return PORTRAITS; // Return all portraits if unlockAll is true
