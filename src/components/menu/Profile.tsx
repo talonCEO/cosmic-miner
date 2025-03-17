@@ -12,13 +12,7 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
-  const { state, updateUsername } = useGame();
-
-  const handleNameChange = (newName: string) => {
-    if (newName.trim() && newName !== state.username) {
-      updateUsername(newName);
-    }
-  };
+  const { state } = useGame();
 
   const exp = state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
@@ -30,7 +24,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     playerExp: exp,
     playerMaxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: state.gems,
     essence: state.essence,
     userId: state.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
     portrait: state.portrait || 'default',
@@ -62,9 +55,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           playerExp={playerData.playerExp}
           playerMaxExp={playerData.playerMaxExp}
           coins={playerData.coins}
-          gems={playerData.gems}
           essence={playerData.essence}
-          onNameChange={handleNameChange}
           userId={playerData.userId}
           portrait={playerData.portrait}
         />
