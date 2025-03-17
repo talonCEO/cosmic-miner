@@ -1,10 +1,11 @@
 import React from 'react';
-import { Edit2, Coins, Sparkles } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Coins, Sparkles } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { useGame } from '@/context/GameContext';
 import { PORTRAITS, TITLES } from '@/data/playerProgressionData';
-import { formatNumber } from '@/utils/gameLogic';
-import { Button } from '@/components/ui/button';
-import { DialogTrigger } from '@/components/ui/dialog';
+import { Edit2 } from 'lucide-react';
 
 interface PlayerCardProps {
   playerName: string;
@@ -29,65 +30,68 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   userId,
   portrait,
 }) => {
-  const portraitData = PORTRAITS.find(p => p.id === portrait) || PORTRAITS[0];
-  const titleData = TITLES.find(t => t.id === playerTitle) || TITLES[0];
+  const { setMenuType } = useGame();
+
+  const progressPercentage = (playerExp / playerMaxExp) * 100;
+
+  const titleData = TITLES.find(t => t.id === playerTitle);
+  const portraitData = PORTRAITS.find(p => p.id === portrait);
+
+  const handleEditClick = () => {
+    if (setMenuType) {
+      setMenuType('customize');
+    }
+  };
 
   return (
-    <div className="relative bg-gradient-to-br from-indigo-900/80 to-indigo-800/80 border border-indigo-500/30 rounded-xl p-3 shadow-lg">
-      <div className="flex items-start gap-3">
-        <div className="relative flex-shrink-0">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-400 shadow-md">
+    <div className="bg-gradient-to-br from-indigo-900/80 to-purple-900/80 p-4 rounded-lg border border-indigo-500/30 relative">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-400">
             <img
-              src={portraitData.image}
-              alt={portraitData.name}
+              src={portraitData?.image || '/portraits/default.png'}
+              alt={portraitData?.name || 'Default Portrait'}
               className="w-full h-full object-cover"
             />
           </div>
-          <span className="absolute -bottom-1 -right-1 bg-indigo-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full border border-indigo-400 shadow">
-            {playerLevel}
-          </span>
+          <button
+            onClick={handleEditClick}
+            className="absolute bottom-0 right-0 bg-indigo-600 p-1 rounded-full hover:bg-indigo-700 transition-colors"
+          >
+            <Edit2 size={14} />
+          </button>
         </div>
 
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-white truncate">{playerName}</h2>
-            </div>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-1 h-6 w-6 text-indigo-300 hover:text-indigo-100 hover:bg-indigo-700/50 rounded-full"
-              >
-                <Edit2 size={14} />
-              </Button>
-            </DialogTrigger>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-white truncate">{playerName}</h2>
           </div>
-
-          <p className="text-sm text-indigo-200 truncate">{titleData.name}</p>
-
-          <div className="space-y-0.5">
-            <Progress
-              value={(playerExp / playerMaxExp) * 100}
-              className="h-1.5 bg-indigo-700/50"
-            />
-            <p className="text-xs text-indigo-300">
-              {formatNumber(playerExp)} / {formatNumber(playerMaxExp)} EXP
-            </p>
+          <p className="text-sm text-indigo-200 truncate">
+            {titleData?.name || 'Space Pilot'}
+          </p>
+          <div className="mt-1">
+            <div className="flex items-center justify-between text-xs text-indigo-300">
+              <span>Level {playerLevel}</span>
+              <span>{Math.floor(playerExp)} / {playerMaxExp} XP</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2 mt-1 bg-indigo-700" />
           </div>
         </div>
       </div>
 
-      <div className="mt-2 pt-2 border-t border-indigo-500/20 flex items-center justify-between gap-2 text-sm">
+      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
         <div className="flex items-center gap-1">
           <Coins size={16} className="text-yellow-400" />
-          <span className="text-yellow-200">{formatNumber(coins)}</span>
+          <span className="text-yellow-200">{Math.floor(coins).toLocaleString()}</span>
         </div>
         <div className="flex items-center gap-1">
           <Sparkles size={16} className="text-amber-400" />
-          <span className="text-amber-200">{formatNumber(essence)}</span>
+          <span className="text-amber-200">{Math.floor(essence).toLocaleString()}</span>
         </div>
-        <span className="text-indigo-300 truncate">ID: {userId}</span>
+      </div>
+
+      <div className="mt-2 text-xs text-indigo-300 truncate">
+        ID: {userId}
       </div>
     </div>
   );
