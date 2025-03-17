@@ -26,7 +26,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
     if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
       updateTitle(selectedTitle);
     }
-    onClose(); // Close the dialog after applying changes
+    onClose(); // Close after applying
   };
 
   return (
