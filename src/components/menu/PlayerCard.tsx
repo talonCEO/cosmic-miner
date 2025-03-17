@@ -36,7 +36,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   userId,
   portrait,
 }) => {
-  const { state, addGems, dispatch } = useGame();
+  const { state, addGems, dispatch, updateUsername } = useGame(); // Added updateUsername for consistency
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
@@ -53,17 +53,25 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     setTitleDisplay(title ? title.name : playerTitle);
   }, [playerTitle]);
 
+  useEffect(() => {
+    setName(playerName); // Sync name with prop
+  }, [playerName]);
+
   const handleSaveName = () => {
-    if (!name.trim() || name === playerName) return;
-    const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
-    if (nameChangeCost > 0 && state.gems < nameChangeCost) {
-      console.log("Insufficient gems:", state.gems, "<", nameChangeCost);
+    if (!name.trim() || name === playerName) {
+      setIsEditing(false);
       return;
     }
-    if (nameChangeCost > 0) {
-      addGems(-nameChangeCost);
+    const cost = nameChangeCount === 0 ? 0 : 200;
+    if (cost > 0 && state.gems < cost) {
+      console.log("Insufficient gems:", state.gems, "<", cost);
+      return;
     }
-    onNameChange(name);
+    if (cost > 0) {
+      addGems(-cost);
+    }
+    updateUsername(name); // Update in GameContext
+    onNameChange(name); // Notify parent
     dispatch({ type: 'UPDATE_NAME_CHANGE_COUNT', count: nameChangeCount + 1 });
     setIsEditing(false);
   };
@@ -120,7 +128,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         <div className="ml-3 flex-1 pt-2">
           {isEditing ? (
             <Dialog open={isEditing} onOpenChange={(open) => !open && handleCancelName()}>
-              <DialogContent className="bg-slate-900 border-indigo-500/30 p-4 rounded-xl max-w-xs">
+              <DialogContent 
+                className="bg-slate-900 border-indigo-500/30 p-4 rounded-xl max-w-xs z-[10003]"
+              >
                 <div className="flex items-center gap-2">
                   <Input
                     value={name}
@@ -133,6 +143,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                     <Check size={14} className="text-white" />
                   </Button>
                 </div>
+                {nameChangeCost > 0 && (
+                  <span className="text-purple-400 text-xs mt-1 flex items-center">
+                    <Gem size={12} className="mr-1" /> Cost: {nameChangeCost}
+                  </span>
+                )}
               </DialogContent>
             </Dialog>
           ) : (
