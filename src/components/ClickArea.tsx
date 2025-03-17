@@ -4,14 +4,9 @@ import { useGameContext } from '../context/GameContext';
 import AnimatedAsteroid from './AnimatedAsteroid';
 
 const ClickArea: React.FC = () => {
-  const { addCoins, clickPower, formatNumber, tapPowerMultiplier, prestigeMultiplier } = useGameContext();
+  const { addCoins, clickPower, formatNumber, tapPowerMultiplier, prestigeMultiplier, calculateClickPower } = useGameContext();
   const [clickCoordinates, setClickCoordinates] = useState<{ x: number; y: number }[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  const calculateClickPower = () => {
-    const baseClickPower = clickPower * prestigeMultiplier;
-    return baseClickPower * tapPowerMultiplier;
-  };
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
