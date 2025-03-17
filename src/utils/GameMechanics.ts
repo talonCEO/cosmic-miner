@@ -1,5 +1,4 @@
 import { GameState, Ability, Upgrade } from '@/context/GameContext';
-import { isGoodValue } from '@/utils/gameLogic';
 
 /**
  * GameMechanics.ts
