@@ -50,7 +50,7 @@ const Upgrades: React.FC = () => {
     'hand': <Hand size={20} />
   };
   
-  const isAutoBuyUnlocked = state.prestigeCount > 0;
+  const isAutoBuyUnlocked = state.boosts["boost-auto-buy"]?.purchased > 0;
   
   const unlockedUpgrades = state.upgrades.filter(upgrade => upgrade.unlocked);
   
