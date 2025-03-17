@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import EditCustomization from './EditCustomization';
 
 interface PlayerCardProps {
   playerName: string;
@@ -49,24 +51,18 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   }, [playerTitle]);
 
   const handleSaveName = () => {
-    if (!name.trim() || name === playerName) return; // No change if empty or unchanged
+    if (!name.trim() || name === playerName) return;
     const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
     if (nameChangeCost > 0 && state.gems < nameChangeCost) {
       console.log("Insufficient gems:", state.gems, "<", nameChangeCost);
       return;
     }
     if (nameChangeCost > 0) {
-      addGems(-nameChangeCost); // Deduct gems
-      console.log(`Deducted ${nameChangeCost} gems. New total: ${state.gems - nameChangeCost}`);
+      addGems(-nameChangeCost);
     }
     onNameChange(name);
     dispatch({ type: 'UPDATE_NAME_CHANGE_COUNT', count: nameChangeCount + 1 });
     setIsEditing(false);
-  };
-
-  const handleCustomizationClick = () => {
-    console.log("Opening customization menu... (to be implemented)");
-    // Placeholder for future customization menu logic
   };
 
   const formatCurrency = (amount: number) => {
@@ -115,7 +111,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         {/* Middle Column: Name, Level, XP */}
         <div className="ml-3 flex-1 pt-2">
           {isEditing ? (
-            <div className="flex items-center gap-2 mb-4"> {/* Increased mb-2 to mb-4 */}
+            <div className="flex items-center gap-2 mb-4">
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -127,7 +123,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="mb-6 mt-2"> {/* Increased mb-2 to mb-4 */}
+            <div className="mb-6 mt-2">
               <h3 className="text-m font-semibold text-white">{playerName}</h3>
               {nameChangeCount > 0 && (
                 <span className="flex items-center text-xs text-purple-400 mt-1">
@@ -179,17 +175,20 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
         {/* Right Column: Buttons and Currency */}
         <div className="ml-4 flex flex-col items-end relative min-w-20">
-          {/* Edit Buttons: Top-Right */}
           <div className="absolute top-0 right-0 flex gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 p-0"
-              onClick={handleCustomizationClick}
-              title="Customize Profile"
-            >
-              <PenSquare size={14} className="text-slate-300" />
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 p-0"
+                  title="Customize Profile"
+                >
+                  <PenSquare size={14} className="text-slate-300" />
+                </Button>
+              </DialogTrigger>
+              <EditCustomization />
+            </Dialog>
             <Button
               size="icon"
               variant="ghost"
@@ -201,7 +200,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </Button>
           </div>
 
-          {/* Currency: Bottom-Right */}
           <div className="absolute bottom-0 right-0 flex flex-col justify-end space-y-1">
             <div className="flex items-center justify-between min-w-20">
               <span className="text-amber-400 text-xs font-semibold">Coins:</span>
