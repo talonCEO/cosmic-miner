@@ -12,15 +12,15 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
-  const { state, updateUsername } = useGame(); // Only need updateUsername for name changes
+  const { state, updateUsername } = useGame();
 
   const handleNameChange = (newName: string) => {
     if (newName.trim() && newName !== state.username) {
-      updateUsername(newName); // Use GameContext's updateUsername
+      updateUsername(newName);
     }
   };
 
-  const exp = state.totalEarned || 0; // Use totalEarned as exp source
+  const exp = state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
 
   const playerData = {
@@ -33,6 +33,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     gems: state.gems,
     essence: state.essence,
     userId: state.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
+    portrait: state.portrait || 'default',
   };
 
   const handleAchievementsClick = () => {
@@ -65,6 +66,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           essence={playerData.essence}
           onNameChange={handleNameChange}
           userId={playerData.userId}
+          portrait={playerData.portrait}
         />
 
         <div className="grid grid-cols-2 gap-3 mt-4">
