@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Removed AvatarImage since we'll use a standalone <img>
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,19 +84,38 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       <div className="flex">
         <div className="flex flex-col items-center pt-2">
           {/* 
-            === Portrait Styling Adjustments ===
-            - Size: The `h-20 w-20` classes below make the Avatar larger (previously h-16 w-16).
-              Adjust these values (e.g., h-24 w-24 for even bigger) to change the size.
-            - Positioning: The `relative` parent div with `top-0 left-0` keeps the image centered.
-              Use `top-[value]` or `left-[value]` (e.g., top-2, left-2) to offset it.
-            - Border: `border-2 border-amber-500/50` adds a border. Increase `border-[size]` (e.g., border-4) for a thicker border.
-            - Z-Index: `z-10` ensures the Avatar stays below the image if layered. Adjust if needed.
-            - Rounding: Add `rounded-full` to the Avatar class for a circular shape, or `rounded-none` for square.
-            - Object Fit: `object-cover` ensures the image fills the space. Use `object-contain` to avoid cropping.
+            === Portrait Container ===
+            - This div is now `relative` to allow absolute positioning of the portrait and avatar.
+            - Size: Set to `h-28 w-28` to accommodate the larger portrait (adjust as needed).
+            - Margin: `mb-1` adds space below; adjust to control vertical spacing.
           */}
-          <div className="relative h-20 w-20 mb-1">
-            <Avatar className="h-20 w-20 border-2 border-amber-500/50 absolute top-0 left-0 z-10">
-              <AvatarImage src={portraitData?.pngPath} alt={portraitData?.name} />
+          <div className="relative h-28 w-28 mb-1">
+            {/* 
+              === Portrait Image ===
+              - Size: `h-24 w-24` makes the portrait larger than the Avatar (previously h-20 w-20).
+                Increase to `h-28 w-28` or more for an even bigger portrait.
+              - Positioning: `absolute -top-4 -left-4` moves it up and left relative to the container.
+                Adjust `-top-[value]` (e.g., -top-6) to move further up, and `-left-[value]` (e.g., -left-6) to move further left.
+              - Z-Index: `z-0` places it behind the Avatar; increase to `z-10` to put it in front if needed.
+              - Rounding: `rounded-full` makes it circular; use `rounded-lg` or `rounded-none` for different shapes.
+              - Object Fit: `object-cover` ensures the image fills the space; use `object-contain` to show the full image without cropping.
+              - Opacity: Added `opacity-80` to slightly fade it, making the Avatar stand out; adjust or remove as desired.
+            */}
+            <img
+              src={portraitData?.pngPath}
+              alt={portraitData?.name}
+              className="absolute h-24 w-24 -top-4 -left-4 z-0 rounded-full object-cover opacity-80"
+            />
+            {/* 
+              === Avatar (Foreground) ===
+              - Size: Reduced to `h-16 w-16` to be smaller than the portrait, creating a "surrounding" effect.
+                Adjust to `h-12 w-12` for a smaller center or `h-20 w-20` for a larger one.
+              - Positioning: `top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2` centers it within the container.
+                Tweak `top-[value]` or `left-[value]` to offset it manually if needed.
+              - Z-Index: `z-10` ensures it stays above the portrait image.
+              - Border: Kept `border-2 border-amber-500/50` for style; increase thickness with `border-4` if desired.
+            */}
+            <Avatar className="absolute h-16 w-16 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
                 {playerName.substring(0, 2).toUpperCase()}
               </AvatarFallback>
