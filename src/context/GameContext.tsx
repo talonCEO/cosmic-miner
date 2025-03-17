@@ -30,6 +30,11 @@ export interface Achievement {
   description: string;
   unlocked: boolean;
   checkCondition: (state: GameState) => boolean;
+  rewards?: {
+    type: 'gems' | 'boost' | 'title' | 'portrait';
+    value: number | string; // Number for gems/boost duration, string for title/portrait ID
+    image: string; // Path to reward image
+  };
 }
 
 export interface Ability {
