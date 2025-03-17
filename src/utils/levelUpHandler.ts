@@ -1,110 +1,110 @@
-import { GameState } from '@/context/GameContext';
+import { toast } from "sonner";
+import { getLevelFromExp, LEVELS } from "@/data/playerProgressionData";
+import { unlockPlayerTitle, unlockPlayerPortrait } from "@/utils/firebaseSync";
 
-export interface LevelRewards {
-  skillPoints: number;
+interface LevelUpRewards {
+  skillPoints?: number;
   essence?: number;
   gems?: number;
-  unlocksTitle?: string;
-  unlocksPortrait?: string;
+  unlockedTitle?: string;
+  unlockedPortrait?: string;
 }
 
-export const LEVEL_REWARDS: Record<number, LevelRewards> = {
-  // Starting levels
-  1: { skillPoints: 1 },
-  2: { skillPoints: 1 },
-  3: { skillPoints: 1 },
-  4: { skillPoints: 1 },
-  5: { skillPoints: 2, gems: 10, unlocksTitle: 'novice_miner' },
-
-  // Early levels
-  6: { skillPoints: 1 },
-  7: { skillPoints: 1 },
-  8: { skillPoints: 1 },
-  9: { skillPoints: 1 },
-  10: { skillPoints: 2, essence: 1, unlocksPortrait: 'miner_1' },
-
-  // Mid levels
-  11: { skillPoints: 1 },
-  12: { skillPoints: 1 },
-  13: { skillPoints: 1 },
-  14: { skillPoints: 1 },
-  15: { skillPoints: 2, gems: 20, unlocksTitle: 'asteroid_explorer' },
-
-  // Higher levels
-  16: { skillPoints: 1 },
-  17: { skillPoints: 1 },
-  18: { skillPoints: 1 },
-  19: { skillPoints: 1 },
-  20: { skillPoints: 3, essence: 2, unlocksPortrait: 'explorer_1' },
-
-  // Advanced levels
-  21: { skillPoints: 2 },
-  22: { skillPoints: 2 },
-  23: { skillPoints: 2 },
-  24: { skillPoints: 2 },
-  25: { skillPoints: 4, gems: 30, unlocksTitle: 'galactic_pioneer' },
-
-   // Even higher levels
-  26: { skillPoints: 2 },
-  27: { skillPoints: 2 },
-  28: { skillPoints: 2 },
-  29: { skillPoints: 2 },
-  30: { skillPoints: 5, essence: 3, unlocksPortrait: 'pioneer_1' },
-
-  // Very high levels
-  31: { skillPoints: 3 },
-  32: { skillPoints: 3 },
-  33: { skillPoints: 3 },
-  34: { skillPoints: 3 },
-  35: { skillPoints: 6, gems: 40, unlocksTitle: 'cosmic_voyager' },
-
-  // Extremely high levels
-  36: { skillPoints: 3 },
-  37: { skillPoints: 3 },
-  38: { skillPoints: 3 },
-  39: { skillPoints: 3 },
-  40: { skillPoints: 7, essence: 4, unlocksPortrait: 'voyager_1' },
-
-  // Near maximum levels
-  41: { skillPoints: 4 },
-  42: { skillPoints: 4 },
-  43: { skillPoints: 4 },
-  44: { skillPoints: 4 },
-  45: { skillPoints: 8, gems: 50, unlocksTitle: 'interstellar_tycoon' },
-
-  // Maximum levels
-  46: { skillPoints: 4 },
-  47: { skillPoints: 4 },
-  48: { skillPoints: 4 },
-  49: { skillPoints: 4 },
-  50: { skillPoints: 10, essence: 5, unlocksPortrait: 'tycoon_1' },
-};
-
-export const handleLevelUp = (level: number, state: GameState, dispatch: React.Dispatch<any>) => {
-  const rewards = LEVEL_REWARDS[level];
-
-  if (rewards) {
-    // Award skill points
-    dispatch({ type: 'ADD_SKILL_POINTS', amount: rewards.skillPoints });
-
-    // Award essence if available
-    if (rewards.essence) {
-      dispatch({ type: 'ADD_ESSENCE', amount: rewards.essence });
-    }
-
-    // Award gems if available
-    if (rewards.gems) {
-      dispatch({ type: 'ADD_GEMS', amount: rewards.gems });
-    }
-
-    // Unlock title if available
-    if (rewards.unlocksTitle) {
-      dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'title', value: rewards.unlocksTitle });
-    }
-
-    // Unlock portrait if available
-    if (rewards.unlocksPortrait) {
-      dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'portrait', value: rewards.unlocksPortrait });
-    }
+/**
+ * Check if player leveled up and handle rewards
+ * 
+ * @param uid User ID
+ * @param oldExp Previous experience points
+ * @param newExp New experience points
+ * @param unlockedTitles Array of already unlocked titles
+ * @param unlockedPortraits Array of already unlocked portraits
+ */
+export const handleLevelUp = async (
+  uid: string,
+  oldExp: number,
+  newExp: number,
+  unlockedTitles: string[] = [],
+  unlockedPortraits: string[] = []
+): Promise<{
+  newLevel: number,
+  rewards: LevelUpRewards
+}> => {
+  const oldLevelData = getLevelFromExp(oldExp);
+  const newLevelData = getLevelFromExp(newExp);
+  
+  if (oldLevelData.currentLevel.level === newLevelData.currentLevel.level) {
+    return { 
+      newLevel: newLevelData.currentLevel.level,
+      rewards: {}
+    };
   }
+  
+  const rewards: LevelUpRewards = {
+    skillPoints: 0,
+    essence: 0,
+    gems: 0,
+    unlockedTitle: undefined,
+    unlockedPortrait: undefined
+  };
+  
+  for (let level = oldLevelData.currentLevel.level + 1; level <= newLevelData.currentLevel.level; level++) {
+    const levelData = LEVELS[level - 1];
+    
+    if (levelData.rewards) {
+      if (levelData.rewards.skillPoints) rewards.skillPoints! += levelData.rewards.skillPoints;
+      if (levelData.rewards.essence) rewards.essence! += levelData.rewards.essence;
+      if (levelData.rewards.gems) rewards.gems! += levelData.rewards.gems;
+      
+      if (levelData.rewards.unlocksTitle && !unlockedTitles.includes(levelData.rewards.unlocksTitle)) {
+        await unlockPlayerTitle(uid, levelData.rewards.unlocksTitle, unlockedTitles);
+        rewards.unlockedTitle = levelData.rewards.unlocksTitle;
+        unlockedTitles.push(levelData.rewards.unlocksTitle);
+      }
+      
+      if (levelData.rewards.unlocksPortrait && !unlockedPortraits.includes(levelData.rewards.unlocksPortrait)) {
+        await unlockPlayerPortrait(uid, levelData.rewards.unlocksPortrait, unlockedPortraits);
+        rewards.unlockedPortrait = levelData.rewards.unlocksPortrait;
+        unlockedPortraits.push(levelData.rewards.unlocksPortrait);
+      }
+    }
+    
+    toast.success(`Level Up! You reached level ${level}`, {
+      description: "Your cosmic mining skills have improved!"
+    });
+  }
+  
+  if (rewards.skillPoints) {
+    toast.success(`Reward: ${rewards.skillPoints} Skill Points`, {
+      description: "Use them in the Tech Tree to unlock new abilities!"
+    });
+  }
+  
+  if (rewards.essence) {
+    toast.success(`Reward: ${rewards.essence} Essence`, {
+      description: "Use it to purchase powerful upgrades!"
+    });
+  }
+  
+  if (rewards.gems) {
+    toast.success(`Reward: ${rewards.gems} Gems`, {
+      description: "Premium currency for special items!"
+    });
+  }
+  
+  if (rewards.unlockedTitle) {
+    toast.success(`New Title Unlocked!`, {
+      description: `You can now use the "${rewards.unlockedTitle}" title.`
+    });
+  }
+  
+  if (rewards.unlockedPortrait) {
+    toast.success(`New Avatar Border Unlocked!`, {
+      description: `You can now use the "${rewards.unlockedPortrait}" border.`
+    });
+  }
+  
+  return {
+    newLevel: newLevelData.currentLevel.level,
+    rewards
+  };
 };

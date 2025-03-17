@@ -1,4 +1,5 @@
-import { GameState, Ability, Upgrade } from '@/context/GameContext';
+import { GameState, Ability } from '@/context/GameContext';
+import { calculateClickMultiplier as utilsCalculateClickMultiplier } from '@/hooks/useGameMechanics';
 
 /**
  * GameMechanics.ts
@@ -546,17 +547,4 @@ export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean 
   
   // If it pays for itself in less than 100 seconds, it's a good value
   return paybackPeriod < 100;
-};
-
-/**
- * Helper for calculating upgrade values
- */
-const calculateUpgradeValue = (upgrade: Upgrade, level: number): number => {
-  if (upgrade.category === 'tap') {
-    // For tap power upgrades
-    return level * (upgrade.coinsPerClickBonus || 0);
-  } else {
-    // For element and production upgrades
-    return level * (upgrade.coinsPerSecondBonus || 0);
-  }
 };

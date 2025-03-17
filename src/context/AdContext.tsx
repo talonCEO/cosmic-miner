@@ -1,213 +1,177 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useGameContext } from './GameContext';
-import { adMobService } from '../services/AdMobService';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useGame } from './GameContext';
+import { useToast } from '@/components/ui/use-toast';
+import { useInterval } from '@/hooks/useInterval';
+import { adMobService } from '@/services/AdMobService';
 
-// Define boost types
-export type BoostType = 'income' | 'gems' | 'timeWarp' | 'tapPower';
-
-interface BoostOption {
-  type: BoostType;
-  title: string;
-  description: string;
-  icon: string;
-  duration?: number; // in seconds, optional because not all boosts are timed
-}
-
-export interface AdContextType {
-  showRewardedAd: () => void;
-  isBoostActive: boolean;
-  activeBoostType: BoostType | null;
-  boostTimeRemaining: number;
-  boostExpiryTime: number | null;
+interface AdContextType {
+  showAdNotification: boolean;
+  adBoostActive: boolean;
+  adBoostTimeRemaining: number;
+  adBoostMultiplier: number;
+  handleWatchAd: () => Promise<void>;
+  dismissAdNotification: () => void;
 }
 
 const AdContext = createContext<AdContextType | undefined>(undefined);
 
-export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { state, setIncomeMultiplier } = useGame();
   const { toast } = useToast();
-  const gameContext = useGameContext();
-  const [isBoostActive, setIsBoostActive] = useState(false);
-  const [activeBoostType, setActiveBoostType] = useState<BoostType | null>(null);
-  const [boostTimeRemaining, setBoostTimeRemaining] = useState(0);
-  const [boostExpiryTime, setBoostExpiryTime] = useState<number | null>(null);
-
-  const boostOptions: BoostOption[] = [
-    {
-      type: 'income',
-      title: 'Income Boost',
-      description: 'x2 income for 60 seconds',
-      icon: '💰',
-      duration: 60
-    },
-    {
-      type: 'gems',
-      title: 'Gem Reward',
-      description: 'Receive 10 gems',
-      icon: '💎'
-    },
-    {
-      type: 'timeWarp',
-      title: 'Time Warp',
-      description: 'Gain 120 minutes of passive income',
-      icon: '⌛'
-    },
-    {
-      type: 'tapPower',
-      title: 'Tap Boost',
-      description: 'x5 tap power for 60 seconds',
-      icon: '👆',
-      duration: 60
-    }
-  ];
+  
+  const [showAdNotification, setShowAdNotification] = useState(false);
+  const [adBoostActive, setAdBoostActive] = useState(false);
+  const [adBoostTimeRemaining, setAdBoostTimeRemaining] = useState(0);
+  const [lastAdWatchedTime, setLastAdWatchedTime] = useState(0);
+  const [nextAdTime, setNextAdTime] = useState(0);
+  const [adNotificationStartTime, setAdNotificationStartTime] = useState(0);
+  const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [isRewardedAdLoaded, setIsRewardedAdLoaded] = useState(false);
+  
+  const adBoostMultiplier = 2; // x2 income boost
+  const adBoostDuration = 10 * 60; // 10 minutes in seconds
+  const minAdInterval = 5 * 60; // 5 minutes minimum between ad offers
+  const maxAdInterval = 15 * 60; // 15 minutes maximum between ad offers
+  const cooldownPeriod = 60; // 60 seconds minimum between ads
+  const adNotificationDuration = 60; // 1 minute auto-dismiss
+  const initialAdDelay = 90; // Delay first ad by 90 seconds (1.5 minutes)
+  
+  useEffect(() => {
+    const initAds = async () => {
+      try {
+        await adMobService.initialize();
+        
+        // Load both interstitial and rewarded ads
+        const interstitialLoaded = await adMobService.loadInterstitialAd();
+        setIsAdLoaded(interstitialLoaded);
+        
+        const rewardedLoaded = await adMobService.loadRewardedAd();
+        setIsRewardedAdLoaded(rewardedLoaded);
+        
+        setNextAdTime(Date.now() + initialAdDelay * 1000); 
+      } catch (error) {
+        console.error('Error initializing ads:', error);
+      }
+    };
+    
+    initAds();
+  }, []);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (isBoostActive && boostExpiryTime) {
-        const currentTime = Date.now();
-        if (currentTime >= boostExpiryTime) {
-          // Boost has expired
-          setIsBoostActive(false);
-          setBoostExpiryTime(null);
-          setActiveBoostType(null);
-          setBoostTimeRemaining(0);
-          
-          // Display toast notification that boost has ended
-          toast({
-            title: "Boost Ended",
-            description: "Your temporary boost has expired.",
-          });
-          
-          // Reset any game mechanics that were boosted
-          if (gameContext) {
-            gameContext.setIncomeMultiplier(1);
-            gameContext.setTapPowerMultiplier(1);
-          }
-        } else {
-          // Update remaining time
-          setBoostTimeRemaining(Math.floor((boostExpiryTime - currentTime) / 1000));
+    if (!nextAdTime) {
+      const initialDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+      setNextAdTime(Date.now() + initialDelay * 1000);
+    }
+  }, []);
+  
+  useInterval(() => {
+    const now = Date.now();
+    
+    if (!showAdNotification && now >= nextAdTime && now - lastAdWatchedTime >= cooldownPeriod * 1000 && !adBoostActive) {
+      setShowAdNotification(true);
+      setAdNotificationStartTime(now);
+      console.log('Showing ad notification');
+      
+      // Make sure rewarded ad is loaded
+      if (!isRewardedAdLoaded) {
+        adMobService.loadRewardedAd()
+          .then(success => setIsRewardedAdLoaded(success))
+          .catch(err => console.error('Failed to load rewarded ad', err));
+      }
+    }
+    
+    if (showAdNotification && now - adNotificationStartTime >= adNotificationDuration * 1000) {
+      dismissAdNotification();
+      console.log('Auto-dismissing ad notification');
+    }
+    
+    if (adBoostActive && adBoostTimeRemaining > 0) {
+      setAdBoostTimeRemaining(prev => Math.max(0, prev - 1));
+      
+      if (adBoostTimeRemaining === 1) {
+        setAdBoostActive(false);
+        setIncomeMultiplier(1.0);
+      }
+    }
+  }, 1000);
+  
+  const handleWatchAd = async () => {
+    if (adBoostActive) {
+      setShowAdNotification(false);
+      return;
+    }
+    
+    setShowAdNotification(false);
+    
+    try {
+      if (!isRewardedAdLoaded) {
+        const adLoaded = await adMobService.loadRewardedAd();
+        setIsRewardedAdLoaded(adLoaded);
+        if (!adLoaded) {
+          throw new Error("Failed to load rewarded ad");
         }
       }
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [isBoostActive, boostExpiryTime, toast, gameContext]);
-
-  const applyBoost = (boostType: BoostType) => {
-    const selectedBoost = boostOptions.find(boost => boost.type === boostType);
-    
-    if (!selectedBoost) return;
-    
-    // Apply the effects based on boost type
-    switch (boostType) {
-      case 'income':
-        if (gameContext) {
-          gameContext.setIncomeMultiplier(2);
-          
-          if (selectedBoost.duration) {
-            const expiryTime = Date.now() + selectedBoost.duration * 1000;
-            setBoostExpiryTime(expiryTime);
-            setBoostTimeRemaining(selectedBoost.duration);
-            setIsBoostActive(true);
-            setActiveBoostType('income');
-          }
-        }
-        break;
-        
-      case 'gems':
-        if (gameContext) {
-          gameContext.addGems(10);
-          // This is an instant boost, no need to set timers
-          toast({
-            title: "Gems Received!",
-            description: "You received 10 gems from watching an ad!",
-          });
-        }
-        break;
-        
-      case 'timeWarp':
-        if (gameContext) {
-          // Calculate 120 minutes of income
-          const minutesOfIncome = 120;
-          const secondsOfIncome = minutesOfIncome * 60;
-          const incomePerSecond = calculateIncomePerSecond(gameContext);
-          const totalIncome = incomePerSecond * secondsOfIncome;
-          
-          gameContext.addCoins(totalIncome);
-          
-          toast({
-            title: "Time Warp Activated!",
-            description: `You gained ${gameContext.formatNumber(totalIncome)} coins from ${minutesOfIncome} minutes of passive income!`,
-          });
-        }
-        break;
-        
-      case 'tapPower':
-        if (gameContext) {
-          gameContext.setTapPowerMultiplier(5);
-          
-          if (selectedBoost.duration) {
-            const expiryTime = Date.now() + selectedBoost.duration * 1000;
-            setBoostExpiryTime(expiryTime);
-            setBoostTimeRemaining(selectedBoost.duration);
-            setIsBoostActive(true);
-            setActiveBoostType('tapPower');
-          }
-        }
-        break;
-    }
-  };
-
-  // Helper function to calculate income per second
-  const calculateIncomePerSecond = (context: any) => {
-    return context.totalPassiveIncome * context.prestigeMultiplier * context.incomeMultiplier;
-  };
-
-  const showRewardedAd = async () => {
-    try {
-      const adResult = await adMobService.showRewardedAd();
       
-      if (adResult) {
-        // Select a random boost
-        const randomIndex = Math.floor(Math.random() * boostOptions.length);
-        const selectedBoost = boostOptions[randomIndex];
+      // Show rewarded ad instead of interstitial
+      const reward = await adMobService.showRewardedAd();
+      setIsRewardedAdLoaded(false);
+      
+      // When ad completes successfully and user earns the reward
+      if (reward) {
+        setAdBoostActive(true);
+        setAdBoostTimeRemaining(adBoostDuration);
+        setIncomeMultiplier(adBoostMultiplier);
         
         toast({
-          title: `${selectedBoost.title} Activated!`,
-          description: selectedBoost.description,
+          title: "2x Income Boost Activated!",
+          description: `You've earned a ${adBoostMultiplier}x income boost for 10 minutes!`,
+          variant: "default",
         });
-        
-        // Apply the selected boost
-        applyBoost(selectedBoost.type);
       }
+      
+      // Preload the next rewarded ad
+      adMobService.loadRewardedAd()
+        .then(success => setIsRewardedAdLoaded(success))
+        .catch(err => console.error('Failed to load next rewarded ad', err));
+      
+      setLastAdWatchedTime(Date.now());
+      
+      const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+      setNextAdTime(Date.now() + nextDelay * 1000);
     } catch (error) {
       console.error("Error showing rewarded ad:", error);
-      toast({
-        title: "Ad Error",
-        description: "There was an error playing the ad. Please try again later.",
-        variant: "destructive",
-      });
+      
+      const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+      setNextAdTime(Date.now() + nextDelay * 1000);
     }
   };
-
+  
+  const dismissAdNotification = () => {
+    setShowAdNotification(false);
+    
+    const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+    setNextAdTime(Date.now() + nextDelay * 1000);
+  };
+  
   return (
-    <AdContext.Provider value={{ 
-      showRewardedAd, 
-      isBoostActive, 
-      activeBoostType,
-      boostTimeRemaining,
-      boostExpiryTime
+    <AdContext.Provider value={{
+      showAdNotification,
+      adBoostActive,
+      adBoostTimeRemaining,
+      adBoostMultiplier,
+      handleWatchAd,
+      dismissAdNotification
     }}>
       {children}
     </AdContext.Provider>
   );
 };
 
-export const useAdContext = () => {
+export const useAd = (): AdContextType => {
   const context = useContext(AdContext);
   if (context === undefined) {
-    throw new Error('useAdContext must be used within an AdProvider');
+    throw new Error('useAd must be used within an AdProvider');
   }
   return context;
 };
