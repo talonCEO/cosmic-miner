@@ -7,7 +7,7 @@ import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import EditCustomization from './EditCustomization';
+import EditCustomization from "@/components/menu/EditCustomization";
 
 interface PlayerCardProps {
   playerName: string;
