@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -5,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from './types';
 import { Button } from "@/components/ui/button";
+import { BoostEffect } from '@/types/boostTypes';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -154,7 +156,7 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const boostInfo = {
+  const boostInfo: Record<string, string> = {
     'boost-double-coins': 'Coin income x2',
     'boost-time-warp': '+120 min passive income',
     'boost-auto-tap': 'Auto-tap 5x/sec',
@@ -168,7 +170,7 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
   return (
     <div className="bg-slate-800 border border-indigo-500/30 rounded-lg p-3 mb-2 flex items-center justify-between w-64">
       <div>
-        <p className="text-white font-medium">{boostInfo[boost.id]}</p>
+        <p className="text-white font-medium">{boostInfo[boost.id] || boost.id}</p>
         {boost.duration && <p className="text-sm text-slate-300">{formatTime(timeLeft)}</p>}
       </div>
       <button onClick={() => onDismiss(boost.id)} className="text-slate-400 hover:text-white">
@@ -208,34 +210,36 @@ const Inventory: React.FC = () => {
       for (let i = 0; i < quantity; i++) {
         switch (item.id) {
           case 'boost-double-coins':
-            activateBoost(item.id, 900, 2); // 15 min, x2 multiplier
+            activateBoost(item.id);
             break;
           case 'boost-time-warp':
-            activateBoost(item.id, undefined, undefined, 7200); // Instant 120 min passive
+            activateBoost(item.id);
             break;
           case 'boost-auto-tap':
-            activateBoost(item.id, 300, 5); // 5 min, 5 taps/sec (multiplier used differently)
+            activateBoost(item.id);
             break;
           case 'boost-tap-boost':
-            activateBoost(item.id, 300, 3); // 5 min, x3 multiplier
+            activateBoost(item.id);
             break;
           case 'boost-cheap-upgrades':
-            activateBoost(item.id, 600, 0.9); // 10 min, 10% reduction (multiplier < 1)
+            activateBoost(item.id);
             break;
           case 'boost-essence-boost':
-            activateBoost(item.id); // No duration, permanent until prestige
+            activateBoost(item.id);
             break;
           case 'boost-perma-tap':
-            activateBoost(item.id, undefined, undefined, 1); // Permanent +1 tap power
+            activateBoost(item.id);
             break;
           case 'boost-perma-passive':
-            activateBoost(item.id, undefined, undefined, 1); // Permanent +1 passive income
+            activateBoost(item.id);
             break;
           default:
-            useItem(item.id); // Fallback for non-boost items
+            useItem(item.id);
         }
       }
-      setNotifications([...notifications, ...state.activeBoosts.slice(-quantity)]);
+      // Get active boosts from state - we need to update the type
+      const activeBoosts = (state as any).activeBoosts || [];
+      setNotifications([...notifications, ...activeBoosts.slice(-quantity)]);
       setSelectedItem(null);
     }
   };
@@ -351,7 +355,7 @@ const Inventory: React.FC = () => {
       {/* Notification Area */}
       <div className="fixed bottom-4 right-4 flex flex-col items-end space-y-2">
         {notifications.map(boost => (
-          <BoostNotification key={boost.id + boost.activatedAt} boost={boost} onDismiss={dismissNotification} />
+          <BoostNotification key={boost.id + (boost.activatedAt || 0)} boost={boost} onDismiss={dismissNotification} />
         ))}
       </div>
     </>
