@@ -9,68 +9,61 @@
 
 import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
 
+// Static imports for portrait images
+import DefaultImage from '@/assets/images/icons/default.png';
+import NebulaVoyagerImage from '@/assets/images/icons/nebula_voyager.png';
+import StellarSeekerImage from '@/assets/images/icons/stellar_seeker.png';
+import GalacticGuardianImage from '@/assets/images/icons/galactic_guardian.png';
+import CosmicOverlordImage from '@/assets/images/icons/cosmic_overlord.png';
+
 // =========================================
 // Level Data (1-100)
 // =========================================
 
 export interface LevelData {
   level: number;
-  expRequired: number;     // Experience required to reach this level
-  rewards?: {              // Optional rewards given when reaching this level
+  expRequired: number;
+  rewards?: {
     coins?: number;
     essence?: number;
-    skillPoints?: number;
+   .skillPoints?: number;
     gems?: number;
-    unlocksTitle?: string; // References title.id
-    unlocksPortrait?: string; // References portrait.id
+    unlocksTitle?: string;
+    unlocksPortrait?: string;
   };
 }
 
-/**
- * Experience curve calculation
- * Using a standard RPG-style curve: baseExp * (level ^ scalingFactor)
- */
 export const generateLevelData = (): LevelData[] => {
   const levels: LevelData[] = [];
-  const baseExp = 150;      // Base experience for level 1
-  const scalingFactor = 1.5; // How quickly the curve increases
-  
+  const baseExp = 150;
+  const scalingFactor = 1.5;
+
   for (let i = 1; i <= 100; i++) {
     const level: LevelData = {
       level: i,
-      expRequired: Math.round(baseExp * Math.pow(i, scalingFactor))
+      expRequired: Math.round(baseExp * Math.pow(i, scalingFactor)),
     };
-    
-    // Add special rewards at milestone levels
-    if (i % 5 === 0) { // Every 5 levels
+
+    if (i % 5 === 0) {
       level.rewards = { skillPoints: 1 };
-      
-      // Add more rewards at bigger milestones
-      if (i % 10 === 0) { // Every 10 levels
-        level.rewards.essence = i * 2;
-      }
-      
-      if (i % 25 === 0) { // Every 25 levels
-        level.rewards.gems = 50;
-      }
+      if (i % 10 === 0) level.rewards.essence = i * 2;
+      if (i % 25 === 0) level.rewards.gems = 50;
     }
-    
-    // Specific milestone rewards for titles
+
     if (i === 10) level.rewards = { ...level.rewards, unlocksTitle: 'space_rookie' };
     if (i === 25) level.rewards = { ...level.rewards, unlocksTitle: 'cosmic_explorer' };
     if (i === 50) level.rewards = { ...level.rewards, unlocksTitle: 'galactic_pioneer' };
     if (i === 75) level.rewards = { ...level.rewards, unlocksTitle: 'stellar_commander' };
     if (i === 100) level.rewards = { ...level.rewards, unlocksTitle: 'celestial_sovereign' };
-    
-    // Portrait unlocks
+
     if (i === 15) level.rewards = { ...level.rewards, unlocksPortrait: 'nebula_voyager' };
     if (i === 30) level.rewards = { ...level.rewards, unlocksPortrait: 'stellar_seeker' };
     if (i === 60) level.rewards = { ...level.rewards, unlocksPortrait: 'galactic_guardian' };
     if (i === 90) level.rewards = { ...level.rewards, unlocksPortrait: 'cosmic_overlord' };
-    
+
     levels.push(level);
   }
-  
+
   return levels;
 };
 
@@ -85,14 +78,14 @@ export interface TitleData {
   name: string;
   description: string;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  unlockCriteria: string;  // Human-readable unlock description
+  unlockCriteria: string;
   unlockCondition: {
     type: 'level' | 'achievement' | 'purchase' | 'prestige' | 'collection' | 'starting';
-    value?: number;        // Specific value needed (level number, count, etc)
-    achievementId?: string; // If unlocked by specific achievement
+    value?: number;
+    achievementId?: string;
   };
-  color?: string;          // Optional CSS color class for the title
-  special?: boolean;       // Whether this is a special/limited title
+  color?: string;
+  special?: boolean;
 }
 
 export const TITLES: TitleData[] = [
@@ -102,9 +95,7 @@ export const TITLES: TitleData[] = [
     description: 'Default title for all new cosmic miners',
     rarity: 'common',
     unlockCriteria: 'Default starting title for all players',
-    unlockCondition: {
-      type: 'starting'
-    }
+    unlockCondition: { type: 'starting' },
   },
   {
     id: 'space_rookie',
@@ -112,10 +103,7 @@ export const TITLES: TitleData[] = [
     description: 'Achieved a basic understanding of cosmic mining',
     rarity: 'common',
     unlockCriteria: 'Reach Level 10',
-    unlockCondition: {
-      type: 'level',
-      value: 10
-    }
+    unlockCondition: { type: 'level', value: 10 },
   },
   {
     id: 'cosmic_explorer',
@@ -123,11 +111,8 @@ export const TITLES: TitleData[] = [
     description: 'Ventured deeper into the cosmic realms',
     rarity: 'uncommon',
     unlockCriteria: 'Reach Level 25',
-    unlockCondition: {
-      type: 'level',
-      value: 25
-    },
-    color: 'text-blue-400'
+    unlockCondition: { type: 'level', value: 25 },
+    color: 'text-blue-400',
   },
   {
     id: 'asteroid_hunter',
@@ -135,11 +120,8 @@ export const TITLES: TitleData[] = [
     description: 'Master of finding valuable cosmic rocks',
     rarity: 'uncommon',
     unlockCriteria: 'Mine 1,000,000 coins total',
-    unlockCondition: {
-      type: 'achievement',
-      achievementId: 'earn_million'
-    },
-    color: 'text-amber-400'
+    unlockCondition: { type: 'achievement', achievementId: 'earn_million' },
+    color: 'text-amber-400',
   },
   {
     id: 'galactic_pioneer',
@@ -147,11 +129,8 @@ export const TITLES: TitleData[] = [
     description: 'Charted unknown territories of the cosmic mine',
     rarity: 'rare',
     unlockCriteria: 'Reach Level 50',
-    unlockCondition: {
-      type: 'level',
-      value: 50
-    },
-    color: 'text-purple-400'
+    unlockCondition: { type: 'level', value: 50 },
+    color: 'text-purple-400',
   },
   {
     id: 'essence_collector',
@@ -159,11 +138,8 @@ export const TITLES: TitleData[] = [
     description: 'Amassed significant cosmic essence',
     rarity: 'rare',
     unlockCriteria: 'Collect 100 Essence total',
-    unlockCondition: {
-      type: 'achievement',
-      achievementId: 'collect_essence_100'
-    },
-    color: 'text-indigo-500'
+    unlockCondition: { type: 'achievement', achievementId: 'collect_essence_100' },
+    color: 'text-indigo-500',
   },
   {
     id: 'stellar_commander',
@@ -171,11 +147,8 @@ export const TITLES: TitleData[] = [
     description: 'Commands respect throughout the galaxy',
     rarity: 'epic',
     unlockCriteria: 'Reach Level 75',
-    unlockCondition: {
-      type: 'level',
-      value: 75
-    },
-    color: 'text-emerald-400'
+    unlockCondition: { type: 'level', value: 75 },
+    color: 'text-emerald-400',
   },
   {
     id: 'nebula_master',
@@ -183,11 +156,8 @@ export const TITLES: TitleData[] = [
     description: 'Mastered the art of harnessing nebula energy',
     rarity: 'epic',
     unlockCriteria: 'Prestige 10 times',
-    unlockCondition: {
-      type: 'prestige',
-      value: 10
-    },
-    color: 'text-pink-500'
+    unlockCondition: { type: 'prestige', value: 10 },
+    color: 'text-pink-500',
   },
   {
     id: 'celestial_sovereign',
@@ -195,11 +165,8 @@ export const TITLES: TitleData[] = [
     description: 'Rules over the cosmic mining operation with unmatched expertise',
     rarity: 'legendary',
     unlockCriteria: 'Reach Level 100',
-    unlockCondition: {
-      type: 'level',
-      value: 100
-    },
-    color: 'text-yellow-400'
+    unlockCondition: { type: 'level', value: 100 },
+    color: 'text-yellow-400',
   },
   {
     id: 'cosmic_deity',
@@ -207,13 +174,10 @@ export const TITLES: TitleData[] = [
     description: 'Transcended mortal limitations in cosmic mining',
     rarity: 'legendary',
     unlockCriteria: 'Complete all achievements',
-    unlockCondition: {
-      type: 'collection',
-      value: 100 // Assuming 100% achievement completion
-    },
+    unlockCondition: { type: 'collection', value: 100 },
     color: 'text-gradient-cosmic',
-    special: true
-  }
+    special: true,
+  },
 ];
 
 // =========================================
@@ -225,13 +189,13 @@ export interface PortraitData {
   name: string;
   description: string;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  unlockCriteria: string;  // Human-readable unlock description
+  unlockCriteria: string;
   unlockCondition: {
     type: 'level' | 'achievement' | 'purchase' | 'prestige' | 'collection' | 'starting';
-    value?: number;        // Specific value needed (level number, count, etc)
-    achievementId?: string; // If unlocked by specific achievement
+    value?: number;
+    achievementId?: string;
   };
-  pngPath: string;         // Path to the PNG file for rendering
+  image: string; // Now holds the imported image reference
 }
 
 export const PORTRAITS: PortraitData[] = [
@@ -241,10 +205,8 @@ export const PORTRAITS: PortraitData[] = [
     description: 'The standard portrait for all cosmic miners starting their journey.',
     rarity: 'common',
     unlockCriteria: 'Default starting portrait for all players',
-    unlockCondition: {
-      type: 'starting'
-    },
-    pngPath: 'default.png'
+    unlockCondition: { type: 'starting' },
+    image: DefaultImage,
   },
   {
     id: 'nebula_voyager',
@@ -252,11 +214,8 @@ export const PORTRAITS: PortraitData[] = [
     description: 'A portrait glowing with the hues of distant nebulae, earned through exploration.',
     rarity: 'uncommon',
     unlockCriteria: 'Reach Level 15',
-    unlockCondition: {
-      type: 'level',
-      value: 15
-    },
-    pngPath: '@/assets/images/icons/default.png'
+    unlockCondition: { type: 'level', value: 15 },
+    image: NebulaVoyagerImage,
   },
   {
     id: 'stellar_seeker',
@@ -264,11 +223,8 @@ export const PORTRAITS: PortraitData[] = [
     description: 'A radiant portrait for those who pursue the stars relentlessly.',
     rarity: 'rare',
     unlockCriteria: 'Reach Level 30',
-    unlockCondition: {
-      type: 'level',
-      value: 30
-    },
-    pngPath: '@/assets/images/icons/default.png'
+    unlockCondition: { type: 'level', value: 30 },
+    image: StellarSeekerImage,
   },
   {
     id: 'galactic_guardian',
@@ -276,11 +232,8 @@ export const PORTRAITS: PortraitData[] = [
     description: 'A majestic portrait awarded for protecting the galaxy’s riches.',
     rarity: 'epic',
     unlockCriteria: 'Reach Level 60',
-    unlockCondition: {
-      type: 'level',
-      value: 60
-    },
-    pngPath: '@/assets/images/icons/default.png'
+    unlockCondition: { type: 'level', value: 60 },
+    image: GalacticGuardianImage,
   },
   {
     id: 'cosmic_overlord',
@@ -288,32 +241,19 @@ export const PORTRAITS: PortraitData[] = [
     description: 'A supreme portrait for the ultimate ruler of the cosmic mining empire.',
     rarity: 'legendary',
     unlockCriteria: 'Complete the "Master Miner" achievement',
-    unlockCondition: {
-      type: 'achievement',
-      achievementId: 'master_miner' // Assumes an achievement exists with this ID
-    },
-    pngPath: '@/assets/images/icons/default.png'
-  }
+    unlockCondition: { type: 'achievement', achievementId: 'master_miner' },
+    image: CosmicOverlordImage,
+  },
 ];
 
 // =========================================
 // Helper Functions
 // =========================================
 
-/**
- * Helper function to get level data based on experience points
- * @param exp Current experience points
- * @returns Current level data and progress to next level
- */
-export const getLevelFromExp = (exp: number): { 
-  currentLevel: LevelData, 
-  nextLevel: LevelData | null,
-  progress: number 
-} => {
-  // Find the highest level the player has achieved
+export const getLevelFromExp = (exp: number): { currentLevel: LevelData; nextLevel: LevelData | null; progress: number } => {
   let currentLevel = LEVELS[0];
   let nextLevel: LevelData | null = LEVELS[1];
-  
+
   for (let i = 0; i < LEVELS.length; i++) {
     if (exp >= LEVELS[i].expRequired) {
       currentLevel = LEVELS[i];
@@ -322,8 +262,7 @@ export const getLevelFromExp = (exp: number): {
       break;
     }
   }
-  
-  // Calculate progress to next level
+
   let progress = 0;
   if (nextLevel) {
     const currentLevelExp = currentLevel.expRequired;
@@ -332,48 +271,29 @@ export const getLevelFromExp = (exp: number): {
     const playerProgress = exp - currentLevelExp;
     progress = Math.min(Math.max(playerProgress / expRange, 0), 1) * 100;
   } else {
-    // Max level reached
     progress = 100;
   }
-  
+
   return { currentLevel, nextLevel, progress };
 };
 
-/**
- * Get a title by its ID
- * @param id Title ID
- * @returns Title data or undefined if not found
- */
 export const getTitleById = (id: string): TitleData | undefined => {
-  return TITLES.find(title => title.id === id);
+  return TITLES.find((title) => title.id === id);
 };
 
-/**
- * Get a portrait by its ID
- * @param id Portrait ID
- * @returns Portrait data or undefined if not found
- */
 export const getPortraitById = (id: string): PortraitData | undefined => {
-  return PORTRAITS.find(portrait => portrait.id === id);
+  return PORTRAITS.find((portrait) => portrait.id === id);
 };
 
-/**
- * Check if a player has unlocked a specific title based on their profile
- * @param titleId Title ID to check
- * @param userLevel Current user level
- * @param userAchievements Array of achievement IDs the user has completed
- * @param prestigeCount Number of times the user has prestiged
- * @returns Boolean indicating if the title is unlocked
- */
 export const isTitleUnlocked = (
-  titleId: string, 
-  userLevel: number, 
+  titleId: string,
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): boolean => {
   const title = getTitleById(titleId);
   if (!title) return false;
-  
+
   switch (title.unlockCondition.type) {
     case 'starting':
       return true;
@@ -384,31 +304,21 @@ export const isTitleUnlocked = (
     case 'prestige':
       return prestigeCount >= (title.unlockCondition.value || 0);
     case 'collection':
-      // For 100% achievement completion
-      // This would need to be compared against the total number of achievements
-      return false; // Implement based on actual achievement system
+      return false; // Placeholder
     default:
       return false;
   }
 };
 
-/**
- * Check if a player has unlocked a specific portrait based on their profile
- * @param portraitId Portrait ID to check
- * @param userLevel Current user level
- * @param userAchievements Array of achievement IDs the user has completed
- * @param prestigeCount Number of times the user has prestiged
- * @returns Boolean indicating if the portrait is unlocked
- */
 export const isPortraitUnlocked = (
-  portraitId: string, 
-  userLevel: number, 
+  portraitId: string,
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): boolean => {
   const portrait = getPortraitById(portraitId);
   if (!portrait) return false;
-  
+
   switch (portrait.unlockCondition.type) {
     case 'starting':
       return true;
@@ -419,42 +329,24 @@ export const isPortraitUnlocked = (
     case 'prestige':
       return prestigeCount >= (portrait.unlockCondition.value || 0);
     case 'collection':
-      return false; // Implement based on actual collection system
+      return false; // Placeholder
     default:
       return false;
   }
 };
 
-/**
- * Get all titles unlocked by a player
- * @param userLevel Current user level
- * @param userAchievements Array of achievement IDs the user has completed
- * @param prestigeCount Number of times the user has prestiged
- * @returns Array of unlocked title data
- */
 export const getUnlockedTitles = (
-  userLevel: number, 
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): TitleData[] => {
-  return TITLES.filter(title => 
-    isTitleUnlocked(title.id, userLevel, userAchievements, prestigeCount)
-  );
+  return TITLES.filter((title) => isTitleUnlocked(title.id, userLevel, userAchievements, prestigeCount));
 };
 
-/**
- * Get all portraits unlocked by a player
- * @param userLevel Current user level
- * @param userAchievements Array of achievement IDs the user has completed
- * @param prestigeCount Number of times the user has prestiged
- * @returns Array of unlocked portrait data
- */
 export const getUnlockedPortraits = (
-  userLevel: number, 
+  userLevel: number,
   userAchievements: string[] = [],
   prestigeCount: number = 0
 ): PortraitData[] => {
-  return PORTRAITS.filter(portrait => 
-    isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount)
-  );
+  return PORTRAITS.filter((portrait) => isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount));
 };
