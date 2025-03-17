@@ -7,7 +7,7 @@ import { adMobService } from '@/services/AdMobService';
 import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
-import { StorageService } from '@/services/StorageService';
+import { StorageService } from '@/services/StorageService'; // Correct import
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
 
 import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
@@ -44,6 +44,26 @@ export interface Ability {
   column: number;
 }
 
+export interface Upgrade {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  baseCost: number;
+  level: number;
+  maxLevel: number;
+  coinsPerClickBonus: number;
+  coinsPerSecondBonus: number;
+  multiplierBonus: number;
+  icon: string;
+  unlocked: boolean;
+  unlocksAt?: {
+    upgradeId: string;
+    level: number;
+  };
+  category: string;
+}
+
 export interface GameState {
   coins: number;
   coinsPerClick: number;
@@ -75,26 +95,11 @@ export interface GameState {
     purchased: number;
   }>;
   hasNoAds: boolean;
-}
-
-export interface Upgrade {
-  id: string;
-  name: string;
-  description: string;
-  cost: number;
-  baseCost: number;
-  level: number;
-  maxLevel: number;
-  coinsPerClickBonus: number;
-  coinsPerSecondBonus: number;
-  multiplierBonus: number;
-  icon: string;
-  unlocked: boolean;
-  unlocksAt?: {
-    upgradeId: string;
-    level: number;
-  };
-  category: string;
+  // Added profile fields
+  username: string;
+  title: string;
+  userId: string;
+  portrait: string; // References portrait.id from playerProgressionData
 }
 
 type GameAction =
@@ -115,7 +120,7 @@ type GameAction =
   | { type: 'ADD_SKILL_POINTS'; amount: number }
   | { type: 'SHOW_SKILL_POINT_NOTIFICATION'; reason: string }
   | { type: 'UNLOCK_PERK'; perkId: string; parentId: string }
-  | { type: 'HANDLE_CLICK'; }
+  | { type: 'HANDLE_CLICK' }
   | { type: 'RESTORE_STATE_PROPERTY'; property: keyof GameState; value: any }
   | { type: 'RESTORE_UPGRADES'; upgrades: Upgrade[] }
   | { type: 'RESTORE_ABILITIES'; abilities: Ability[] }
@@ -125,7 +130,10 @@ type GameAction =
   | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
   | { type: 'SET_MENU_TYPE'; menuType: string }
   | { type: 'ADD_GEMS'; amount: number }
-  | { type: 'ACTIVATE_BOOST'; boostId: string };
+  | { type: 'ACTIVATE_BOOST'; boostId: string }
+  | { type: 'UPDATE_USERNAME'; username: string } // Added for profile
+  | { type: 'UPDATE_TITLE'; title: string }     // Added for profile
+  | { type: 'UPDATE_PORTRAIT'; portrait: string }; // Added for portraits
 
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
@@ -311,6 +319,11 @@ const initialState: GameState = {
   gems: 0,
   boosts: {},
   hasNoAds: false,
+  // Added profile fields
+  username: "Cosmic Explorer",
+  title: "space_pilot",
+  userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
+  portrait: "default"
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -568,6 +581,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         boosts: newBoosts,
         hasNoAds: state.hasNoAds || state.boosts["boost-no-ads"]?.purchased > 0,
         inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * INVENTORY_ITEMS.INVENTORY_EXPANSION.effect!.value,
+        // Preserve profile fields
+        username: state.username,
+        title: state.title,
+        userId: state.userId,
+        portrait: state.portrait
       };
     }
     case 'BUY_MANAGER': {
@@ -928,6 +946,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         },
       };
     }
+    case 'UPDATE_USERNAME': // Added for profile
+      return { ...state, username: action.username };
+    case 'UPDATE_TITLE': // Added for profile
+      return { ...state, title: action.title };
+    case 'UPDATE_PORTRAIT': // Added for portraits
+      return { ...state, portrait: action.portrait };
     default:
       return state;
   }
@@ -981,6 +1005,9 @@ interface GameContextType {
   removeItem: (itemId: string, quantity?: number) => void;
   addGems: (amount: number) => void;
   activateBoost: (boostId: string) => void;
+  updateUsername: (username: string) => void; // Added for profile
+  updateTitle: (title: string) => void;     // Added for profile
+  updatePortrait: (portrait: string) => void; // Added for portraits
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1035,6 +1062,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             artifacts: initialState.artifacts,
             boosts: savedState.boosts || {},
             hasNoAds: savedState.hasNoAds || false,
+            // Ensure profile fields are included
+            username: savedState.username || initialState.username,
+            title: savedState.title || initialState.title,
+            userId: savedState.userId || initialState.userId,
+            portrait: savedState.portrait || initialState.portrait
           };
           
           for (const key in restoredState) {
@@ -1136,7 +1168,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
   const addGems = (amount: number) => dispatch({ type: 'ADD_GEMS', amount });
   const activateBoost = (boostId: string) => dispatch({ type: 'ACTIVATE_BOOST', boostId });
-  
+  const updateUsername = (username: string) => dispatch({ type: 'UPDATE_USERNAME', username });
+  const updateTitle = (title: string) => dispatch({ type: 'UPDATE_TITLE', title });
+  const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
+
   const contextValue = {
     state,
     dispatch,
@@ -1160,7 +1195,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     addItem,
     removeItem,
     addGems,
-    activateBoost
+    activateBoost,
+    updateUsername,
+    updateTitle,
+    updatePortrait
   };
   
   gameContextHolder.current = contextValue;
