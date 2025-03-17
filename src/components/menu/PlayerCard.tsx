@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Lock, Gift, Gem, PenSquare } from 'lucide-react';
+import { Lock, Gift, PenSquare } from 'lucide-react'; // Removed Gem
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 import EditCustomization from './EditCustomization';
@@ -40,7 +40,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 
-  const nameChangeCount = state.nameChangeCount || 0;
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
 
   useEffect(() => {
@@ -80,7 +79,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               alt={portraitData?.name}
               className="absolute h-24 w-24 -top-0 -left-0 z-[10002] rounded-full object-cover opacity-80"
             />
-            <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
+            <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/ pleasing-y-1/2 z-[10001]">
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
                 {playerName.substring(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -95,11 +94,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         <div className="ml-3 flex-1 pt-2">
           <div className="mb-6 mt-2">
             <h3 className="text-m font-semibold text-white">{playerName}</h3>
-            {nameChangeCount > 0 && (
-              <span className="flex items-center text-xs text-purple-400 mt-1">
-                <Gem size={12} className="mr-1" /> 200
-              </span>
-            )}
+            {/* Removed gem cost display */}
           </div>
 
           <div className="flex items-center gap-2 mb-1 pt-3 relative">
