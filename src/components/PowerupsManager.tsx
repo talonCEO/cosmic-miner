@@ -132,6 +132,13 @@ const PowerupsManager: React.FC = () => {
   
   // Generate random powerups at random positions
   const generateRandomPowerups = () => {
+    // Map powerup types to the expected PowerupObject types
+    const powerupTypeMapping: { [key: string]: "star" | "orb" | "cube" } = {
+      'coinMultiplier': 'star',
+      'coinsPerClick': 'orb',
+      'coinsPerSecond': 'cube'
+    };
+    
     const powerupTypes = ['coinMultiplier', 'coinsPerClick', 'coinsPerSecond'];
     const powerupPositions = [
       {x: Math.random() * 60 + 20, y: Math.random() * 60 + 20},
@@ -140,14 +147,20 @@ const PowerupsManager: React.FC = () => {
     
     return (
       <>
-        {powerupPositions.map((pos, index) => (
-          <PowerupObject 
-            key={index}
-            type={powerupTypes[index % powerupTypes.length]} 
-            position={pos}
-            onClick={() => handleClick(1)}
-          />
-        ))}
+        {powerupPositions.map((pos, index) => {
+          const powerupKey = powerupTypes[index % powerupTypes.length];
+          const powerupType = powerupTypeMapping[powerupKey]; 
+          
+          return (
+            <PowerupObject 
+              key={index}
+              type={powerupType}
+              position={pos}
+              onOffScreen={() => {/* Handle off screen event */}}
+              onClick={() => handleClick(1)}
+            />
+          );
+        })}
       </>
     );
   };
