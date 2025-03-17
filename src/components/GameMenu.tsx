@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -27,7 +26,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // Reset to main menu when dialog is closed externally
       setActiveMenuType("none");
     }
   };
@@ -54,17 +52,9 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     buyArtifact(artifactId);
   };
   
-  // Handle buying gem packages via Google Play
   const handleBuyGemPackage = async (packageId: string, amount: number) => {
     try {
-      // In a real implementation with Capacitor, this would use a plugin like
-      // @capacitor/google-play-billing or similar to initiate a purchase
-      
-      // For now, simulate a successful purchase
       console.log(`Initiating Google Play purchase for package: ${packageId}`);
-      
-      // After successful purchase, update the gems through the GameContext
-      // The actual update happens in PremiumStore when showGemUnlockAnimation is called
     } catch (error) {
       console.error('Purchase failed:', error);
     }
@@ -72,7 +62,6 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
 
   const potentialEssenceReward = calculatePotentialEssenceReward();
   
-  // Handler for menu type changes from subcomponents
   const handleMenuChange = (menuType: MenuType) => {
     setActiveMenuType(menuType);
   };
