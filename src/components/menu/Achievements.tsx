@@ -9,7 +9,6 @@ interface AchievementsProps {
 }
 
 const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
-  // Calculate achievements progress
   const achievementProgress = () => {
     const unlocked = achievements.filter(a => a.unlocked).length;
     const total = achievements.length;
@@ -72,7 +71,7 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                       />
                       <span className="text-xs text-slate-300">
                         {achievement.rewards.type === 'gems' ? `${achievement.rewards.value} Gems` :
-                         achievement.rewards.type === 'boost' ? `${achievement.rewards.value / 3600}h Boost` :
+                         achievement.rewards.type === 'inventory_item' ? 'Boost' :
                          achievement.rewards.type === 'title' ? 'Title' :
                          'Portrait'}
                       </span>
