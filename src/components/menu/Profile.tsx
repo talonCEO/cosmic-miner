@@ -17,7 +17,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
 
   const handleNameChange = (newName: string) => {
     if (newName.trim() && newName !== state.username) {
-      updateUsername(newName, 0); // Zero cost here as the cost is handled in EditCustomization
+      updateUsername(newName);
     }
   };
 
