@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Lock, Check, Edit2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Lock } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import { getUnlockedPortraits, getUnlockedTitles, getLevelFromExp, PORTRAITS, TITLES } from '@/data/playerProgressionData';
 
@@ -13,45 +12,47 @@ interface EditCustomizationProps {
 }
 
 const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
-  const { state, updatePortrait, updateTitle, updateUsername } = useGame();
+  const { state, updatePortrait, updateTitle, updateUsername, addGems } = useGame();
   const [selectedPortrait, setSelectedPortrait] = useState(state.portrait);
   const [selectedTitle, setSelectedTitle] = useState(state.title);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [username, setUsername] = useState(state.username || "");
-  const [usernameError, setUsernameError] = useState("");
-
-  const nameChangeCount = state.nameChangeCount || 0;
-  const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
-  const canEditName = nameChangeCost === 0 || state.gems >= nameChangeCost;
+  const [newName, setNewName] = useState(state.username);
+  const [message, setMessage] = useState<string>('');
 
   const levelData = getLevelFromExp(state.totalEarned || 0);
   const unlockedPortraitIds = getUnlockedPortraits(
-    levelData.currentLevel.level, 
+    levelData.currentLevel.level,
     state.achievements.map(a => a.id),
     state.prestigeCount || 0,
-    true // Unlock all portraits by default
+    true
   ).map(p => p.id);
   const unlockedTitleIds = getUnlockedTitles(
-    levelData.currentLevel.level, 
+    levelData.currentLevel.level,
     state.achievements.map(a => a.id),
     state.prestigeCount || 0,
-    true // Unlock all titles by default
+    true
   ).map(t => t.id);
 
-  const handleSaveName = () => {
-    if (!username.trim() || username === state.username) {
-      setIsEditingName(false);
+  const NAME_CHANGE_COST = 50;
+  const canAffordNameChange = state.gems >= NAME_CHANGE_COST;
+
+  const handleNameChange = () => {
+    if (!newName.trim()) {
+      setMessage('Username cannot be empty');
       return;
     }
-    
-    if (nameChangeCost > 0 && state.gems < nameChangeCost) {
-      setUsernameError("Not enough gems! You need 200 gems to change your username.");
+    if (newName === state.username) {
+      setMessage('This is already your username');
       return;
     }
-    
-    updateUsername(username);
-    setIsEditingName(false);
-    setUsernameError("");
+    if (!canAffordNameChange) {
+      setMessage('Insufficient Gems');
+      return;
+    }
+
+    addGems(-NAME_CHANGE_COST);
+    updateUsername(newName);
+    setMessage('Username updated!');
+    setTimeout(() => setMessage(''), 2000); // Clear message after 2s
   };
 
   const handleApply = () => {
@@ -61,61 +62,38 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
     if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
       updateTitle(selectedTitle);
     }
-    onClose(); // Close after applying
+    onClose();
   };
 
   return (
-    <DialogContent className="max-w-[280px] max-h-[350px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
+    <DialogContent className="max-w-[200px] max-h-[300px] backdrop-blur-sm bg-slate-900/90 border-indigo-500/30 rounded-xl p-0 border shadow-xl text-white z-[10000]">
       <DialogHeader className="p-2 border-b border-indigo-500/20">
         <DialogTitle className="text-center text-lg">Customize</DialogTitle>
       </DialogHeader>
       <div className="p-2 space-y-2">
         <div>
           <label className="text-xs text-slate-300 mb-0.5 block">Username</label>
-          <div className="flex gap-1 mb-0.5">
-            {isEditingName ? (
-              <>
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white flex-1"
-                  maxLength={15}
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0"
-                  onClick={handleSaveName}
-                  title="Save username"
-                >
-                  <Check size={14} className="text-green-400" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="h-8 text-sm bg-indigo-700/50 border border-indigo-500 text-white rounded-md px-3 py-1.5 flex-1 truncate">
-                  {state.username}
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setIsEditingName(true)}
-                  disabled={!canEditName}
-                  title={canEditName ? "Edit username" : "Not enough gems"}
-                >
-                  <Edit2 size={14} className={canEditName ? "text-slate-300" : "text-slate-500"} />
-                </Button>
-              </>
-            )}
+          <div className="flex items-center gap-2">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="h-8 text-sm bg-indigo-700/50 border-indigo-500 text-white flex-1"
+              placeholder="Enter new username"
+            />
+            <Button
+              onClick={handleNameChange}
+              disabled={!canAffordNameChange || !newName.trim()}
+              className={`h-8 text-xs px-3 ${
+                canAffordNameChange && newName.trim()
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-gray-600 cursor-not-allowed'
+              }`}
+            >
+              Change
+            </Button>
           </div>
-          {nameChangeCount > 0 && (
-            <span className="text-xs text-purple-400 flex items-center gap-1">
-              Cost: 200 gems
-            </span>
-          )}
-          {usernameError && (
-            <span className="text-xs text-red-400 block mt-1">{usernameError}</span>
+          {message && (
+            <p className="text-xs text-center mt-1 text-red-400">{message}</p>
           )}
         </div>
         <div>

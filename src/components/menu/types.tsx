@@ -1,18 +1,7 @@
-
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
-
-export interface BoostEffect {
-  id: string;
-  type: string;
-  value: number;
-  activatedAt?: number;
-  duration?: number;
-  remainingTime?: number;
-  remainingUses?: number;
-}
 
 export interface Ability {
   id: string;
@@ -97,20 +86,19 @@ export const INVENTORY_ITEMS = {
   DOUBLE_COINS: {
     id: 'boost-double-coins',
     name: 'Double Coins',
-    description: 'Doubles all coin earnings for 15 minutes',
+    description: 'Doubles all coin earnings for 30 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <CircleDollarSign className="text-green-400" />,
     effect: {
       type: 'coinMultiplier',
       value: 2,
-      duration: 15 * 60
+      duration: 30 * 60
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100,
-    maxPurchases: Infinity
+    cost: 100
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -121,31 +109,29 @@ export const INVENTORY_ITEMS = {
     icon: <Clock className="text-blue-400" />,
     effect: {
       type: 'timeWarp',
-      value: 120,
+      value: 2 * 60 * 60,
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50,
-    maxPurchases: Infinity
+    cost: 50
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
     name: 'Auto Tap',
-    description: 'Automatically taps 5 times per second for 5 minutes',
+    description: 'Automatically taps 5 times per second for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <Zap className="text-yellow-400" />,
     effect: {
       type: 'autoTap',
       value: 5,
-      duration: 5 * 60
+      duration: 10 * 60
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100,
-    maxPurchases: Infinity
+    cost: 100
   },
   TAP_BOOST: {
     id: 'boost-tap-boost',
@@ -155,15 +141,14 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Zap className="text-purple-400" />,
     effect: {
-      type: 'tapMultiplier',
+      type: 'coinsPerClick',
       value: 5,
       duration: 100
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 75,
-    maxPurchases: Infinity
+    cost: 75
   },
   CHEAP_UPGRADES: {
     id: 'boost-cheap-upgrades',
@@ -180,8 +165,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50,
-    maxPurchases: Infinity
+    cost: 50
   },
   ESSENCE_BOOST: {
     id: 'boost-essence-boost',
@@ -197,8 +181,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100,
-    maxPurchases: Infinity
+    cost: 100
   },
   PERMA_TAP: {
     id: 'boost-perma-tap',

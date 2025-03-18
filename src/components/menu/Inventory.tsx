@@ -1,12 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from './types';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from './types';
 import { Button } from "@/components/ui/button";
-import { useToast } from '@/hooks/use-toast';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -34,7 +32,7 @@ const ItemSlot: React.FC<{
 
   return (
     <div 
-      className={`relative w-full h-full aspect-square rounded-lg ${rarityColors[item.rarity]} border p-2 flex flex-col items-center justify-center ${item.usable ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}`}
+      className={`relative w-full h-full aspect-square rounded-lg ${rarityColors[item.rarity]} border p-2 flex flex-col items-center justify-center ${item.usable ? 'cursor-pointer' : 'cursor-default'}`}
       onClick={() => item.usable && onItemClick(item)}
     >
       <div className="flex flex-col items-center justify-center h-full">
@@ -77,37 +75,6 @@ const UseItemPopover: React.FC<{
     }
   };
   
-  const formatEffectDescription = (item: InventoryItem) => {
-    if (!item.effect) return "No effect";
-    
-    switch (item.effect.type) {
-      case 'coinMultiplier':
-        return `${item.effect.duration ? `${Math.floor(item.effect.duration / 60)} minutes of ` : ''}${item.effect.value}x coin earnings`;
-      case 'timeWarp':
-        return `Instantly gain ${item.effect.value} minutes worth of passive income`;
-      case 'autoTap':
-        return `${item.effect.value} taps per second for ${Math.floor(item.effect.duration! / 60)} minutes`;
-      case 'tapMultiplier':
-        return `${item.effect.value}x tap power for ${item.effect.duration} taps`;
-      case 'upgradeCostReduction':
-        return `${Math.round((1 - item.effect.value) * 100)}% cheaper upgrades for ${Math.floor(item.effect.duration! / 60)} minutes`;
-      case 'essenceMultiplier':
-        return `${Math.round((item.effect.value - 1) * 100)}% more essence on prestige`;
-      case 'coinsPerClickBase':
-        return `+${item.effect.value} permanent tap power`;
-      case 'coinsPerSecondBase':
-        return `+${item.effect.value} permanent passive income`;
-      case 'noAds':
-        return "Permanently removes ads";
-      case 'unlockAutoBuy':
-        return "Permanently enables auto-buy feature";
-      case 'inventoryCapacity':
-        return `+${item.effect.value} inventory slots`;
-      default:
-        return `${item.effect.type}: ${item.effect.value}`;
-    }
-  };
-  
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-slate-900 border border-indigo-500/30 rounded-lg p-4 w-72 max-w-[90vw]">
@@ -122,7 +89,7 @@ const UseItemPopover: React.FC<{
           <div className="text-4xl mb-3">{item.icon}</div>
           <p className="text-sm text-slate-300 text-center mb-3">{item.description}</p>
           <p className="text-sm text-green-400 font-medium text-center mb-4">
-            {formatEffectDescription(item)}
+            {item.effect ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
           </p>
         </div>
         
@@ -187,35 +154,22 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const getBoostInfo = (boost: BoostEffect) => {
-    switch (boost.id) {
-      case 'boost-double-coins':
-        return 'Coin income x2';
-      case 'boost-time-warp':
-        return '+120 min passive income';
-      case 'boost-auto-tap':
-        return 'Auto-tap 5x/sec';
-      case 'boost-tap-boost':
-        return 'Tap income x5';
-      case 'boost-cheap-upgrades':
-        return 'Upgrades -10%';
-      case 'boost-essence-boost':
-        return 'Essence reward +25%';
-      case 'boost-perma-tap':
-        return 'Tap power +1 (Permanent)';
-      case 'boost-perma-passive':
-        return 'Passive income +1 (Permanent)';
-      default:
-        return boost.id;
-    }
+  const boostInfo = {
+    'boost-double-coins': 'Coin income x2',
+    'boost-time-warp': '+120 min passive income',
+    'boost-auto-tap': 'Auto-tap 5x/sec',
+    'boost-tap-boost': 'Tap income x3',
+    'boost-cheap-upgrades': 'Upgrades -10%',
+    'boost-essence-boost': 'Essence reward +25%',
+    'boost-perma-tap': 'Tap power +1 (Permanent)',
+    'boost-perma-passive': 'Passive income +1 (Permanent)',
   };
 
   return (
     <div className="bg-slate-800 border border-indigo-500/30 rounded-lg p-3 mb-2 flex items-center justify-between w-64">
       <div>
-        <p className="text-white font-medium">{getBoostInfo(boost)}</p>
+        <p className="text-white font-medium">{boostInfo[boost.id]}</p>
         {boost.duration && <p className="text-sm text-slate-300">{formatTime(timeLeft)}</p>}
-        {boost.remainingUses && <p className="text-sm text-slate-300">{boost.remainingUses} uses left</p>}
       </div>
       <button onClick={() => onDismiss(boost.id)} className="text-slate-400 hover:text-white">
         <XCircle size={20} />
@@ -225,8 +179,7 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
 };
 
 const Inventory: React.FC = () => {
-  const { state, useItem, addItem, activateBoost } = useGame();
-  const { toast } = useToast();
+  const { state, dispatch, useItem, addItem, activateBoost } = useGame();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -244,11 +197,6 @@ const Inventory: React.FC = () => {
     setVirtualInventory([...resourceItems, ...state.inventory]);
   }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
   
-  // Update notifications based on active boosts
-  useEffect(() => {
-    setNotifications(state.activeBoosts);
-  }, [state.activeBoosts]);
-  
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
       setSelectedItem(item);
@@ -257,21 +205,37 @@ const Inventory: React.FC = () => {
   
   const handleUseConfirm = (item: InventoryItem, quantity: number) => {
     if (item.usable) {
-      // Use the item the specified number of times
       for (let i = 0; i < quantity; i++) {
-        // Remove the item from inventory
-        useItem(item.id);
-        
-        // Activate the boost effect
-        activateBoost(item.id);
-        
-        // Show toast notification
-        toast({
-          title: `${item.name} Activated`,
-          description: item.description,
-        });
+        switch (item.id) {
+          case 'boost-double-coins':
+            activateBoost(item.id, 900, 2); // 15 min, x2 multiplier
+            break;
+          case 'boost-time-warp':
+            activateBoost(item.id, undefined, undefined, 7200); // Instant 120 min passive
+            break;
+          case 'boost-auto-tap':
+            activateBoost(item.id, 300, 5); // 5 min, 5 taps/sec (multiplier used differently)
+            break;
+          case 'boost-tap-boost':
+            activateBoost(item.id, 300, 3); // 5 min, x3 multiplier
+            break;
+          case 'boost-cheap-upgrades':
+            activateBoost(item.id, 600, 0.9); // 10 min, 10% reduction (multiplier < 1)
+            break;
+          case 'boost-essence-boost':
+            activateBoost(item.id); // No duration, permanent until prestige
+            break;
+          case 'boost-perma-tap':
+            activateBoost(item.id, undefined, undefined, 1); // Permanent +1 tap power
+            break;
+          case 'boost-perma-passive':
+            activateBoost(item.id, undefined, undefined, 1); // Permanent +1 passive income
+            break;
+          default:
+            useItem(item.id); // Fallback for non-boost items
+        }
       }
-      
+      setNotifications([...notifications, ...state.activeBoosts.slice(-quantity)]);
       setSelectedItem(null);
     }
   };
@@ -341,7 +305,7 @@ const Inventory: React.FC = () => {
           </div>
           <div className="relative">
             <select
-              className="appearance-none bg-slate-800/50 border border-slate-700 text-white py-2 pl-3 pr-8 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+              className="appearance-none bg-slate-800/50 border border BASICSslate-700 text-white py-2 pl-3 pr-8 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
@@ -387,11 +351,7 @@ const Inventory: React.FC = () => {
       {/* Notification Area */}
       <div className="fixed bottom-4 right-4 flex flex-col items-end space-y-2">
         {notifications.map(boost => (
-          <BoostNotification 
-            key={`${boost.id}-${boost.activatedAt || ''}`} 
-            boost={boost} 
-            onDismiss={dismissNotification} 
-          />
+          <BoostNotification key={boost.id + boost.activatedAt} boost={boost} onDismiss={dismissNotification} />
         ))}
       </div>
     </>

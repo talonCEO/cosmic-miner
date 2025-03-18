@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -25,7 +24,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     playerExp: exp,
     playerMaxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
-    gems: state.gems,
     essence: state.essence,
     userId: state.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
     portrait: state.portrait || 'default',
@@ -57,7 +55,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           playerExp={playerData.playerExp}
           playerMaxExp={playerData.playerMaxExp}
           coins={playerData.coins}
-          gems={playerData.gems}
           essence={playerData.essence}
           userId={playerData.userId}
           portrait={playerData.portrait}

@@ -99,7 +99,6 @@ export interface GameState {
     remainingUses?: number;
     purchased: number;
   }>;
-  activeBoosts: BoostEffect[];
   hasNoAds: boolean;
   username: string;
   title: string;
@@ -325,12 +324,11 @@ const initialState: GameState = {
   inventoryCapacity: 100,
   gems: 0,
   boosts: {},
-  activeBoosts: [],
   hasNoAds: false,
   username: "Cosmic Explorer",
-  title: "space_pilot",
+  title: "space_pilot", // Only space_pilot unlocked by default
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-  portrait: "default",
+  portrait: "default", // Only default unlocked by default
   nameChangeCount: 0
 };
 
@@ -338,30 +336,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
       let totalClickAmount = GameMechanics.calculateTapValue(state);
-      
-      // Apply tap boost if active
-      const tapBoost = state.activeBoosts.find(boost => boost.id === 'boost-tap-boost' && boost.remainingUses && boost.remainingUses > 0);
-      if (tapBoost) {
-        totalClickAmount *= tapBoost.value;
-        
-        // Decrement remaining uses
-        const updatedActiveBoosts = state.activeBoosts.map(boost => {
-          if (boost.id === 'boost-tap-boost' && boost.remainingUses) {
-            return {
-              ...boost,
-              remainingUses: boost.remainingUses - 1
-            };
-          }
-          return boost;
-        }).filter(boost => boost.id !== 'boost-tap-boost' || (boost.remainingUses && boost.remainingUses > 0));
-        
-        return {
-          ...state,
-          coins: Math.max(0, state.coins + totalClickAmount),
-          totalClicks: state.totalClicks + 1,
-          totalEarned: state.totalEarned + totalClickAmount,
-          activeBoosts: updatedActiveBoosts
-        };
+      if (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses) {
+        totalClickAmount *= INVENTORY_ITEMS.TAP_BOOST.effect!.value;
+        state.boosts["boost-tap-boost"].remainingUses -= 1;
+        if (state.boosts["boost-tap-boost"].remainingUses <= 0) {
+          state.boosts["boost-tap-boost"].active = false;
+        }
       }
       
       return {
@@ -482,64 +462,42 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         incomeMultiplier: action.multiplier
       };
     case 'TICK': {
-      // Update active boosts durations
-      const now = Date.now() / 1000;
-      const updatedActiveBoosts = state.activeBoosts
-        .map(boost => {
-          if (boost.duration && boost.activatedAt) {
-            const elapsed = now - boost.activatedAt;
-            const remaining = boost.duration - elapsed;
-            return {
-              ...boost,
-              remainingTime: remaining > 0 ? remaining : 0
-            };
+      const newBoosts = { ...state.boosts };
+      Object.keys(newBoosts).forEach(boostId => {
+        if (newBoosts[boostId].remainingTime) {
+          newBoosts[boostId].remainingTime -= 0.1;
+          if (newBoosts[boostId].remainingTime <= 0) {
+            newBoosts[boostId].active = false;
           }
-          return boost;
-        })
-        .filter(boost => !boost.duration || !boost.activatedAt || (boost.duration && boost.activatedAt && (now - boost.activatedAt) < boost.duration));
-      
-      // Handle auto-tap if active
-      const autoTapBoost = updatedActiveBoosts.find(boost => boost.id === 'boost-auto-tap');
-      let autoTapAmount = 0;
-      if (autoTapBoost) {
-        const tapValue = GameMechanics.calculateTapValue(state);
-        autoTapAmount = tapValue * autoTapBoost.value * 0.1; // 0.1 seconds per tick
-      }
-      
-      // Process other passive income
-      let passiveAmount = 0;
-      if (state.coinsPerSecond > 0) {
-        passiveAmount = GameMechanics.calculatePassiveIncome(state) * 0.1; // 0.1 seconds per tick
-        
-        // Apply double coins if active
-        const doubleCoinsBoost = updatedActiveBoosts.find(boost => boost.id === 'boost-double-coins');
-        if (doubleCoinsBoost) {
-          passiveAmount *= doubleCoinsBoost.value;
         }
-      }
-      
-      // Total income for this tick
-      const totalIncome = passiveAmount + autoTapAmount;
-      
-      let newState = {
-        ...state,
-        coins: Math.max(0, state.coins + totalIncome),
-        totalEarned: state.totalEarned + totalIncome,
-        activeBoosts: updatedActiveBoosts
-      };
-      
-      // Handle regular auto-tap if enabled
-      if (newState.autoTap) {
-        const autoTapBaseIncome = GameMechanics.calculateAutoTapIncome(state) * 0.1;
+      });
+
+      let newState = { ...state, boosts: newBoosts };
+
+      if (state.coinsPerSecond > 0) {
+        const passiveAmount = GameMechanics.calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
         newState = {
           ...newState,
-          coins: Math.max(0, newState.coins + autoTapBaseIncome),
-          totalEarned: newState.totalEarned + autoTapBaseIncome,
-          totalClicks: newState.totalClicks + (autoTapBoost ? autoTapBoost.value * 0.1 : 0.1)
+          coins: Math.max(0, newState.coins + passiveAmount),
+          totalEarned: newState.totalEarned + passiveAmount
         };
       }
-      
-      // Handle auto-buy logic
+
+      if (newState.autoTap) {
+        const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
+        const autoTapBoost = newBoosts["boost-auto-tap"]?.active 
+          ? calculateBaseCoinsPerClick(state) * INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1
+          : 0;
+        const autoTapAmount = autoTapBase + autoTapBoost;
+
+        newState = {
+          ...newState,
+          coins: Math.max(0, newState.coins + autoTapAmount),
+          totalEarned: newState.totalEarned + autoTapAmount,
+          totalClicks: newState.totalClicks + 1
+        };
+      }
+
       if (newState.autoBuy) {
         const costReduction = GameMechanics.calculateCostReduction(state);
         const affordableUpgrades = newState.upgrades
@@ -596,27 +554,24 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           }
         }
       }
-      
+
       return newState;
     }
     case 'PRESTIGE': {
-      // Calculate essence with boost if active
-      const essenceBoost = state.activeBoosts.find(boost => boost.id === 'boost-essence-boost');
-      const essenceMultiplier = essenceBoost ? essenceBoost.value : 1;
-      const essenceReward = GameMechanics.calculateEssenceReward(state.totalEarned, state) * essenceMultiplier;
+      const essenceReward = GameMechanics.calculateEssenceReward(state.totalEarned, state) *
+        (state.boosts["boost-essence-boost"]?.purchased ? INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value : 1);
+      const startingCoins = GameMechanics.calculateStartingCoins(state.ownedArtifacts);
       
-      // Filter to keep only permanent boosts in the new state
-      const permanentActiveBoosts = state.activeBoosts.filter(boost => 
-        boost.id === 'boost-perma-tap' || 
-        boost.id === 'boost-perma-passive' || 
-        boost.id === 'boost-no-ads' || 
-        boost.id === 'boost-auto-buy' || 
-        boost.id === 'boost-inventory-expansion'
-      );
-      
+      const newBoosts = {};
+      ["boost-perma-tap", "boost-perma-passive", "boost-no-ads", "boost-auto-buy", "boost-inventory-expansion"].forEach(boostId => {
+        if (state.boosts[boostId]?.purchased) {
+          newBoosts[boostId] = { ...state.boosts[boostId], active: false };
+        }
+      });
+
       return {
         ...initialState,
-        coins: GameMechanics.calculateStartingCoins(state.ownedArtifacts),
+        coins: startingCoins,
         essence: state.essence + essenceReward,
         ownedManagers: state.ownedManagers,
         ownedArtifacts: state.ownedArtifacts,
@@ -629,10 +584,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         abilities: state.abilities,
         unlockedPerks: state.unlockedPerks,
         gems: state.gems,
-        boosts: state.boosts,
-        activeBoosts: permanentActiveBoosts,
+        boosts: newBoosts,
         hasNoAds: state.hasNoAds || state.boosts["boost-no-ads"]?.purchased > 0,
-        inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * 5,
+        inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * INVENTORY_ITEMS.INVENTORY_EXPANSION.effect!.value,
         username: state.username,
         title: state.title,
         userId: state.userId,
@@ -1011,70 +965,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return state;
     }
     case 'ACTIVATE_BOOST': {
-      const boostId = action.boostId;
-      const boostItem = Object.values(INVENTORY_ITEMS).find(item => item.id === boostId);
-      
-      if (!boostItem || !boostItem.effect) {
-        return state;
-      }
-      
-      const now = Date.now() / 1000;
-      let newActiveBoosts = [...state.activeBoosts];
-      
-      // Create a new boost effect
-      const newBoost: BoostEffect = {
-        id: boostId,
-        type: boostItem.effect.type,
-        value: boostItem.effect.value,
-        activatedAt: now,
-        duration: boostItem.effect.duration,
-        remainingTime: boostItem.effect.duration,
-      };
-      
-      // Special case for tap boost which uses remaining uses instead of time
-      if (boostId === 'boost-tap-boost') {
-        newBoost.remainingUses = boostItem.effect.duration;
-        delete newBoost.duration;
-        delete newBoost.remainingTime;
-      }
-      
-      // Handle permanent boosts
-      if (boostId === 'boost-perma-tap' || boostId === 'boost-perma-passive') {
-        delete newBoost.duration;
-        delete newBoost.remainingTime;
-        delete newBoost.activatedAt;
-      }
-      
-      // For time warp, immediately add coins
-      if (boostId === 'boost-time-warp') {
-        const passiveIncome = GameMechanics.calculatePassiveIncome(state);
-        const timeWarpReward = passiveIncome * boostItem.effect.value * 60; // 120 minutes in seconds
-        
-        return {
-          ...state,
-          coins: state.coins + timeWarpReward,
-          totalEarned: state.totalEarned + timeWarpReward,
-          boosts: {
-            ...state.boosts,
-            [boostId]: {
-              active: false,
-              purchased: (state.boosts[boostId]?.purchased || 0) + 1,
-            },
-          },
-        };
-      }
-      
-      // Add the new boost to active boosts
-      newActiveBoosts.push(newBoost);
-      
+      const boost = Object.values(INVENTORY_ITEMS).find(b => b.id === action.boostId);
+      if (!boost || !boost.usable) return state;
       return {
         ...state,
-        activeBoosts: newActiveBoosts,
         boosts: {
           ...state.boosts,
-          [boostId]: {
-            active: true,
-            purchased: (state.boosts[boostId]?.purchased || 0) + 1,
+          [action.boostId]: {
+            active: !!boost.effect?.duration,
+            remainingTime: boost.effect?.duration,
+            remainingUses: boost.effect?.type === "coinsPerClick" ? boost.effect?.duration : undefined,
+            purchased: (state.boosts[action.boostId]?.purchased || 0) + 1,
           },
         },
       };
