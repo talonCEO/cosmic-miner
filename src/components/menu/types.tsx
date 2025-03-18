@@ -109,7 +109,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100
+    cost: 100,
+    maxPurchases: Infinity
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -125,7 +126,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50
+    cost: 50,
+    maxPurchases: Infinity
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
@@ -142,7 +144,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100
+    cost: 100,
+    maxPurchases: Infinity
   },
   TAP_BOOST: {
     id: 'boost-tap-boost',
@@ -159,7 +162,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 75
+    cost: 75,
+    maxPurchases: Infinity
   },
   CHEAP_UPGRADES: {
     id: 'boost-cheap-upgrades',
@@ -176,7 +180,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50
+    cost: 50,
+    maxPurchases: Infinity
   },
   ESSENCE_BOOST: {
     id: 'boost-essence-boost',
@@ -192,7 +197,8 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100
+    cost: 100,
+    maxPurchases: Infinity
   },
   PERMA_TAP: {
     id: 'boost-perma-tap',

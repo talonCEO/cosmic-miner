@@ -40,16 +40,20 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
   });
 
   const boostItems = useMemo(() => {
+    // Filter only boost items that have a cost
     return Object.values(INVENTORY_ITEMS)
       .filter(item => 
-        item.type === 'boost' && 'cost' in item && item.cost !== undefined
+        item.type === 'boost' && 
+        'cost' in item && 
+        item.cost !== undefined
       )
       .map(item => {
         const purchased = state.boosts[item.id]?.purchased || 0;
+        // Set maxPurchases with defaults for special items
         const maxPurchases = 
           item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
           item.id === 'boost-inventory-expansion' ? 5 : 
-          item.maxPurchases || Infinity;
+          (item.maxPurchases || Infinity);
           
         return {
           ...item,
@@ -114,6 +118,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     addGems(-item.cost);
 
     // Special handling for auto-buy, no-ads, and inventory-expansion
+    // These are permanent features, not activatable boosts
     switch (item.id) {
       case 'boost-auto-buy':
         dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Only updates purchased count
@@ -127,6 +132,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
         dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
         break;
       default:
+        // For all other items, simply add them to inventory without activating the boost
         const inventoryItem: InventoryItem = { ...item, quantity: 1 };
         addItem(inventoryItem);
         showUnlockAnimation(inventoryItem);
