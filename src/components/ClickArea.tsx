@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
 import { useBoostManager } from '@/hooks/useBoostManager';
+import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 // Particle effect when clicking
 interface ParticleProps {
@@ -75,13 +76,16 @@ const ClickArea: React.FC = () => {
     const centerY = rect.height / 2;
     
     const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
+    const tapValue = calculateTapValue(state) * 
+      (state.boosts['boost-tap-boost']?.active ? INVENTORY_ITEMS.TAP_BOOST.effect!.value : 1) *
+      (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1);
     
     setClickEffects(prev => [
       ...prev, 
       { id: nextId.current++, x: effectX, y: effectY }
     ]);
     
-    const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
+    const particleCount = Math.min(8 + Math.floor(tapValue / 100), 15);
     const newParticles = [];
     
     for (let i = 0; i < particleCount; i++) {
@@ -114,6 +118,47 @@ const ClickArea: React.FC = () => {
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150);
   };
+
+  // Auto-tap effect for AUTO_TAP boost
+  useEffect(() => {
+    const autoTapInterval = setInterval(() => {
+      if (state.boosts['boost-auto-tap']?.active && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
+        const tapValue = calculateTapValue(state) * 
+          (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1);
+
+        setClickEffects(prev => [
+          ...prev,
+          { id: nextId.current++, x: effectX, y: effectY }
+        ]);
+
+        const particleCount = Math.min(8 + Math.floor(tapValue / 100), 15);
+        const newParticles = [];
+        for (let i = 0; i < particleCount; i++) {
+          const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
+          const size = Math.random() * 5 + 2;
+          const colors = ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"];
+          const color = colors[Math.floor(Math.random() * colors.length)];
+
+          newParticles.push({
+            id: nextId.current++,
+            x: particleX,
+            y: particleY,
+            color,
+            size
+          });
+        }
+
+        setParticles(prev => [...prev, ...newParticles]);
+        click();
+      }
+    }, 200); // 5 taps/sec = 200ms interval
+
+    return () => clearInterval(autoTapInterval);
+  }, [state.boosts, state.coinsPerClick, state.incomeMultiplier, click]);
   
   const removeClickEffect = (id: number) => {
     setClickEffects(prev => prev.filter(effect => effect.id !== id));
@@ -141,7 +186,9 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateTapValue(state)}
+            value={calculateTapValue(state) * 
+              (state.boosts['boost-tap-boost']?.active ? INVENTORY_ITEMS.TAP_BOOST.effect!.value : 1) *
+              (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1)}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}
@@ -161,7 +208,8 @@ const ClickArea: React.FC = () => {
       {state.coinsPerSecond > 0 && (
         <div className="text-center mb-8 animate-slide-up">
           <p className="text-sm text-white text-shadow-sm">
-            +{formatNumber(state.coinsPerSecond)} coins per second
+            +{formatNumber(state.coinsPerSecond * 
+              (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1))} coins per second
           </p>
         </div>
       )}
