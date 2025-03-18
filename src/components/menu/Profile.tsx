@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -12,7 +13,13 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
-  const { state } = useGame();
+  const { state, updateUsername } = useGame();
+
+  const handleNameChange = (newName: string) => {
+    if (newName.trim() && newName !== state.username) {
+      updateUsername(newName, 0); // Zero cost here as the cost is handled in EditCustomization
+    }
+  };
 
   const exp = state.totalEarned || 0;
   const { currentLevel, nextLevel } = getLevelFromExp(exp);
@@ -24,6 +31,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     playerExp: exp,
     playerMaxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
     coins: state.coins,
+    gems: state.gems,
     essence: state.essence,
     userId: state.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
     portrait: state.portrait || 'default',
@@ -55,7 +63,9 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
           playerExp={playerData.playerExp}
           playerMaxExp={playerData.playerMaxExp}
           coins={playerData.coins}
+          gems={playerData.gems}
           essence={playerData.essence}
+          onNameChange={handleNameChange}
           userId={playerData.userId}
           portrait={playerData.portrait}
         />

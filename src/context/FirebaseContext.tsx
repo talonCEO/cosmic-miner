@@ -18,6 +18,7 @@ export interface UserProfile {
   unlockedTitles: string[];
   unlockedPortraits: string[];
   achievements: string[];
+  nameChangeCount: number;
   createdAt: any;
   lastLogin: any;
 }
@@ -28,7 +29,7 @@ interface FirebaseContextType {
   loading: boolean;
   error: string | null;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
-  updateUsername: (username: string) => Promise<void>;
+  updateUsername: (username: string, cost?: number) => Promise<void>;
   updateTitle: (titleId: string) => Promise<void>;
   updatePortrait: (portraitId: string) => Promise<void>;
   unlockTitle: (titleId: string) => Promise<void>;
@@ -85,6 +86,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
             unlockedTitles: ["space_pilot"],
             unlockedPortraits: ["default"],
             achievements: [],
+            nameChangeCount: 0,
             createdAt: new Date().toISOString(),
             lastLogin: new Date().toISOString(),
           };
@@ -121,10 +123,28 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const updateUsername = async (username: string) => {
+  const updateUsername = async (username: string, cost: number = 0) => {
     if (!username.trim()) return;
     console.log("Updating username:", username);
-    await updateProfile({ username });
+    
+    if (cost > 0 && profile) {
+      // Apply gem cost if needed
+      if (profile.gems < cost) {
+        console.log("Not enough gems for username change");
+        return;
+      }
+      await updateProfile({ 
+        username, 
+        gems: profile.gems - cost, 
+        nameChangeCount: (profile.nameChangeCount || 0) + 1 
+      });
+    } else {
+      // First username change is free
+      await updateProfile({ 
+        username, 
+        nameChangeCount: (profile?.nameChangeCount || 0) + 1 
+      });
+    }
   };
 
   const updateTitle = async (titleId: string) => {
