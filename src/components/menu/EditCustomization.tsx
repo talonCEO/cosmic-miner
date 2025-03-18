@@ -49,7 +49,7 @@ const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
       return;
     }
     
-    updateUsername(username, nameChangeCost);
+    updateUsername(username);
     setIsEditingName(false);
     setUsernameError("");
   };

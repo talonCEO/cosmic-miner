@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Sparkles, Gem, X } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,7 +21,7 @@ interface PremiumStoreProps {
 
 interface StoreBoostItem extends InventoryItem {
   cost: number; // Required for all boosts in the store
-  maxPurchases?: number; // Optional, defaults to Infinity
+  maxPurchases: number; // Required property (no longer optional)
   purchasable: boolean;
   purchased: number;
 }
@@ -40,19 +41,21 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
-      .filter((item): item is InventoryItem & { cost: number } => 
-        item.type === 'boost' && 'cost' in item // Only require type 'boost' and cost
+      .filter(item => 
+        item.type === 'boost' && 'cost' in item && item.cost !== undefined
       )
       .map(item => {
         const purchased = state.boosts[item.id]?.purchased || 0;
         const maxPurchases = 
           item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
-          item.id === 'boost-inventory-expansion' ? 5 : Infinity;
+          item.id === 'boost-inventory-expansion' ? 5 : 
+          item.maxPurchases || Infinity;
+          
         return {
           ...item,
           purchased,
           maxPurchases,
-          purchasable: state.gems >= item.cost && purchased < maxPurchases,
+          purchasable: state.gems >= (item.cost || 0) && purchased < maxPurchases,
           quantity: 1,
         } as StoreBoostItem;
       });
@@ -63,8 +66,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     return [...boostItems].sort((a, b) => {
       const aPriority = priorityOrder.indexOf(a.id);
       const bPriority = priorityOrder.indexOf(b.id);
-      const aMaxed = a.purchased >= (a.maxPurchases || Infinity);
-      const bMaxed = b.purchased >= (b.maxPurchases || Infinity);
+      const aMaxed = a.purchased >= a.maxPurchases;
+      const bMaxed = b.purchased >= b.maxPurchases;
 
       if (aMaxed === bMaxed) {
         if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
@@ -106,7 +109,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
-    if (!item || state.gems < item.cost || item.purchased >= (item.maxPurchases || Infinity)) return;
+    if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
 
     addGems(-item.cost);
 
