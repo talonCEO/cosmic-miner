@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -61,7 +60,7 @@ export interface InventoryItem {
 }
 
 // Type guard to check if an item is a boost item with effect
-export function isBoostItem(item: any): item is BoostInventoryItem {
+export function isBoostItem(item: InventoryItem): item is BoostInventoryItem {
   return item && item.type === 'boost' && item.effect !== undefined && 
     typeof item.effect === 'object' && 
     'type' in item.effect && 
@@ -116,14 +115,14 @@ export const INVENTORY_ITEMS = {
   DOUBLE_COINS: {
     id: 'boost-double-coins',
     name: 'Double Coins',
-    description: 'Doubles all coin earnings for 30 minutes',
+    description: 'Doubles all coin earnings for 15 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <CircleDollarSign className="text-green-400" />,
     effect: {
       type: 'coinMultiplier' as BoostEffectType,
       value: 2,
-      duration: 30 * 60
+      duration: 15 * 60
     },
     usable: true,
     stackable: true,
@@ -149,14 +148,14 @@ export const INVENTORY_ITEMS = {
   AUTO_TAP: {
     id: 'boost-auto-tap',
     name: 'Auto Tap',
-    description: 'Automatically taps 5 times per second for 10 minutes',
+    description: 'Automatically taps 5 times per second for 5 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <Zap className="text-yellow-400" />,
     effect: {
       type: 'autoTap' as BoostEffectType,
       value: 5,
-      duration: 10 * 60
+      duration: 5 * 60
     },
     usable: true,
     stackable: true,
@@ -166,13 +165,13 @@ export const INVENTORY_ITEMS = {
   TAP_BOOST: {
     id: 'boost-tap-boost',
     name: 'Tap Boost',
-    description: 'Increases tap power by 5x for 100 taps',
+    description: 'Increases tap power by 3x for 100 taps',
     type: 'boost' as const,
     rarity: 'rare' as const,
     icon: <Zap className="text-purple-400" />,
     effect: {
       type: 'tapMultiplier' as BoostEffectType,
-      value: 5,
+      value: 3,
       duration: 100
     },
     usable: true,
