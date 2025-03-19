@@ -3,10 +3,8 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
-import { useBoostManager } from '@/hooks/useBoostManager';
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
-// Particle effect when clicking
 interface ParticleProps {
   x: number;
   y: number;
@@ -16,12 +14,10 @@ interface ParticleProps {
   onAnimationEnd: () => void;
 }
 
-const Particle: React.FC<ParticleProps> = ({ 
-  x, y, color, size, duration, onAnimationEnd 
-}) => {
-  const randomSize = size || Math.floor(Math.random() * 4) + 2; // 2-5px
-  const randomDuration = duration || (Math.random() * 0.5) + 0.5; // 0.5-1s
-  const randomOpacity = (Math.random() * 0.5) + 0.5; // 0.5-1
+const Particle: React.FC<ParticleProps> = ({ x, y, color, size, duration, onAnimationEnd }) => {
+  const randomSize = size || Math.floor(Math.random() * 4) + 2;
+  const randomDuration = duration || (Math.random() * 0.5) + 0.5;
+  const randomOpacity = (Math.random() * 0.5) + 0.5;
   
   return (
     <div 
@@ -36,11 +32,10 @@ const Particle: React.FC<ParticleProps> = ({
         animation: `float-up ${randomDuration}s ease-out forwards`
       }}
       onAnimationEnd={onAnimationEnd}
-    ></div>
+    />
   );
 };
 
-// Click effect component
 interface ClickEffectProps {
   x: number;
   y: number;
@@ -76,9 +71,7 @@ const ClickArea: React.FC = () => {
     const centerY = rect.height / 2;
     
     const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
-    const tapValue = calculateTapValue(state) * 
-      (state.boosts['boost-tap-boost']?.active ? INVENTORY_ITEMS.TAP_BOOST.effect!.value : 1) *
-      (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1);
+    const tapValue = calculateTapValue(state);
     
     setClickEffects(prev => [
       ...prev, 
@@ -91,15 +84,7 @@ const ClickArea: React.FC = () => {
     for (let i = 0; i < particleCount; i++) {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
-      
-      // Yellow sparkle colors
-      const colors = [
-        "#FFD700", // Gold
-        "#FFFF00", // Yellow
-        "#FFEC8B", // Light Yellow
-        "#FFC125"  // Goldenrod
-      ];
-      
+      const colors = ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"];
       const color = colors[Math.floor(Math.random() * colors.length)];
       
       newParticles.push({ 
@@ -112,14 +97,11 @@ const ClickArea: React.FC = () => {
     }
     
     setParticles(prev => [...prev, ...newParticles]);
-    
     click();
-    
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150);
   };
 
-  // Auto-tap effect for AUTO_TAP boost
   useEffect(() => {
     const autoTapInterval = setInterval(() => {
       if (state.boosts['boost-auto-tap']?.active && containerRef.current) {
@@ -127,8 +109,7 @@ const ClickArea: React.FC = () => {
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
         const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
-        const tapValue = calculateTapValue(state) * 
-          (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1);
+        const tapValue = calculateTapValue(state);
 
         setClickEffects(prev => [
           ...prev,
@@ -186,9 +167,7 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateTapValue(state) * 
-              (state.boosts['boost-tap-boost']?.active ? INVENTORY_ITEMS.TAP_BOOST.effect!.value : 1) *
-              (state.boosts['boost-double-coins']?.active ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1)}
+            value={calculateTapValue(state)}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}
