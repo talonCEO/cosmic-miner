@@ -18,19 +18,6 @@ export interface Ability {
   effect?: string;
 }
 
-export type BoostEffectType = 
-  | "coinMultiplier" 
-  | "timeWarp" 
-  | "autoTap" 
-  | "tapMultiplier" 
-  | "costReduction" 
-  | "essenceMultiplier" 
-  | "baseTapBoost" 
-  | "basePassiveBoost" 
-  | "noAds" 
-  | "unlockAutoBuy" 
-  | "inventoryCapacity";
-
 export interface InventoryItem {
   id: string;
   name: string;
@@ -49,26 +36,6 @@ export interface InventoryItem {
   obtained: number;
   cost?: number;
   maxPurchases?: number;
-}
-
-export interface BoostInventoryItem extends InventoryItem {
-  type: 'boost';
-  effect: {
-    type: BoostEffectType;
-    value: number;
-    duration?: number;
-  };
-}
-
-export function isBoostItem(item: InventoryItem): item is BoostInventoryItem {
-  return (
-    item && 
-    item.type === 'boost' && 
-    item.effect !== undefined && 
-    typeof item.effect === 'object' && 
-    'type' in item.effect && 
-    'value' in item.effect
-  );
 }
 
 export const INVENTORY_ITEMS = {
@@ -119,14 +86,14 @@ export const INVENTORY_ITEMS = {
   DOUBLE_COINS: {
     id: 'boost-double-coins',
     name: 'Double Coins',
-    description: 'Doubles all coin earnings for 15 minutes',
+    description: 'Doubles all coin earnings for 30 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <CircleDollarSign className="text-green-400" />,
     effect: {
-      type: 'coinMultiplier' as BoostEffectType,
+      type: 'coinMultiplier',
       value: 2,
-      duration: 15 * 60
+      duration: 30 * 60
     },
     usable: true,
     stackable: true,
@@ -141,7 +108,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'uncommon' as const,
     icon: <Clock className="text-blue-400" />,
     effect: {
-      type: 'timeWarp' as BoostEffectType,
+      type: 'timeWarp',
       value: 2 * 60 * 60,
     },
     usable: true,
@@ -152,14 +119,14 @@ export const INVENTORY_ITEMS = {
   AUTO_TAP: {
     id: 'boost-auto-tap',
     name: 'Auto Tap',
-    description: 'Automatically taps 5 times per second for 5 minutes',
+    description: 'Automatically taps 5 times per second for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <Zap className="text-yellow-400" />,
     effect: {
-      type: 'autoTap' as BoostEffectType,
+      type: 'autoTap',
       value: 5,
-      duration: 5 * 60
+      duration: 10 * 60
     },
     usable: true,
     stackable: true,
@@ -169,13 +136,13 @@ export const INVENTORY_ITEMS = {
   TAP_BOOST: {
     id: 'boost-tap-boost',
     name: 'Tap Boost',
-    description: 'Increases tap power by 3x for 100 taps',
+    description: 'Increases tap power by 5x for 100 taps',
     type: 'boost' as const,
     rarity: 'rare' as const,
     icon: <Zap className="text-purple-400" />,
     effect: {
-      type: 'tapMultiplier' as BoostEffectType,
-      value: 3,
+      type: 'coinsPerClick',
+      value: 5,
       duration: 100
     },
     usable: true,
@@ -191,7 +158,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Percent className="text-green-400" />,
     effect: {
-      type: 'costReduction' as BoostEffectType,
+      type: 'upgradeCostReduction',
       value: 0.9,
       duration: 10 * 60
     },
@@ -208,7 +175,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'epic' as const,
     icon: <Sparkles className="text-amber-400" />,
     effect: {
-      type: 'essenceMultiplier' as BoostEffectType,
+      type: 'essenceMultiplier',
       value: 1.25
     },
     usable: true,
@@ -224,7 +191,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <DollarSign className="text-red-400" />,
     effect: {
-      type: 'baseTapBoost' as BoostEffectType,
+      type: 'coinsPerClickBase',
       value: 1
     },
     usable: true,
@@ -241,7 +208,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <Star className="text-yellow-400" />,
     effect: {
-      type: 'basePassiveBoost' as BoostEffectType,
+      type: 'coinsPerSecondBase',
       value: 1
     },
     usable: true,
@@ -258,7 +225,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <VideoOff className="text-gray-400" />,
     effect: {
-      type: 'noAds' as BoostEffectType,
+      type: 'noAds',
       value: 1
     },
     usable: true,
@@ -275,7 +242,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'epic' as const,
     icon: <PackagePlus className="text-blue-400" />,
     effect: {
-      type: 'unlockAutoBuy' as BoostEffectType,
+      type: 'unlockAutoBuy',
       value: 1
     },
     usable: true,
@@ -292,7 +259,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Box className="text-cyan-400" />,
     effect: {
-      type: 'inventoryCapacity' as BoostEffectType,
+      type: 'inventoryCapacity',
       value: 5
     },
     usable: true,

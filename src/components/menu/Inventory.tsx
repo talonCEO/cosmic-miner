@@ -3,9 +3,8 @@ import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffectType, isBoostItem } from './types';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from './types';
 import { Button } from "@/components/ui/button";
-import { BoostEffect } from '@/context/GameContext';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -15,6 +14,7 @@ const rarityColors = {
   legendary: 'bg-yellow-700/40 border-yellow-500',
 };
 
+// Item slot component
 const ItemSlot: React.FC<{ 
   item?: InventoryItem; 
   onItemClick: (item: InventoryItem) => void;
@@ -54,6 +54,7 @@ const ItemSlot: React.FC<{
   );
 };
 
+// Use item popover
 const UseItemPopover: React.FC<{ 
   item: InventoryItem; 
   onUse: (item: InventoryItem, quantity: number) => void;
@@ -88,7 +89,7 @@ const UseItemPopover: React.FC<{
           <div className="text-4xl mb-3">{item.icon}</div>
           <p className="text-sm text-slate-300 text-center mb-3">{item.description}</p>
           <p className="text-sm text-green-400 font-medium text-center mb-4">
-            {isBoostItem(item) ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
+            {item.effect ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
           </p>
         </div>
         
@@ -132,6 +133,7 @@ const UseItemPopover: React.FC<{
   );
 };
 
+// Notification component
 const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) => void }> = ({ boost, onDismiss }) => {
   const [timeLeft, setTimeLeft] = useState(boost.remainingTime || 0);
 
@@ -166,7 +168,7 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
   return (
     <div className="bg-slate-800 border border-indigo-500/30 rounded-lg p-3 mb-2 flex items-center justify-between w-64">
       <div>
-        <p className="text-white font-medium">{boostInfo[boost.id as keyof typeof boostInfo] || boost.description}</p>
+        <p className="text-white font-medium">{boostInfo[boost.id]}</p>
         {boost.duration && <p className="text-sm text-slate-300">{formatTime(timeLeft)}</p>}
       </div>
       <button onClick={() => onDismiss(boost.id)} className="text-slate-400 hover:text-white">
@@ -177,13 +179,14 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
 };
 
 const Inventory: React.FC = () => {
-  const { state, dispatch, useItem, addItem, activateBoost, removeBoost } = useGame();
+  const { state, dispatch, useItem, addItem, activateBoost } = useGame();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   const [notifications, setNotifications] = useState<BoostEffect[]>([]);
   
+  // Create virtual inventory with resource items
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
       { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins) },
@@ -194,10 +197,6 @@ const Inventory: React.FC = () => {
     setVirtualInventory([...resourceItems, ...state.inventory]);
   }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
   
-  useEffect(() => {
-    setNotifications(state.activeBoosts);
-  }, [state.activeBoosts]);
-  
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
       setSelectedItem(item);
@@ -207,38 +206,66 @@ const Inventory: React.FC = () => {
   const handleUseConfirm = (item: InventoryItem, quantity: number) => {
     if (item.usable) {
       for (let i = 0; i < quantity; i++) {
-        useItem(item.id);
+        switch (item.id) {
+          case 'boost-double-coins':
+            activateBoost(item.id, 900, 2); // 15 min, x2 multiplier
+            break;
+          case 'boost-time-warp':
+            activateBoost(item.id, undefined, undefined, 7200); // Instant 120 min passive
+            break;
+          case 'boost-auto-tap':
+            activateBoost(item.id, 300, 5); // 5 min, 5 taps/sec (multiplier used differently)
+            break;
+          case 'boost-tap-boost':
+            activateBoost(item.id, 300, 3); // 5 min, x3 multiplier
+            break;
+          case 'boost-cheap-upgrades':
+            activateBoost(item.id, 600, 0.9); // 10 min, 10% reduction (multiplier < 1)
+            break;
+          case 'boost-essence-boost':
+            activateBoost(item.id); // No duration, permanent until prestige
+            break;
+          case 'boost-perma-tap':
+            activateBoost(item.id, undefined, undefined, 1); // Permanent +1 tap power
+            break;
+          case 'boost-perma-passive':
+            activateBoost(item.id, undefined, undefined, 1); // Permanent +1 passive income
+            break;
+          default:
+            useItem(item.id); // Fallback for non-boost items
+        }
       }
+      setNotifications([...notifications, ...state.activeBoosts.slice(-quantity)]);
       setSelectedItem(null);
     }
   };
   
   const dismissNotification = (id: string) => {
-    removeBoost(id);
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications(notifications.filter(n => n.id !== id));
   };
   
-  function filteredItems() {
-    return virtualInventory.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  // Filter and search logic
+  const filteredItems = virtualInventory.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterType === 'all' || item.type === filterType;
-      return matchesSearch && matchesFilter;
-    });
-  }
+    const matchesFilter = filterType === 'all' || item.type === filterType;
+    return matchesSearch && matchesFilter;
+  });
   
-  function renderInventoryGrid() {
-    const items = filteredItems();
+  const inventoryCapacity = state.inventoryCapacity || 25;
+  const inventoryUsed = state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0);
+  
+  const renderInventoryGrid = () => {
     const slots = [];
     const baseSlots = 25;
     const expansionsPurchased = state.boosts['boost-inventory-expansion']?.purchased || 0;
     const totalSlots = baseSlots + expansionsPurchased * 5;
     
     for (let i = 0; i < totalSlots; i++) {
-      if (i < items.length) {
+      if (i < filteredItems.length) {
         slots.push(
           <div key={i} className="aspect-square">
-            <ItemSlot item={items[i]} onItemClick={handleUseItem} />
+            <ItemSlot item={filteredItems[i]} onItemClick={handleUseItem} />
           </div>
         );
       } else {
@@ -250,7 +277,7 @@ const Inventory: React.FC = () => {
       }
     }
     return <div className="grid grid-cols-5 gap-3">{slots}</div>;
-  }
+  };
   
   return (
     <>
@@ -260,7 +287,7 @@ const Inventory: React.FC = () => {
           <span>Inventory</span>
         </DialogTitle>
         <div className="text-center text-slate-300 text-sm">
-          Space used: {state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0)}/{state.inventoryCapacity}
+          Space used: {inventoryUsed}/{inventoryCapacity}
         </div>
       </DialogHeader>
       
@@ -278,7 +305,7 @@ const Inventory: React.FC = () => {
           </div>
           <div className="relative">
             <select
-              className="appearance-none bg-slate-800/50 border border-slate-700 text-white py-2 pl-3 pr-8 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+              className="appearance-none bg-slate-800/50 border border BASICSslate-700 text-white py-2 pl-3 pr-8 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
@@ -321,9 +348,10 @@ const Inventory: React.FC = () => {
         />
       )}
       
+      {/* Notification Area */}
       <div className="fixed bottom-4 right-4 flex flex-col items-end space-y-2">
         {notifications.map(boost => (
-          <BoostNotification key={boost.id + (boost.activatedAt || 0)} boost={boost} onDismiss={dismissNotification} />
+          <BoostNotification key={boost.id + boost.activatedAt} boost={boost} onDismiss={dismissNotification} />
         ))}
       </div>
     </>

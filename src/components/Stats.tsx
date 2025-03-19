@@ -9,9 +9,7 @@ import {
   Gauge, 
   Recycle, 
   BarChart,
-  Clock,
-  Zap,
-  XCircle
+  Gem 
 } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
@@ -23,64 +21,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
 
-const BoostIndicator: React.FC<{ 
-  boost: { 
-    id: string; 
-    description: string; 
-    timeRemaining: string; 
-    icon: React.ReactNode;
-    remainingTime?: number;
-    remainingUses?: number;
-  }; 
-  onDismiss?: (id: string) => void;
-}> = ({ boost, onDismiss }) => {
-  return (
-    <div className="flex items-center justify-between p-2 bg-slate-800/80 rounded-lg mb-2 border border-indigo-500/30">
-      <div className="flex items-center">
-        <div className="mr-2">{boost.icon}</div>
-        <div>
-          <div className="text-sm font-medium">{boost.description}</div>
-          <div className="text-xs text-slate-400">{boost.timeRemaining}</div>
-        </div>
-      </div>
-      {onDismiss && (boost.remainingTime !== undefined || boost.remainingUses !== undefined) && (
-        <button onClick={() => onDismiss(boost.id)} className="text-slate-400 hover:text-white">
-          <XCircle size={16} />
-        </button>
-      )}
-    </div>
-  );
-};
-
 const Stats: React.FC = () => {
-  const { state, calculatePotentialEssenceReward, removeBoost } = useGame();
-  const { 
-    calculateTapMultiplier, 
-    calculateGlobalIncomeMultiplier, 
-    calculatePassiveIncomeMultiplier,
-    getActiveBoostsInfo,
-    getBoostSummary
-  } = useBoostManager();
+  const { state, calculatePotentialEssenceReward } = useGame();
+  const { calculateTotalCPS, calculateGlobalIncomeMultiplier } = useBoostManager();
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
-  const { totalCPS } = getBoostSummary();
+  const totalCPS = calculateTotalCPS();
   const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
-  const activeBoosts = getActiveBoostsInfo();
-  
-  // Only show time-limited boosts in the main view
-  const temporaryBoosts = activeBoosts.filter(
-    boost => boost.remainingTime !== undefined || boost.remainingUses !== undefined
-  );
-  
-  // Check if we have any active boosts to show the section
-  const hasTemporaryBoosts = temporaryBoosts.length > 0;
-  
-  const handleDismissBoost = (boostId: string) => {
-    if (removeBoost) {
-      removeBoost(boostId);
-    }
-  };
   
   return (
     <div className="w-full max-w-md mx-auto pb-12">
@@ -141,24 +89,6 @@ const Stats: React.FC = () => {
             <span className="text-lg font-bold text-indigo-300">{state.prestigeCount}</span>
             <span className="text-xs text-slate-500 mt-1">Coins Earned: {formatNumber(state.totalEarned)}</span>
           </div>
-          
-          {hasTemporaryBoosts && (
-            <div className="col-span-2 mt-4">
-              <div className="flex items-center mb-2">
-                <Clock size={16} className="text-indigo-400 mr-2" />
-                <h3 className="text-sm font-medium text-slate-300">Active Boosts</h3>
-              </div>
-              <div className="space-y-2">
-                {temporaryBoosts.map(boost => (
-                  <BoostIndicator 
-                    key={`${boost.id}-${boost.timeRemaining}`} 
-                    boost={boost} 
-                    onDismiss={handleDismissBoost}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -215,24 +145,6 @@ const Stats: React.FC = () => {
               <h3 className="text-sm font-semibold text-slate-300 mb-2">Pending Liquidation Value</h3>
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
-            
-            {activeBoosts.length > 0 && (
-              <div className="bg-slate-700/50 p-3 rounded-lg">
-                <div className="flex items-center mb-2">
-                  <Zap size={16} className="text-yellow-400 mr-2" />
-                  <h3 className="text-sm font-semibold text-slate-300">Active Boosts</h3>
-                </div>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
-                  {activeBoosts.map(boost => (
-                    <BoostIndicator 
-                      key={`${boost.id}-${boost.timeRemaining}`} 
-                      boost={boost} 
-                      onDismiss={handleDismissBoost}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>

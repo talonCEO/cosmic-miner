@@ -1,11 +1,11 @@
 
-import { Preferences } from '@capacitor/preferences';
+import { Storage } from '@capacitor/storage';
 import { GameState } from '@/context/GameContext';
 
 const GAME_STATE_KEY = 'cosmic_miner_game_state';
 
 /**
- * Service for handling persistent storage operations using Capacitor's Preferences API
+ * Service for handling persistent storage operations using Capacitor's Storage API
  */
 export const StorageService = {
   /**
@@ -35,21 +35,11 @@ export const StorageService = {
           unlocked: ability.unlocked
         })),
         unlockedPerks: gameState.unlockedPerks,
-        inventory: gameState.inventory,
-        inventoryCapacity: gameState.inventoryCapacity,
-        gems: gameState.gems,
-        boosts: gameState.boosts,
-        hasNoAds: gameState.hasNoAds,
-        username: gameState.username,
-        title: gameState.title,
-        userId: gameState.userId,
-        portrait: gameState.portrait,
-        nameChangeCount: gameState.nameChangeCount,
         // Save the last timestamp when the game was saved
         lastSavedAt: new Date().toISOString(),
       };
       
-      await Preferences.set({
+      await Storage.set({
         key: GAME_STATE_KEY,
         value: JSON.stringify(stateToSave)
       });
@@ -66,7 +56,7 @@ export const StorageService = {
    */
   loadGameState: async (): Promise<Partial<GameState> | null> => {
     try {
-      const { value } = await Preferences.get({ key: GAME_STATE_KEY });
+      const { value } = await Storage.get({ key: GAME_STATE_KEY });
       
       if (!value) {
         console.log('No saved game state found');
@@ -87,7 +77,7 @@ export const StorageService = {
    */
   clearGameState: async (): Promise<void> => {
     try {
-      await Preferences.remove({ key: GAME_STATE_KEY });
+      await Storage.remove({ key: GAME_STATE_KEY });
       console.log('Game state cleared successfully');
     } catch (error) {
       console.error('Error clearing game state:', error);
