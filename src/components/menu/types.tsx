@@ -31,14 +31,6 @@ export type BoostEffectType =
   | "unlockAutoBuy" 
   | "inventoryCapacity";
 
-export interface BoostInventoryItem extends InventoryItem {
-  effect: {
-    type: BoostEffectType;
-    value: number;
-    duration?: number;
-  };
-}
-
 export interface InventoryItem {
   id: string;
   name: string;
@@ -59,12 +51,24 @@ export interface InventoryItem {
   maxPurchases?: number;
 }
 
-// Type guard to check if an item is a boost item with effect
+export interface BoostInventoryItem extends InventoryItem {
+  type: 'boost';
+  effect: {
+    type: BoostEffectType;
+    value: number;
+    duration?: number;
+  };
+}
+
 export function isBoostItem(item: InventoryItem): item is BoostInventoryItem {
-  return item && item.type === 'boost' && item.effect !== undefined && 
+  return (
+    item && 
+    item.type === 'boost' && 
+    item.effect !== undefined && 
     typeof item.effect === 'object' && 
     'type' in item.effect && 
-    'value' in item.effect;
+    'value' in item.effect
+  );
 }
 
 export const INVENTORY_ITEMS = {

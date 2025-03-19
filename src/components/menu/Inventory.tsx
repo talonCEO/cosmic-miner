@@ -3,8 +3,9 @@ import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffectType } from './types';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffectType, isBoostItem } from './types';
 import { Button } from "@/components/ui/button";
+import { BoostEffect } from '@/context/GameContext';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -87,7 +88,7 @@ const UseItemPopover: React.FC<{
           <div className="text-4xl mb-3">{item.icon}</div>
           <p className="text-sm text-slate-300 text-center mb-3">{item.description}</p>
           <p className="text-sm text-green-400 font-medium text-center mb-4">
-            {item.effect ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
+            {isBoostItem(item) ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
           </p>
         </div>
         
@@ -130,18 +131,6 @@ const UseItemPopover: React.FC<{
     </div>
   );
 };
-
-interface BoostEffect {
-  id: string;
-  type: BoostEffectType;
-  value: number;
-  duration?: number;
-  activatedAt?: number;
-  remainingTime?: number;
-  remainingUses?: number;
-  description: string;
-  icon: React.ReactNode;
-}
 
 const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) => void }> = ({ boost, onDismiss }) => {
   const [timeLeft, setTimeLeft] = useState(boost.remainingTime || 0);
@@ -229,27 +218,27 @@ const Inventory: React.FC = () => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
   
-  const filteredItems = virtualInventory.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  function filteredItems() {
+    return virtualInventory.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || item.type === filterType;
-    return matchesSearch && matchesFilter;
-  });
+      const matchesFilter = filterType === 'all' || item.type === filterType;
+      return matchesSearch && matchesFilter;
+    });
+  }
   
-  const inventoryCapacity = state.inventoryCapacity || 25;
-  const inventoryUsed = state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0);
-  
-  const renderInventoryGrid = () => {
+  function renderInventoryGrid() {
+    const items = filteredItems();
     const slots = [];
     const baseSlots = 25;
     const expansionsPurchased = state.boosts['boost-inventory-expansion']?.purchased || 0;
     const totalSlots = baseSlots + expansionsPurchased * 5;
     
     for (let i = 0; i < totalSlots; i++) {
-      if (i < filteredItems.length) {
+      if (i < items.length) {
         slots.push(
           <div key={i} className="aspect-square">
-            <ItemSlot item={filteredItems[i]} onItemClick={handleUseItem} />
+            <ItemSlot item={items[i]} onItemClick={handleUseItem} />
           </div>
         );
       } else {
@@ -261,7 +250,7 @@ const Inventory: React.FC = () => {
       }
     }
     return <div className="grid grid-cols-5 gap-3">{slots}</div>;
-  };
+  }
   
   return (
     <>
@@ -271,7 +260,7 @@ const Inventory: React.FC = () => {
           <span>Inventory</span>
         </DialogTitle>
         <div className="text-center text-slate-300 text-sm">
-          Space used: {inventoryUsed}/{inventoryCapacity}
+          Space used: {state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0)}/{state.inventoryCapacity}
         </div>
       </DialogHeader>
       

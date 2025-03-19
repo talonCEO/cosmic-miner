@@ -8,7 +8,7 @@ import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffectType } from '@/components/menu/types';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostInventoryItem, isBoostItem, BoostEffectType } from '@/components/menu/types';
 
 import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
 import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
@@ -23,6 +23,7 @@ import InterstellarNavIcon from '@/assets/images/icons/interstellar-nav.png';
 import SupernovaCoreIcon from '@/assets/images/icons/supernova-core.png';
 import QuantumTunnelIcon from '@/assets/images/icons/quantum-tunnel.png';
 import CosmicSingularityIcon from '@/assets/images/icons/cosmic-singularity.png';
+import { Timer, Zap, DollarSign, ArrowTrendingUp, Percent, Star } from 'lucide-react';
 
 export interface BoostEffect {
   id: string;
@@ -352,7 +353,7 @@ const createBoostEffect = (boostId: string, duration?: number, value?: number): 
   const now = Math.floor(Date.now() / 1000);
   const boostItem = Object.values(INVENTORY_ITEMS).find(item => item.id === boostId);
   
-  if (!boostItem || !boostItem.effect) return null;
+  if (!boostItem || !isBoostItem(boostItem)) return null;
   
   return {
     id: boostId,
@@ -801,8 +802,4 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       return {
         ...state,
-        skillPoints: state.skillPoints - ability.cost,
-        abilities: newAbilities
-      };
-    }
-    case 'UNLOCK_PERK': {
+        skill
