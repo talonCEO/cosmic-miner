@@ -1,4 +1,5 @@
-import { GameState } from './GameContext';
+
+import { GameState } from '@/context/GameContext';
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 export const calculateTapValue = (state: GameState): number => {
@@ -202,4 +203,20 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
   }
   
   return multiplier;
+};
+
+export const calculateTotalCoinsPerSecond = (state: GameState): number => {
+  const baseCoinsPerSecond = calculateBaseCoinsPerSecond(state);
+  const globalMultiplier = calculateGlobalIncomeMultiplier(state);
+  const artifactMultiplier = calculateArtifactProductionMultiplier(state);
+  const passiveMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
+  
+  let totalCPS = baseCoinsPerSecond * globalMultiplier * artifactMultiplier * passiveMultiplier;
+  
+  // Add permanent passive boost
+  if (state.boosts["boost-perma-passive"]?.purchased) {
+    totalCPS += state.boosts["boost-perma-passive"].purchased * INVENTORY_ITEMS.PERMA_PASSIVE.effect!.value;
+  }
+  
+  return totalCPS;
 };

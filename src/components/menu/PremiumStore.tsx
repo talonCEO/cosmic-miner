@@ -20,7 +20,7 @@ interface PremiumStoreProps {
 
 interface StoreBoostItem extends InventoryItem {
   cost: number; // Required for all boosts in the store
-  maxPurchases?: number; // Optional, defaults to Infinity
+  maxPurchases: number; // Required, no longer optional
   purchasable: boolean;
   purchased: number;
 }
@@ -40,8 +40,8 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
-      .filter((item): item is InventoryItem & { cost: number } => 
-        item.type === 'boost' && 'cost' in item // Only require type 'boost' and cost
+      .filter((item): item is InventoryItem => 
+        item.type === 'boost' && 'cost' in item // Only filter by type 'boost' and has cost
       )
       .map(item => {
         const purchased = state.boosts[item.id]?.purchased || 0;
@@ -52,7 +52,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
           ...item,
           purchased,
           maxPurchases,
-          purchasable: state.gems >= item.cost && purchased < maxPurchases,
+          purchasable: state.gems >= (item as any).cost && purchased < maxPurchases,
           quantity: 1,
         } as StoreBoostItem;
       });
@@ -63,14 +63,14 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
     return [...boostItems].sort((a, b) => {
       const aPriority = priorityOrder.indexOf(a.id);
       const bPriority = priorityOrder.indexOf(b.id);
-      const aMaxed = a.purchased >= (a.maxPurchases || Infinity);
-      const bMaxed = b.purchased >= (b.maxPurchases || Infinity);
+      const aMaxed = a.purchased >= a.maxPurchases;
+      const bMaxed = b.purchased >= b.maxPurchases;
 
       if (aMaxed === bMaxed) {
         if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
         if (aPriority !== -1) return -1;
         if (bPriority !== -1) return 1;
-        return a.cost - b.cost;
+        return (a as any).cost - (b as any).cost;
       }
       return aMaxed ? 1 : -1;
     });
@@ -106,28 +106,28 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
-    if (!item || state.gems < item.cost || item.purchased >= (item.maxPurchases || Infinity)) return;
+    if (!item || state.gems < (item as any).cost || item.purchased >= item.maxPurchases) return;
 
-    addGems(-item.cost);
+    addGems(-(item as any).cost);
 
     // Special handling for auto-buy, no-ads, and inventory-expansion
     switch (item.id) {
       case 'boost-auto-buy':
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Only updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Only updates purchased count
         break;
       case 'boost-no-ads':
         dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'hasNoAds', value: true });
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Updates purchased count
         break;
       case 'boost-inventory-expansion':
         dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 5 });
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Updates purchased count
         break;
       default:
         const inventoryItem: InventoryItem = { ...item, quantity: 1 };
         addItem(inventoryItem);
         showUnlockAnimation(inventoryItem);
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id }); // Updates purchased count for all boosts
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Updates purchased count for all boosts
     }
   };
 

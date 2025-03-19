@@ -220,7 +220,7 @@ const BoostNotification: React.FC<{ boost: { id: string; remainingTime?: number;
 };
 
 const Inventory: React.FC = () => {
-  const { state, useItem } = useGame();
+  const { state, dispatch, useItem } = useGame();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -266,7 +266,7 @@ const Inventory: React.FC = () => {
     if (item.id === 'boost-time-warp') {
       const passiveIncome = calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
       const reward = passiveIncome * INVENTORY_ITEMS.TIME_WARP.effect!.value * quantity;
-      state.dispatch({ type: 'ADD_COINS', amount: reward });
+      dispatch({ type: 'ADD_COINS', amount: reward });
       setFlash(true);
       setTimeout(() => setFlash(false), 500);
     }

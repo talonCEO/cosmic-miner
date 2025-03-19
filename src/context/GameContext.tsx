@@ -9,6 +9,7 @@ import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from '@/components/menu/types';
+import { Asteroid, Scan, Zap, Brain, Shield, ArrowRight, Bot, Binary, Cpu, Globe, Atom, PanelRight, BarChart3 } from 'lucide-react';
 
 export interface Achievement {
   id: string;
@@ -142,7 +143,7 @@ const initialAbilities: Ability[] = [
     name: "Asteroid Drill",
     description: "Just a rusty old drill that somehow still works. The user manual was written in crayon.",
     cost: 0,
-    icon: <img src={AsteroidDrillIcon} alt="Asteroid Drill" className="w-[60px] h-[60px]" />,
+    icon: <Asteroid className="w-[60px] h-[60px]" />,
     unlocked: true,
     requiredAbilities: [],
     row: 1,
@@ -153,7 +154,7 @@ const initialAbilities: Ability[] = [
     name: "Quantum Vibration Enhancer",
     description: "Uses quantum vibration technology to increase mining efficiency. Tap power increased by 50% and passive income by 25%.",
     cost: 3,
-    icon: <img src={QuantumVibrationIcon} alt="Quantum Vibration Enhancer" className="w-[60px] h-[60px]" />,
+    icon: <Zap className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -164,7 +165,7 @@ const initialAbilities: Ability[] = [
     name: "Neural Mining Matrix",
     description: "Connects your brain directly to mining operations. Increases all income by 40% and reduces upgrade costs by 5%.",
     cost: 3,
-    icon: <img src={NeuralMiningIcon} alt="Neural Mining Matrix" className="w-[60px] h-[60px]" />,
+    icon: <Brain className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -175,7 +176,7 @@ const initialAbilities: Ability[] = [
     name: "Graviton Shield Generator",
     description: "Creates a force field that optimizes mining operations. Reduces upgrade costs by 15% and increases passive income by 20%.",
     cost: 3,
-    icon: <img src={GravitonShieldIcon} alt="Graviton Shield Generator" className="w-[60px] h-[60px]" />,
+    icon: <Shield className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -186,7 +187,7 @@ const initialAbilities: Ability[] = [
     name: "Laser-Guided Extraction System",
     description: "Precision mining laser technology. 15% chance of critical strike for 5x normal mining yield per tap.",
     cost: 5,
-    icon: <img src={LaserExtractionIcon} alt="Laser-Guided Extraction System" className="w-[60px] h-[60px]" />,
+    icon: <ArrowRight className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-2"],
     row: 3,
@@ -197,7 +198,7 @@ const initialAbilities: Ability[] = [
     name: "Dark Matter Attractor",
     description: "Harnesses the power of dark matter to attract valuable elements. Increases all income by 45% and passive income by 30%.",
     cost: 5,
-    icon: <img src={DarkMatterIcon} alt="Dark Matter Attractor" className="w-[60px] h-[60px]" />,
+    icon: <Atom className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-3"],
     row: 3,
@@ -208,7 +209,7 @@ const initialAbilities: Ability[] = [
     name: "Galactic Achievement Scanner",
     description: "Scans the galaxy for achievement opportunities. Gain 2 extra skill points per achievement and 15% more essence.",
     cost: 5,
-    icon: <img src={GalacticScannerIcon} alt="Galactic Achievement Scanner" className="w-[60px] h-[60px]" />,
+    icon: <Scan className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-4"],
     row: 3,
@@ -219,7 +220,7 @@ const initialAbilities: Ability[] = [
     name: "Plasma Discharge Excavator",
     description: "Uses controlled plasma bursts to break down asteroids. Boosts tap value by 85% and passive income by 55%.",
     cost: 8,
-    icon: <img src={PlasmaExcavatorIcon} alt="Plasma Discharge Excavator" className="w-[60px] h-[60px]" />,
+    icon: <Zap className="w-[60px] h-[60px] text-purple-500" />,
     unlocked: false,
     requiredAbilities: ["ability-5"],
     row: 4,
@@ -230,7 +231,7 @@ const initialAbilities: Ability[] = [
     name: "Nano-Bot Mining Swarm",
     description: "Deploys microscopic robots that optimize resource extraction. Reduces upgrade costs by 30% and increases passive income by 65%.",
     cost: 8,
-    icon: <img src={NanoBotSwarmIcon} alt="Nano-Bot Mining Swarm" className="w-[60px] h-[60px]" />,
+    icon: <Bot className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-6"],
     row: 4,
@@ -241,7 +242,7 @@ const initialAbilities: Ability[] = [
     name: "Interstellar Navigation AI",
     description: "Advanced AI system that identifies the richest asteroid fields. Increases global income by 55% and essence rewards by 20%.",
     cost: 8,
-    icon: <img src={InterstellarNavIcon} alt="Interstellar Navigation AI" className="w-[60px] h-[60px]" />,
+    icon: <Globe className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-7"],
     row: 4,
@@ -252,7 +253,7 @@ const initialAbilities: Ability[] = [
     name: "Supernova Core Extractor",
     description: "Harvests energy from the remnants of exploded stars. Boosts tap value by 120% and all income by 80%.",
     cost: 12,
-    icon: <img src={SupernovaCoreIcon} alt="Supernova Core Extractor" className="w-[60px] h-[60px]" />,
+    icon: <Cpu className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-8"],
     row: 5,
@@ -263,7 +264,7 @@ const initialAbilities: Ability[] = [
     name: "Quantum Tunneling Drill",
     description: "Creates wormholes directly to valuable resources. Reduces all upgrade costs by 45% and doubles passive income.",
     cost: 12,
-    icon: <img src={QuantumTunnelIcon} alt="Quantum Tunneling Drill" className="w-[60px] h-[60px]" />,
+    icon: <PanelRight className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-9"],
     row: 5,
@@ -274,7 +275,7 @@ const initialAbilities: Ability[] = [
     name: "Cosmic Singularity Engine",
     description: "Harnesses the power of a controlled black hole. Increases essence gain by 35% and all income by 100%.",
     cost: 12,
-    icon: <img src={CosmicSingularityIcon} alt="Cosmic Singularity Engine" className="w-[60px] h-[60px]" />,
+    icon: <BarChart3 className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-10"],
     row: 5,
@@ -610,7 +611,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             newState.portrait = reward.value as string;
             break;
           case 'inventory_item':
-            newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
+            newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS] as unknown as Omit<InventoryItem, "quantity">, 1)];
             break;
         }
       }
@@ -647,7 +648,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
               newState.portrait = reward.value as string;
               break;
             case 'inventory_item':
-              newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
+              newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS] as unknown as Omit<InventoryItem, "quantity">, 1)];
               break;
           }
         }

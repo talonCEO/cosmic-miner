@@ -92,8 +92,8 @@ const Stats: React.FC = () => {
               <h3 className="text-lg font-medium mb-2">Progress</h3>
               <p>Prestige Count: {state.prestigeCount}</p>
               <p>Potential Essence: {calculatePotentialEssenceReward()}</p>
-              <p>Total Taps: {state.stats.totalTaps}</p>
-              <p>Upgrades Purchased: {state.stats.upgradesPurchased}</p>
+              <p>Total Taps: {state.totalClicks}</p>
+              <p>Upgrades Purchased: {Object.values(state.upgrades).reduce((sum, u) => sum + u.level, 0)}</p>
             </div>
           </div>
         </DialogContent>
