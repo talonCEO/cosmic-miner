@@ -104,7 +104,39 @@ export const calculateBaseCoinsPerSecond = (state: GameState): number => {
   return base;
 };
 
-// Existing helper functions (unchanged)
+export const checkUpgradeMilestone = (oldLevel: number, newLevel: number): boolean => {
+  const milestones = [10, 25, 50, 100, 250, 500, 1000];
+  for (const milestone of milestones) {
+    if (oldLevel < milestone && newLevel >= milestone) return true;
+  }
+  return false;
+};
+
+export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number): number => {
+  let quantity = 0;
+  let totalCost = 0;
+  let nextCost = baseCost * Math.pow(growthRate, currentLevel);
+  
+  while (totalCost + nextCost <= coins) {
+    quantity++;
+    totalCost += nextCost;
+    nextCost = baseCost * Math.pow(growthRate, currentLevel + quantity);
+  }
+  
+  return quantity;
+};
+
+export const calculateStartingCoins = (ownedArtifacts: string[]): number => {
+  let startingCoins = 0;
+  if (ownedArtifacts.includes("artifact-5")) startingCoins += 1000;
+  return startingCoins;
+};
+
+export const calculateAutoTapIncome = (state: GameState): number => {
+  const tapPower = calculateTapValue(state);
+  return tapPower * 0.2; // 0.2 taps per tick (2 taps per second)
+};
+
 export const calculateClickMultiplier = (ownedArtifacts: string[]): number => {
   let multiplier = 1;
   if (ownedArtifacts.includes("artifact-1")) multiplier += 0.25;
@@ -138,9 +170,9 @@ export const calculateManagerBoostMultiplier = (state: GameState): number => {
   return state.managers.reduce((total, manager) => total + (manager.unlocked ? manager.boost : 0), 1);
 };
 
-export const calculateAbilityPassiveMultiplier = (state: GameState): number => {
+export const calculateAbilityPassiveMultiplier = (abilities: any[]): number => {
   let multiplier = 1;
-  state.abilities.forEach(ability => {
+  abilities.forEach(ability => {
     if (ability.unlocked) {
       if (ability.id === "ability-1") multiplier += 0.1;
       if (ability.id === "ability-4") multiplier += 0.15;
@@ -150,13 +182,24 @@ export const calculateAbilityPassiveMultiplier = (state: GameState): number => {
   return multiplier;
 };
 
-export const calculateAbilityTapMultiplier = (state: GameState): number => {
+export const calculateAbilityTapMultiplier = (abilities: any[]): number => {
   let multiplier = 1;
-  state.abilities.forEach(ability => {
+  abilities.forEach(ability => {
     if (ability.unlocked) {
       if (ability.id === "ability-2") multiplier += 0.2;
       if (ability.id === "ability-6") multiplier += 0.3;
     }
   });
+  return multiplier;
+};
+
+export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
+  let multiplier = 1;
+  
+  // Apply DOUBLE_COINS (x2 multiplier) if active
+  if (state.boosts["boost-double-coins"]?.active) {
+    multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
+  }
+  
   return multiplier;
 };

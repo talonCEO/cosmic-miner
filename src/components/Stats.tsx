@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import { INVENTORY_ITEMS } from '@/components/menu/types';
+import { Clock } from 'lucide-react';
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
@@ -68,7 +70,7 @@ const Stats: React.FC = () => {
       <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
         <DialogContent className="bg-slate-900 border border-indigo-500/30 text-white max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl">Detailed Statistics1</DialogTitle>
+            <DialogTitle className="text-center text-xl">Detailed Statistics</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 p-4">
             <div>

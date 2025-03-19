@@ -4,6 +4,7 @@ import * as GameMechanics from '@/utils/GameMechanics';
 import { Artifact } from '@/utils/artifactsData';
 import { Perk } from '@/utils/types';
 import { formatNumber } from '@/utils/gameLogic';
+import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 /**
  * Centralized hook for managing all boosts in the game
@@ -15,21 +16,42 @@ export const useBoostManager = () => {
    * Calculate total tap/click multiplier from all sources
    */
   const calculateTapMultiplier = (): number => {
-    return GameMechanics.calculateClickMultiplier(state.ownedArtifacts);
+    let tapMultiplier = GameMechanics.calculateClickMultiplier(state.ownedArtifacts);
+    
+    // Add tap boost if active
+    if (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses) {
+      tapMultiplier *= INVENTORY_ITEMS.TAP_BOOST.effect!.value;
+    }
+    
+    return tapMultiplier;
   };
   
   /**
    * Calculate total global income multiplier from all sources
    */
   const calculateGlobalIncomeMultiplier = (): number => {
-    return GameMechanics.calculateGlobalIncomeMultiplier(state);
+    let multiplier = 1;
+    
+    // Apply DOUBLE_COINS
+    if (state.boosts["boost-double-coins"]?.active) {
+      multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
+    }
+    
+    return multiplier;
   };
   
   /**
    * Calculate total cost reduction from all sources
    */
   const calculateTotalCostReduction = (): number => {
-    return GameMechanics.calculateCostReduction(state);
+    let reduction = GameMechanics.calculateCostReduction(state);
+    
+    // Apply CHEAP_UPGRADES
+    if (state.boosts["boost-cheap-upgrades"]?.active) {
+      reduction *= INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value;
+    }
+    
+    return reduction;
   };
   
   /**
@@ -47,6 +69,13 @@ export const useBoostManager = () => {
   };
   
   /**
+   * Get the total active boosts count
+   */
+  const getActiveBoostsCount = (): number => {
+    return Object.values(state.boosts).filter(boost => boost.active).length;
+  };
+  
+  /**
    * Check if user has active boosts
    */
   const hasActiveBoosts = (): boolean => {
@@ -54,6 +83,38 @@ export const useBoostManager = () => {
            calculateGlobalIncomeMultiplier() > 1 || 
            calculateTotalCostReduction() < 1 ||
            calculatePassiveIncomeMultiplier() > 1;
+  };
+  
+  /**
+   * Format boost effect description based on type
+   */
+  const formatBoostEffect = (boostId: string): string => {
+    const boost = state.boosts[boostId];
+    if (!boost) return '';
+    
+    const item = INVENTORY_ITEMS[boostId as keyof typeof INVENTORY_ITEMS];
+    if (!item || !item.effect) return '';
+    
+    switch (item.effect.type) {
+      case 'coinMultiplier':
+        return `${item.effect.value}x coin multiplier`;
+      case 'timeWarp':
+        return `${item.effect.value / 60} minutes of passive income`;
+      case 'autoTap':
+        return `${item.effect.value} taps/sec`;
+      case 'tapMultiplier':
+        return `${item.effect.value}x tap power`;
+      case 'costReduction':
+        return `${(1 - item.effect.value) * 100}% cheaper upgrades`;
+      case 'essenceMultiplier':
+        return `+${(item.effect.value - 1) * 100}% essence`;
+      case 'baseTapBoost':
+        return `+${item.effect.value * boost.purchased} tap power`;
+      case 'basePassiveBoost':
+        return `+${item.effect.value * boost.purchased} passive income`;
+      default:
+        return 'Unknown effect';
+    }
   };
   
   /**
@@ -131,6 +192,8 @@ export const useBoostManager = () => {
     calculatePassiveIncomeMultiplier,
     calculateTotalCPS,
     hasActiveBoosts,
+    getActiveBoostsCount,
+    formatBoostEffect,
     getElementName,
     getHighestUnlockedPerkValue,
     formatEffectDescription

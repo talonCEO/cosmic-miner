@@ -8,21 +8,7 @@ import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
-
-import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
-import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
-import NeuralMiningIcon from '@/assets/images/icons/neural-mining.png';
-import GravitonShieldIcon from '@/assets/images/icons/graviton-shield.png';
-import LaserExtractionIcon from '@/assets/images/icons/laser-extraction.png';
-import DarkMatterIcon from '@/assets/images/icons/dark-matter.png';
-import GalacticScannerIcon from '@/assets/images/icons/galactic-scanner.png';
-import PlasmaExcavatorIcon from '@/assets/images/icons/plasma-excavator.png';
-import NanoBotSwarmIcon from '@/assets/images/icons/nano-bot-swarm.png';
-import InterstellarNavIcon from '@/assets/images/icons/interstellar-nav.png';
-import SupernovaCoreIcon from '@/assets/images/icons/supernova-core.png';
-import QuantumTunnelIcon from '@/assets/images/icons/quantum-tunnel.png';
-import CosmicSingularityIcon from '@/assets/images/icons/cosmic-singularity.png';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from '@/components/menu/types';
 
 export interface Achievement {
   id: string;
@@ -430,22 +416,27 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, incomeMultiplier: action.multiplier };
     case 'TICK': {
       const newBoosts = { ...state.boosts };
+      const now = Date.now() / 1000;
+      
       Object.keys(newBoosts).forEach(boostId => {
-        if (newBoosts[boostId].remainingTime) {
-          newBoosts[boostId].remainingTime -= 0.1;
-          if (newBoosts[boostId].remainingTime <= 0) {
-            newBoosts[boostId].active = false;
+        const boost = newBoosts[boostId];
+        
+        if (!boost.active) return;
+        
+        if (boost.remainingTime !== undefined) {
+          boost.remainingTime! -= 0.1; // 100ms tick
+          
+          if (boost.remainingTime <= 0) {
+            boost.active = false;
+            boost.remainingTime = 0;
           }
         }
       });
 
       let newState = { ...state, boosts: newBoosts };
-      const incomeMultiplier = calculateIncomeMultiplier(newState);
-
+      
       if (newState.coinsPerSecond > 0) {
-        const passiveAmount = GameMechanics.calculatePassiveIncome(newState) * 
-          calculateBaseCoinsPerSecond(newState) / newState.coinsPerSecond * 
-          (incomeMultiplier / newState.incomeMultiplier);
+        const passiveAmount = GameMechanics.calculatePassiveIncome(newState);
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + passiveAmount),
@@ -454,8 +445,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.boosts["boost-auto-tap"]?.active) {
-        const tapValue = GameMechanics.calculateTapValue(newState) * 
-          (incomeMultiplier / newState.incomeMultiplier);
+        const tapValue = GameMechanics.calculateTapValue(newState);
         const tapRate = INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1; // 5 taps/sec over 0.1s tick
         const autoTapAmount = tapValue * tapRate;
         newState = {
@@ -467,12 +457,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.autoTap) {
-        const autoTapBase = GameMechanics.calculateAutoTapIncome(newState) * 
-          (incomeMultiplier / newState.incomeMultiplier);
+        const autoTapAmount = GameMechanics.calculateAutoTapIncome(newState);
         newState = {
           ...newState,
-          coins: Math.max(0, newState.coins + autoTapBase),
-          totalEarned: newState.totalEarned + autoTapBase,
+          coins: Math.max(0, newState.coins + autoTapAmount),
+          totalEarned: newState.totalEarned + autoTapAmount,
           totalClicks: newState.totalClicks + 1
         };
       }
@@ -530,12 +519,19 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'PRESTIGE': {
       const essenceMultiplier = state.boosts["boost-essence-boost"]?.purchased ? 
-        INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value * state.boosts["boost-essence-boost"].purchased : 1;
+        Math.pow(INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value, state.boosts["boost-essence-boost"].purchased) : 1;
       const essenceReward = GameMechanics.calculateEssenceReward(state.totalEarned, state) * essenceMultiplier;
       const startingCoins = GameMechanics.calculateStartingCoins(state.ownedArtifacts);
       
       const newBoosts = {};
-      ["boost-perma-tap", "boost-perma-passive", "boost-no-ads", "boost-auto-buy", "boost-inventory-expansion"].forEach(boostId => {
+      [
+        "boost-perma-tap", 
+        "boost-perma-passive", 
+        "boost-no-ads", 
+        "boost-auto-buy", 
+        "boost-inventory-expansion",
+        "boost-essence-boost"
+      ].forEach(boostId => {
         if (state.boosts[boostId]?.purchased) {
           newBoosts[boostId] = { ...state.boosts[boostId], active: false };
         }
@@ -733,6 +729,20 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         updatedInventory[itemIndex] = { ...item, quantity: item.quantity - quantity };
       }
 
+      if (item.id === 'boost-time-warp') {
+        const passiveIncome = GameMechanics.calculatePassiveIncome({ ...state, coinsPerSecond: GameMechanics.calculateBaseCoinsPerSecond(state) });
+        const timeWarpValue = item.effect?.value || 120 * 60; // Default to 120 minutes (7200 seconds)
+        const reward = passiveIncome * (timeWarpValue / 100) * quantity; // Scale based on tick interval (100ms)
+        
+        return {
+          ...state,
+          inventory: updatedInventory,
+          coins: state.coins + reward,
+          totalEarned: state.totalEarned + reward,
+          boosts: activateBoostLogic(state.boosts, action.itemId, quantity)
+        };
+      }
+
       return {
         ...state,
         inventory: updatedInventory,
@@ -799,7 +809,6 @@ const activateBoostLogic = (boosts: GameState['boosts'], boostId: string, quanti
   const now = Date.now() / 1000;
 
   if (boostId === 'boost-time-warp') {
-    // Instant effect, no duration stacking
     return {
       ...boosts,
       [boostId]: {
@@ -810,7 +819,6 @@ const activateBoostLogic = (boosts: GameState['boosts'], boostId: string, quanti
   }
 
   if (isPermanent) {
-    // Permanent boosts stack effects
     return {
       ...boosts,
       [boostId]: {
@@ -821,20 +829,36 @@ const activateBoostLogic = (boosts: GameState['boosts'], boostId: string, quanti
     };
   }
 
-  // Temporary boosts extend duration
   const remainingTime = currentBoost.active && currentBoost.remainingTime ? currentBoost.remainingTime : 0;
-  const newDuration = remainingTime + (item.effect.duration! * quantity);
-  return {
-    ...boosts,
-    [boostId]: {
-      ...currentBoost,
-      active: true,
-      remainingTime: newDuration,
-      remainingUses: boostId === 'boost-tap-boost' ? (currentBoost.remainingUses || 0) + (item.effect.duration! * quantity) : undefined,
-      purchased: currentBoost.purchased + quantity,
-      activatedAt: currentBoost.active && currentBoost.activatedAt ? currentBoost.activatedAt : now
-    }
-  };
+  
+  if (boostId === 'boost-tap-boost') {
+    const remainingUses = currentBoost.active && currentBoost.remainingUses ? currentBoost.remainingUses : 0;
+    const newUses = remainingUses + (item.effect.duration! * quantity);
+    
+    return {
+      ...boosts,
+      [boostId]: {
+        ...currentBoost,
+        active: true,
+        remainingUses: newUses,
+        purchased: currentBoost.purchased + quantity,
+        activatedAt: currentBoost.active && currentBoost.activatedAt ? currentBoost.activatedAt : now
+      }
+    };
+  } else {
+    const newDuration = remainingTime + (item.effect.duration! * quantity);
+    
+    return {
+      ...boosts,
+      [boostId]: {
+        ...currentBoost,
+        active: true,
+        remainingTime: newDuration,
+        purchased: currentBoost.purchased + quantity,
+        activatedAt: currentBoost.active && currentBoost.activatedAt ? currentBoost.activatedAt : now
+      }
+    };
+  }
 };
 
 const calculateIncomeMultiplier = (state: GameState) => {
