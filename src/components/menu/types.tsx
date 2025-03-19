@@ -2,20 +2,20 @@ import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
 // Static PNG imports for inventory items (replace with your actual image paths)
-import CoinsImage from '@/assets/images/icons/asteroid-drill.png';
-import GemsImage from '@/assets/images/icons/quantum-vibration.png';
-import EssenceImage from '@/assets/images/icons/neural-mining.png';
-import SkillPointsImage from '@/assets/images/icons/graviton-shield.png';
-import DoubleCoinsImage from '@/assets/images/icons/laser-extraction.png';
-import TimeWarpImage from '@/assets/images/icons/dark-matter.png';
-import AutoTapImage from '@/assets/images/icons/galactic-scanner.png';
-import TapBoostImage from '@/assets/images/icons/plasma-excavator.png';
-import CheapUpgradesImage from '@/assets/images/icons/nano-bot-swarm.png';
-import EssenceBoostImage from '@/assets/images/icons/interstellar-nav.png';
-import PermaTapImage from '@/assets/images/icons/supernova-core.png';
-import PermaPassiveImage from '@/assets/images/icons/quantum-tunnel.png';
-import NoAdsImage from '@/assets/images/icons/cosmic-singularity.png';
-import AutoBuyImage from '@/assets/images/icons/asteroid-drill.png'; // Reused as example
+import CoinsImage from '@/assets/images/icons/coins.png';
+import GemsImage from '@/assets/images/icons/gems.png';
+import EssenceImage from '@/assets/images/icons/essence.png';
+import SkillPointsImage from '@/assets/images/icons/points.png';
+import DoubleCoinsImage from '@/assets/images/icons/boost3.png';
+import TimeWarpImage from '@/assets/images/icons/boost2.png';
+import AutoTapImage from '@/assets/images/icons/boost1.png';
+import TapBoostImage from '@/assets/images/icons/boost1.png';
+import CheapUpgradesImage from '@/assets/images/icons/boost4.png';
+import EssenceBoostImage from '@/assets/images/icons/boost5.png';
+import PermaTapImage from '@/assets/images/icons/boost7.png';
+import PermaPassiveImage from '@/assets/images/icons/boost6.png';
+import NoAdsImage from '@/assets/images/icons/boost8.png';
+import AutoBuyImage from '@/assets/images/icons/boost9.png'; // Reused as example
 import InventoryExpansionImage from '@/assets/images/icons/quantum-vibration.png'; // Reused as example
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
