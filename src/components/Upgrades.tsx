@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
@@ -6,9 +7,15 @@ import { UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { Coins, ArrowUp, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
+// Add the missing PASSIVE category
+const CATEGORIES = {
+  ...UPGRADE_CATEGORIES,
+  PASSIVE: 'passive'
+};
+
 const Upgrades: React.FC = () => {
   const { state, buyUpgrade, calculateMaxPurchaseAmount } = useGame();
-  const [selectedCategory, setSelectedCategory] = useState(UPGRADE_CATEGORIES.TAP);
+  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES.TAP);
 
   const upgrades = state.upgrades.filter(upgrade => upgrade.category === selectedCategory && upgrade.unlocked);
 
@@ -24,20 +31,22 @@ const Upgrades: React.FC = () => {
     <div className="w-full max-w-md mx-auto pb-12">
       <div className="flex justify-around p-4 rounded-xl bg-slate-800/40 backdrop-blur-sm border border-slate-700/40">
         <button
-          className={`py-2 px-4 rounded-lg transition-colors ${selectedCategory === UPGRADE_CATEGORIES.TAP
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-            }`}
-          onClick={() => setSelectedCategory(UPGRADE_CATEGORIES.TAP)}
+          className={`py-2 px-4 rounded-lg transition-colors ${
+            selectedCategory === CATEGORIES.TAP
+              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
+          }`}
+          onClick={() => setSelectedCategory(CATEGORIES.TAP)}
         >
           Tap Upgrades
         </button>
         <button
-          className={`py-2 px-4 rounded-lg transition-colors ${selectedCategory === UPGRADE_CATEGORIES.PASSIVE
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-            }`}
-          onClick={() => setSelectedCategory(UPGRADE_CATEGORIES.PASSIVE)}
+          className={`py-2 px-4 rounded-lg transition-colors ${
+            selectedCategory === CATEGORIES.PASSIVE
+              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
+          }`}
+          onClick={() => setSelectedCategory(CATEGORIES.PASSIVE)}
         >
           Passive Upgrades
         </button>
@@ -74,7 +83,7 @@ const Upgrades: React.FC = () => {
                   {maxQuantity > 1 && (
                     <Button
                       variant="outline"
-                      size="xs"
+                      size="sm"
                       disabled={state.coins < upgrade.cost * maxQuantity}
                       onClick={() => handleBuyUpgrade(upgrade.id, maxQuantity)}
                       className="mt-1"

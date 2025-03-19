@@ -1,4 +1,3 @@
-
 import { GameState } from '@/context/GameContext';
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
@@ -105,6 +104,10 @@ export const calculateBaseCoinsPerSecond = (state: GameState): number => {
   return base;
 };
 
+export const isGoodValue = (value: number): boolean => {
+  return !isNaN(value) && isFinite(value) && value > 0;
+};
+
 export const checkUpgradeMilestone = (oldLevel: number, newLevel: number): boolean => {
   const milestones = [10, 25, 50, 100, 250, 500, 1000];
   for (const milestone of milestones) {
@@ -168,7 +171,16 @@ export const calculateArtifactProductionMultiplier = (state: GameState): number 
 };
 
 export const calculateManagerBoostMultiplier = (state: GameState): number => {
-  return state.managers.reduce((total, manager) => total + (manager.unlocked ? manager.boost : 0), 1);
+  // Check if managers exist in state
+  if (!state.managers || state.managers.length === 0) {
+    return 1; // Default multiplier if no managers
+  }
+  
+  return state.managers.reduce((total, manager) => {
+    // Check if the manager has a boost property
+    const boost = manager.boost || (manager.boosts ? 1 : 0);
+    return total + (manager.unlocked ? boost : 0);
+  }, 1);
 };
 
 export const calculateAbilityPassiveMultiplier = (abilities: any[]): number => {

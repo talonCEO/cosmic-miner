@@ -65,14 +65,15 @@ export const useBoostManager = () => {
    * Calculate total CPS with all multipliers applied
    */
   const calculateTotalCPS = (): number => {
-    return GameMechanics.calculateTotalCoinsPerSecond(state);
+    // Use baseCoinsPerSecond since calculateTotalCoinsPerSecond doesn't exist
+    return GameMechanics.calculateBaseCoinsPerSecond(state);
   };
   
   /**
    * Get the total active boosts count
    */
   const getActiveBoostsCount = (): number => {
-    return Object.values(state.boosts).filter(boost => boost.active).length;
+    return Object.values(state.boosts || {}).filter(boost => boost.active).length;
   };
   
   /**
@@ -89,7 +90,7 @@ export const useBoostManager = () => {
    * Format boost effect description based on type
    */
   const formatBoostEffect = (boostId: string): string => {
-    const boost = state.boosts[boostId];
+    const boost = state.boosts ? state.boosts[boostId] : undefined;
     if (!boost) return '';
     
     const item = INVENTORY_ITEMS[boostId as keyof typeof INVENTORY_ITEMS];
@@ -109,9 +110,9 @@ export const useBoostManager = () => {
       case 'essenceMultiplier':
         return `+${(item.effect.value - 1) * 100}% essence`;
       case 'baseTapBoost':
-        return `+${item.effect.value * boost.purchased} tap power`;
+        return `+${item.effect.value * (boost.purchased || 0)} tap power`;
       case 'basePassiveBoost':
-        return `+${item.effect.value * boost.purchased} passive income`;
+        return `+${item.effect.value * (boost.purchased || 0)} passive income`;
       default:
         return 'Unknown effect';
     }
@@ -142,8 +143,8 @@ export const useBoostManager = () => {
    */
   const getHighestUnlockedPerkValue = (parentId: string): Perk | null => {
     // Find the parent in artifacts or managers
-    const artifact = state.artifacts.find(a => a.id === parentId);
-    const manager = state.managers.find(m => m.id === parentId);
+    const artifact = state.artifacts?.find(a => a.id === parentId);
+    const manager = state.managers?.find(m => m.id === parentId);
     
     if (!artifact && !manager) return null;
     
