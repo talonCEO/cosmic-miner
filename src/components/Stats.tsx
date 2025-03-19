@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -9,7 +8,8 @@ import {
   Gauge, 
   Recycle, 
   BarChart,
-  Gem 
+  Gem,
+  Zap
 } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
@@ -19,6 +19,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { INVENTORY_ITEMS } from '@/components/menu/types';
 import { calculateTapValue } from '@/utils/GameMechanics';
 
 const Stats: React.FC = () => {
@@ -29,6 +30,21 @@ const Stats: React.FC = () => {
   const totalCPS = calculateTotalCPS();
   const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
+
+  const activeBoosts = Object.entries(state.boosts)
+    .filter(([_, boost]) => boost.active)
+    .map(([boostId, boost]) => ({
+      id: boostId,
+      name: INVENTORY_ITEMS[boostId as keyof typeof INVENTORY_ITEMS]?.name || boostId,
+      remainingTime: boost.remainingTime || 0,
+      remainingUses: boost.remainingUses
+    }));
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
   
   return (
     <div className="w-full max-w-md mx-auto pb-12">
@@ -90,6 +106,29 @@ const Stats: React.FC = () => {
             <span className="text-xs text-slate-500 mt-1">Coins Earned: {formatNumber(state.totalEarned)}</span>
           </div>
         </div>
+
+        {activeBoosts.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium text-slate-300 mb-2 flex items-center justify-center">
+              <Zap size={16} className="mr-2 text-yellow-400" />
+              Active Boosts
+            </h3>
+            <div className="space-y-2">
+              {activeBoosts.map(boost => (
+                <div key={boost.id} className="flex justify-between items-center bg-slate-900/50 p-2 rounded-lg">
+                  <span className="text-sm text-slate-200">{boost.name}</span>
+                  <span className="text-sm text-yellow-300">
+                    {boost.remainingUses !== undefined 
+                      ? `${boost.remainingUses} uses`
+                      : boost.remainingTime > 0 
+                        ? formatTime(boost.remainingTime)
+                        : 'Permanent'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
