@@ -1,25 +1,12 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
-import { 
-  Bitcoin, 
-  MousePointer, 
-  Sparkles, 
-  Gauge, 
-  Recycle, 
-  BarChart,
-  Gem 
-} from 'lucide-react';
+import { Bitcoin, MousePointer, Sparkles, Gauge, Recycle, BarChart, Gem } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
+import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
@@ -30,6 +17,16 @@ const Stats: React.FC = () => {
   const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
   
+  const activeBoosts = Object.entries(state.boosts)
+    .filter(([_, boost]) => boost.active)
+    .map(([id, boost]) => ({
+      id,
+      name: INVENTORY_ITEMS[id as keyof typeof INVENTORY_ITEMS].name,
+      remainingTime: boost.remainingTime,
+      remainingUses: boost.remainingUses,
+      activatedAt: boost.activatedAt
+    }));
+
   return (
     <div className="w-full max-w-md mx-auto pb-12">
       <div className="p-4 rounded-xl bg-slate-800/40 backdrop-blur-sm border border-slate-700/40 relative">
@@ -145,6 +142,28 @@ const Stats: React.FC = () => {
               <h3 className="text-sm font-semibold text-slate-300 mb-2">Pending Liquidation Value</h3>
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
+
+            {activeBoosts.length > 0 && (
+              <div className="bg-slate-700/50 p-3 rounded-lg">
+                <h3 className="text-sm font-semibold text-slate-300 mb-2">Active Boosts</h3>
+                <ul className="space-y-2">
+                  {activeBoosts.map(boost => {
+                    const timeLeft = boost.remainingTime && boost.activatedAt
+                      ? Math.max(0, boost.remainingTime - ((Date.now() / 1000) - boost.activatedAt))
+                      : boost.remainingTime || 0;
+                    return (
+                      <li key={boost.id} className="text-sm text-white">
+                        {boost.name}: {boost.remainingUses 
+                          ? `${boost.remainingUses} taps left`
+                          : timeLeft > 0 
+                            ? `${Math.floor(timeLeft / 60)}:${Math.floor(timeLeft % 60).toString().padStart(2, '0')}`
+                            : 'Permanent'}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
