@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
-import { formatNumber } from '@/utils/gameLogic';
+import { formatNumber } from '@/utils/gameLogic'; // Updated to your version
 import { Bitcoin, MousePointer, Sparkles, Gauge, Recycle, BarChart, Gem } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,11 +10,11 @@ import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
-  const { calculateTotalCPS, calculateGlobalIncomeMultiplier } = useBoostManager();
+  const { calculateTotalCPS, calculateGlobalMultiplier } = useBoostManager();
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
   const totalCPS = calculateTotalCPS();
-  const globalMultiplier = calculateGlobalIncomeMultiplier();
+  const globalMultiplier = calculateGlobalMultiplier();
   const tapPower = calculateTapValue(state);
   
   const activeBoosts = Object.entries(state.boosts)
