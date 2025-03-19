@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -19,12 +18,6 @@ export interface Ability {
   effect?: string;
 }
 
-export interface BoostEffect {
-  type: 'coinMultiplier' | 'timeWarp' | 'autoTap' | 'tapMultiplier' | 'costReduction' | 'essenceMultiplier' | 'baseTapBoost' | 'basePassiveBoost' | 'noAds' | 'unlockAutoBuy' | 'inventoryCapacity';
-  value: number;
-  duration?: number; // In seconds, undefined for permanent or instant effects
-}
-
 export interface InventoryItem {
   id: string;
   name: string;
@@ -33,20 +26,16 @@ export interface InventoryItem {
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   icon: React.ReactNode;
   quantity: number;
-  effect?: BoostEffect;
+  effect?: {
+    type: string;
+    value: number;
+    duration?: number; // In seconds, undefined for permanent or instant effects
+  };
   usable: boolean;
   stackable: boolean;
   obtained: number;
   cost?: number;
   maxPurchases?: number;
-}
-
-// Define a more specific interface for boost items to fix typechecking
-export interface BoostInventoryItem extends InventoryItem {
-  type: 'boost';
-  effect: BoostEffect;
-  cost: number;
-  maxPurchases: number;
 }
 
 export const INVENTORY_ITEMS = {
@@ -109,8 +98,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100,
-    maxPurchases: Infinity
+    cost: 100
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -126,26 +114,24 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50,
-    maxPurchases: Infinity
+    cost: 50
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
     name: 'Auto Tap',
-    description: 'Automatically taps 5 times per second for 2 minutes',
+    description: 'Automatically taps 5 times per second for 5 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <Zap className="text-yellow-400" />,
     effect: {
       type: 'autoTap',
       value: 5, // 5 taps per second
-      duration: 2 * 60 // 2 minutes
+      duration: 5 * 60 // 5 minutes
     },
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100,
-    maxPurchases: Infinity
+    cost: 100
   },
   TAP_BOOST: {
     id: 'boost-tap-boost',
@@ -162,8 +148,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 75,
-    maxPurchases: Infinity
+    cost: 75
   },
   CHEAP_UPGRADES: {
     id: 'boost-cheap-upgrades',
@@ -180,8 +165,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50,
-    maxPurchases: Infinity
+    cost: 50
   },
   ESSENCE_BOOST: {
     id: 'boost-essence-boost',
@@ -197,8 +181,7 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100,
-    maxPurchases: Infinity
+    cost: 100
   },
   PERMA_TAP: {
     id: 'boost-perma-tap',
@@ -296,9 +279,4 @@ export function createInventoryItem(
     quantity,
     obtained: Date.now()
   };
-}
-
-// Helper function to check if an item is a boost item
-export function isBoostItem(item: any): item is BoostInventoryItem {
-  return item && item.type === 'boost' && !!item.effect;
 }

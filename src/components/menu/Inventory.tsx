@@ -5,8 +5,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from './types';
 import { Button } from "@/components/ui/button";
-import { calculatePassiveIncome, calculateBaseCoinsPerSecond } from '@/utils/GameMechanics';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -15,29 +13,6 @@ const rarityColors = {
   epic: 'bg-purple-700/40 border-purple-500',
   legendary: 'bg-yellow-700/40 border-yellow-500',
 };
-
-const FlashAnimation: React.FC<{ onComplete: () => void }> = ({ onComplete }) => (
-  <motion.div
-    className="fixed inset-0 bg-white/70 z-50"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: [0, 1, 0] }}
-    transition={{ duration: 0.5 }}
-    onAnimationComplete={onComplete}
-  />
-);
-
-const TapAnimation: React.FC<{ x: number; y: number }> = ({ x, y }) => (
-  <motion.div
-    className="absolute text-yellow-400 font-bold"
-    style={{ left: x, top: y }}
-    initial={{ opacity: 1, y: 0 }}
-    animate={{ opacity: 0, y: -20 }}
-    transition={{ duration: 0.5 }}
-    exit={{ opacity: 0 }}
-  >
-    +Tap
-  </motion.div>
-);
 
 const ItemSlot: React.FC<{ 
   item?: InventoryItem; 
@@ -220,16 +195,13 @@ const BoostNotification: React.FC<{ boost: { id: string; remainingTime?: number;
 };
 
 const Inventory: React.FC = () => {
-  const { state, dispatch, useItem } = useGame();
+  const { state, useItem } = useGame();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   const [notifications, setNotifications] = useState<{ id: string; remainingTime?: number; activatedAt?: number }[]>([]);
-  const [flash, setFlash] = useState(false);
-  const [taps, setTaps] = useState<{ id: number; x: number; y: number }[]>([]);
-  const clickZoneRef = React.useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
       { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins) },
@@ -239,38 +211,21 @@ const Inventory: React.FC = () => {
     ];
     setVirtualInventory([...resourceItems, ...state.inventory]);
   }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
-
-  useEffect(() => {
-    if (state.boosts["boost-auto-tap"]?.active) {
-      const interval = setInterval(() => {
-        if (clickZoneRef.current) {
-          const rect = clickZoneRef.current.getBoundingClientRect();
-          const x = rect.left + Math.random() * rect.width;
-          const y = rect.top + Math.random() * rect.height;
-          const id = Date.now();
-          setTaps(prev => [...prev, { id, x, y }]);
-          setTimeout(() => setTaps(prev => prev.filter(t => t.id !== id)), 500);
-        }
-      }, 200); // 5 taps per second = 200ms interval
-      return () => clearInterval(interval);
-    }
-  }, [state.boosts["boost-auto-tap"]?.active]);
-
+  
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) setSelectedItem(item);
   };
-
+  
   const handleUseConfirm = (item: InventoryItem, quantity: number) => {
     if (!item.usable) return;
-
+    
     if (item.id === 'boost-time-warp') {
-      const passiveIncome = calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
+      const passiveIncome = GameMechanics.calculatePassiveIncome(state) * 
+        calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
       const reward = passiveIncome * INVENTORY_ITEMS.TIME_WARP.effect!.value * quantity;
-      dispatch({ type: 'ADD_COINS', amount: reward });
-      setFlash(true);
-      setTimeout(() => setFlash(false), 500);
+      state.dispatch({ type: 'ADD_COINS', amount: reward });
     }
-
+    
     useItem(item.id, quantity);
     const boost = state.boosts[item.id];
     if (boost && (boost.remainingTime || boost.active)) {
@@ -281,27 +236,27 @@ const Inventory: React.FC = () => {
     }
     setSelectedItem(null);
   };
-
+  
   const dismissNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
-
+  
   const filteredItems = virtualInventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || item.type === filterType;
     return matchesSearch && matchesFilter;
   });
-
+  
   const inventoryCapacity = state.inventoryCapacity || 25;
   const inventoryUsed = state.inventory.reduce((total, item) => total + (item.stackable ? 1 : item.quantity), 0);
-
+  
   const renderInventoryGrid = () => {
     const slots = [];
     const baseSlots = 25;
     const expansionsPurchased = state.boosts['boost-inventory-expansion']?.purchased || 0;
     const totalSlots = baseSlots + expansionsPurchased * 5;
-
+    
     for (let i = 0; i < totalSlots; i++) {
       if (i < filteredItems.length) {
         slots.push(
@@ -319,7 +274,7 @@ const Inventory: React.FC = () => {
     }
     return <div className="grid grid-cols-5 gap-3">{slots}</div>;
   };
-
+  
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -331,7 +286,7 @@ const Inventory: React.FC = () => {
           Space used: {inventoryUsed}/{inventoryCapacity}
         </div>
       </DialogHeader>
-
+      
       <div className="p-4 border-b border-indigo-500/20">
         <div className="flex gap-2 mb-2">
           <div className="relative flex-1">
@@ -361,34 +316,26 @@ const Inventory: React.FC = () => {
           </div>
         </div>
       </div>
-
+      
       <ScrollArea className="h-[50vh] p-4">
-        <div ref={clickZoneRef} className="relative">
-          {flash && <FlashAnimation onComplete={() => setFlash(false)} />}
-          <AnimatePresence>
-            {taps.map(tap => (
-              <TapAnimation key={tap.id} x={tap.x} y={tap.y} />
-            ))}
-          </AnimatePresence>
-          {filteredItems.length > 0 ? (
-            renderInventoryGrid()
-          ) : (
-            <div className="flex flex-col items-center justify-center h-40 text-slate-400">
-              <Package size={40} className="mb-2 opacity-50" />
-              <p className="text-center">
-                {searchTerm || filterType !== 'all' ? "No matching items found" : "Your inventory is empty"}
-              </p>
-            </div>
-          )}
-        </div>
+        {filteredItems.length > 0 ? (
+          renderInventoryGrid()
+        ) : (
+          <div className="flex flex-col items-center justify-center h-40 text-slate-400">
+            <Package size={40} className="mb-2 opacity-50" />
+            <p className="text-center">
+              {searchTerm || filterType !== 'all' ? "No matching items found" : "Your inventory is empty"}
+            </p>
+          </div>
+        )}
       </ScrollArea>
-
+      
       <div className="p-4 border-t border-indigo-500/20">
         <DialogClose className="w-full bg-slate-700/80 text-slate-200 py-3 px-4 rounded-lg font-medium hover:bg-slate-600 transition-colors">
           Back
         </DialogClose>
       </div>
-
+      
       {selectedItem && (
         <UseItemPopover 
           item={selectedItem} 
@@ -396,7 +343,7 @@ const Inventory: React.FC = () => {
           onClose={() => setSelectedItem(null)}
         />
       )}
-
+      
       <div className="fixed bottom-4 right-4 flex flex-col items-end space-y-2">
         {notifications.map(boost => (
           <BoostNotification key={boost.id + (boost.activatedAt || 0)} boost={boost} onDismiss={dismissNotification} />

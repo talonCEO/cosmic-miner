@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import PlayerCard from './PlayerCard';
@@ -7,7 +7,6 @@ import PlayerFriends from './PlayerFriends';
 import { Trophy, BarChart3 } from 'lucide-react';
 import { getLevelFromExp } from '@/data/playerProgressionData';
 import { MenuType } from './types';
-import { toast } from '@/components/ui/use-toast';
 
 interface ProfileProps {
   setMenuType?: (menuType: MenuType) => void;
@@ -15,24 +14,11 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
   const { state, updateUsername } = useGame();
-  const [newUsername, setNewUsername] = useState(state.username || "Cosmic Explorer");
 
   const handleNameChange = (newName: string) => {
     if (newName.trim() && newName !== state.username) {
-      updateUsername(newName);
-      toast({
-        title: "Success",
-        description: "Username updated successfully"
-      });
+      updateUsername(newName, 0); // Zero cost here as the cost is handled in EditCustomization
     }
-  };
-
-  const handleSaveUsername = () => {
-    updateUsername(newUsername);
-    toast({
-      title: "Success",
-      description: "Username updated successfully"
-    });
   };
 
   const exp = state.totalEarned || 0;

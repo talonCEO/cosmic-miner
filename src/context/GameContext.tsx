@@ -8,8 +8,21 @@ import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect, isBoostItem } from '@/components/menu/types';
-import { Scan, Zap, Brain, Shield, ArrowRight, Bot, Binary, Cpu, Globe, Atom, PanelRight, BarChart3, Rocket } from 'lucide-react';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
+
+import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
+import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
+import NeuralMiningIcon from '@/assets/images/icons/neural-mining.png';
+import GravitonShieldIcon from '@/assets/images/icons/graviton-shield.png';
+import LaserExtractionIcon from '@/assets/images/icons/laser-extraction.png';
+import DarkMatterIcon from '@/assets/images/icons/dark-matter.png';
+import GalacticScannerIcon from '@/assets/images/icons/galactic-scanner.png';
+import PlasmaExcavatorIcon from '@/assets/images/icons/plasma-excavator.png';
+import NanoBotSwarmIcon from '@/assets/images/icons/nano-bot-swarm.png';
+import InterstellarNavIcon from '@/assets/images/icons/interstellar-nav.png';
+import SupernovaCoreIcon from '@/assets/images/icons/supernova-core.png';
+import QuantumTunnelIcon from '@/assets/images/icons/quantum-tunnel.png';
+import CosmicSingularityIcon from '@/assets/images/icons/cosmic-singularity.png';
 
 export interface Achievement {
   id: string;
@@ -143,7 +156,7 @@ const initialAbilities: Ability[] = [
     name: "Asteroid Drill",
     description: "Just a rusty old drill that somehow still works. The user manual was written in crayon.",
     cost: 0,
-    icon: <Rocket className="w-[60px] h-[60px]" />,
+    icon: <img src={AsteroidDrillIcon} alt="Asteroid Drill" className="w-[60px] h-[60px]" />,
     unlocked: true,
     requiredAbilities: [],
     row: 1,
@@ -154,7 +167,7 @@ const initialAbilities: Ability[] = [
     name: "Quantum Vibration Enhancer",
     description: "Uses quantum vibration technology to increase mining efficiency. Tap power increased by 50% and passive income by 25%.",
     cost: 3,
-    icon: <Zap className="w-[60px] h-[60px]" />,
+    icon: <img src={QuantumVibrationIcon} alt="Quantum Vibration Enhancer" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -165,7 +178,7 @@ const initialAbilities: Ability[] = [
     name: "Neural Mining Matrix",
     description: "Connects your brain directly to mining operations. Increases all income by 40% and reduces upgrade costs by 5%.",
     cost: 3,
-    icon: <Brain className="w-[60px] h-[60px]" />,
+    icon: <img src={NeuralMiningIcon} alt="Neural Mining Matrix" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -176,7 +189,7 @@ const initialAbilities: Ability[] = [
     name: "Graviton Shield Generator",
     description: "Creates a force field that optimizes mining operations. Reduces upgrade costs by 15% and increases passive income by 20%.",
     cost: 3,
-    icon: <Shield className="w-[60px] h-[60px]" />,
+    icon: <img src={GravitonShieldIcon} alt="Graviton Shield Generator" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-1"],
     row: 2,
@@ -187,7 +200,7 @@ const initialAbilities: Ability[] = [
     name: "Laser-Guided Extraction System",
     description: "Precision mining laser technology. 15% chance of critical strike for 5x normal mining yield per tap.",
     cost: 5,
-    icon: <ArrowRight className="w-[60px] h-[60px]" />,
+    icon: <img src={LaserExtractionIcon} alt="Laser-Guided Extraction System" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-2"],
     row: 3,
@@ -198,7 +211,7 @@ const initialAbilities: Ability[] = [
     name: "Dark Matter Attractor",
     description: "Harnesses the power of dark matter to attract valuable elements. Increases all income by 45% and passive income by 30%.",
     cost: 5,
-    icon: <Atom className="w-[60px] h-[60px]" />,
+    icon: <img src={DarkMatterIcon} alt="Dark Matter Attractor" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-3"],
     row: 3,
@@ -209,7 +222,7 @@ const initialAbilities: Ability[] = [
     name: "Galactic Achievement Scanner",
     description: "Scans the galaxy for achievement opportunities. Gain 2 extra skill points per achievement and 15% more essence.",
     cost: 5,
-    icon: <Scan className="w-[60px] h-[60px]" />,
+    icon: <img src={GalacticScannerIcon} alt="Galactic Achievement Scanner" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-4"],
     row: 3,
@@ -220,7 +233,7 @@ const initialAbilities: Ability[] = [
     name: "Plasma Discharge Excavator",
     description: "Uses controlled plasma bursts to break down asteroids. Boosts tap value by 85% and passive income by 55%.",
     cost: 8,
-    icon: <Zap className="w-[60px] h-[60px] text-purple-500" />,
+    icon: <img src={PlasmaExcavatorIcon} alt="Plasma Discharge Excavator" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-5"],
     row: 4,
@@ -231,7 +244,7 @@ const initialAbilities: Ability[] = [
     name: "Nano-Bot Mining Swarm",
     description: "Deploys microscopic robots that optimize resource extraction. Reduces upgrade costs by 30% and increases passive income by 65%.",
     cost: 8,
-    icon: <Bot className="w-[60px] h-[60px]" />,
+    icon: <img src={NanoBotSwarmIcon} alt="Nano-Bot Mining Swarm" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-6"],
     row: 4,
@@ -242,7 +255,7 @@ const initialAbilities: Ability[] = [
     name: "Interstellar Navigation AI",
     description: "Advanced AI system that identifies the richest asteroid fields. Increases global income by 55% and essence rewards by 20%.",
     cost: 8,
-    icon: <Globe className="w-[60px] h-[60px]" />,
+    icon: <img src={InterstellarNavIcon} alt="Interstellar Navigation AI" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-7"],
     row: 4,
@@ -253,7 +266,7 @@ const initialAbilities: Ability[] = [
     name: "Supernova Core Extractor",
     description: "Harvests energy from the remnants of exploded stars. Boosts tap value by 120% and all income by 80%.",
     cost: 12,
-    icon: <Cpu className="w-[60px] h-[60px]" />,
+    icon: <img src={SupernovaCoreIcon} alt="Supernova Core Extractor" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-8"],
     row: 5,
@@ -264,7 +277,7 @@ const initialAbilities: Ability[] = [
     name: "Quantum Tunneling Drill",
     description: "Creates wormholes directly to valuable resources. Reduces all upgrade costs by 45% and doubles passive income.",
     cost: 12,
-    icon: <PanelRight className="w-[60px] h-[60px]" />,
+    icon: <img src={QuantumTunnelIcon} alt="Quantum Tunneling Drill" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-9"],
     row: 5,
@@ -275,7 +288,7 @@ const initialAbilities: Ability[] = [
     name: "Cosmic Singularity Engine",
     description: "Harnesses the power of a controlled black hole. Increases essence gain by 35% and all income by 100%.",
     cost: 12,
-    icon: <BarChart3 className="w-[60px] h-[60px]" />,
+    icon: <img src={CosmicSingularityIcon} alt="Cosmic Singularity Engine" className="w-[60px] h-[60px]" />,
     unlocked: false,
     requiredAbilities: ["ability-10"],
     row: 5,
@@ -325,10 +338,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'CLICK': {
       let totalClickAmount = GameMechanics.calculateTapValue(state);
       if (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses) {
-        const tapBoost = INVENTORY_ITEMS.TAP_BOOST;
-        if (isBoostItem(tapBoost)) {
-          totalClickAmount *= tapBoost.effect.value;
-        }
+        totalClickAmount *= INVENTORY_ITEMS.TAP_BOOST.effect!.value;
         state.boosts["boost-tap-boost"].remainingUses -= 1;
         if (state.boosts["boost-tap-boost"].remainingUses <= 0) {
           state.boosts["boost-tap-boost"].active = false;
@@ -364,19 +374,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (upgradeIndex === -1) return state;
       
       const upgrade = state.upgrades[upgradeIndex];
-      const costReduction = GameMechanics.calculateCostReduction(state);
-      const cheapUpgrades = INVENTORY_ITEMS.CHEAP_UPGRADES;
-      const cheapUpgradesMultiplier = state.boosts["boost-cheap-upgrades"]?.active && isBoostItem(cheapUpgrades) ? 
-        cheapUpgrades.effect.value : 1;
-      const totalCostReduction = costReduction * cheapUpgradesMultiplier;
-      
+      const costReduction = GameMechanics.calculateCostReduction(state) * 
+        (state.boosts["boost-cheap-upgrades"]?.active ? INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value : 1);
       const quantity = action.quantity || 1;
       if (upgrade.level >= upgrade.maxLevel) return state;
       
       const maxPossibleQuantity = Math.min(quantity, upgrade.maxLevel - upgrade.level);
       const totalCost = Math.floor(GameMechanics.calculateBulkPurchaseCost(
         upgrade.baseCost, upgrade.level, maxPossibleQuantity, UPGRADE_COST_GROWTH
-      ) * totalCostReduction);
+      ) * costReduction);
       
       if (state.coins < totalCost) return state;
       
@@ -394,7 +400,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const updatedUpgrade = {
         ...upgrade,
         level: newLevel,
-        cost: Math.floor(upgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * totalCostReduction)
+        cost: Math.floor(upgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * costReduction)
       };
       
       const newUpgrades = [...state.upgrades];
@@ -424,27 +430,22 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, incomeMultiplier: action.multiplier };
     case 'TICK': {
       const newBoosts = { ...state.boosts };
-      const now = Date.now() / 1000;
-      
       Object.keys(newBoosts).forEach(boostId => {
-        const boost = newBoosts[boostId];
-        
-        if (!boost.active) return;
-        
-        if (boost.remainingTime !== undefined) {
-          boost.remainingTime! -= 0.1; // 100ms tick
-          
-          if (boost.remainingTime <= 0) {
-            boost.active = false;
-            boost.remainingTime = 0;
+        if (newBoosts[boostId].remainingTime) {
+          newBoosts[boostId].remainingTime -= 0.1;
+          if (newBoosts[boostId].remainingTime <= 0) {
+            newBoosts[boostId].active = false;
           }
         }
       });
 
       let newState = { ...state, boosts: newBoosts };
-      
+      const incomeMultiplier = calculateIncomeMultiplier(newState);
+
       if (newState.coinsPerSecond > 0) {
-        const passiveAmount = GameMechanics.calculatePassiveIncome(newState);
+        const passiveAmount = GameMechanics.calculatePassiveIncome(newState) * 
+          calculateBaseCoinsPerSecond(newState) / newState.coinsPerSecond * 
+          (incomeMultiplier / newState.incomeMultiplier);
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + passiveAmount),
@@ -453,9 +454,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.boosts["boost-auto-tap"]?.active) {
-        const tapValue = GameMechanics.calculateTapValue(newState);
-        const autoTap = INVENTORY_ITEMS.AUTO_TAP;
-        const tapRate = isBoostItem(autoTap) ? autoTap.effect.value * 0.1 : 0.5; // 5 taps/sec over 0.1s tick
+        const tapValue = GameMechanics.calculateTapValue(newState) * 
+          (incomeMultiplier / newState.incomeMultiplier);
+        const tapRate = INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1; // 5 taps/sec over 0.1s tick
         const autoTapAmount = tapValue * tapRate;
         newState = {
           ...newState,
@@ -466,24 +467,21 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.autoTap) {
-        const autoTapAmount = GameMechanics.calculateAutoTapIncome(newState);
+        const autoTapBase = GameMechanics.calculateAutoTapIncome(newState) * 
+          (incomeMultiplier / newState.incomeMultiplier);
         newState = {
           ...newState,
-          coins: Math.max(0, newState.coins + autoTapAmount),
-          totalEarned: newState.totalEarned + autoTapAmount,
+          coins: Math.max(0, newState.coins + autoTapBase),
+          totalEarned: newState.totalEarned + autoTapBase,
           totalClicks: newState.totalClicks + 1
         };
       }
 
       if (newState.autoBuy) {
-        const costReduction = GameMechanics.calculateCostReduction(state);
-        const cheapUpgrades = INVENTORY_ITEMS.CHEAP_UPGRADES;
-        const cheapUpgradesMultiplier = newBoosts["boost-cheap-upgrades"]?.active && isBoostItem(cheapUpgrades) ? 
-          cheapUpgrades.effect.value : 1;
-        const totalCostReduction = costReduction * cheapUpgradesMultiplier;
-        
+        const costReduction = GameMechanics.calculateCostReduction(state) * 
+          (newBoosts["boost-cheap-upgrades"]?.active ? INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value : 1);
         const affordableUpgrades = newState.upgrades
-          .filter(u => u.unlocked && u.level < u.maxLevel && newState.coins >= (u.cost * totalCostReduction))
+          .filter(u => u.unlocked && u.level < u.maxLevel && newState.coins >= (u.cost * costReduction))
           .map(u => ({
             upgrade: u,
             roi: u.coinsPerSecondBonus > 0 ? (u.cost / u.coinsPerSecondBonus) : Infinity
@@ -502,7 +500,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           const updatedUpgrade = {
             ...bestUpgrade,
             level: newLevel,
-            cost: Math.floor(bestUpgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * totalCostReduction)
+            cost: Math.floor(bestUpgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * costReduction)
           };
 
           const newUpgrades = [...newState.upgrades];
@@ -531,21 +529,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return newState;
     }
     case 'PRESTIGE': {
-      const essenceBoost = INVENTORY_ITEMS.ESSENCE_BOOST;
-      const essenceMultiplier = state.boosts["boost-essence-boost"]?.purchased && isBoostItem(essenceBoost) ? 
-        Math.pow(essenceBoost.effect.value, state.boosts["boost-essence-boost"].purchased) : 1;
+      const essenceMultiplier = state.boosts["boost-essence-boost"]?.purchased ? 
+        INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value * state.boosts["boost-essence-boost"].purchased : 1;
       const essenceReward = GameMechanics.calculateEssenceReward(state.totalEarned, state) * essenceMultiplier;
       const startingCoins = GameMechanics.calculateStartingCoins(state.ownedArtifacts);
       
       const newBoosts = {};
-      [
-        "boost-perma-tap", 
-        "boost-perma-passive", 
-        "boost-no-ads", 
-        "boost-auto-buy", 
-        "boost-inventory-expansion",
-        "boost-essence-boost"
-      ].forEach(boostId => {
+      ["boost-perma-tap", "boost-perma-passive", "boost-no-ads", "boost-auto-buy", "boost-inventory-expansion"].forEach(boostId => {
         if (state.boosts[boostId]?.purchased) {
           newBoosts[boostId] = { ...state.boosts[boostId], active: false };
         }
@@ -568,8 +558,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         gems: state.gems,
         boosts: newBoosts,
         hasNoAds: state.hasNoAds || state.boosts["boost-no-ads"]?.purchased > 0,
-        inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * 
-          (isBoostItem(INVENTORY_ITEMS.INVENTORY_EXPANSION) ? INVENTORY_ITEMS.INVENTORY_EXPANSION.effect.value : 5),
+        inventoryCapacity: initialState.inventoryCapacity + (state.boosts["boost-inventory-expansion"]?.purchased || 0) * INVENTORY_ITEMS.INVENTORY_EXPANSION.effect!.value,
         username: state.username,
         title: state.title,
         userId: state.userId,
@@ -625,7 +614,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             newState.portrait = reward.value as string;
             break;
           case 'inventory_item':
-            newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS] as unknown as Omit<InventoryItem, "quantity">, 1)];
+            newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
             break;
         }
       }
@@ -662,7 +651,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
               newState.portrait = reward.value as string;
               break;
             case 'inventory_item':
-              newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS] as unknown as Omit<InventoryItem, "quantity">, 1)];
+              newState.inventory = [...newState.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
               break;
           }
         }
@@ -744,20 +733,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         updatedInventory[itemIndex] = { ...item, quantity: item.quantity - quantity };
       }
 
-      if (item.id === 'boost-time-warp' && isBoostItem(item)) {
-        const passiveIncome = GameMechanics.calculatePassiveIncome({ ...state, coinsPerSecond: GameMechanics.calculateBaseCoinsPerSecond(state) });
-        const timeWarpValue = item.effect.value || 120 * 60; // Default to 120 minutes (7200 seconds)
-        const reward = passiveIncome * (timeWarpValue / 100) * quantity; // Scale based on tick interval (100ms)
-        
-        return {
-          ...state,
-          inventory: updatedInventory,
-          coins: state.coins + reward,
-          totalEarned: state.totalEarned + reward,
-          boosts: activateBoostLogic(state.boosts, action.itemId, quantity)
-        };
-      }
-
       return {
         ...state,
         inventory: updatedInventory,
@@ -817,14 +792,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
 const activateBoostLogic = (boosts: GameState['boosts'], boostId: string, quantity: number) => {
   const item = INVENTORY_ITEMS[boostId as keyof typeof INVENTORY_ITEMS];
-  if (!item || !isBoostItem(item)) return boosts;
+  if (!item || !item.effect) return boosts;
 
-  const effect = item.effect;
   const currentBoost = boosts[boostId] || { active: false, purchased: 0 };
-  const isPermanent = !effect.duration;
+  const isPermanent = !item.effect.duration;
   const now = Date.now() / 1000;
 
   if (boostId === 'boost-time-warp') {
+    // Instant effect, no duration stacking
     return {
       ...boosts,
       [boostId]: {
@@ -835,6 +810,7 @@ const activateBoostLogic = (boosts: GameState['boosts'], boostId: string, quanti
   }
 
   if (isPermanent) {
+    // Permanent boosts stack effects
     return {
       ...boosts,
       [boostId]: {
@@ -845,45 +821,26 @@ const activateBoostLogic = (boosts: GameState['boosts'], boostId: string, quanti
     };
   }
 
+  // Temporary boosts extend duration
   const remainingTime = currentBoost.active && currentBoost.remainingTime ? currentBoost.remainingTime : 0;
-  
-  if (boostId === 'boost-tap-boost') {
-    const remainingUses = currentBoost.active && currentBoost.remainingUses ? currentBoost.remainingUses : 0;
-    const newUses = remainingUses + (effect.duration! * quantity);
-    
-    return {
-      ...boosts,
-      [boostId]: {
-        ...currentBoost,
-        active: true,
-        remainingUses: newUses,
-        purchased: currentBoost.purchased + quantity,
-        activatedAt: currentBoost.active && currentBoost.activatedAt ? currentBoost.activatedAt : now
-      }
-    };
-  } else {
-    const newDuration = remainingTime + (effect.duration! * quantity);
-    
-    return {
-      ...boosts,
-      [boostId]: {
-        ...currentBoost,
-        active: true,
-        remainingTime: newDuration,
-        purchased: currentBoost.purchased + quantity,
-        activatedAt: currentBoost.active && currentBoost.activatedAt ? currentBoost.activatedAt : now
-      }
-    };
-  }
+  const newDuration = remainingTime + (item.effect.duration! * quantity);
+  return {
+    ...boosts,
+    [boostId]: {
+      ...currentBoost,
+      active: true,
+      remainingTime: newDuration,
+      remainingUses: boostId === 'boost-tap-boost' ? (currentBoost.remainingUses || 0) + (item.effect.duration! * quantity) : undefined,
+      purchased: currentBoost.purchased + quantity,
+      activatedAt: currentBoost.active && currentBoost.activatedAt ? currentBoost.activatedAt : now
+    }
+  };
 };
 
 const calculateIncomeMultiplier = (state: GameState) => {
   let multiplier = state.incomeMultiplier;
   if (state.boosts["boost-double-coins"]?.active) {
-    const doubleCoins = INVENTORY_ITEMS.DOUBLE_COINS;
-    if (isBoostItem(doubleCoins)) {
-      multiplier *= doubleCoins.effect.value;
-    }
+    multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
   }
   return multiplier;
 };
@@ -891,10 +848,7 @@ const calculateIncomeMultiplier = (state: GameState) => {
 const calculateBaseCoinsPerClick = (state: GameState) => {
   let base = state.coinsPerClick;
   if (state.boosts["boost-perma-tap"]?.purchased) {
-    const permaTap = INVENTORY_ITEMS.PERMA_TAP;
-    if (isBoostItem(permaTap)) {
-      base += state.boosts["boost-perma-tap"].purchased * permaTap.effect.value;
-    }
+    base += state.boosts["boost-perma-tap"].purchased * INVENTORY_ITEMS.PERMA_TAP.effect!.value;
   }
   return base;
 };
@@ -902,10 +856,7 @@ const calculateBaseCoinsPerClick = (state: GameState) => {
 const calculateBaseCoinsPerSecond = (state: GameState) => {
   let base = state.coinsPerSecond;
   if (state.boosts["boost-perma-passive"]?.purchased) {
-    const permaPassive = INVENTORY_ITEMS.PERMA_PASSIVE;
-    if (isBoostItem(permaPassive)) {
-      base += state.boosts["boost-perma-passive"].purchased * permaPassive.effect.value;
-    }
+    base += state.boosts["boost-perma-passive"].purchased * INVENTORY_ITEMS.PERMA_PASSIVE.effect!.value;
   }
   return base;
 };
@@ -1030,20 +981,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
-    
-    const costReduction = GameMechanics.calculateCostReduction(state);
-    const cheapUpgrades = INVENTORY_ITEMS.CHEAP_UPGRADES;
-    const cheapUpgradesMultiplier = state.boosts["boost-cheap-upgrades"]?.active && isBoostItem(cheapUpgrades) ? 
-      cheapUpgrades.effect.value : 1;
-    const totalCostReduction = costReduction * cheapUpgradesMultiplier;
-    
-    return GameMechanics.calculateMaxAffordableQuantity(state.coins, upgrade.baseCost * totalCostReduction, upgrade.level, UPGRADE_COST_GROWTH);
+    const costReduction = GameMechanics.calculateCostReduction(state) * 
+      (state.boosts["boost-cheap-upgrades"]?.active ? INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value : 1);
+    return GameMechanics.calculateMaxAffordableQuantity(state.coins, upgrade.baseCost * costReduction, upgrade.level, UPGRADE_COST_GROWTH);
   };
   
   const calculatePotentialEssenceReward = (): number => {
-    const essenceBoost = INVENTORY_ITEMS.ESSENCE_BOOST;
-    const essenceMultiplier = state.boosts["boost-essence-boost"]?.purchased && isBoostItem(essenceBoost) ? 
-      Math.pow(essenceBoost.effect.value, state.boosts["boost-essence-boost"].purchased) : 1;
+    const essenceMultiplier = state.boosts["boost-essence-boost"]?.purchased ? 
+      INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value * state.boosts["boost-essence-boost"].purchased : 1;
     return GameMechanics.calculateEssenceReward(state.totalEarned, state) * essenceMultiplier;
   };
   
