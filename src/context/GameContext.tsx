@@ -964,11 +964,33 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'SET_MENU_TYPE': {
       return state;
     }
-    case 'ACTIVATE_BOOST': {
+case 'ACTIVATE_BOOST': {
       const boost = Object.values(INVENTORY_ITEMS).find(b => b.id === action.boostId);
       if (!boost || !boost.usable) return state;
+
+      // Check if the boost exists in the inventory
+      const inventoryItemIndex = state.inventory.findIndex(item => item.item.id === action.boostId);
+      if (inventoryItemIndex === -1) return state; // Boost not in inventory
+
+      const inventoryItem = state.inventory[inventoryItemIndex];
+      if (inventoryItem.quantity <= 0) return state; // No boosts available
+
+      // Decrease quantity by 1
+      const updatedInventory = [...state.inventory];
+      if (inventoryItem.quantity > 1) {
+        updatedInventory[inventoryItemIndex] = {
+          ...inventoryItem,
+          quantity: inventoryItem.quantity - 1,
+        };
+      } else {
+        // Remove the item if quantity becomes 0
+        updatedInventory.splice(inventoryItemIndex, 1);
+      }
+
+      // Activate the boost
       return {
         ...state,
+        inventory: updatedInventory,
         boosts: {
           ...state.boosts,
           [action.boostId]: {
