@@ -109,7 +109,7 @@ export const INVENTORY_ITEMS = {
     icon: <Clock className="text-blue-400" />,
     effect: {
       type: 'timeWarp',
-      value: 2 * 60 * 60,
+      value: 2 * 60 * 60
     },
     usable: true,
     stackable: true,
@@ -251,13 +251,13 @@ export const INVENTORY_ITEMS = {
     cost: 800,
     maxPurchases: 1
   },
-  INVENTORY_EXPANSION: {
+    INVENTORY_EXPANSION: {
     id: 'boost-inventory-expansion',
     name: 'Inventory Expansion',
     description: 'Increases inventory capacity by 5 slots',
     type: 'boost' as const,
     rarity: 'rare' as const,
-    icon: <Box className="text-cyan-400" />,
+    icon: <Box className="text-orange-400" />,
     effect: {
       type: 'inventoryCapacity',
       value: 5
@@ -265,18 +265,16 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 500,
+    cost: 150,
     maxPurchases: 5
   }
 };
 
-export function createInventoryItem(
-  itemTemplate: Omit<InventoryItem, 'quantity'>,
+export const createInventoryItem = (
+  itemTemplate: InventoryItem,
   quantity: number = 1
-): InventoryItem {
-  return {
-    ...itemTemplate,
-    quantity,
-    obtained: Date.now()
-  };
-}
+): InventoryItem => ({
+  ...itemTemplate,
+  quantity,
+  obtained: Date.now()
+});
