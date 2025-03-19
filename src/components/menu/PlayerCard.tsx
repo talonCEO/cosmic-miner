@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Gift, Gem, PenSquare } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Edit2, Check, Lock, Gift, Gem, PenSquare } from 'lucide-react';
 import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerProgressionData';
 import { useGame } from '@/context/GameContext';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -36,17 +36,37 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   userId,
   portrait,
 }) => {
-  const { state } = useGame();
+  const { state, addGems, dispatch } = useGame();
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(playerName);
   const [isChestAvailable, setIsChestAvailable] = useState(false);
   const [titleDisplay, setTitleDisplay] = useState(playerTitle);
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 
+  const nameChangeCount = state.nameChangeCount || 0;
+  const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
+  const canEditName = isEditing || (nameChangeCost === 0 || state.gems >= nameChangeCost);
   const { currentLevel, nextLevel, progress } = getLevelFromExp(playerExp);
 
   useEffect(() => {
     const title = getTitleById(playerTitle);
     setTitleDisplay(title ? title.name : playerTitle);
   }, [playerTitle]);
+
+  const handleSaveName = () => {
+    if (!name.trim() || name === playerName) return;
+    const nameChangeCost = nameChangeCount === 0 ? 0 : 200;
+    if (nameChangeCost > 0 && state.gems < nameChangeCost) {
+      console.log("Insufficient gems:", state.gems, "<", nameChangeCost);
+      return;
+    }
+    if (nameChangeCost > 0) {
+      addGems(-nameChangeCost);
+    }
+    onNameChange(name);
+    dispatch({ type: 'UPDATE_NAME_CHANGE_COUNT', count: nameChangeCount + 1 });
+    setIsEditing(false);
+  };
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) return `${(Math.round(amount / 100000) / 10).toFixed(1)}M`;
@@ -93,9 +113,28 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
         {/* Middle Column: Name, Level, XP */}
         <div className="ml-3 flex-1 pt-2">
-          <div className="mb-6 mt-2">
-            <h3 className="text-m font-semibold text-white">{playerName}</h3>
-          </div>
+          {isEditing ? (
+            <div className="flex items-center gap-2 mb-4">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-7 text-white bg-indigo-700/50 border-indigo-500"
+                maxLength={15}
+              />
+              <Button size="icon" variant="ghost" className="h-7 w-7 p-0" onClick={handleSaveName}>
+                <Check size={14} className="text-green-400" />
+              </Button>
+            </div>
+          ) : (
+            <div className="mb-6 mt-2">
+              <h3 className="text-m font-semibold text-white">{playerName}</h3>
+              {nameChangeCount > 0 && (
+                <span className="flex items-center text-xs text-purple-400 mt-1">
+                  <Gem size={12} className="mr-1" /> 200
+                </span>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 mb-1 pt-3 relative">
             <div className="text-white text-xs font-medium">Level {currentLevel.level}</div>
@@ -114,6 +153,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             >
               <div className="relative flex items-center justify-center h-full w-full">
                 <Gift size={20} className={`text-yellow-400 ${isChestAvailable ? 'stroke-2' : 'stroke-1'}`} />
+                {!isChestAvailable && (
+                  <Lock
+                    size={14}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600"
+                  />
+                )}
               </div>
             </Button>
           </div>
@@ -147,6 +192,16 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </DialogTrigger>
               <EditCustomization onClose={() => setIsCustomizationOpen(false)} />
             </Dialog>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={() => setIsEditing(true)}
+              title="Edit Name"
+              disabled={!canEditName}
+            >
+              <Edit2 size={14} className={canEditName ? "text-slate-300" : "text-slate-500"} />
+            </Button>
           </div>
 
           <div className="absolute bottom-0 right-0 flex flex-col justify-end space-y-1">

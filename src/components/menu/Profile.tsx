@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
@@ -17,7 +16,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
 
   const handleNameChange = (newName: string) => {
     if (newName.trim() && newName !== state.username) {
-      updateUsername(newName, 0); // Zero cost here as the cost is handled in EditCustomization
+      updateUsername(newName);
     }
   };
 

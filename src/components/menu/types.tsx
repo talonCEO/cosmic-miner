@@ -29,7 +29,7 @@ export interface InventoryItem {
   effect?: {
     type: string;
     value: number;
-    duration?: number; // In seconds, undefined for permanent or instant effects
+    duration?: number;
   };
   usable: boolean;
   stackable: boolean;
@@ -86,14 +86,14 @@ export const INVENTORY_ITEMS = {
   DOUBLE_COINS: {
     id: 'boost-double-coins',
     name: 'Double Coins',
-    description: 'Doubles all coin earnings for 15 minutes',
+    description: 'Doubles all coin earnings for 30 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <CircleDollarSign className="text-green-400" />,
     effect: {
       type: 'coinMultiplier',
       value: 2,
-      duration: 15 * 60 // 15 minutes
+      duration: 30 * 60
     },
     usable: true,
     stackable: true,
@@ -103,13 +103,13 @@ export const INVENTORY_ITEMS = {
   TIME_WARP: {
     id: 'boost-time-warp',
     name: 'Time Warp',
-    description: 'Instantly gain 120 minutes worth of passive income in coins',
+    description: 'Instantly gain 2 hours worth of passive income',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <Clock className="text-blue-400" />,
     effect: {
       type: 'timeWarp',
-      value: 120 * 60, // 120 minutes
+      value: 2 * 60 * 60,
     },
     usable: true,
     stackable: true,
@@ -119,14 +119,14 @@ export const INVENTORY_ITEMS = {
   AUTO_TAP: {
     id: 'boost-auto-tap',
     name: 'Auto Tap',
-    description: 'Automatically taps 5 times per second for 5 minutes',
+    description: 'Automatically taps 5 times per second for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <Zap className="text-yellow-400" />,
     effect: {
       type: 'autoTap',
-      value: 5, // 5 taps per second
-      duration: 5 * 60 // 5 minutes
+      value: 5,
+      duration: 10 * 60
     },
     usable: true,
     stackable: true,
@@ -141,9 +141,9 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Zap className="text-purple-400" />,
     effect: {
-      type: 'tapMultiplier',
+      type: 'coinsPerClick',
       value: 5,
-      duration: 100 // 100 taps
+      duration: 100
     },
     usable: true,
     stackable: true,
@@ -158,9 +158,9 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Percent className="text-green-400" />,
     effect: {
-      type: 'costReduction',
-      value: 0.9, // 10% reduction
-      duration: 10 * 60 // 10 minutes
+      type: 'upgradeCostReduction',
+      value: 0.9,
+      duration: 10 * 60
     },
     usable: true,
     stackable: true,
@@ -176,7 +176,7 @@ export const INVENTORY_ITEMS = {
     icon: <Sparkles className="text-amber-400" />,
     effect: {
       type: 'essenceMultiplier',
-      value: 1.25 // 25% increase
+      value: 1.25
     },
     usable: true,
     stackable: true,
@@ -191,7 +191,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <DollarSign className="text-red-400" />,
     effect: {
-      type: 'baseTapBoost',
+      type: 'coinsPerClickBase',
       value: 1
     },
     usable: true,
@@ -208,7 +208,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <Star className="text-yellow-400" />,
     effect: {
-      type: 'basePassiveBoost',
+      type: 'coinsPerSecondBase',
       value: 1
     },
     usable: true,
