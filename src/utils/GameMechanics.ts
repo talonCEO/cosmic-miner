@@ -29,15 +29,11 @@ export const calculateTapValue = (state: GameState): number => {
   // Apply ability boosts to tap value
   const abilityTapMultiplier = calculateAbilityTapMultiplier(state.abilities);
   
-  // Apply double coins boost if active
-  const doubleCoinsMultiplier = state.boosts["boost-double-coins"]?.active ? 2 : 1;
-  
   // Apply all multipliers
   return (baseClickValue + coinsPerSecondBonus) * 
          clickMultiplier * 
          tapBoostMultiplier * 
-         abilityTapMultiplier * 
-         doubleCoinsMultiplier;
+         abilityTapMultiplier;
 };
 
 /**
@@ -55,15 +51,11 @@ export const calculatePassiveIncome = (state: GameState, tickInterval: number = 
   // Apply manager element boosts
   const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
   
-  // Apply double coins boost if active
-  const doubleCoinsMultiplier = state.boosts["boost-double-coins"]?.active ? 2 : 1;
-  
   // Calculate passive income scaled for the tick interval (in milliseconds)
   return (state.coinsPerSecond / (1000 / tickInterval)) * 
          passiveIncomeMultiplier * 
          artifactProductionMultiplier *
-         managerBoostMultiplier * 
-         doubleCoinsMultiplier;
+         managerBoostMultiplier;
 };
 
 /**
@@ -82,15 +74,11 @@ export const calculateTotalCoinsPerSecond = (state: GameState): number => {
   // Apply manager element boosts
   const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
   
-  // Apply double coins boost if active
-  const doubleCoinsMultiplier = state.boosts["boost-double-coins"]?.active ? 2 : 1;
-  
   // Return the total CPS with all multipliers applied
   return state.coinsPerSecond * 
          passiveIncomeMultiplier * 
          artifactProductionMultiplier *
-         managerBoostMultiplier * 
-         doubleCoinsMultiplier;
+         managerBoostMultiplier;
 };
 
 /**
@@ -231,17 +219,13 @@ export const calculateAutoTapIncome = (state: GameState, tickInterval: number = 
   const baseClickValue = state.coinsPerClick * 0.35;
   const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
   
-  // Apply double coins boost if active
-  const doubleCoinsMultiplier = state.boosts["boost-double-coins"]?.active ? 2 : 1;
-  
   // Scale for the tick interval
   return (baseClickValue + coinsPerSecondBonus) * 
          state.incomeMultiplier * 
          clickMultiplier * 
          0.4 * 
          tapBoostMultiplier * 
-         (tickInterval / 1000) * 
-         doubleCoinsMultiplier;
+         (tickInterval / 1000);
 };
 
 /**
@@ -416,6 +400,7 @@ export const calculateAbilityPassiveMultiplier = (abilities: Ability[]): number 
 
 /**
  * Calculate global income multiplier from all sources
+ * (Only applies to abilities now, not artifacts)
  */
 export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
   let multiplier = 1;
@@ -437,7 +422,7 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
     multiplier += 1.0; // Cosmic Singularity Engine: +100% all income
   }
   
-  // Apply manager perk income multipliers
+  // Apply manager perk income multipliers (keeping this logic for any global multipliers)
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
@@ -447,11 +432,6 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
       });
     }
   });
-  
-  // Apply double coins boost if active
-  if (state.boosts["boost-double-coins"]?.active) {
-    multiplier *= 2;
-  }
   
   return multiplier;
 };
