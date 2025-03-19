@@ -5,7 +5,6 @@ import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
 import { useBoostManager } from '@/hooks/useBoostManager';
 
-// Particle effect when clicking
 interface ParticleProps {
   x: number;
   y: number;
@@ -18,9 +17,9 @@ interface ParticleProps {
 const Particle: React.FC<ParticleProps> = ({ 
   x, y, color, size, duration, onAnimationEnd 
 }) => {
-  const randomSize = size || Math.floor(Math.random() * 4) + 2; // 2-5px
-  const randomDuration = duration || (Math.random() * 0.5) + 0.5; // 0.5-1s
-  const randomOpacity = (Math.random() * 0.5) + 0.5; // 0.5-1
+  const randomSize = size || Math.floor(Math.random() * 4) + 2;
+  const randomDuration = duration || (Math.random() * 0.5) + 0.5;
+  const randomOpacity = (Math.random() * 0.5) + 0.5;
   
   return (
     <div 
@@ -39,7 +38,6 @@ const Particle: React.FC<ParticleProps> = ({
   );
 };
 
-// Click effect component
 interface ClickEffectProps {
   x: number;
   y: number;
@@ -76,34 +74,30 @@ const ClickArea: React.FC = () => {
     
     const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
     
+    const tapValue = calculateTapValue(state) * 
+      (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses 
+        ? INVENTORY_ITEMS.TAP_BOOST.effect!.value : 1);
+    
     setClickEffects(prev => [
       ...prev, 
       { id: nextId.current++, x: effectX, y: effectY }
     ]);
     
-    const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
+    const particleCount = Math.min(8 + Math.floor(tapValue / 100), 15);
     const newParticles = [];
     
     for (let i = 0; i < particleCount; i++) {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
-      
-      // Yellow sparkle colors
-      const colors = [
-        "#FFD700", // Gold
-        "#FFFF00", // Yellow
-        "#FFEC8B", // Light Yellow
-        "#FFC125"  // Goldenrod
-      ];
-      
+      const colors = ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"];
       const color = colors[Math.floor(Math.random() * colors.length)];
       
       newParticles.push({ 
         id: nextId.current++, 
         x: particleX, 
         y: particleY,
-        color: color,
-        size: size
+        color,
+        size
       });
     }
     
@@ -141,7 +135,9 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateTapValue(state)}
+            value={calculateTapValue(state) * 
+              (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses 
+                ? INVENTORY_ITEMS.TAP_BOOST.effect!.value : 1)}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}
@@ -161,7 +157,8 @@ const ClickArea: React.FC = () => {
       {state.coinsPerSecond > 0 && (
         <div className="text-center mb-8 animate-slide-up">
           <p className="text-sm text-white text-shadow-sm">
-            +{formatNumber(state.coinsPerSecond)} coins per second
+            +{formatNumber(state.coinsPerSecond * (state.boosts["boost-double-coins"]?.active 
+              ? INVENTORY_ITEMS.DOUBLE_COINS.effect!.value : 1))} coins per second
           </p>
         </div>
       )}
