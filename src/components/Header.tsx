@@ -51,7 +51,7 @@ const Header: React.FC = () => {
             <div className="flex items-center">
               <img src={CoinImage} alt="Coins" className="w-4 h-4 mr-1 animate-pulse" />
               <span className="text-sm text-slate-400 mr-1"> </span>
-              <p className="text-lg font-medium text-green-300">{formatNumber(state.coins)}</p>
+              <p className="text-lg font-medium text-yellow-300">{formatNumber(state.coins)}</p>
             </div>
           </div>
           <div>
