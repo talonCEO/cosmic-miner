@@ -2,7 +2,10 @@ import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import GameMenu from '@/components/GameMenu';
-import { Gem, Bitcoin } from 'lucide-react';
+
+// Import PNG images (replace these with your actual gem and coin image paths)
+import GemImage from '@/assets/images/icons/gems.png'; // Placeholder from gameContext
+import CoinImage from '@/assets/images/icons/coins.png'; // Placeholder from gameContext
 
 const Header: React.FC = () => {
   const { state } = useGame();
@@ -41,12 +44,12 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center mt-2">
           <div className="flex gap-6">
             <div className="flex items-center">
-              <Gem size={16} className="text-purple-400 mr-1 animate-pulse" />
+              <img src={GemImage} alt="Gems" className="w-4 h-4 mr-1 animate-pulse" />
               <span className="text-sm text-slate-400 mr-1">Gems:</span>
               <p className="text-lg font-medium text-purple-300">{formatNumber(state.gems)}</p> {/* Use global gems */}
             </div>
             <div className="flex items-center">
-              <Bitcoin size={16} className="text-green-400 mr-1 animate-pulse" />
+              <img src={CoinImage} alt="Coins" className="w-4 h-4 mr-1 animate-pulse" />
               <span className="text-sm text-slate-400 mr-1">Coins:</span>
               <p className="text-lg font-medium text-green-300">{formatNumber(state.coins)}</p>
             </div>
