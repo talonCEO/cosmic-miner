@@ -68,7 +68,7 @@ const Stats: React.FC = () => {
       <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
         <DialogContent className="bg-slate-900 border border-indigo-500/30 text-white max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl">Detailed Statistics</DialogTitle>
+            <DialogTitle className="text-center text-xl">Detailed Statistics1</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 p-4">
             <div>
