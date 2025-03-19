@@ -138,7 +138,7 @@ export const INVENTORY_ITEMS = {
     name: 'Tap Boost',
     description: 'Increases tap power by 5x for 100 taps',
     type: 'boost' as const,
-    rarity: 'rare' as const,
+    rarity: 'uncommon' as const,
     icon: <Zap className="text-purple-400" />,
     effect: {
       type: 'coinsPerClick',
@@ -155,7 +155,7 @@ export const INVENTORY_ITEMS = {
     name: 'Cheap Upgrades',
     description: 'Reduces upgrade costs by 10% for 10 minutes',
     type: 'boost' as const,
-    rarity: 'rare' as const,
+    rarity: 'uncommon' as const,
     icon: <Percent className="text-green-400" />,
     effect: {
       type: 'upgradeCostReduction',
@@ -172,7 +172,7 @@ export const INVENTORY_ITEMS = {
     name: 'Essence Boost',
     description: 'Increases potential essence reward this prestige by 25%',
     type: 'boost' as const,
-    rarity: 'epic' as const,
+    rarity: 'uncommon' as const,
     icon: <Sparkles className="text-amber-400" />,
     effect: {
       type: 'essenceMultiplier',
@@ -188,7 +188,7 @@ export const INVENTORY_ITEMS = {
     name: 'Permanent Tap Boost',
     description: 'Permanently increases base tap power by +1',
     type: 'boost' as const,
-    rarity: 'legendary' as const,
+    rarity: 'uncommon' as const,
     icon: <DollarSign className="text-red-400" />,
     effect: {
       type: 'coinsPerClickBase',
@@ -205,7 +205,7 @@ export const INVENTORY_ITEMS = {
     name: 'Permanent Passive Boost',
     description: 'Permanently increases base passive income by +1',
     type: 'boost' as const,
-    rarity: 'legendary' as const,
+    rarity: 'uncommon' as const,
     icon: <Star className="text-yellow-400" />,
     effect: {
       type: 'coinsPerSecondBase',
