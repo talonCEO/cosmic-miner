@@ -1,21 +1,21 @@
 import React from 'react';
 
 // Static PNG imports for inventory items (replace with your actual image paths)
-import CoinsImage from '@/assets/images/icons/asteroid-drill.png';
-import GemsImage from '@/assets/images/icons/quantum-vibration.png';
-import EssenceImage from '@/assets/images/icons/neural-mining.png';
-import SkillPointsImage from '@/assets/images/icons/graviton-shield.png';
-import DoubleCoinsImage from '@/assets/images/icons/laser-extraction.png';
-import TimeWarpImage from '@/assets/images/icons/dark-matter.png';
-import AutoTapImage from '@/assets/images/icons/galactic-scanner.png';
-import TapBoostImage from '@/assets/images/icons/plasma-excavator.png';
-import CheapUpgradesImage from '@/assets/images/icons/nano-bot-swarm.png';
-import EssenceBoostImage from '@/assets/images/icons/interstellar-nav.png';
-import PermaTapImage from '@/assets/images/icons/supernova-core.png';
-import PermaPassiveImage from '@/assets/images/icons/quantum-tunnel.png';
-import NoAdsImage from '@/assets/images/icons/cosmic-singularity.png';
-import AutoBuyImage from '@/assets/images/icons/asteroid-drill.png'; // Reused as example
-import InventoryExpansionImage from '@/assets/images/icons/quantum-vibration.png'; // Reused as example
+import CoinsImage from '@/assets/images/icons/gems.png';
+import GemsImage from '@/assets/images/icons/gems.png';
+import EssenceImage from '@/assets/images/icons/gems.png';
+import SkillPointsImage from '@/assets/images/icons/gems.png';
+import DoubleCoinsImage from '@/assets/images/icons/gems.png';
+import TimeWarpImage from '@/assets/images/icons/gems.png';
+import AutoTapImage from '@/assets/images/icons/gems.png';
+import TapBoostImage from '@/assets/images/icons/gems.png';
+import CheapUpgradesImage from '@/assets/images/icons/gems.png';
+import EssenceBoostImage from '@/assets/images/icons/gems.png';
+import PermaTapImage from '@/assets/images/icons/gems.png';
+import PermaPassiveImage from '@/assets/images/icons/gems.png';
+import NoAdsImage from '@/assets/images/icons/gems.png';
+import AutoBuyImage from '@/assets/images/icons/gems.png'; // Reused as example
+import InventoryExpansionImage from '@/assets/images/icons/gems.png'; // Reused as example
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
 
