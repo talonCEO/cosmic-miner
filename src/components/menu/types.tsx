@@ -1,5 +1,21 @@
 import React from 'react';
-import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
+
+// Static PNG imports for inventory items (replace with your actual image paths)
+import CoinsImage from '@/assets/images/icons/asteroid-drill.png';
+import GemsImage from '@/assets/images/icons/quantum-vibration.png';
+import EssenceImage from '@/assets/images/icons/neural-mining.png';
+import SkillPointsImage from '@/assets/images/icons/graviton-shield.png';
+import DoubleCoinsImage from '@/assets/images/icons/laser-extraction.png';
+import TimeWarpImage from '@/assets/images/icons/dark-matter.png';
+import AutoTapImage from '@/assets/images/icons/galactic-scanner.png';
+import TapBoostImage from '@/assets/images/icons/plasma-excavator.png';
+import CheapUpgradesImage from '@/assets/images/icons/nano-bot-swarm.png';
+import EssenceBoostImage from '@/assets/images/icons/interstellar-nav.png';
+import PermaTapImage from '@/assets/images/icons/supernova-core.png';
+import PermaPassiveImage from '@/assets/images/icons/quantum-tunnel.png';
+import NoAdsImage from '@/assets/images/icons/cosmic-singularity.png';
+import AutoBuyImage from '@/assets/images/icons/asteroid-drill.png'; // Reused as example
+import InventoryExpansionImage from '@/assets/images/icons/quantum-vibration.png'; // Reused as example
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
 
@@ -24,7 +40,7 @@ export interface InventoryItem {
   description: string;
   type: 'resource' | 'boost' | 'reward' | 'gift' | 'consumable';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  icon: React.ReactNode;
+  icon: string; // Changed from React.ReactNode to string for PNG path
   quantity: number;
   effect?: {
     type: string;
@@ -45,7 +61,7 @@ export const INVENTORY_ITEMS = {
     description: 'The main currency used for upgrades',
     type: 'resource' as const,
     rarity: 'common' as const,
-    icon: <Coins className="text-yellow-400" />,
+    icon: CoinsImage, // Now a static PNG import
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -56,7 +72,7 @@ export const INVENTORY_ITEMS = {
     description: 'Premium currency for special items',
     type: 'resource' as const,
     rarity: 'epic' as const,
-    icon: <Gem className="text-purple-400" />,
+    icon: GemsImage,
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -67,7 +83,7 @@ export const INVENTORY_ITEMS = {
     description: 'Earned through prestige, used for permanent upgrades',
     type: 'resource' as const,
     rarity: 'legendary' as const,
-    icon: <Sparkles className="text-amber-400" />,
+    icon: EssenceImage,
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -78,7 +94,7 @@ export const INVENTORY_ITEMS = {
     description: 'Used to unlock abilities in the tech tree',
     type: 'resource' as const,
     rarity: 'rare' as const,
-    icon: <Brain className="text-blue-400" />,
+    icon: SkillPointsImage,
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -89,7 +105,7 @@ export const INVENTORY_ITEMS = {
     description: 'Doubles all coin earnings for 30 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <CircleDollarSign className="text-green-400" />,
+    icon: DoubleCoinsImage,
     effect: {
       type: 'coinMultiplier',
       value: 2,
@@ -106,7 +122,7 @@ export const INVENTORY_ITEMS = {
     description: 'Instantly gain 2 hours worth of passive income',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <Clock className="text-blue-400" />,
+    icon: TimeWarpImage,
     effect: {
       type: 'timeWarp',
       value: 2 * 60 * 60,
@@ -122,7 +138,7 @@ export const INVENTORY_ITEMS = {
     description: 'Automatically taps 5 times per second for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <Zap className="text-yellow-400" />,
+    icon: AutoTapImage,
     effect: {
       type: 'autoTap',
       value: 5,
@@ -139,7 +155,7 @@ export const INVENTORY_ITEMS = {
     description: 'Increases tap power by 5x for 100 taps',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <Zap className="text-purple-400" />,
+    icon: TapBoostImage,
     effect: {
       type: 'coinsPerClick',
       value: 5,
@@ -156,7 +172,7 @@ export const INVENTORY_ITEMS = {
     description: 'Reduces upgrade costs by 10% for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <Percent className="text-green-400" />,
+    icon: CheapUpgradesImage,
     effect: {
       type: 'upgradeCostReduction',
       value: 0.9,
@@ -173,7 +189,7 @@ export const INVENTORY_ITEMS = {
     description: 'Increases potential essence reward this prestige by 25%',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <Sparkles className="text-amber-400" />,
+    icon: EssenceBoostImage,
     effect: {
       type: 'essenceMultiplier',
       value: 1.25
@@ -189,7 +205,7 @@ export const INVENTORY_ITEMS = {
     description: 'Permanently increases base tap power by +1',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <DollarSign className="text-red-400" />,
+    icon: PermaTapImage,
     effect: {
       type: 'coinsPerClickBase',
       value: 1
@@ -206,7 +222,7 @@ export const INVENTORY_ITEMS = {
     description: 'Permanently increases base passive income by +1',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: <Star className="text-yellow-400" />,
+    icon: PermaPassiveImage,
     effect: {
       type: 'coinsPerSecondBase',
       value: 1
@@ -223,7 +239,7 @@ export const INVENTORY_ITEMS = {
     description: 'Permanently removes ads from the game',
     type: 'boost' as const,
     rarity: 'legendary' as const,
-    icon: <VideoOff className="text-gray-400" />,
+    icon: NoAdsImage,
     effect: {
       type: 'noAds',
       value: 1
@@ -240,7 +256,7 @@ export const INVENTORY_ITEMS = {
     description: 'Unlocks the auto-buy feature permanently',
     type: 'boost' as const,
     rarity: 'epic' as const,
-    icon: <PackagePlus className="text-blue-400" />,
+    icon: AutoBuyImage,
     effect: {
       type: 'unlockAutoBuy',
       value: 1
@@ -257,7 +273,7 @@ export const INVENTORY_ITEMS = {
     description: 'Increases inventory capacity by 5 slots',
     type: 'boost' as const,
     rarity: 'rare' as const,
-    icon: <Box className="text-cyan-400" />,
+    icon: InventoryExpansionImage,
     effect: {
       type: 'inventoryCapacity',
       value: 5
