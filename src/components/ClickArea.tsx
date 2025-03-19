@@ -1,7 +1,7 @@
+
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
-import { calculateTapValue } from '@/utils/GameMechanics';
+import { formatNumber, getRandomPosition } from '@/context/GameContext';
 import AnimatedAsteroid from './AnimatedAsteroid';
 import { useBoostManager } from '@/hooks/useBoostManager';
 
@@ -141,7 +141,7 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateTapValue(state)}
+            value={state.coinsPerClick}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}

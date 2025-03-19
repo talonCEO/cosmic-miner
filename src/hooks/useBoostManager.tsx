@@ -1,9 +1,13 @@
 
 import { useGame } from '@/context/GameContext';
-import * as GameMechanics from '@/utils/GameMechanics';
-import { Artifact } from '@/utils/artifactsData';
-import { Perk } from '@/utils/types';
-import { formatNumber } from '@/utils/gameLogic';
+import { 
+  calculateClickMultiplier,
+  calculateGlobalIncomeMultiplier,
+  calculateCostReduction,
+  calculateArtifactProductionMultiplier,
+  formatNumber
+} from '@/context/GameContext';
+import { isBoostItem } from '@/components/menu/types';
 
 /**
  * Centralized hook for managing all boosts in the game
@@ -15,35 +19,39 @@ export const useBoostManager = () => {
    * Calculate total tap/click multiplier from all sources
    */
   const calculateTapMultiplier = (): number => {
-    return GameMechanics.calculateClickMultiplier(state.ownedArtifacts);
+    return calculateClickMultiplier(state);
   };
   
   /**
    * Calculate total global income multiplier from all sources
    */
   const calculateGlobalIncomeMultiplier = (): number => {
-    return GameMechanics.calculateGlobalIncomeMultiplier(state);
+    return calculateGlobalIncomeMultiplier(state);
   };
   
   /**
    * Calculate total cost reduction from all sources
    */
   const calculateTotalCostReduction = (): number => {
-    return GameMechanics.calculateCostReduction(state);
+    return calculateCostReduction(state);
   };
   
   /**
    * Calculate total passive income multiplier from artifacts
    */
   const calculatePassiveIncomeMultiplier = (): number => {
-    return GameMechanics.calculateArtifactProductionMultiplier(state);
+    return calculateArtifactProductionMultiplier(state);
   };
   
   /**
    * Calculate total CPS with all multipliers applied
    */
   const calculateTotalCPS = (): number => {
-    return GameMechanics.calculateTotalCoinsPerSecond(state);
+    const baseCoinsPerSecond = state.coinsPerSecond;
+    const passiveMultiplier = calculatePassiveIncomeMultiplier();
+    const globalMultiplier = calculateGlobalIncomeMultiplier();
+    
+    return baseCoinsPerSecond * passiveMultiplier * globalMultiplier;
   };
   
   /**
@@ -79,7 +87,7 @@ export const useBoostManager = () => {
   /**
    * Get the highest unlocked perk value for a specific parent (manager or artifact)
    */
-  const getHighestUnlockedPerkValue = (parentId: string): Perk | null => {
+  const getHighestUnlockedPerkValue = (parentId: string) => {
     // Find the parent in artifacts or managers
     const artifact = state.artifacts.find(a => a.id === parentId);
     const manager = state.managers.find(m => m.id === parentId);
@@ -103,7 +111,7 @@ export const useBoostManager = () => {
   /**
    * Format effect description based on artifact or manager and highest perk value
    */
-  const formatEffectDescription = (item: Artifact, highestPerk: Perk | null): string => {
+  const formatEffectDescription = (item: any, highestPerk: any | null): string => {
     if (!item.effect) return item.bonus || "No effect";
     
     const effectValue = highestPerk ? highestPerk.effect.value : item.effect.value;
@@ -126,7 +134,7 @@ export const useBoostManager = () => {
   
   return {
     calculateTapMultiplier,
-    calculateGlobalIncomeMultiplier,
+    calculateGlobalIncomeMultiplier: calculateGlobalIncomeMultiplier,
     calculateTotalCostReduction,
     calculatePassiveIncomeMultiplier,
     calculateTotalCPS,

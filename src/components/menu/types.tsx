@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -18,6 +19,27 @@ export interface Ability {
   effect?: string;
 }
 
+export type BoostEffectType = 
+  | "coinMultiplier" 
+  | "timeWarp" 
+  | "autoTap" 
+  | "tapMultiplier" 
+  | "costReduction" 
+  | "essenceMultiplier" 
+  | "baseTapBoost" 
+  | "basePassiveBoost" 
+  | "noAds" 
+  | "unlockAutoBuy" 
+  | "inventoryCapacity";
+
+export interface BoostInventoryItem extends InventoryItem {
+  effect: {
+    type: BoostEffectType;
+    value: number;
+    duration?: number;
+  };
+}
+
 export interface InventoryItem {
   id: string;
   name: string;
@@ -36,6 +58,14 @@ export interface InventoryItem {
   obtained: number;
   cost?: number;
   maxPurchases?: number;
+}
+
+// Type guard to check if an item is a boost item with effect
+export function isBoostItem(item: any): item is BoostInventoryItem {
+  return item && item.type === 'boost' && item.effect !== undefined && 
+    typeof item.effect === 'object' && 
+    'type' in item.effect && 
+    'value' in item.effect;
 }
 
 export const INVENTORY_ITEMS = {
@@ -91,7 +121,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'uncommon' as const,
     icon: <CircleDollarSign className="text-green-400" />,
     effect: {
-      type: 'coinMultiplier',
+      type: 'coinMultiplier' as BoostEffectType,
       value: 2,
       duration: 30 * 60
     },
@@ -108,7 +138,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'uncommon' as const,
     icon: <Clock className="text-blue-400" />,
     effect: {
-      type: 'timeWarp',
+      type: 'timeWarp' as BoostEffectType,
       value: 2 * 60 * 60,
     },
     usable: true,
@@ -124,7 +154,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'uncommon' as const,
     icon: <Zap className="text-yellow-400" />,
     effect: {
-      type: 'autoTap',
+      type: 'autoTap' as BoostEffectType,
       value: 5,
       duration: 10 * 60
     },
@@ -141,7 +171,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Zap className="text-purple-400" />,
     effect: {
-      type: 'coinsPerClick',
+      type: 'tapMultiplier' as BoostEffectType,
       value: 5,
       duration: 100
     },
@@ -158,7 +188,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Percent className="text-green-400" />,
     effect: {
-      type: 'upgradeCostReduction',
+      type: 'costReduction' as BoostEffectType,
       value: 0.9,
       duration: 10 * 60
     },
@@ -175,7 +205,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'epic' as const,
     icon: <Sparkles className="text-amber-400" />,
     effect: {
-      type: 'essenceMultiplier',
+      type: 'essenceMultiplier' as BoostEffectType,
       value: 1.25
     },
     usable: true,
@@ -191,7 +221,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <DollarSign className="text-red-400" />,
     effect: {
-      type: 'coinsPerClickBase',
+      type: 'baseTapBoost' as BoostEffectType,
       value: 1
     },
     usable: true,
@@ -208,7 +238,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <Star className="text-yellow-400" />,
     effect: {
-      type: 'coinsPerSecondBase',
+      type: 'basePassiveBoost' as BoostEffectType,
       value: 1
     },
     usable: true,
@@ -225,7 +255,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'legendary' as const,
     icon: <VideoOff className="text-gray-400" />,
     effect: {
-      type: 'noAds',
+      type: 'noAds' as BoostEffectType,
       value: 1
     },
     usable: true,
@@ -242,7 +272,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'epic' as const,
     icon: <PackagePlus className="text-blue-400" />,
     effect: {
-      type: 'unlockAutoBuy',
+      type: 'unlockAutoBuy' as BoostEffectType,
       value: 1
     },
     usable: true,
@@ -259,7 +289,7 @@ export const INVENTORY_ITEMS = {
     rarity: 'rare' as const,
     icon: <Box className="text-cyan-400" />,
     effect: {
-      type: 'inventoryCapacity',
+      type: 'inventoryCapacity' as BoostEffectType,
       value: 5
     },
     usable: true,
