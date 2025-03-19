@@ -45,12 +45,12 @@ const Header: React.FC = () => {
           <div className="flex gap-6">
             <div className="flex items-center">
               <img src={GemImage} alt="Gems" className="w-4 h-4 mr-1 animate-pulse" />
-              <span className="text-sm text-slate-400 mr-1">Gems:</span>
+              <span className="text-sm text-slate-400 mr-1"> </span>
               <p className="text-lg font-medium text-purple-300">{formatNumber(state.gems)}</p> {/* Use global gems */}
             </div>
             <div className="flex items-center">
               <img src={CoinImage} alt="Coins" className="w-4 h-4 mr-1 animate-pulse" />
-              <span className="text-sm text-slate-400 mr-1">Coins:</span>
+              <span className="text-sm text-slate-400 mr-1"> </span>
               <p className="text-lg font-medium text-green-300">{formatNumber(state.coins)}</p>
             </div>
           </div>
