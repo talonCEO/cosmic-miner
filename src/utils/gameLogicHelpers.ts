@@ -53,10 +53,8 @@ export const getBoostRemainingInfo = (boostId: string, state: GameState): { type
     return { type: 'uses', value: boost.remainingUses };
   }
   
-  if (boost.endTime !== undefined) {
-    const remainingMs = Math.max(0, boost.endTime - Date.now());
-    const remainingSecs = Math.ceil(remainingMs / 1000);
-    return { type: 'time', value: remainingSecs };
+  if (boost.remainingTime !== undefined) {
+    return { type: 'time', value: boost.remainingTime };
   }
   
   return null;

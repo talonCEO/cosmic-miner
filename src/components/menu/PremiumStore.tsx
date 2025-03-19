@@ -8,7 +8,7 @@ import BoostItem from './BoostItem';
 import { gemPackages } from './types/premiumStore';
 import { useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
-import { INVENTORY_ITEMS, InventoryItem } from '@/components/menu/types';
+import { INVENTORY_ITEMS, InventoryItem, BoostInventoryItem, isBoostItem } from '@/components/menu/types';
 
 const getPlaceholderImage = (itemName: string): string => {
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
@@ -18,11 +18,9 @@ interface PremiumStoreProps {
   onBuyGemPackage: (packageId: string, amount: number) => void;
 }
 
-interface StoreBoostItem extends InventoryItem {
-  cost: number; // Required for all boosts in the store
-  maxPurchases: number; // Required, no longer optional
-  purchasable: boolean;
+interface StoreBoostItem extends BoostInventoryItem {
   purchased: number;
+  purchasable: boolean;
 }
 
 const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
@@ -40,19 +38,20 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const boostItems = useMemo(() => {
     return Object.values(INVENTORY_ITEMS)
-      .filter((item): item is InventoryItem => 
-        item.type === 'boost' && 'cost' in item // Only filter by type 'boost' and has cost
-      )
+      .filter(item => isBoostItem(item))
       .map(item => {
-        const purchased = state.boosts[item.id]?.purchased || 0;
+        const boostItem = item as BoostInventoryItem;
+        const purchased = state.boosts[boostItem.id]?.purchased || 0;
         const maxPurchases = 
-          item.id === 'boost-auto-buy' || item.id === 'boost-no-ads' ? 1 :
-          item.id === 'boost-inventory-expansion' ? 5 : Infinity;
+          boostItem.id === 'boost-auto-buy' || boostItem.id === 'boost-no-ads' ? 1 :
+          boostItem.id === 'boost-inventory-expansion' ? 5 : 
+          boostItem.maxPurchases || Infinity;
+          
         return {
-          ...item,
+          ...boostItem,
           purchased,
           maxPurchases,
-          purchasable: state.gems >= (item as any).cost && purchased < maxPurchases,
+          purchasable: state.gems >= boostItem.cost && purchased < maxPurchases,
           quantity: 1,
         } as StoreBoostItem;
       });
@@ -106,28 +105,27 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
 
   const onBuyBoostItem = (itemId: string) => {
     const item = sortedBoostItems.find(i => i.id === itemId);
-    if (!item || state.gems < (item as any).cost || item.purchased >= item.maxPurchases) return;
+    if (!item || state.gems < item.cost || item.purchased >= item.maxPurchases) return;
 
-    addGems(-(item as any).cost);
+    addGems(-item.cost);
 
-    // Special handling for auto-buy, no-ads, and inventory-expansion
     switch (item.id) {
       case 'boost-auto-buy':
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Only updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 });
         break;
       case 'boost-no-ads':
         dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'hasNoAds', value: true });
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 });
         break;
       case 'boost-inventory-expansion':
         dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'inventoryCapacity', value: state.inventoryCapacity + 5 });
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Updates purchased count
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 });
         break;
       default:
         const inventoryItem: InventoryItem = { ...item, quantity: 1 };
         addItem(inventoryItem);
         showUnlockAnimation(inventoryItem);
-        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 }); // Updates purchased count for all boosts
+        dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id, quantity: 1 });
     }
   };
 

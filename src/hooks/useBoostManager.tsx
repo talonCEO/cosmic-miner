@@ -4,7 +4,7 @@ import * as GameMechanics from '@/utils/GameMechanics';
 import { Artifact } from '@/utils/artifactsData';
 import { Perk } from '@/utils/types';
 import { formatNumber } from '@/utils/gameLogic';
-import { INVENTORY_ITEMS } from '@/components/menu/types';
+import { INVENTORY_ITEMS, isBoostItem } from '@/components/menu/types';
 
 /**
  * Centralized hook for managing all boosts in the game
@@ -20,7 +20,10 @@ export const useBoostManager = () => {
     
     // Add tap boost if active
     if (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses) {
-      tapMultiplier *= INVENTORY_ITEMS.TAP_BOOST.effect!.value;
+      const tapBoost = INVENTORY_ITEMS.TAP_BOOST;
+      if (isBoostItem(tapBoost)) {
+        tapMultiplier *= tapBoost.effect.value;
+      }
     }
     
     return tapMultiplier;
@@ -34,7 +37,10 @@ export const useBoostManager = () => {
     
     // Apply DOUBLE_COINS
     if (state.boosts["boost-double-coins"]?.active) {
-      multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
+      const doubleCoins = INVENTORY_ITEMS.DOUBLE_COINS;
+      if (isBoostItem(doubleCoins)) {
+        multiplier *= doubleCoins.effect.value;
+      }
     }
     
     return multiplier;
@@ -48,7 +54,10 @@ export const useBoostManager = () => {
     
     // Apply CHEAP_UPGRADES
     if (state.boosts["boost-cheap-upgrades"]?.active) {
-      reduction *= INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value;
+      const cheapUpgrades = INVENTORY_ITEMS.CHEAP_UPGRADES;
+      if (isBoostItem(cheapUpgrades)) {
+        reduction *= cheapUpgrades.effect.value;
+      }
     }
     
     return reduction;
@@ -65,7 +74,7 @@ export const useBoostManager = () => {
    * Calculate total CPS with all multipliers applied
    */
   const calculateTotalCPS = (): number => {
-    // Use baseCoinsPerSecond since calculateTotalCoinsPerSecond doesn't exist
+    // Use baseCoinsPerSecond
     return GameMechanics.calculateBaseCoinsPerSecond(state);
   };
   
@@ -94,25 +103,27 @@ export const useBoostManager = () => {
     if (!boost) return '';
     
     const item = INVENTORY_ITEMS[boostId as keyof typeof INVENTORY_ITEMS];
-    if (!item || !item.effect) return '';
+    if (!item || !isBoostItem(item)) return '';
     
-    switch (item.effect.type) {
+    const effect = item.effect;
+    
+    switch (effect.type) {
       case 'coinMultiplier':
-        return `${item.effect.value}x coin multiplier`;
+        return `${effect.value}x coin multiplier`;
       case 'timeWarp':
-        return `${item.effect.value / 60} minutes of passive income`;
+        return `${effect.value / 60} minutes of passive income`;
       case 'autoTap':
-        return `${item.effect.value} taps/sec`;
+        return `${effect.value} taps/sec`;
       case 'tapMultiplier':
-        return `${item.effect.value}x tap power`;
+        return `${effect.value}x tap power`;
       case 'costReduction':
-        return `${(1 - item.effect.value) * 100}% cheaper upgrades`;
+        return `${(1 - effect.value) * 100}% cheaper upgrades`;
       case 'essenceMultiplier':
-        return `+${(item.effect.value - 1) * 100}% essence`;
+        return `+${(effect.value - 1) * 100}% essence`;
       case 'baseTapBoost':
-        return `+${item.effect.value * (boost.purchased || 0)} tap power`;
+        return `+${effect.value * (boost.purchased || 0)} tap power`;
       case 'basePassiveBoost':
-        return `+${item.effect.value * (boost.purchased || 0)} passive income`;
+        return `+${effect.value * (boost.purchased || 0)} passive income`;
       default:
         return 'Unknown effect';
     }

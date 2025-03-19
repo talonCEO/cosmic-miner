@@ -41,6 +41,14 @@ export interface InventoryItem {
   maxPurchases?: number;
 }
 
+// Define a more specific interface for boost items to fix typechecking
+export interface BoostInventoryItem extends InventoryItem {
+  type: 'boost';
+  effect: BoostEffect;
+  cost: number;
+  maxPurchases: number;
+}
+
 export const INVENTORY_ITEMS = {
   COINS: {
     id: 'resource-coins',
@@ -288,4 +296,9 @@ export function createInventoryItem(
     quantity,
     obtained: Date.now()
   };
+}
+
+// Helper function to check if an item is a boost item
+export function isBoostItem(item: any): item is BoostInventoryItem {
+  return item && item.type === 'boost' && !!item.effect;
 }
