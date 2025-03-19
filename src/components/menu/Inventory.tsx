@@ -41,7 +41,7 @@ const ItemSlot: React.FC<{
         </div>
         
         <div className="flex-1 flex items-center justify-center my-4">
-          <img src={item.icon} alt={item.name} className="w-8 h-8" /> {/* Updated to render PNG */}
+          <div className="text-3xl">{item.icon}</div>
         </div>
         
         {item.quantity > 1 && (
@@ -86,7 +86,7 @@ const UseItemPopover: React.FC<{
         </div>
         
         <div className="flex flex-col items-center mb-4">
-          <img src={item.icon} alt={item.name} className="w-10 h-10 mb-3" /> {/* Updated to render PNG */}
+          <div className="text-4xl mb-3">{item.icon}</div>
           <p className="text-sm text-slate-300 text-center mb-3">{item.description}</p>
           <p className="text-sm text-green-400 font-medium text-center mb-4">
             {item.effect ? `${item.effect.type}: +${item.effect.value}${item.effect.duration ? ` (${Math.floor(item.effect.duration / 60)} minutes)` : ''}` : 'No effect'}
@@ -133,7 +133,7 @@ const UseItemPopover: React.FC<{
   );
 };
 
-// Notification component (unchanged, no icon rendering here)
+// Notification component
 const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) => void }> = ({ boost, onDismiss }) => {
   const [timeLeft, setTimeLeft] = useState(boost.remainingTime || 0);
 
