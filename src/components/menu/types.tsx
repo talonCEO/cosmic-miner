@@ -1,21 +1,22 @@
 import React from 'react';
+import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
 // Static PNG imports for inventory items (replace with your actual image paths)
-import CoinsImage from '@/assets/images/icons/gems.png';
-import GemsImage from '@/assets/images/icons/gems.png';
-import EssenceImage from '@/assets/images/icons/gems.png';
-import SkillPointsImage from '@/assets/images/icons/gems.png';
-import DoubleCoinsImage from '@/assets/images/icons/gems.png';
-import TimeWarpImage from '@/assets/images/icons/gems.png';
-import AutoTapImage from '@/assets/images/icons/gems.png';
-import TapBoostImage from '@/assets/images/icons/gems.png';
-import CheapUpgradesImage from '@/assets/images/icons/gems.png';
-import EssenceBoostImage from '@/assets/images/icons/gems.png';
-import PermaTapImage from '@/assets/images/icons/gems.png';
-import PermaPassiveImage from '@/assets/images/icons/gems.png';
-import NoAdsImage from '@/assets/images/icons/gems.png';
-import AutoBuyImage from '@/assets/images/icons/gems.png'; // Reused as example
-import InventoryExpansionImage from '@/assets/images/icons/gems.png'; // Reused as example
+import CoinsImage from '@/assets/images/icons/asteroid-drill.png';
+import GemsImage from '@/assets/images/icons/quantum-vibration.png';
+import EssenceImage from '@/assets/images/icons/neural-mining.png';
+import SkillPointsImage from '@/assets/images/icons/graviton-shield.png';
+import DoubleCoinsImage from '@/assets/images/icons/laser-extraction.png';
+import TimeWarpImage from '@/assets/images/icons/dark-matter.png';
+import AutoTapImage from '@/assets/images/icons/galactic-scanner.png';
+import TapBoostImage from '@/assets/images/icons/plasma-excavator.png';
+import CheapUpgradesImage from '@/assets/images/icons/nano-bot-swarm.png';
+import EssenceBoostImage from '@/assets/images/icons/interstellar-nav.png';
+import PermaTapImage from '@/assets/images/icons/supernova-core.png';
+import PermaPassiveImage from '@/assets/images/icons/quantum-tunnel.png';
+import NoAdsImage from '@/assets/images/icons/cosmic-singularity.png';
+import AutoBuyImage from '@/assets/images/icons/asteroid-drill.png'; // Reused as example
+import InventoryExpansionImage from '@/assets/images/icons/quantum-vibration.png'; // Reused as example
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
 
@@ -40,7 +41,7 @@ export interface InventoryItem {
   description: string;
   type: 'resource' | 'boost' | 'reward' | 'gift' | 'consumable';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  icon: string; // Changed from React.ReactNode to string for PNG path
+  icon: React.ReactNode; // Remains React.ReactNode
   quantity: number;
   effect?: {
     type: string;
@@ -61,7 +62,7 @@ export const INVENTORY_ITEMS = {
     description: 'The main currency used for upgrades',
     type: 'resource' as const,
     rarity: 'common' as const,
-    icon: CoinsImage, // Now a static PNG import
+    icon: <img src={CoinsImage} alt="Coins" className="w-8 h-8" />, // PNG wrapped in <img>
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -72,7 +73,7 @@ export const INVENTORY_ITEMS = {
     description: 'Premium currency for special items',
     type: 'resource' as const,
     rarity: 'epic' as const,
-    icon: GemsImage,
+    icon: <img src={GemsImage} alt="Gems" className="w-8 h-8" />,
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -83,7 +84,7 @@ export const INVENTORY_ITEMS = {
     description: 'Earned through prestige, used for permanent upgrades',
     type: 'resource' as const,
     rarity: 'legendary' as const,
-    icon: EssenceImage,
+    icon: <img src={EssenceImage} alt="Essence" className="w-8 h-8" />,
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -94,7 +95,7 @@ export const INVENTORY_ITEMS = {
     description: 'Used to unlock abilities in the tech tree',
     type: 'resource' as const,
     rarity: 'rare' as const,
-    icon: SkillPointsImage,
+    icon: <img src={SkillPointsImage} alt="Skill Points" className="w-8 h-8" />,
     usable: false,
     stackable: true,
     obtained: Date.now()
@@ -105,7 +106,7 @@ export const INVENTORY_ITEMS = {
     description: 'Doubles all coin earnings for 30 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: DoubleCoinsImage,
+    icon: <img src={DoubleCoinsImage} alt="Double Coins" className="w-8 h-8" />,
     effect: {
       type: 'coinMultiplier',
       value: 2,
@@ -122,7 +123,7 @@ export const INVENTORY_ITEMS = {
     description: 'Instantly gain 2 hours worth of passive income',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: TimeWarpImage,
+    icon: <img src={TimeWarpImage} alt="Time Warp" className="w-8 h-8" />,
     effect: {
       type: 'timeWarp',
       value: 2 * 60 * 60,
@@ -138,7 +139,7 @@ export const INVENTORY_ITEMS = {
     description: 'Automatically taps 5 times per second for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: AutoTapImage,
+    icon: <img src={AutoTapImage} alt="Auto Tap" className="w-8 h-8" />,
     effect: {
       type: 'autoTap',
       value: 5,
@@ -155,7 +156,7 @@ export const INVENTORY_ITEMS = {
     description: 'Increases tap power by 5x for 100 taps',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: TapBoostImage,
+    icon: <img src={TapBoostImage} alt="Tap Boost" className="w-8 h-8" />,
     effect: {
       type: 'coinsPerClick',
       value: 5,
@@ -172,7 +173,7 @@ export const INVENTORY_ITEMS = {
     description: 'Reduces upgrade costs by 10% for 10 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: CheapUpgradesImage,
+    icon: <img src={CheapUpgradesImage} alt="Cheap Upgrades" className="w-8 h-8" />,
     effect: {
       type: 'upgradeCostReduction',
       value: 0.9,
@@ -189,7 +190,7 @@ export const INVENTORY_ITEMS = {
     description: 'Increases potential essence reward this prestige by 25%',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: EssenceBoostImage,
+    icon: <img src={EssenceBoostImage} alt="Essence Boost" className="w-8 h-8" />,
     effect: {
       type: 'essenceMultiplier',
       value: 1.25
@@ -205,7 +206,7 @@ export const INVENTORY_ITEMS = {
     description: 'Permanently increases base tap power by +1',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: PermaTapImage,
+    icon: <img src={PermaTapImage} alt="Permanent Tap Boost" className="w-8 h-8" />,
     effect: {
       type: 'coinsPerClickBase',
       value: 1
@@ -222,7 +223,7 @@ export const INVENTORY_ITEMS = {
     description: 'Permanently increases base passive income by +1',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
-    icon: PermaPassiveImage,
+    icon: <img src={PermaPassiveImage} alt="Permanent Passive Boost" className="w-8 h-8" />,
     effect: {
       type: 'coinsPerSecondBase',
       value: 1
@@ -239,7 +240,7 @@ export const INVENTORY_ITEMS = {
     description: 'Permanently removes ads from the game',
     type: 'boost' as const,
     rarity: 'legendary' as const,
-    icon: NoAdsImage,
+    icon: <img src={NoAdsImage} alt="No Ads" className="w-8 h-8" />,
     effect: {
       type: 'noAds',
       value: 1
@@ -256,7 +257,7 @@ export const INVENTORY_ITEMS = {
     description: 'Unlocks the auto-buy feature permanently',
     type: 'boost' as const,
     rarity: 'epic' as const,
-    icon: AutoBuyImage,
+    icon: <img src={AutoBuyImage} alt="Auto Buy" className="w-8 h-8" />,
     effect: {
       type: 'unlockAutoBuy',
       value: 1
@@ -273,7 +274,7 @@ export const INVENTORY_ITEMS = {
     description: 'Increases inventory capacity by 5 slots',
     type: 'boost' as const,
     rarity: 'rare' as const,
-    icon: InventoryExpansionImage,
+    icon: <img src={InventoryExpansionImage} alt="Inventory Expansion" className="w-8 h-8" />,
     effect: {
       type: 'inventoryCapacity',
       value: 5
