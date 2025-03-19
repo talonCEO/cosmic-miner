@@ -32,8 +32,8 @@ export interface Achievement {
   checkCondition: (state: GameState) => boolean;
   rewards?: {
     type: 'gems' | 'boost' | 'title' | 'portrait' | 'inventory_item';
-    value: number | string;
-    image: string;
+    value: number | string; // Number for gems, string for boost/title/portrait ID
+    image: string; // Path to reward image
   };
 }
 
@@ -135,7 +135,7 @@ type GameAction =
   | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
   | { type: 'SET_MENU_TYPE'; menuType: string }
   | { type: 'ADD_GEMS'; amount: number }
-  | { type: 'ACTIVATE_BOOST'; boostId: string; duration?: number }
+  | { type: 'ACTIVATE_BOOST'; boostId: string }
   | { type: 'UPDATE_USERNAME'; username: string }
   | { type: 'UPDATE_TITLE'; title: string }
   | { type: 'UPDATE_PORTRAIT'; portrait: string }
@@ -316,7 +316,7 @@ const initialState: GameState = {
   managers: managers,
   artifacts: artifacts,
   prestigeCount: 0,
-  incomeMultiplier: 1.0, // Changed to 1.0 as base, boosts will modify this
+  incomeMultiplier: 10.0,
   skillPoints: 10000,
   abilities: initialAbilities,
   unlockedPerks: [],
@@ -326,18 +326,16 @@ const initialState: GameState = {
   boosts: {},
   hasNoAds: false,
   username: "Cosmic Explorer",
-  title: "space_pilot",
+  title: "space_pilot", // Only space_pilot unlocked by default
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-  portrait: "default",
+  portrait: "default", // Only default unlocked by default
   nameChangeCount: 0
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
-      let totalClickAmount = calculateBaseCoinsPerClick(state);
-      const multiplier = calculateIncomeMultiplier(state);
-      totalClickAmount *= multiplier;
+      let totalClickAmount = GameMechanics.calculateTapValue(state);
       if (state.boosts["boost-tap-boost"]?.active && state.boosts["boost-tap-boost"].remainingUses) {
         totalClickAmount *= INVENTORY_ITEMS.TAP_BOOST.effect!.value;
         state.boosts["boost-tap-boost"].remainingUses -= 1;
@@ -345,6 +343,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           state.boosts["boost-tap-boost"].active = false;
         }
       }
+      
       return {
         ...state,
         coins: Math.max(0, state.coins + totalClickAmount),
@@ -370,54 +369,66 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     case 'BUY_UPGRADE': {
       const upgradeIndex = state.upgrades.findIndex(u => u.id === action.upgradeId);
+      
       if (upgradeIndex === -1) return state;
-
+      
       const upgrade = state.upgrades[upgradeIndex];
-      const costReduction = GameMechanics.calculateCostReduction(state) *
-        (state.boosts["boost-cheap-upgrades"]?.active ? INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value : 1);
+      
+      const costReduction = GameMechanics.calculateCostReduction(state);
+      
       const quantity = action.quantity || 1;
+      
       if (upgrade.level >= upgrade.maxLevel) return state;
-
-      const maxPossibleQuantity = Math.min(quantity, upgrade.maxLevel - upgrade.level);
-      const totalCost = Math.floor(GameMechanics.calculateBulkPurchaseCost(
-        upgrade.baseCost,
-        upgrade.level,
-        maxPossibleQuantity,
+      
+      const maxPossibleQuantity = Math.min(
+        quantity, 
+        upgrade.maxLevel - upgrade.level
+      );
+      
+      let totalCost = Math.floor(GameMechanics.calculateBulkPurchaseCost(
+        upgrade.baseCost, 
+        upgrade.level, 
+        maxPossibleQuantity, 
         UPGRADE_COST_GROWTH
       ) * costReduction);
-
+      if (state.boosts["boost-cheap-upgrades"]?.active) {
+        totalCost *= INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value;
+      }
+      
       if (state.coins < totalCost) return state;
-
+      
       const oldLevel = upgrade.level;
       const newLevel = upgrade.level + maxPossibleQuantity;
+      
       const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
-
+      
       let newCoinsPerClick = state.coinsPerClick;
       let newCoinsPerSecond = state.coinsPerSecond;
-
+      
       if (upgrade.category === UPGRADE_CATEGORIES.TAP) {
-        newCoinsPerClick += upgrade.coinsPerClickBonus * maxPossibleQuantity;
+        // Handled by GameMechanics.calculateTapValue
       } else {
+        newCoinsPerClick += upgrade.coinsPerClickBonus * maxPossibleQuantity;
         newCoinsPerSecond += upgrade.coinsPerSecondBonus * maxPossibleQuantity;
       }
-
+      
       const updatedUpgrade = {
         ...upgrade,
         level: newLevel,
         cost: Math.floor(upgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * costReduction)
       };
-
+      
       const newUpgrades = [...state.upgrades];
       newUpgrades[upgradeIndex] = updatedUpgrade;
-
+      
       state.upgrades.forEach((u, index) => {
-        if (!u.unlocked && u.unlocksAt &&
-            u.unlocksAt.upgradeId === upgrade.id &&
+        if (!u.unlocked && u.unlocksAt && 
+            u.unlocksAt.upgradeId === upgrade.id && 
             updatedUpgrade.level >= u.unlocksAt.level) {
           newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
         }
       });
-
+      
       const newState = {
         ...state,
         coins: state.coins - totalCost,
@@ -425,15 +436,31 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         coinsPerSecond: newCoinsPerSecond,
         upgrades: newUpgrades
       };
-
-      return shouldAwardSkillPoint ? { ...newState, skillPoints: newState.skillPoints + 1 } : newState;
+      
+      if (shouldAwardSkillPoint) {
+        return {
+          ...newState,
+          skillPoints: newState.skillPoints + 1
+        };
+      }
+      
+      return newState;
     }
     case 'TOGGLE_AUTO_BUY':
-      return { ...state, autoBuy: !state.autoBuy };
+      return {
+        ...state,
+        autoBuy: !state.autoBuy
+      };
     case 'TOGGLE_AUTO_TAP':
-      return { ...state, autoTap: !state.autoTap };
+      return {
+        ...state,
+        autoTap: !state.autoTap
+      };
     case 'SET_INCOME_MULTIPLIER':
-      return { ...state, incomeMultiplier: action.multiplier };
+      return {
+        ...state,
+        incomeMultiplier: action.multiplier
+      };
     case 'TICK': {
       const newBoosts = { ...state.boosts };
       Object.keys(newBoosts).forEach(boostId => {
@@ -446,11 +473,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       });
 
       let newState = { ...state, boosts: newBoosts };
-      const multiplier = calculateIncomeMultiplier(newState);
 
       if (state.coinsPerSecond > 0) {
-        const basePassive = calculateBaseCoinsPerSecond(newState);
-        const passiveAmount = basePassive * multiplier * 0.1; // 100ms tick
+        const passiveAmount = GameMechanics.calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + passiveAmount),
@@ -459,11 +484,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.autoTap) {
-        const baseTap = calculateBaseCoinsPerClick(newState);
-        const autoTapBoost = newBoosts["boost-auto-tap"]?.active
-          ? baseTap * INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1
+        const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
+        const autoTapBoost = newBoosts["boost-auto-tap"]?.active 
+          ? calculateBaseCoinsPerClick(state) * INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1
           : 0;
-        const autoTapAmount = (baseTap + autoTapBoost) * multiplier * 0.1; // 100ms tick
+        const autoTapAmount = autoTapBase + autoTapBoost;
+
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + autoTapAmount),
@@ -473,10 +499,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.autoBuy) {
-        const costReduction = GameMechanics.calculateCostReduction(state) *
-          (newBoosts["boost-cheap-upgrades"]?.active ? INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value : 1);
+        const costReduction = GameMechanics.calculateCostReduction(state);
         const affordableUpgrades = newState.upgrades
-          .filter(u => u.unlocked && u.level < u.maxLevel &&
+          .filter(u => u.unlocked && u.level < u.maxLevel && 
                    newState.coins >= (u.cost * costReduction))
           .map(u => ({
             upgrade: u,
@@ -490,6 +515,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
           const oldLevel = bestUpgrade.level;
           const newLevel = bestUpgrade.level + 1;
+
           const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
 
           const newCoinsPerClick = newState.coinsPerClick + bestUpgrade.coinsPerClickBonus;
@@ -505,8 +531,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           newUpgrades[upgradeIndex] = updatedUpgrade;
 
           newState.upgrades.forEach((u, index) => {
-            if (!u.unlocked && u.unlocksAt &&
-                u.unlocksAt.upgradeId === bestUpgrade.id &&
+            if (!u.unlocked && u.unlocksAt && 
+                u.unlocksAt.upgradeId === bestUpgrade.id && 
                 updatedUpgrade.level >= u.unlocksAt.level) {
               newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
             }
@@ -514,14 +540,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
           newState = {
             ...newState,
-            coins: newState.coins - bestUpgrade.cost,
+            coins: state.coins - bestUpgrade.cost,
             coinsPerClick: newCoinsPerClick,
             coinsPerSecond: newCoinsPerSecond,
             upgrades: newUpgrades
           };
 
           if (shouldAwardSkillPoint) {
-            newState = { ...newState, skillPoints: newState.skillPoints + 1 };
+            newState = {
+              ...newState,
+              skillPoints: newState.skillPoints + 1
+            };
           }
         }
       }
@@ -532,7 +561,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const essenceReward = GameMechanics.calculateEssenceReward(state.totalEarned, state) *
         (state.boosts["boost-essence-boost"]?.purchased ? INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value : 1);
       const startingCoins = GameMechanics.calculateStartingCoins(state.ownedArtifacts);
-
+      
       const newBoosts = {};
       ["boost-perma-tap", "boost-perma-passive", "boost-no-ads", "boost-auto-buy", "boost-inventory-expansion"].forEach(boostId => {
         if (state.boosts[boostId]?.purchased) {
@@ -567,9 +596,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'BUY_MANAGER': {
       const manager = managers.find(m => m.id === action.managerId);
+      
       if (!manager || state.ownedManagers.includes(action.managerId) || state.essence < manager.cost) {
         return state;
       }
+      
       return {
         ...state,
         essence: state.essence - manager.cost,
@@ -578,9 +609,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'BUY_ARTIFACT': {
       const artifact = artifacts.find(a => a.id === action.artifactId);
+      
       if (!artifact || state.ownedArtifacts.includes(action.artifactId) || state.essence < artifact.cost) {
         return state;
       }
+      
       return {
         ...state,
         essence: state.essence - artifact.cost,
@@ -665,17 +698,25 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'UNLOCK_ABILITY': {
       const abilityIndex = state.abilities.findIndex(a => a.id === action.abilityId);
-      if (abilityIndex === -1 || state.abilities[abilityIndex].unlocked || state.skillPoints < state.abilities[abilityIndex].cost) return state;
-
+      
+      if (abilityIndex === -1) return state;
+      
       const ability = state.abilities[abilityIndex];
-      const requiredAbilitiesUnlocked = ability.requiredAbilities.every(requiredId =>
-        state.abilities.find(a => a.id === requiredId)?.unlocked
-      );
+      
+      if (ability.unlocked) return state;
+      
+      if (state.skillPoints < ability.cost) return state;
+      
+      const requiredAbilitiesUnlocked = ability.requiredAbilities.every(requiredId => {
+        const requiredAbility = state.abilities.find(a => a.id === requiredId);
+        return requiredAbility && requiredAbility.unlocked;
+      });
+      
       if (!requiredAbilitiesUnlocked) return state;
-
+      
       const newAbilities = [...state.abilities];
-      newAbilities[abilityIndex] = { ...ability, unlocked: true };
-
+      newAbilities[abilityIndex] = { ...newAbilities[abilityIndex], unlocked: true };
+      
       return {
         ...state,
         skillPoints: state.skillPoints - ability.cost,
@@ -685,7 +726,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'UNLOCK_PERK': {
       let parent;
       let parentCollection;
-
+      
       const manager = state.managers.find(m => m.id === action.parentId);
       if (manager && manager.perks) {
         parent = manager;
@@ -697,39 +738,45 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           parentCollection = 'artifacts';
         }
       }
-
+      
       if (!parent || !parent.perks) return state;
-
+      
       const perk = parent.perks.find(p => p.id === action.perkId);
       if (!perk || perk.unlocked || state.skillPoints < perk.cost) return state;
-
+      
       const updatedCollections = {
         managers: [...state.managers],
         artifacts: [...state.artifacts]
       };
-
+      
       const parentIndex = updatedCollections[parentCollection].findIndex(item => item.id === action.parentId);
       if (parentIndex === -1) return state;
-
-      const updatedParent = { ...updatedCollections[parentCollection][parentIndex] };
+      
+      const updatedParent = {...updatedCollections[parentCollection][parentIndex]};
+      if (!updatedParent.perks) return state;
+      
       const perkIndex = updatedParent.perks.findIndex(p => p.id === action.perkId);
       if (perkIndex === -1) return state;
-
+      
       let perksToUnlock = [action.perkId];
+      let unlockedPerksCost = perk.cost;
       const selectedPerkCost = perk.cost;
-
+      
       updatedParent.perks.forEach(p => {
         if (p.cost < selectedPerkCost && !p.unlocked && !state.unlockedPerks.includes(p.id)) {
           perksToUnlock.push(p.id);
         }
       });
-
-      updatedParent.perks = updatedParent.perks.map(p =>
-        perksToUnlock.includes(p.id) ? { ...p, unlocked: true } : p
-      );
-
+      
+      updatedParent.perks = updatedParent.perks.map(p => {
+        if (perksToUnlock.includes(p.id)) {
+          return { ...p, unlocked: true };
+        }
+        return p;
+      });
+      
       updatedCollections[parentCollection][parentIndex] = updatedParent;
-
+      
       return {
         ...state,
         skillPoints: state.skillPoints - perk.cost,
@@ -737,10 +784,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         [parentCollection]: updatedCollections[parentCollection]
       };
     }
-    case 'ADD_SKILL_POINTS':
-      return { ...state, skillPoints: state.skillPoints + action.amount };
+    case 'ADD_SKILL_POINTS': {
+      return {
+        ...state,
+        skillPoints: state.skillPoints + action.amount
+      };
+    }
     case 'HANDLE_CLICK': {
-      const totalClickAmount = calculateBaseCoinsPerClick(state) * calculateIncomeMultiplier(state);
+      const totalClickAmount = GameMechanics.calculateTapValue(state);
+      
       return {
         ...state,
         coins: Math.max(0, state.coins + totalClickAmount),
@@ -748,107 +800,184 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         totalEarned: state.totalEarned + totalClickAmount
       };
     }
-    case 'RESTORE_STATE_PROPERTY':
-      return { ...state, [action.property]: action.value };
-    case 'RESTORE_UPGRADES':
-      return { ...state, upgrades: action.upgrades };
-    case 'RESTORE_ABILITIES':
-      return { ...state, abilities: action.abilities };
-    case 'RESTORE_ACHIEVEMENTS':
-      return { ...state, achievements: action.achievements };
-    case 'USE_ITEM': {
-      const itemIndex = state.inventory.findIndex(i => i.id === action.itemId);
-      if (itemIndex === -1 || state.inventory[itemIndex].quantity <= 0) return state;
-
-      const newInventory = [...state.inventory];
-      newInventory[itemIndex] = {
-        ...newInventory[itemIndex],
-        quantity: newInventory[itemIndex].quantity - 1
-      };
-
-      if (newInventory[itemIndex].quantity <= 0) {
-        newInventory.splice(itemIndex, 1);
-      }
-
-      return { ...state, inventory: newInventory };
-    }
-    case 'ADD_ITEM': {
-      const existingItemIndex = state.inventory.findIndex(i => i.id === action.item.id && i.stackable);
-      let newInventory = [...state.inventory];
-
-      if (existingItemIndex !== -1) {
-        newInventory[existingItemIndex] = {
-          ...newInventory[existingItemIndex],
-          quantity: newInventory[existingItemIndex].quantity + action.item.quantity
-        };
-      } else if (state.inventory.length < state.inventoryCapacity) {
-        newInventory.push(action.item);
-      } else {
-        return state; // Inventory full
-      }
-
-      return { ...state, inventory: newInventory };
-    }
-    case 'REMOVE_ITEM': {
-      const itemIndex = state.inventory.findIndex(i => i.id === action.itemId);
-      if (itemIndex === -1) return state;
-
-      const quantityToRemove = action.quantity || 1;
-      const newInventory = [...state.inventory];
-      newInventory[itemIndex] = {
-        ...newInventory[itemIndex],
-        quantity: newInventory[itemIndex].quantity - quantityToRemove
-      };
-
-      if (newInventory[itemIndex].quantity <= 0) {
-        newInventory.splice(itemIndex, 1);
-      }
-
-      return { ...state, inventory: newInventory };
-    }
-    case 'SET_MENU_TYPE':
-      return state;
-    case 'ACTIVATE_BOOST': {
-      const boostId = action.boostId;
-      const boostItem = INVENTORY_ITEMS[boostId as keyof typeof INVENTORY_ITEMS];
-      if (!boostItem || !boostItem.effect) return state;
-
-      const newBoosts = { ...state.boosts };
-      const currentBoost = newBoosts[boostId] || { active: false, purchased: 0 };
-      const durationToAdd = action.duration || boostItem.effect.duration || 0;
-
-      if (boostId === 'boost-double-coins') {
-        if (currentBoost.active) {
-          // Extend duration if already active
-          newBoosts[boostId] = {
-            ...currentBoost,
-            remainingTime: (currentBoost.remainingTime || 0) + durationToAdd,
-            purchased: currentBoost.purchased + 1
-          };
-        } else {
-          // Activate new boost
-          newBoosts[boostId] = {
-            active: true,
-            remainingTime: durationToAdd,
-            purchased: currentBoost.purchased + 1
-          };
-        }
-      } else {
-        // Handle other boosts as before
-        newBoosts[boostId] = {
-          active: true,
-          remainingTime: durationToAdd,
-          remainingUses: boostItem.effect.type === 'coinsPerClick' ? boostItem.effect.duration : undefined,
-          purchased: currentBoost.purchased + 1
-        };
-      }
-
+    case 'RESTORE_STATE_PROPERTY': {
       return {
         ...state,
-        boosts: newBoosts,
-        inventory: state.inventory.filter(i => i.id !== boostId || i.quantity > 1).map(i =>
-          i.id === boostId ? { ...i, quantity: i.quantity - 1 } : i
-        )
+        [action.property]: action.value
+      };
+    }
+    case 'RESTORE_UPGRADES': {
+      return {
+        ...state,
+        upgrades: action.upgrades
+      };
+    }
+    case 'RESTORE_ABILITIES': {
+      return {
+        ...state,
+        abilities: action.abilities
+      };
+    }
+    case 'RESTORE_ACHIEVEMENTS': {
+      return {
+        ...state,
+        achievements: action.achievements
+      };
+    }
+    case 'USE_ITEM': {
+      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+      if (itemIndex === -1) return state;
+      
+      const item = state.inventory[itemIndex];
+      if (!item.usable) return state;
+      
+      let updatedState = { ...state };
+      let newCoins = state.coins;
+      
+      if (item.effect) {
+        switch (item.effect.type) {
+          case 'coins':
+            updatedState.coins += item.effect.value;
+            updatedState.totalEarned += item.effect.value;
+            break;
+          case 'essence':
+            updatedState.essence += item.effect.value;
+            break;
+          case 'coinMultiplier':
+            const reward = updatedState.coinsPerSecond * item.effect.value * (item.effect.duration || 60);
+            updatedState.coins += reward;
+            updatedState.totalEarned += reward;
+            console.log(`Applied coinMultiplier boost: ${reward} coins`);
+            break;
+          case 'timeWarp':
+            const timeReward = updatedState.coinsPerSecond * item.effect.value;
+            newCoins += timeReward;
+            updatedState.totalEarned += timeReward;
+            console.log(`Applied timeWarp boost: ${timeReward} coins`);
+            break;
+          case 'autoTap':
+            const tapValue = GameMechanics.calculateTapValue(state);
+            const tapRate = item.effect.value || 1;
+            const duration = item.effect.duration || 60;
+            const tapReward = tapValue * tapRate * duration;
+            newCoins += tapReward;
+            updatedState.totalEarned += tapReward;
+            updatedState.totalClicks += tapRate * duration;
+            console.log(`Applied autoTap boost: ${tapReward} coins from ${tapRate * duration} taps`);
+            break;
+          case 'noAds':
+            updatedState.hasNoAds = true;
+            break;
+          case 'unlockAutoBuy':
+            updatedState.autoBuy = true;
+            break;
+          case 'inventoryCapacity':
+            updatedState.inventoryCapacity += item.effect.value;
+            break;
+        }
+      }
+      
+      const updatedInventory = [...state.inventory];
+      if (item.quantity > 1) {
+        updatedInventory[itemIndex] = {
+          ...item,
+          quantity: item.quantity - 1
+        };
+      } else {
+        updatedInventory.splice(itemIndex, 1);
+      }
+      
+      return {
+        ...updatedState,
+        coins: newCoins,
+        inventory: updatedInventory,
+        boosts: {
+          ...state.boosts,
+          [action.itemId]: {
+            active: !!item.effect?.duration,
+            remainingTime: item.effect?.duration,
+            remainingUses: item.effect?.type === "coinsPerClick" ? item.effect?.duration : undefined,
+            purchased: (state.boosts[action.itemId]?.purchased || 0) + 1,
+          },
+        },
+      };
+    }
+    case 'ADD_ITEM': {
+      const currentItems = state.inventory.reduce(
+        (total, item) => total + (item.stackable ? 1 : item.quantity), 
+        0
+      );
+      
+      if (currentItems >= state.inventoryCapacity && !action.item.stackable) {
+        return state;
+      }
+      
+      if (action.item.stackable) {
+        const existingItemIndex = state.inventory.findIndex(
+          item => item.id === action.item.id
+        );
+        
+        if (existingItemIndex !== -1) {
+          const updatedInventory = [...state.inventory];
+          updatedInventory[existingItemIndex] = {
+            ...updatedInventory[existingItemIndex],
+            quantity: updatedInventory[existingItemIndex].quantity + action.item.quantity
+          };
+          
+          return {
+            ...state,
+            inventory: updatedInventory
+          };
+        }
+      }
+      
+      return {
+        ...state,
+        inventory: [...state.inventory, action.item]
+      };
+    }
+    case 'REMOVE_ITEM': {
+      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+      if (itemIndex === -1) return state;
+      
+      const item = state.inventory[itemIndex];
+      const quantity = action.quantity || 1;
+      
+      if (item.quantity <= quantity) {
+        return {
+          ...state,
+          inventory: state.inventory.filter(item => item.id !== action.itemId)
+        };
+      } else {
+        const updatedInventory = [...state.inventory];
+        updatedInventory[itemIndex] = {
+          ...item,
+          quantity: item.quantity - quantity
+        };
+        
+        return {
+          ...state,
+          inventory: updatedInventory
+        };
+      }
+    }
+    case 'SET_MENU_TYPE': {
+      return state;
+    }
+    case 'ACTIVATE_BOOST': {
+      const boost = Object.values(INVENTORY_ITEMS).find(b => b.id === action.boostId);
+      if (!boost || !boost.usable) return state;
+      return {
+        ...state,
+        boosts: {
+          ...state.boosts,
+          [action.boostId]: {
+            active: !!boost.effect?.duration,
+            remainingTime: boost.effect?.duration,
+            remainingUses: boost.effect?.type === "coinsPerClick" ? boost.effect?.duration : undefined,
+            purchased: (state.boosts[action.boostId]?.purchased || 0) + 1,
+          },
+        },
       };
     }
     case 'UPDATE_USERNAME':
@@ -864,145 +993,254 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   }
 };
 
-export interface BoostEffect {
-  id: string;
-  duration?: number;
-  multiplier?: number;
-  activatedAt?: number;
-  remainingTime?: number;
-}
+const calculateIncomeMultiplier = (state: GameState) => {
+  let multiplier = state.incomeMultiplier;
+  if (state.boosts["boost-double-coins"]?.active) {
+    multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
+  }
+  return multiplier;
+};
 
-const GameContext = createContext<{
+const calculateBaseCoinsPerClick = (state: GameState) => {
+  let base = state.coinsPerClick;
+  if (state.boosts["boost-perma-tap"]?.purchased) {
+    base += state.boosts["boost-perma-tap"].purchased * INVENTORY_ITEMS.PERMA_TAP.effect!.value;
+  }
+  return base;
+};
+
+const calculateBaseCoinsPerSecond = (state: GameState) => {
+  let base = state.coinsPerSecond;
+  if (state.boosts["boost-perma-passive"]?.purchased) {
+    base += state.boosts["boost-perma-passive"].purchased * INVENTORY_ITEMS.PERMA_PASSIVE.effect!.value;
+  }
+  return base;
+};
+
+interface GameContextType {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
   click: () => void;
   addCoins: (amount: number) => void;
   addEssence: (amount: number) => void;
   buyUpgrade: (upgradeId: string, quantity?: number) => void;
+  toggleAutoBuy: () => void;
+  toggleAutoTap: () => void;
+  setIncomeMultiplier: (multiplier: number) => void;
   prestige: () => void;
-  calculatePotentialEssenceReward: () => number;
   buyManager: (managerId: string) => void;
   buyArtifact: (artifactId: string) => void;
-  checkAchievements: () => void;
   unlockAbility: (abilityId: string) => void;
-  addSkillPoints: (amount: number) => void;
   unlockPerk: (perkId: string, parentId: string) => void;
+  checkAchievements: () => void;
+  calculateMaxPurchaseAmount: (upgradeId: string) => number;
+  calculatePotentialEssenceReward: () => number;
+  handleClick: () => void;
   useItem: (itemId: string) => void;
   addItem: (item: InventoryItem) => void;
   removeItem: (itemId: string, quantity?: number) => void;
-  setMenuType: (menuType: string) => void;
   addGems: (amount: number) => void;
-  activateBoost: (boostId: string, duration?: number) => void;
-  activeBoosts: BoostEffect[];
-}>({
-  state: initialState,
-  dispatch: () => null,
-  click: () => {},
-  addCoins: () => {},
-  addEssence: () => {},
-  buyUpgrade: () => {},
-  prestige: () => {},
-  calculatePotentialEssenceReward: () => 0,
-  buyManager: () => {},
-  buyArtifact: () => {},
-  checkAchievements: () => {},
-  unlockAbility: () => {},
-  addSkillPoints: () => {},
-  unlockPerk: () => {},
-  useItem: () => {},
-  addItem: () => {},
-  removeItem: () => {},
-  setMenuType: () => {},
-  addGems: () => {},
-  activateBoost: () => {},
-  activeBoosts: []
-});
+  activateBoost: (boostId: string) => void;
+  updateUsername: (username: string) => void;
+  updateTitle: (title: string) => void;
+  updatePortrait: (portrait: string) => void;
+}
+
+const GameContext = createContext<GameContextType | undefined>(undefined);
+
+export const gameContextHolder: { current: GameContextType | null } = { current: null };
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  const { calculatePassiveIncome, calculateEssenceReward, calculateStartingCoins } = useGameMechanics();
-
+  
   useEffect(() => {
-    const savedState = StorageService.loadGameState();
-    if (savedState) {
-      Object.entries(savedState).forEach(([key, value]) => {
-        if (key === 'upgrades') {
-          dispatch({ type: 'RESTORE_UPGRADES', upgrades: value as Upgrade[] });
-        } else if (key === 'abilities') {
-          dispatch({ type: 'RESTORE_ABILITIES', abilities: value as Ability[] });
-        } else if (key === 'achievements') {
-          dispatch({ type: 'RESTORE_ACHIEVEMENTS', achievements: value as Achievement[] });
-        } else {
-          dispatch({ type: 'RESTORE_STATE_PROPERTY', property: key as keyof GameState, value });
+    const loadSavedGameState = async () => {
+      try {
+        const savedState = await StorageService.loadGameState();
+        
+        if (savedState) {
+          const restoredAbilities = initialState.abilities.map(ability => {
+            const savedAbility = savedState.abilities?.find(a => a.id === ability.id);
+            if (savedAbility) {
+              return {
+                ...ability,
+                unlocked: savedAbility.unlocked
+              };
+            }
+            return ability;
+          });
+          
+          const restoredUpgrades = initialState.upgrades.map(upgrade => {
+            const savedUpgrade = savedState.upgrades?.find(u => u.id === upgrade.id);
+            if (savedUpgrade) {
+              return {
+                ...savedUpgrade,
+                icon: upgrade.icon,
+                description: upgrade.description
+              };
+            }
+            return upgrade;
+          });
+          
+          const restoredState: GameState = {
+            ...initialState,
+            ...savedState,
+            abilities: restoredAbilities,
+            upgrades: restoredUpgrades,
+            achievements: initialState.achievements.map(achievement => {
+              const savedAchievement = savedState.achievements?.find(a => a.id === achievement.id);
+              return {
+                ...achievement,
+                unlocked: savedAchievement?.unlocked || false
+              };
+            }),
+            managers: initialState.managers,
+            artifacts: initialState.artifacts,
+            boosts: savedState.boosts || {},
+            hasNoAds: savedState.hasNoAds || false,
+            username: savedState.username || initialState.username,
+            title: savedState.title || initialState.title,
+            userId: savedState.userId || initialState.userId,
+            portrait: savedState.portrait || initialState.portrait,
+            nameChangeCount: savedState.nameChangeCount || 0
+          };
+          
+          for (const key in restoredState) {
+            if (key !== 'abilities' && key !== 'upgrades' && key !== 'achievements') {
+              dispatch({ 
+                type: 'RESTORE_STATE_PROPERTY', 
+                property: key as keyof GameState, 
+                value: restoredState[key as keyof GameState] 
+              });
+            }
+          }
+          
+          dispatch({ type: 'RESTORE_UPGRADES', upgrades: restoredState.upgrades });
+          dispatch({ type: 'RESTORE_ABILITIES', abilities: restoredState.abilities });
+          dispatch({ type: 'RESTORE_ACHIEVEMENTS', achievements: restoredState.achievements });
+          
+          console.log('Game state restored from storage');
         }
-      });
-    }
-
-    const interval = setInterval(() => {
-      dispatch({ type: 'TICK' });
-      dispatch({ type: 'CHECK_ACHIEVEMENTS' });
-      StorageService.saveGameState(state);
-    }, 100); // 100ms tick
-
-    return () => clearInterval(interval);
+      } catch (error) {
+        console.error('Error loading saved game state:', error);
+      }
+    };
+    
+    loadSavedGameState();
+    
+    const initAds = async () => {
+      try {
+        await adMobService.initialize();
+        await adMobService.loadInterstitialAd();
+      } catch (error) {
+        console.error("Failed to initialize ads:", error);
+      }
+    };
+    
+    initAds();
   }, []);
-
+  
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+      StorageService.saveGameState(state);
+    }, 30000);
+    
+    return () => {
+      clearInterval(saveInterval);
+      StorageService.saveGameState(state);
+    };
+  }, [state]);
+  
+  useEffect(() => {
+    const tickInterval = setInterval(() => {
+      dispatch({ type: 'TICK' });
+    }, 100);
+    
+    return () => clearInterval(tickInterval);
+  }, []);
+  
+  useEffect(() => {
+    const achievementInterval = setInterval(() => {
+      dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+    }, 5000);
+    
+    return () => clearInterval(achievementInterval);
+  }, []);
+  
+  const calculateMaxPurchaseAmount = (upgradeId: string): number => {
+    const upgrade = state.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
+    
+    const costReduction = GameMechanics.calculateCostReduction(state);
+    
+    return GameMechanics.calculateMaxAffordableQuantity(
+      state.coins,
+      upgrade.baseCost * costReduction,
+      upgrade.level,
+      UPGRADE_COST_GROWTH
+    );
+  };
+  
+  const calculatePotentialEssenceReward = (): number => {
+    return GameMechanics.calculateEssenceReward(state.totalEarned, state);
+  };
+  
   const click = () => dispatch({ type: 'CLICK' });
   const addCoins = (amount: number) => dispatch({ type: 'ADD_COINS', amount });
   const addEssence = (amount: number) => dispatch({ type: 'ADD_ESSENCE', amount });
-  const buyUpgrade = (upgradeId: string, quantity?: number) =>
-    dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
+  const buyUpgrade = (upgradeId: string, quantity = 1) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
+  const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
+  const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
   const prestige = () => dispatch({ type: 'PRESTIGE' });
-  const calculatePotentialEssenceReward = () => calculateEssenceReward(state.totalEarned, state);
   const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
   const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
-  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
   const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
-  const addSkillPoints = (amount: number) => dispatch({ type: 'ADD_SKILL_POINTS', amount });
-  const unlockPerk = (perkId: string, parentId: string) =>
-    dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+  const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
   const useItem = (itemId: string) => dispatch({ type: 'USE_ITEM', itemId });
   const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
-  const removeItem = (itemId: string, quantity?: number) =>
-    dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
-  const setMenuType = (menuType: string) => dispatch({ type: 'SET_MENU_TYPE', menuType });
+  const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
   const addGems = (amount: number) => dispatch({ type: 'ADD_GEMS', amount });
-  const activateBoost = (boostId: string, duration?: number) => dispatch({ type: 'ACTIVATE_BOOST', boostId, duration });
+  const activateBoost = (boostId: string) => dispatch({ type: 'ACTIVATE_BOOST', boostId });
+  const updateUsername = (username: string) => dispatch({ type: 'UPDATE_USERNAME', username });
+  const updateTitle = (title: string) => dispatch({ type: 'UPDATE_TITLE', title });
+  const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
 
-  const activeBoosts = Object.entries(state.boosts)
-    .filter(([_, boost]) => boost.active)
-    .map(([id, boost]) => ({
-      id,
-      duration: boost.remainingTime,
-      multiplier: INVENTORY_ITEMS[id as keyof typeof INVENTORY_ITEMS]?.effect?.value,
-      activatedAt: Date.now() / 1000 - ((boost.remainingTime || 0)),
-      remainingTime: boost.remainingTime
-    }));
-
+  const contextValue = {
+    state,
+    dispatch,
+    click,
+    addCoins,
+    addEssence,
+    buyUpgrade,
+    toggleAutoBuy,
+    toggleAutoTap,
+    setIncomeMultiplier,
+    prestige,
+    buyManager,
+    buyArtifact,
+    unlockAbility,
+    unlockPerk,
+    checkAchievements,
+    calculateMaxPurchaseAmount,
+    calculatePotentialEssenceReward,
+    handleClick,
+    useItem,
+    addItem,
+    removeItem,
+    addGems,
+    activateBoost,
+    updateUsername,
+    updateTitle,
+    updatePortrait
+  };
+  
+  gameContextHolder.current = contextValue;
+  
   return (
-    <GameContext.Provider value={{
-      state,
-      dispatch,
-      click,
-      addCoins,
-      addEssence,
-      buyUpgrade,
-      prestige,
-      calculatePotentialEssenceReward,
-      buyManager,
-      buyArtifact,
-      checkAchievements,
-      unlockAbility,
-      addSkillPoints,
-      unlockPerk,
-      useItem,
-      addItem,
-      removeItem,
-      setMenuType,
-      addGems,
-      activateBoost,
-      activeBoosts
-    }}>
+    <GameContext.Provider value={contextValue}>
       {children}
     </GameContext.Provider>
   );
@@ -1014,38 +1252,4 @@ export const useGame = () => {
     throw new Error('useGame must be used within a GameProvider');
   }
   return context;
-};
-
-const calculateBaseCoinsPerClick = (state: GameState) => {
-  let base = state.coinsPerClick;
-  state.upgrades.forEach(upgrade => {
-    if (upgrade.category === UPGRADE_CATEGORIES.TAP) {
-      base += upgrade.coinsPerClickBonus * upgrade.level;
-    }
-  });
-  if (state.boosts["boost-perma-tap"]?.purchased) {
-    base += state.boosts["boost-perma-tap"].purchased * INVENTORY_ITEMS.PERMA_TAP.effect!.value;
-  }
-  return base;
-};
-
-const calculateBaseCoinsPerSecond = (state: GameState) => {
-  let base = state.coinsPerSecond;
-  state.upgrades.forEach(upgrade => {
-    if (upgrade.category !== UPGRADE_CATEGORIES.TAP) {
-      base += upgrade.coinsPerSecondBonus * upgrade.level;
-    }
-  });
-  if (state.boosts["boost-perma-passive"]?.purchased) {
-    base += state.boosts["boost-perma-passive"].purchased * INVENTORY_ITEMS.PERMA_PASSIVE.effect!.value;
-  }
-  return base;
-};
-
-const calculateIncomeMultiplier = (state: GameState) => {
-  let multiplier = state.incomeMultiplier;
-  if (state.boosts["boost-double-coins"]?.active) {
-    multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
-  }
-  return multiplier;
 };
