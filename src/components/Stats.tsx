@@ -26,11 +26,16 @@ const Stats: React.FC = () => {
   const totalCPS = state.coinsPerSecond;
   const globalMultiplier = state.incomeMultiplier;
 
-  const formatTime = (seconds: number) => {
+  // Robust time formatting
+  const formatTime = (seconds?: number) => {
+    if (typeof seconds !== 'number' || isNaN(seconds) || seconds < 0) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
+
+  // Debug log to inspect activeBoosts
+  console.log('Active Boosts in Stats:', activeBoosts);
 
   return (
     <div className="w-full max-w-md mx-auto pb-12">
@@ -93,23 +98,25 @@ const Stats: React.FC = () => {
           </div>
         </div>
 
-        {/* Active Boosts Section */}
-        {activeBoosts.length > 0 && (
+        {/* Active Boosts Section with Safety Checks */}
+        {Array.isArray(activeBoosts) && activeBoosts.length > 0 ? (
           <div className="mt-4">
             <h3 className="text-sm font-medium text-slate-300 mb-2">Active Boosts</h3>
             <div className="space-y-2">
-              {activeBoosts.map(boost => (
-                <div key={boost.id} className="bg-slate-900/50 p-2 rounded-lg flex justify-between items-center">
+              {activeBoosts.map((boost, index) => (
+                <div key={boost.id || index} className="bg-slate-900/50 p-2 rounded-lg flex justify-between items-center">
                   <span className="text-sm text-white">
-                    {boost.id === 'boost-double-coins' ? 'Double Coins (x2)' : boost.id}
+                    {boost.id === 'boost-double-coins' ? 'Double Coins (x2)' : boost.id || 'Unknown Boost'}
                   </span>
                   <span className="text-sm text-slate-400">
-                    {boost.remainingTime ? formatTime(boost.remainingTime) : 'Permanent'}
+                    {boost.remainingTime !== undefined ? formatTime(boost.remainingTime) : 'Permanent'}
                   </span>
                 </div>
               ))}
             </div>
           </div>
+        ) : (
+          <div className="mt-4 text-sm text-slate-400">No active boosts</div>
         )}
       </div>
 
