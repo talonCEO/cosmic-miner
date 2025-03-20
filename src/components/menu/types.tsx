@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -83,7 +84,8 @@ export const INVENTORY_ITEMS = {
     icon: <img src={CoinsImage} alt="Coins" className="w-8 h-8" />, // PNG wrapped in <img>
     usable: false,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    quantity: 0, // Adding quantity to fix type error
   },
   GEMS: {
     id: 'resource-gems',
@@ -94,7 +96,8 @@ export const INVENTORY_ITEMS = {
     icon: <img src={GemsImage} alt="Gems" className="w-8 h-8" />,
     usable: false,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    quantity: 0, // Adding quantity to fix type error
   },
   ESSENCE: {
     id: 'resource-essence',
@@ -105,7 +108,8 @@ export const INVENTORY_ITEMS = {
     icon: <img src={EssenceImage} alt="Essence" className="w-8 h-8" />,
     usable: false,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    quantity: 0, // Adding quantity to fix type error
   },
   SKILL_POINTS: {
     id: 'resource-skillpoints',
@@ -116,7 +120,8 @@ export const INVENTORY_ITEMS = {
     icon: <img src={SkillPointsImage} alt="Skill Points" className="w-8 h-8" />,
     usable: false,
     stackable: true,
-    obtained: Date.now()
+    obtained: Date.now(),
+    quantity: 0, // Adding quantity to fix type error
   },
   DOUBLE_COINS: {
     id: 'boost-double-coins',
@@ -133,7 +138,9 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100
+    cost: 100,
+    quantity: 0, // Adding quantity to fix type error
+    maxPurchases: Infinity // Adding maxPurchases to fix type error
   },
   TIME_WARP: {
     id: 'boost-time-warp',
@@ -149,7 +156,9 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50
+    cost: 50,
+    quantity: 0, // Adding quantity to fix type error
+    maxPurchases: Infinity // Adding maxPurchases to fix type error
   },
   AUTO_TAP: {
     id: 'boost-auto-tap',
@@ -166,7 +175,9 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100
+    cost: 100,
+    quantity: 0, // Adding quantity to fix type error
+    maxPurchases: Infinity // Adding maxPurchases to fix type error
   },
   TAP_BOOST: {
     id: 'boost-tap-boost',
@@ -183,7 +194,9 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 75
+    cost: 75,
+    quantity: 0, // Adding quantity to fix type error
+    maxPurchases: Infinity // Adding maxPurchases to fix type error
   },
   CHEAP_UPGRADES: {
     id: 'boost-cheap-upgrades',
@@ -200,7 +213,9 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 50
+    cost: 50,
+    quantity: 0, // Adding quantity to fix type error
+    maxPurchases: Infinity // Adding maxPurchases to fix type error
   },
   ESSENCE_BOOST: {
     id: 'boost-essence-boost',
@@ -216,7 +231,9 @@ export const INVENTORY_ITEMS = {
     usable: true,
     stackable: true,
     obtained: Date.now(),
-    cost: 100
+    cost: 100,
+    quantity: 0, // Adding quantity to fix type error
+    maxPurchases: Infinity // Adding maxPurchases to fix type error
   },
   PERMA_TAP: {
     id: 'boost-perma-tap',
@@ -233,6 +250,7 @@ export const INVENTORY_ITEMS = {
     stackable: true,
     obtained: Date.now(),
     cost: 150,
+    quantity: 0, // Adding quantity to fix type error
     maxPurchases: 10
   },
   PERMA_PASSIVE: {
@@ -250,6 +268,7 @@ export const INVENTORY_ITEMS = {
     stackable: true,
     obtained: Date.now(),
     cost: 200,
+    quantity: 0, // Adding quantity to fix type error
     maxPurchases: 10
   },
   NO_ADS: {
@@ -267,6 +286,7 @@ export const INVENTORY_ITEMS = {
     stackable: false,
     obtained: Date.now(),
     cost: 1000,
+    quantity: 0, // Adding quantity to fix type error
     maxPurchases: 1
   },
   AUTO_BUY: {
@@ -284,6 +304,7 @@ export const INVENTORY_ITEMS = {
     stackable: false,
     obtained: Date.now(),
     cost: 800,
+    quantity: 0, // Adding quantity to fix type error
     maxPurchases: 1
   },
   INVENTORY_EXPANSION: {
@@ -301,17 +322,18 @@ export const INVENTORY_ITEMS = {
     stackable: true,
     obtained: Date.now(),
     cost: 500,
+    quantity: 0, // Adding quantity to fix type error
     maxPurchases: 5
   }
 };
 
 export function createInventoryItem(
-  itemTemplate: Omit<InventoryItem, 'quantity'>,
+  itemTemplate: Partial<InventoryItem> & { id: string, name: string, description: string, type: 'resource' | 'boost' | 'reward' | 'gift' | 'consumable', rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary', icon: React.ReactNode, usable: boolean, stackable: boolean },
   quantity: number = 1
 ): InventoryItem {
   return {
     ...itemTemplate,
     quantity,
     obtained: Date.now()
-  };
+  } as InventoryItem;
 }

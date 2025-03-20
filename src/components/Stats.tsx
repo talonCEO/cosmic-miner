@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { 
@@ -239,7 +239,7 @@ const Stats: React.FC = () => {
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
             
-            {/* Active Boosts Section in Dialog - also filtered to exclude time-warp */}
+            {/* Active Boosts Section in Dialog - filtered to exclude time-warp */}
             {activeBoosts && activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">

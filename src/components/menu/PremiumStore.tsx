@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Sparkles, Gem, X } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -128,20 +129,9 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
         dispatch({ type: 'ACTIVATE_BOOST', boostId: item.id });
         break;
       default:
-        const inventoryItem: InventoryItem = {
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          type: item.type,
-          rarity: item.rarity,
-          icon: item.icon,
-          effect: item.effect,
-          usable: item.usable,
-          stackable: item.stackable,
-          obtained: item.obtained,
-          quantity: 1,
-          cost: item.cost,
-          maxPurchases: item.maxPurchases
+        const inventoryItem = {
+          ...item,
+          quantity: 1
         };
         addItem(inventoryItem);
         showUnlockAnimation(inventoryItem);
