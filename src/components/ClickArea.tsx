@@ -50,7 +50,7 @@ interface ClickEffectProps {
 const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }) => {
   return (
     <div 
-      className="click-effect text-green-400 font-medium text-shadow-glow"
+      className="click-effect text-yellow-400 font-medium text-shadow-glow"
       style={{ left: x, top: y }}
       onAnimationEnd={onAnimationEnd}
     >
