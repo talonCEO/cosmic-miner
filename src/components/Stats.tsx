@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -12,7 +11,6 @@ import {
   Gem,
   Timer 
 } from 'lucide-react';
-import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
   Dialog, 
   DialogContent, 
@@ -20,7 +18,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { calculateTapValue } from '@/utils/GameMechanics';
+import { calculateTapValue, calculateTotalCoinsPerSecond } from '@/utils/GameMechanics'; // Updated imports
 import { BoostEffect } from '@/components/menu/types';
 
 const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
@@ -72,11 +70,10 @@ const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
-  const { calculateTotalCPS, calculateGlobalIncomeMultiplier } = useBoostManager();
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
-  const totalCPS = calculateTotalCPS();
-  const globalMultiplier = calculateGlobalIncomeMultiplier();
+  const totalCPS = calculateTotalCoinsPerSecond(state); // Updated to use GameMechanics function
+  const globalMultiplier = calculateGlobalIncomeMultiplier(state); // Assuming this is from useBoostManager or elsewhere
   const tapPower = calculateTapValue(state);
   
   // Updated tracked boost IDs to include cheap-upgrades and exclude time-warp
@@ -239,7 +236,7 @@ const Stats: React.FC = () => {
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
             
-            {/* Active Boosts Section in Dialog - filtered to exclude time-warp */}
+            {/* Active Boosts Section in Dialog */}
             {activeBoosts && activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
