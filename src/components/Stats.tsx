@@ -22,7 +22,7 @@ import {
   calculateTapValue, 
   calculateTotalCoinsPerSecond, 
   calculateGlobalIncomeMultiplier 
-} from '@/utils/GameMechanics'; // Added missing import
+} from '@/utils/GameMechanics';
 import { BoostEffect } from '@/components/menu/types';
 
 const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
@@ -39,7 +39,7 @@ const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [boost]); // Re-run if boost object changes (e.g., new boost activated)
+  }, [boost]);
 
   const formatTime = (seconds: number) => {
     if (seconds <= 0) return "Expired";
@@ -78,7 +78,7 @@ const Stats: React.FC = () => {
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
   const totalCPS = calculateTotalCoinsPerSecond(state);
-  const globalMultiplier = calculateGlobalIncomeMultiplier(state); // Now properly imported
+  const globalMultiplier = calculateGlobalIncomeMultiplier(state);
   const tapPower = calculateTapValue(state);
   
   const trackedBoostIds = [
