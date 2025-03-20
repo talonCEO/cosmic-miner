@@ -3,7 +3,6 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
-import { useBoostManager } from '@/hooks/useBoostManager';
 
 // Particle effect when clicking
 interface ParticleProps {
@@ -58,7 +57,6 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
     </div>
   );
 };
-
 const ClickArea: React.FC = () => {
   const { state, click } = useGame();
   const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
@@ -88,14 +86,7 @@ const ClickArea: React.FC = () => {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
       
-      // Yellow sparkle colors
-      const colors = [
-        "#FFD700", // Gold
-        "#FFFF00", // Yellow
-        "#FFEC8B", // Light Yellow
-        "#FFC125"  // Goldenrod
-      ];
-      
+      const colors = ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"];
       const color = colors[Math.floor(Math.random() * colors.length)];
       
       newParticles.push({ 
@@ -141,7 +132,7 @@ const ClickArea: React.FC = () => {
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateTapValue(state)}
+            value={calculateTapValue(state)} // Already includes boost-perma-tap
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}
@@ -161,7 +152,7 @@ const ClickArea: React.FC = () => {
       {state.coinsPerSecond > 0 && (
         <div className="text-center mb-8 animate-slide-up">
           <p className="text-sm text-white text-shadow-sm">
-            +{formatNumber(state.coinsPerSecond)} coins per second
+            +{formatNumber(calculateTotalCoinsPerSecond(state))} coins per second
           </p>
         </div>
       )}
