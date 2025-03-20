@@ -58,8 +58,8 @@ const BoostItem: React.FC<BoostItemProps> = ({
     showUnlockAnimation(item);
   };
 
-  // @ts-ignore - Suppressing type error as requested by user
-  const isPermanentAndPurchased = item.effect?.duration === undefined && item.purchased > 0;
+  // Explicitly checking for the existence of effect property and if it's purchased more than 0
+  const isPermanentAndPurchased = item.effect && item.effect.duration === undefined && item.purchased > 0;
 
   return (
     <div 
