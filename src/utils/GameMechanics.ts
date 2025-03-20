@@ -55,7 +55,7 @@ export const calculatePassiveIncome = (state: GameState, tickInterval: number = 
   return (state.coinsPerSecond / (1000 / tickInterval)) * 
          passiveIncomeMultiplier * 
          artifactProductionMultiplier *
-         managerBoostMultiplier;
+         managerBoostMultiplier * 10;
 };
 
 /**
