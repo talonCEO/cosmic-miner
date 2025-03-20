@@ -10,8 +10,8 @@ import IronAvatar from '@/assets/images/icons/6.png';
 import GoldAvatar from '@/assets/images/icons/7.png';
 import UraniumAvatar from '@/assets/images/icons/8.png';
 import PlatinumAvatar from '@/assets/images/icons/9.png';
-import ExoticAvatar from '@/assets/images/icons/11.png';
-import AntimatterAvatar from '@/assets/images/icons/11.png';
+import ExoticAvatar from '@/assets/images/icons/111.png';
+import AntimatterAvatar from '@/assets/images/icons/222.png';
 
 /**
  * Manager Interface
