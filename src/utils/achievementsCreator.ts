@@ -2,7 +2,7 @@ import { Achievement, GameState } from '@/context/GameContext';
 import GemIcon from '@/assets/images/icons/gems1.png';
 import BoostIcon from '@/assets/images/icons/gems1.png';
 import TitleIcon from '@/assets/images/icons/gems1.png';
-import PortraitIcon1 from '@/assets/images/icons/2.png';
+import PortraitIcon1 from '2.png';
 import PortraitIcon2 from '@/assets/images/icons/3.png';
 import PortraitIcon3 from '@/assets/images/icons/4.png';
 import PortraitIcon4 from '@/assets/images/icons/5.png';
