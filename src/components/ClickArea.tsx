@@ -111,8 +111,9 @@ const ClickArea: React.FC = () => {
     
     click();
     
+    // Trigger the shake animation
     setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 150);
+    setTimeout(() => setIsAnimating(false), 150); // Matches the duration of the shake animation
   };
   
   const removeClickEffect = (id: number) => {
@@ -127,7 +128,7 @@ const ClickArea: React.FC = () => {
     <div className="flex flex-col items-center justify-center py-6 relative z-20">
       <div 
         ref={containerRef}
-        className="relative w-64 h-64 mb-5 flex items-center justify-center select-none"
+        className={`relative w-64 h-64 mb-5 flex items-center justify-center select-none ${isAnimating ? 'shake' : ''}`}
       >
         <div className="w-64 h-64 rounded-full cursor-pointer">
           <AnimatedAsteroid 
@@ -165,6 +166,37 @@ const ClickArea: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/* Inline CSS for the shake animation */}
+      <style jsx>{`
+        @keyframes shake {
+          0% { transform: translate(0, 0); }
+          20% { transform: translate(-2px, 2px); }
+          40% { transform: translate(2px, -2px); }
+          60% { transform: translate(-2px, -1px); }
+          80% { transform: translate(1px, 2px); }
+          100% { transform: translate(0, 0); }
+        }
+        
+        .shake {
+          animation: shake 0.15s ease-in-out;
+        }
+
+        @keyframes float-up {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        .click-effect {
+          position: absolute;
+          animation: float-up 0.8s ease-out forwards;
+          z-index: 10;
+        }
+
+        .text-shadow-glow {
+          text-shadow: 0 0 5px rgba(74, 222, 128, 0.8), 0 0 10px rgba(74, 222, 128, 0.6);
+        }
+      `}</style>
     </div>
   );
 };
