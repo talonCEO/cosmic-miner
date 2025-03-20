@@ -31,8 +31,8 @@ export interface Achievement {
   checkCondition: (state: GameState) => boolean;
   rewards?: {
     type: 'gems' | 'boost' | 'title' | 'portrait' | 'inventory_item';
-    value: number | string;
-    image: string;
+    value: number | string; // Number for gems, string for boost/title/portrait ID
+    image: string; // Path to reward image
   };
 }
 
@@ -827,70 +827,75 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievements: action.achievements
       };
     }
-    case 'USE_ITEM': {
-      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
-      if (itemIndex === -1) return state;
+case 'USE_ITEM': {
+  const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+  if (itemIndex === -1) return state;
+  
+  const item = state.inventory[itemIndex];
+  if (!item.usable) return state;
+
+  const updatedInventory = [...state.inventory];
+  const quantity = action.quantity || 1;
+  
+  if (item.quantity <= quantity) {
+    updatedInventory.splice(itemIndex, 1);
+  } else {
+    updatedInventory[itemIndex] = {
+      ...item,
+      quantity: item.quantity - quantity
+    };
+  }
+
+  const trackedBoostIds = [
+    'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
+    'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
+    'boost-perma-tap', 'boost-perma-passive'
+  ];
+  
+  if (trackedBoostIds.includes(item.id) && item.effect) {
+    const existingBoostIndex = state.activeBoosts.findIndex(boost => boost.id === item.id);
+    const now = Math.floor(Date.now() / 1000);
+    
+    let newActiveBoosts = [...state.activeBoosts];
+    
+    if (existingBoostIndex >= 0) {
+      const existingBoost = newActiveBoosts[existingBoostIndex];
+      const effectDuration = item.effect.duration || 0; // Safe access since we checked item.effect exists
       
-      const item = state.inventory[itemIndex];
-      if (!item.usable) return state;
-
-      const updatedInventory = [...state.inventory];
-      const quantity = action.quantity || 1;
-      
-      if (item.quantity <= quantity) {
-        updatedInventory.splice(itemIndex, 1);
-      } else {
-        updatedInventory[itemIndex] = {
-          ...item,
-          quantity: item.quantity - quantity
-        };
-      }
-
-      const now = Math.floor(Date.now() / 1000);
-      let newActiveBoosts = [...state.activeBoosts];
-      const existingBoostIndex = newActiveBoosts.findIndex(boost => boost.id === item.id);
-
-      if (item.effect) {
-        if (existingBoostIndex >= 0) {
-          const existingBoost = newActiveBoosts[existingBoostIndex];
-          let newDuration = existingBoost.duration && item.effect.duration 
-            ? (existingBoost.remainingTime || 0) + (item.effect.duration * quantity) 
-            : item.effect.duration;
-
-          let newValue = item.effect.duration 
-            ? item.effect.value 
-            : existingBoost.value * (existingBoost.quantity + quantity); // Stack permanent effects
-
-          newActiveBoosts[existingBoostIndex] = {
-            ...existingBoost,
-            quantity: existingBoost.quantity + quantity,
-            value: newValue,
-            duration: newDuration,
-            activatedAt: now,
-            remainingTime: newDuration,
-          };
-        } else {
-          const newBoost: BoostEffect = {
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            quantity: quantity,
-            value: item.effect.value * quantity, // Initial stacking for permanent boosts
-            duration: item.effect.duration,
-            activatedAt: now,
-            remainingTime: item.effect.duration,
-            icon: item.icon,
-          };
-          newActiveBoosts.push(newBoost);
-        }
-      }
-
-      return {
-        ...state,
-        inventory: updatedInventory,
-        activeBoosts: newActiveBoosts,
+      newActiveBoosts[existingBoostIndex] = {
+        ...existingBoost,
+        quantity: existingBoost.quantity + quantity,
+        activatedAt: now,
+        remainingTime: effectDuration > 0 ? 
+          (existingBoost.remainingTime || 0) + effectDuration : undefined,
       };
+    } else {
+      const newBoost: BoostEffect = {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        quantity: quantity,
+        value: item.effect.value, // Safe access
+        duration: item.effect.duration, // Safe access
+        activatedAt: now,
+        remainingTime: item.effect.duration, // Safe access
+        icon: item.icon
+      };
+      newActiveBoosts.push(newBoost);
     }
+    
+    return {
+      ...state,
+      inventory: updatedInventory,
+      activeBoosts: newActiveBoosts
+    };
+  }
+        
+  return {
+    ...state,
+    inventory: updatedInventory
+  };
+}
     case 'ADD_ITEM': {
       const currentItems = state.inventory.reduce(
         (total, item) => total + (item.stackable ? 1 : item.quantity), 
@@ -973,12 +978,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const now = Math.floor(Date.now() / 1000);
       
       const updatedBoosts = state.activeBoosts.map(boost => {
-        if (boost.duration && boost.activatedAt) {
+        if (boost.duration && boost.activatedAt && boost.remainingTime) {
           const elapsed = now - boost.activatedAt;
           const remaining = boost.duration - elapsed;
+          
           return {
             ...boost,
-            remainingTime: Math.max(0, remaining),
+            remainingTime: Math.max(0, remaining)
           };
         }
         return boost;
@@ -986,7 +992,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       // Filter out expired boosts
       const filteredBoosts = updatedBoosts.filter(
-        boost => !boost.duration || boost.remainingTime! > 0
+        boost => !boost.duration || !boost.remainingTime || boost.remainingTime > 0
       );
       
       return {
@@ -1009,33 +1015,24 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
 const calculateIncomeMultiplier = (state: GameState) => {
   let multiplier = state.incomeMultiplier;
-  const doubleCoinsBoost = state.activeBoosts.find(b => b.id === 'boost-double-coins');
-  if (doubleCoinsBoost && doubleCoinsBoost.remainingTime && doubleCoinsBoost.remainingTime > 0) {
+  if (state.boosts["boost-double-coins"]?.active) {
     multiplier *= INVENTORY_ITEMS.DOUBLE_COINS.effect!.value;
   }
-  
-  const essenceBoost = state.activeBoosts.find(b => b.id === 'boost-essence-boost');
-  if (essenceBoost) {
-    multiplier *= Math.pow(INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value, essenceBoost.quantity);
-  }
-  
   return multiplier;
 };
 
 const calculateBaseCoinsPerClick = (state: GameState) => {
   let base = state.coinsPerClick;
-  const permaTapBoost = state.activeBoosts.find(b => b.id === 'boost-perma-tap');
-  if (permaTapBoost) {
-    base += permaTapBoost.quantity * INVENTORY_ITEMS.PERMA_TAP.effect!.value;
+  if (state.boosts["boost-perma-tap"]?.purchased) {
+    base += state.boosts["boost-perma-tap"].purchased * INVENTORY_ITEMS.PERMA_TAP.effect!.value;
   }
   return base;
 };
 
 const calculateBaseCoinsPerSecond = (state: GameState) => {
   let base = state.coinsPerSecond;
-  const permaPassiveBoost = state.activeBoosts.find(b => b.id === 'boost-perma-passive');
-  if (permaPassiveBoost) {
-    base += permaPassiveBoost.quantity * INVENTORY_ITEMS.PERMA_PASSIVE.effect!.value;
+  if (state.boosts["boost-perma-passive"]?.purchased) {
+    base += state.boosts["boost-perma-passive"].purchased * INVENTORY_ITEMS.PERMA_PASSIVE.effect!.value;
   }
   return base;
 };
@@ -1214,12 +1211,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
   
   const calculatePotentialEssenceReward = (): number => {
-    let baseReward = GameMechanics.calculateEssenceReward(state.totalEarned, state);
-    const essenceBoost = state.activeBoosts.find(b => b.id === 'boost-essence-boost');
-    if (essenceBoost) {
-      baseReward *= Math.pow(INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value, essenceBoost.quantity);
-    }
-    return baseReward;
+    return GameMechanics.calculateEssenceReward(state.totalEarned, state);
   };
   
   const click = () => dispatch({ type: 'CLICK' });
@@ -1292,3 +1284,4 @@ export const useGame = () => {
   }
   return context;
 };
+
