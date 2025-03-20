@@ -17,7 +17,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center w-full">
           <h1 className="text-xl font-medium flex items-center">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-600 font-semibold">
-              Cosmic
+              Starforge
             </span>
             <span className="text-white ml-1">Miner</span>
             <span className="inline-block ml-1 animate-pulse">
