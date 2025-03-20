@@ -31,8 +31,8 @@ export interface Achievement {
   checkCondition: (state: GameState) => boolean;
   rewards?: {
     type: 'gems' | 'boost' | 'title' | 'portrait' | 'inventory_item';
-    value: number | string; // Number for gems, string for boost/title/portrait ID
-    image: string; // Path to reward image
+    value: number | string;
+    image: string;
   };
 }
 
@@ -571,6 +571,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
       });
 
+      // Preserve permanent boosts in activeBoosts
+      const preservedBoosts = state.activeBoosts.filter(boost => 
+        ['boost-perma-tap', 'boost-perma-passive'].includes(boost.id)
+      );
+
       return {
         ...initialState,
         coins: startingCoins,
@@ -594,7 +599,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         userId: state.userId,
         portrait: state.portrait,
         nameChangeCount: state.nameChangeCount,
-        activeBoosts: []
+        activeBoosts: preservedBoosts // Preserve permanent boosts
       };
     }
     case 'BUY_MANAGER': {
@@ -990,7 +995,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         return boost;
       });
       
-      // Filter out expired boosts
       const filteredBoosts = updatedBoosts.filter(
         boost => !boost.duration || !boost.remainingTime || boost.remainingTime > 0
       );
@@ -1284,4 +1288,3 @@ export const useGame = () => {
   }
   return context;
 };
-
