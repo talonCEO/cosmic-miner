@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -33,6 +34,19 @@ export interface Ability {
   cooldown?: number;
   duration?: number;
   effect?: string;
+}
+
+// Add the BoostEffect type to track used inventory items
+export interface BoostEffect {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  value: number;
+  duration?: number;
+  activatedAt?: number;
+  remainingTime?: number;
+  icon: React.ReactNode;
 }
 
 export interface InventoryItem {

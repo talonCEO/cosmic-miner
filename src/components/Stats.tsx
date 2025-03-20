@@ -9,7 +9,8 @@ import {
   Gauge, 
   Recycle, 
   BarChart,
-  Gem 
+  Gem,
+  Timer 
 } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
@@ -20,6 +21,55 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
+import { BoostEffect } from '@/components/menu/types';
+
+// Active boost component
+const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
+  const [timeLeft, setTimeLeft] = useState<number>(boost.remainingTime || 0);
+  
+  React.useEffect(() => {
+    if (!boost.duration) return;
+    
+    const interval = setInterval(() => {
+      if (boost.remainingTime !== undefined) {
+        setTimeLeft(boost.remainingTime);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [boost]);
+  
+  const formatTime = (seconds: number) => {
+    if (seconds <= 0) return "Expired";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-700/60 rounded-lg p-2 mb-2 flex justify-between items-center">
+      <div className="flex items-center">
+        <div className="mr-2 text-lg">
+          {boost.icon}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-white">{boost.name}</p>
+          <p className="text-xs text-slate-400">Used: {boost.quantity}x</p>
+        </div>
+      </div>
+      {boost.duration ? (
+        <div className="flex items-center text-xs text-slate-300">
+          <Timer size={14} className="mr-1" />
+          {formatTime(timeLeft)}
+        </div>
+      ) : (
+        <div className="text-xs text-indigo-400 font-medium">
+          Permanent
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
@@ -29,6 +79,16 @@ const Stats: React.FC = () => {
   const totalCPS = calculateTotalCPS();
   const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
+  
+  // Filter tracked boost IDs
+  const trackedBoostIds = [
+    'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
+    'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
+  ];
+  
+  const activeBoosts = state.activeBoosts.filter(boost => 
+    trackedBoostIds.includes(boost.id)
+  );
   
   return (
     <div className="w-full max-w-md mx-auto pb-12">
@@ -90,6 +150,21 @@ const Stats: React.FC = () => {
             <span className="text-xs text-slate-500 mt-1">Coins Earned: {formatNumber(state.totalEarned)}</span>
           </div>
         </div>
+        
+        {/* Active Boosts Section */}
+        {activeBoosts.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium mb-2 text-slate-200 flex items-center">
+              <Sparkles size={14} className="text-indigo-400 mr-1" />
+              Active Boosts
+            </h3>
+            <div className="space-y-2">
+              {activeBoosts.map(boost => (
+                <ActiveBoost key={boost.id} boost={boost} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
@@ -145,6 +220,21 @@ const Stats: React.FC = () => {
               <h3 className="text-sm font-semibold text-slate-300 mb-2">Pending Liquidation Value</h3>
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
+            
+            {/* Active Boosts Section in Dialog */}
+            {activeBoosts.length > 0 && (
+              <div className="bg-slate-700/50 p-3 rounded-lg">
+                <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
+                  <Sparkles size={16} className="text-indigo-400 mr-2" />
+                  Active Boosts
+                </h3>
+                <div className="space-y-2 mt-2">
+                  {activeBoosts.map(boost => (
+                    <ActiveBoost key={boost.id} boost={boost} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

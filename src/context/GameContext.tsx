@@ -8,7 +8,7 @@ import useGameMechanics from '@/hooks/useGameMechanics';
 import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
-import { InventoryItem, INVENTORY_ITEMS, createInventoryItem } from '@/components/menu/types';
+import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from '@/components/menu/types';
 import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
 import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
 import NeuralMiningIcon from '@/assets/images/icons/neural-mining.png';
@@ -104,6 +104,7 @@ export interface GameState {
   userId: string;
   portrait: string;
   nameChangeCount: number;
+  activeBoosts: BoostEffect[];
 }
 
 type GameAction =
@@ -129,12 +130,13 @@ type GameAction =
   | { type: 'RESTORE_UPGRADES'; upgrades: Upgrade[] }
   | { type: 'RESTORE_ABILITIES'; abilities: Ability[] }
   | { type: 'RESTORE_ACHIEVEMENTS'; achievements: Achievement[] }
-  | { type: 'USE_ITEM'; itemId: string }
+  | { type: 'USE_ITEM'; itemId: string; quantity?: number }
   | { type: 'ADD_ITEM'; item: InventoryItem }
   | { type: 'REMOVE_ITEM'; itemId: string; quantity?: number }
   | { type: 'SET_MENU_TYPE'; menuType: string }
   | { type: 'ADD_GEMS'; amount: number }
-  | { type: 'ACTIVATE_BOOST'; boostId: string }
+  | { type: 'ACTIVATE_BOOST'; boostId: string; duration?: number; value?: number; valueOverride?: number }
+  | { type: 'UPDATE_BOOST_TIMERS' }
   | { type: 'UPDATE_USERNAME'; username: string }
   | { type: 'UPDATE_TITLE'; title: string }
   | { type: 'UPDATE_PORTRAIT'; portrait: string }
@@ -325,10 +327,11 @@ const initialState: GameState = {
   boosts: {},
   hasNoAds: false,
   username: "Cosmic Explorer",
-  title: "space_pilot", // Only space_pilot unlocked by default
+  title: "space_pilot",
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
-  portrait: "default", // Only default unlocked by default
-  nameChangeCount: 0
+  portrait: "default",
+  nameChangeCount: 0,
+  activeBoosts: []
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -590,7 +593,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         title: state.title,
         userId: state.userId,
         portrait: state.portrait,
-        nameChangeCount: state.nameChangeCount
+        nameChangeCount: state.nameChangeCount,
+        activeBoosts: []
       };
     }
     case 'BUY_MANAGER': {
@@ -829,76 +833,66 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       const item = state.inventory[itemIndex];
       if (!item.usable) return state;
-      
-      let updatedState = { ...state };
-      let newCoins = state.coins;
-      
-      if (item.effect) {
-        switch (item.effect.type) {
-          case 'coins':
-            updatedState.coins += item.effect.value;
-            updatedState.totalEarned += item.effect.value;
-            break;
-          case 'essence':
-            updatedState.essence += item.effect.value;
-            break;
-          case 'coinMultiplier':
-            const reward = updatedState.coinsPerSecond * item.effect.value * (item.effect.duration || 60);
-            updatedState.coins += reward;
-            updatedState.totalEarned += reward;
-            console.log(`Applied coinMultiplier boost: ${reward} coins`);
-            break;
-          case 'timeWarp':
-            const timeReward = updatedState.coinsPerSecond * item.effect.value;
-            newCoins += timeReward;
-            updatedState.totalEarned += timeReward;
-            console.log(`Applied timeWarp boost: ${timeReward} coins`);
-            break;
-          case 'autoTap':
-            const tapValue = GameMechanics.calculateTapValue(state);
-            const tapRate = item.effect.value || 1;
-            const duration = item.effect.duration || 60;
-            const tapReward = tapValue * tapRate * duration;
-            newCoins += tapReward;
-            updatedState.totalEarned += tapReward;
-            updatedState.totalClicks += tapRate * duration;
-            console.log(`Applied autoTap boost: ${tapReward} coins from ${tapRate * duration} taps`);
-            break;
-          case 'noAds':
-            updatedState.hasNoAds = true;
-            break;
-          case 'unlockAutoBuy':
-            updatedState.autoBuy = true;
-            break;
-          case 'inventoryCapacity':
-            updatedState.inventoryCapacity += item.effect.value;
-            break;
-        }
-      }
-      
+
       const updatedInventory = [...state.inventory];
-      if (item.quantity > 1) {
+      const quantity = action.quantity || 1;
+      
+      if (item.quantity <= quantity) {
+        updatedInventory.splice(itemIndex, 1);
+      } else {
         updatedInventory[itemIndex] = {
           ...item,
-          quantity: item.quantity - 1
+          quantity: item.quantity - quantity
         };
-      } else {
-        updatedInventory.splice(itemIndex, 1);
       }
+
+      const trackedBoostIds = [
+        'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
+        'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
+      ];
       
-      return {
-        ...updatedState,
-        coins: newCoins,
-        inventory: updatedInventory,
-        boosts: {
-          ...state.boosts,
-          [action.itemId]: {
-            active: !!item.effect?.duration,
+      if (trackedBoostIds.includes(item.id)) {
+        const existingBoostIndex = state.activeBoosts.findIndex(boost => boost.id === item.id);
+        const now = Math.floor(Date.now() / 1000);
+        
+        let newActiveBoosts = [...state.activeBoosts];
+        
+        if (existingBoostIndex >= 0) {
+          const existingBoost = newActiveBoosts[existingBoostIndex];
+          const effectDuration = item.effect?.duration || 0;
+          
+          newActiveBoosts[existingBoostIndex] = {
+            ...existingBoost,
+            quantity: existingBoost.quantity + quantity,
+            activatedAt: now,
+            remainingTime: effectDuration > 0 ? 
+              (existingBoost.remainingTime || 0) + effectDuration : undefined,
+          };
+        } else {
+          const newBoost: BoostEffect = {
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            quantity: quantity,
+            value: item.effect?.value || 0,
+            duration: item.effect?.duration,
+            activatedAt: now,
             remainingTime: item.effect?.duration,
-            remainingUses: item.effect?.type === "coinsPerClick" ? item.effect?.duration : undefined,
-            purchased: (state.boosts[action.itemId]?.purchased || 0) + 1,
-          },
-        },
+            icon: item.icon
+          };
+          newActiveBoosts.push(newBoost);
+        }
+        
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts
+        };
+      }
+        
+      return {
+        ...state,
+        inventory: updatedInventory
       };
     }
     case 'ADD_ITEM': {
@@ -987,6 +981,27 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, portrait: action.portrait };
     case 'UPDATE_NAME_CHANGE_COUNT':
       return { ...state, nameChangeCount: action.count };
+    case 'UPDATE_BOOST_TIMERS': {
+      const now = Math.floor(Date.now() / 1000);
+      
+      const updatedBoosts = state.activeBoosts.map(boost => {
+        if (boost.duration && boost.activatedAt && boost.remainingTime) {
+          const elapsed = now - boost.activatedAt;
+          const remaining = boost.duration - elapsed;
+          
+          return {
+            ...boost,
+            remainingTime: Math.max(0, remaining)
+          };
+        }
+        return boost;
+      });
+      
+      return {
+        ...state,
+        activeBoosts: updatedBoosts
+      };
+    }
     default:
       return state;
   }
@@ -1035,7 +1050,7 @@ interface GameContextType {
   calculateMaxPurchaseAmount: (upgradeId: string) => number;
   calculatePotentialEssenceReward: () => number;
   handleClick: () => void;
-  useItem: (itemId: string) => void;
+  useItem: (itemId: string, quantity?: number) => void;
   addItem: (item: InventoryItem) => void;
   removeItem: (itemId: string, quantity?: number) => void;
   addGems: (amount: number) => void;
@@ -1043,6 +1058,7 @@ interface GameContextType {
   updateUsername: (username: string) => void;
   updateTitle: (title: string) => void;
   updatePortrait: (portrait: string) => void;
+  updateBoostTimers: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1166,6 +1182,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(achievementInterval);
   }, []);
   
+  useEffect(() => {
+    const boostTimerInterval = setInterval(() => {
+      dispatch({ type: 'UPDATE_BOOST_TIMERS' });
+    }, 1000);
+    
+    return () => clearInterval(boostTimerInterval);
+  }, []);
+  
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
@@ -1198,7 +1222,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
   const checkAchievements = () => dispatch({ type: 'CHECK_ACHIEVEMENTS' });
   const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
-  const useItem = (itemId: string) => dispatch({ type: 'USE_ITEM', itemId });
+  const useItem = (itemId: string, quantity = 1) => dispatch({ type: 'USE_ITEM', itemId, quantity });
   const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
   const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
   const addGems = (amount: number) => dispatch({ type: 'ADD_GEMS', amount });
@@ -1206,6 +1230,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUsername = (username: string) => dispatch({ type: 'UPDATE_USERNAME', username });
   const updateTitle = (title: string) => dispatch({ type: 'UPDATE_TITLE', title });
   const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
+  const updateBoostTimers = () => dispatch({ type: 'UPDATE_BOOST_TIMERS' });
 
   const contextValue = {
     state,
@@ -1233,7 +1258,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     activateBoost,
     updateUsername,
     updateTitle,
-    updatePortrait
+    updatePortrait,
+    updateBoostTimers
   };
   
   gameContextHolder.current = contextValue;
