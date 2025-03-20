@@ -78,6 +78,7 @@ const ArtifactsTab: React.FC = () => {
                 ${isOwned ? 'opacity-100' : 'opacity-50'}`}
             >
               <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">
+                {/* artifact.avatar is now a static import path, resolved to a string by the bundler */}
                 <AvatarImage src={artifact.avatar} alt={artifact.name} />
                 <AvatarFallback className="bg-purple-900/50 text-purple-300 rounded-xl">
                   {artifact.id.includes("artifact-1") ? (
