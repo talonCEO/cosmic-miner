@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { GraduationCap, ShoppingBasket, Network, Users, Package } from 'lucide-react';
+import { GraduationCap, ShoppingBasket, Network, Users, Package, Globe } from 'lucide-react';
 import { DialogClose, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MenuType } from './types';
@@ -65,6 +64,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
           >
             <ShoppingBasket size={20} />
             <span>Shop</span>
+          </button>
+
+          {/* Worlds Button - Greyed out, disabled, with "Coming Soon" watermark */}
+          <button 
+            disabled
+            className="bg-gray-500/50 text-gray-400 py-3 px-4 rounded-lg font-medium cursor-not-allowed flex items-center justify-center gap-2 relative"
+          >
+            <Globe size={20} />
+            <span>Worlds</span>
+            <span className="absolute text-xs text-gray-300 opacity-75 rotate-[-10deg] pointer-events-none">
+              Coming Soon
+            </span>
           </button>
         </div>
       </ScrollArea>
