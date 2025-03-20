@@ -18,24 +18,29 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { calculateTapValue, calculateTotalCoinsPerSecond } from '@/utils/GameMechanics'; // Updated imports
+import { 
+  calculateTapValue, 
+  calculateTotalCoinsPerSecond, 
+  calculateGlobalIncomeMultiplier 
+} from '@/utils/GameMechanics'; // Added missing import
 import { BoostEffect } from '@/components/menu/types';
 
 const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
   const [timeLeft, setTimeLeft] = useState<number>(boost.remainingTime || 0);
-  
-  React.useEffect(() => {
-    if (!boost.duration) return;
-    
+
+  useEffect(() => {
+    if (!boost.duration || boost.remainingTime === undefined) return;
+
+    // Sync initial timeLeft with boost.remainingTime
+    setTimeLeft(boost.remainingTime);
+
     const interval = setInterval(() => {
-      if (boost.remainingTime !== undefined) {
-        setTimeLeft(boost.remainingTime);
-      }
+      setTimeLeft((prev) => Math.max(0, prev - 1)); // Decrement every second
     }, 1000);
-    
+
     return () => clearInterval(interval);
-  }, [boost]);
-  
+  }, [boost]); // Re-run if boost object changes (e.g., new boost activated)
+
   const formatTime = (seconds: number) => {
     if (seconds <= 0) return "Expired";
     const mins = Math.floor(seconds / 60);
@@ -72,18 +77,16 @@ const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
-  const totalCPS = calculateTotalCoinsPerSecond(state); // Updated to use GameMechanics function
-  const globalMultiplier = calculateGlobalIncomeMultiplier(state); // Assuming this is from useBoostManager or elsewhere
+  const totalCPS = calculateTotalCoinsPerSecond(state);
+  const globalMultiplier = calculateGlobalIncomeMultiplier(state); // Now properly imported
   const tapPower = calculateTapValue(state);
   
-  // Updated tracked boost IDs to include cheap-upgrades and exclude time-warp
   const trackedBoostIds = [
     'boost-double-coins', 'boost-auto-tap',
     'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
     'boost-perma-tap', 'boost-perma-passive'
   ];
   
-  // Filter out time-warp from active boosts display
   const activeBoosts = state.activeBoosts.filter(boost => 
     trackedBoostIds.includes(boost.id)
   );
@@ -236,7 +239,6 @@ const Stats: React.FC = () => {
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
             
-            {/* Active Boosts Section in Dialog */}
             {activeBoosts && activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
