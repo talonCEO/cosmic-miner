@@ -1,5 +1,18 @@
 import { Perk } from './types';
 
+// Static image imports (replace these with your actual image paths)
+import SteveAvatar from '@/assets/images/icons/11.png';
+import HydrogenAvatar from '@/assets/images/icons/11.png';
+import CarbonAvatar from '@/assets/images/icons/11.png';
+import OxygenAvatar from '@/assets/images/icons/11.png';
+import SiliconAvatar from '@/assets/images/icons/11.png';
+import IronAvatar from '@/assets/images/icons/11.png';
+import GoldAvatar from '@/assets/images/icons/11.png';
+import UraniumAvatar from '@/assets/images/icons/11.png';
+import PlatinumAvatar from '@/assets/images/icons/11.png';
+import ExoticAvatar from '@/assets/images/icons/11.png';
+import AntimatterAvatar from '@/assets/images/icons/11.png';
+
 /**
  * Manager Interface
  * 
@@ -12,7 +25,7 @@ export interface Manager {
   description: string;       // Describes manager role
   bonus: string;             // Description of the manager's passive bonus
   requiredCoins: number;     // Coins needed to unlock (visibility threshold)
-  avatar: string;            // URL to avatar image
+  avatar: string;            // Path to avatar image (static import)
   cost: number;              // Essence cost to hire
   boosts?: string[];         // IDs of elements this manager boosts
   perks?: Perk[];           // Unlockable perks using skill points
@@ -38,7 +51,7 @@ export const managers: Manager[] = [
     description: "The first employee you hired. He's not great, but he tries",
     bonus: "+10% can-do attitude (purely cosmetic)",
     requiredCoins: 0,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=steve",
+    avatar: SteveAvatar,  // Static import
     cost: 0
   },
   {
@@ -47,7 +60,7 @@ export const managers: Manager[] = [
     description: "Expert in lightweight element extraction",
     bonus: "Increases Hydrogen and Carbon production by 50%",
     requiredCoins: 1000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=hydrogen",
+    avatar: HydrogenAvatar,  // Static import
     cost: 1,
     boosts: ["Hydrogen", "Exotic Matter"],
     perks: [
@@ -80,13 +93,13 @@ export const managers: Manager[] = [
       }
     ]
   },
-   {
+  {
     id: "manager-2",
     name: "Carbon Collector",
     description: "Specializes in organic compound synthesis",
     bonus: "Increases Oxygen and Nitrogen production by 50%",
     requiredCoins: 5000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=carbon",
+    avatar: CarbonAvatar,  // Static import
     cost: 2,
     boosts: ["Carbon", "Nitrogen"],
     perks: [
@@ -125,7 +138,7 @@ export const managers: Manager[] = [
     description: "Breathes life into your operations",
     bonus: "Increases Silicon and Aluminum production by 50%",
     requiredCoins: 10000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=oxygen",
+    avatar: OxygenAvatar,  // Static import
     cost: 4,
     boosts: ["Oxygen", "Promethium"],
     perks: [
@@ -164,7 +177,7 @@ export const managers: Manager[] = [
     description: "Tech wizard for electronic element mining",
     bonus: "Increases Iron and Copper production by 50%",
     requiredCoins: 25000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=silicon",
+    avatar: SiliconAvatar,  // Static import
     cost: 8,
     boosts: ["Silicon", "Aluminum"],
     perks: [
@@ -203,7 +216,7 @@ export const managers: Manager[] = [
     description: "Master of metallurgy and ferrous elements",
     bonus: "Increases Zinc and Tin production by 50%",
     requiredCoins: 50000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=iron",
+    avatar: IronAvatar,  // Static import
     cost: 16,
     boosts: ["Iron", "Cobalt"],
     perks: [
@@ -242,7 +255,7 @@ export const managers: Manager[] = [
     description: "Has a nose for precious metals",
     bonus: "Increases Titanium and Chromium production by 50%",
     requiredCoins: 500000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gold",
+    avatar: GoldAvatar,  // Static import
     cost: 32,
     boosts: ["Gold", "Nickel"],
     perks: [
@@ -281,7 +294,7 @@ export const managers: Manager[] = [
     description: "Handles radioactive elements with care",
     bonus: "Increases Manganese and Cobalt production by 50%",
     requiredCoins: 1000000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=uranium",
+    avatar: UraniumAvatar,  // Static import
     cost: 64,
     boosts: ["Uranium", "Lead"],
     perks: [
@@ -320,7 +333,7 @@ export const managers: Manager[] = [
     description: "Refines precious metals to perfect purity",
     bonus: "Increases Platinum and Molybdenum production by 50%",
     requiredCoins: 10000000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=platinum",
+    avatar: PlatinumAvatar,  // Static import
     cost: 128,
     boosts: ["Platinum", "Berkelium"],
     perks: [
@@ -359,7 +372,7 @@ export const managers: Manager[] = [
     description: "Specializes in theoretical elements",
     bonus: "Increases Silver and Tungsten production by 50%",
     requiredCoins: 100000000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=exotic",
+    avatar: ExoticAvatar,  // Static import
     cost: 256,
     boosts: ["Germanium", "Californium"],
     perks: [
@@ -398,7 +411,7 @@ export const managers: Manager[] = [
     description: "Transmutes the impossible",
     bonus: "Increases Lead and Uranium production by 50%",
     requiredCoins: 500000000,
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=antimatter",
+    avatar: AntimatterAvatar,  // Static import
     cost: 512,
     boosts: ["Antimatter", "Tungsten"],
     perks: [
