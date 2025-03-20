@@ -1,8 +1,19 @@
-// GameMechanics.ts
-
 import { GameState, Ability } from '@/context/GameContext';
 import { calculateClickMultiplier as utilsCalculateClickMultiplier } from '@/hooks/useGameMechanics';
 
+/**
+ * GameMechanics.ts
+ * 
+ * This file centralizes all game mechanics calculations, including:
+ * - Income calculations (per click and passive)
+ * - Upgrade costs and effects
+ * - Boost effects from abilities, managers, artifacts, perks
+ * - Resource gain calculations (coins, essence)
+ */
+
+/**
+ * Calculate the total tap/click value considering all boosts
+ */
 export const calculateTapValue = (state: GameState): number => {
   // Get tap multiplier from tap power upgrade
   const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
@@ -18,19 +29,17 @@ export const calculateTapValue = (state: GameState): number => {
   // Apply ability boosts to tap value
   const abilityTapMultiplier = calculateAbilityTapMultiplier(state.abilities);
   
-  // Add boost-perma-tap effect: +1 per quantity
-  const permaTapBoost = state.activeBoosts
-    .filter(boost => boost.id === 'boost-perma-tap')
-    .reduce((sum, boost) => sum + (boost.quantity || 0), 0); // Sum quantities
-  
-  // Apply all multipliers and add permanent tap boost
-  return ((baseClickValue + coinsPerSecondBonus) * 
+  // Apply all multipliers
+  return (baseClickValue + coinsPerSecondBonus) * 
          clickMultiplier * 
          tapBoostMultiplier * 
-         abilityTapMultiplier) + permaTapBoost;
+         abilityTapMultiplier;
 };
 
-export const calculateTotalCoinsPerSecond = (state: GameState): number => {
+/**
+ * Calculate passive income considering all boosts
+ */
+export const calculatePassiveIncome = (state: GameState, tickInterval: number = 100): number => {
   if (state.coinsPerSecond <= 0) return 0;
   
   // Apply ability boosts to passive income
@@ -42,16 +51,11 @@ export const calculateTotalCoinsPerSecond = (state: GameState): number => {
   // Apply manager element boosts
   const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
   
-  // Add boost-perma-passive effect: +1 per quantity
-  const permaPassiveBoost = state.activeBoosts
-    .filter(boost => boost.id === 'boost-perma-passive')
-    .reduce((sum, boost) => sum + (boost.quantity || 0), 0); // Sum quantities
-  
-  // Return the total CPS with all multipliers applied plus permanent passive boost
-  return (state.coinsPerSecond * 
+  // Calculate passive income scaled for the tick interval (in milliseconds)
+  return (state.coinsPerSecond / (1000 / tickInterval)) * 
          passiveIncomeMultiplier * 
-         artifactProductionMultiplier * 
-         managerBoostMultiplier) + permaPassiveBoost;
+         artifactProductionMultiplier *
+         managerBoostMultiplier;
 };
 
 /**

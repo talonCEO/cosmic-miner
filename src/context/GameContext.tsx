@@ -31,8 +31,8 @@ export interface Achievement {
   checkCondition: (state: GameState) => boolean;
   rewards?: {
     type: 'gems' | 'boost' | 'title' | 'portrait' | 'inventory_item';
-    value: number | string;
-    image: string;
+    value: number | string; // Number for gems, string for boost/title/portrait ID
+    image: string; // Path to reward image
   };
 }
 
@@ -299,7 +299,7 @@ const initialAbilities: Ability[] = [
 const UPGRADE_COST_GROWTH = 1.15;
 
 const initialState: GameState = {
-  coins: 0,
+  coins: 1000000000000000,
   coinsPerClick: 1,
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
@@ -571,11 +571,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
       });
 
-      // Preserve permanent boosts in activeBoosts
-      const preservedBoosts = state.activeBoosts.filter(boost => 
-        ['boost-perma-tap', 'boost-perma-passive'].includes(boost.id)
-      );
-
       return {
         ...initialState,
         coins: startingCoins,
@@ -599,7 +594,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         userId: state.userId,
         portrait: state.portrait,
         nameChangeCount: state.nameChangeCount,
-        activeBoosts: preservedBoosts // Preserve permanent boosts
+        activeBoosts: []
       };
     }
     case 'BUY_MANAGER': {
@@ -995,6 +990,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         return boost;
       });
       
+      // Filter out expired boosts
       const filteredBoosts = updatedBoosts.filter(
         boost => !boost.duration || !boost.remainingTime || boost.remainingTime > 0
       );
@@ -1288,3 +1284,4 @@ export const useGame = () => {
   }
   return context;
 };
+

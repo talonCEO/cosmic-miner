@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -74,16 +75,18 @@ const Stats: React.FC = () => {
   const { calculateTotalCPS, calculateGlobalIncomeMultiplier } = useBoostManager();
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
-  const totalCPS = calculateTotalCPS(); // Includes boost-perma-passive from GameMechanics
+  const totalCPS = calculateTotalCPS();
   const globalMultiplier = calculateGlobalIncomeMultiplier();
-  const tapPower = calculateTapValue(state); // Includes boost-perma-tap from GameMechanics
+  const tapPower = calculateTapValue(state);
   
+  // Updated tracked boost IDs to include cheap-upgrades and exclude time-warp
   const trackedBoostIds = [
     'boost-double-coins', 'boost-auto-tap',
     'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
     'boost-perma-tap', 'boost-perma-passive'
   ];
   
+  // Filter out time-warp from active boosts display
   const activeBoosts = state.activeBoosts.filter(boost => 
     trackedBoostIds.includes(boost.id)
   );
@@ -149,6 +152,7 @@ const Stats: React.FC = () => {
           </div>
         </div>
         
+        {/* Active Boosts Section */}
         {activeBoosts && activeBoosts.length > 0 && (
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2 text-indigo-400">Active Boosts</h3>
@@ -235,6 +239,7 @@ const Stats: React.FC = () => {
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
             
+            {/* Active Boosts Section in Dialog - filtered to exclude time-warp */}
             {activeBoosts && activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
