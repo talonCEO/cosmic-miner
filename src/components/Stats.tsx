@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -11,6 +12,7 @@ import {
   Gem,
   Timer 
 } from 'lucide-react';
+import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
   Dialog, 
   DialogContent, 
@@ -18,29 +20,24 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { 
-  calculateTapValue, 
-  calculateTotalCoinsPerSecond, 
-  calculateGlobalIncomeMultiplier 
-} from '@/utils/GameMechanics';
+import { calculateTapValue } from '@/utils/GameMechanics';
 import { BoostEffect } from '@/components/menu/types';
 
 const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
   const [timeLeft, setTimeLeft] = useState<number>(boost.remainingTime || 0);
-
-  useEffect(() => {
-    if (!boost.duration || boost.remainingTime === undefined) return;
-
-    // Sync initial timeLeft with boost.remainingTime
-    setTimeLeft(boost.remainingTime);
-
+  
+  React.useEffect(() => {
+    if (!boost.duration) return;
+    
     const interval = setInterval(() => {
-      setTimeLeft((prev) => Math.max(0, prev - 1)); // Decrement every second
+      if (boost.remainingTime !== undefined) {
+        setTimeLeft(boost.remainingTime);
+      }
     }, 1000);
-
+    
     return () => clearInterval(interval);
   }, [boost]);
-
+  
   const formatTime = (seconds: number) => {
     if (seconds <= 0) return "Expired";
     const mins = Math.floor(seconds / 60);
@@ -75,18 +72,21 @@ const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
 
 const Stats: React.FC = () => {
   const { state, calculatePotentialEssenceReward } = useGame();
+  const { calculateTotalCPS, calculateGlobalIncomeMultiplier } = useBoostManager();
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   
-  const totalCPS = calculateTotalCoinsPerSecond(state);
-  const globalMultiplier = calculateGlobalIncomeMultiplier(state);
+  const totalCPS = calculateTotalCPS();
+  const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
   
+  // Updated tracked boost IDs to include cheap-upgrades and exclude time-warp
   const trackedBoostIds = [
     'boost-double-coins', 'boost-auto-tap',
     'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
     'boost-perma-tap', 'boost-perma-passive'
   ];
   
+  // Filter out time-warp from active boosts display
   const activeBoosts = state.activeBoosts.filter(boost => 
     trackedBoostIds.includes(boost.id)
   );
@@ -239,6 +239,7 @@ const Stats: React.FC = () => {
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
             
+            {/* Active Boosts Section in Dialog - filtered to exclude time-warp */}
             {activeBoosts && activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
