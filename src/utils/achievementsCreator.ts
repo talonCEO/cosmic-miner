@@ -2,7 +2,8 @@ import { Achievement, GameState } from '@/context/GameContext';
 import GemIcon from '@/assets/images/icons/gems1.png';
 import BoostIcon from '@/assets/images/icons/gems1.png';
 import TitleIcon from '@/assets/images/icons/gems1.png';
-import PortraitIcon from '5.png';
+import PortraitIcon from '@/assets/images/icons/5.png';
+import PortraitIcon2 from '@/assets/images/icons/2.png';
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 export const createAchievements = (): Achievement[] => {
@@ -13,7 +14,7 @@ export const createAchievements = (): Achievement[] => {
     { id: 'clicks-3', name: 'Mining Expert', description: 'Tap 10,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 10000, rewards: { type: 'inventory_item', value: 'TIME_WARP', image: INVENTORY_ITEMS.TIME_WARP.icon.props.src || BoostIcon } },
     { id: 'clicks-4', name: 'Mining Master', description: 'Tap 100,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 100000, rewards: { type: 'gems', value: 15, image: GemIcon } },
     { id: 'clicks-5', name: 'Mining Legend', description: 'Tap 1,000,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 1000000, rewards: { type: 'title', value: 'cosmic_deity', image: TitleIcon } },
-    { id: 'clicks-6', name: 'Tap Titan', description: 'Tap 10,000,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 10000000, rewards: { type: 'portrait', value: 'asteroid_blaster', image: PortraitIcon } },
+    { id: 'clicks-6', name: 'Tap Titan', description: 'Tap 10,000,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 10000000, rewards: { type: 'portrait', value: 'asteroid_blaster', image: PortraitIcon2 } },
 
     // Income Achievements (Early to Late-Game)
     { id: 'income-1', name: 'First Profit', description: 'Earn 1,000 coins', unlocked: false, checkCondition: (state: GameState) => state.totalEarned >= 1000, rewards: { type: 'gems', value: 5, image: GemIcon } },
