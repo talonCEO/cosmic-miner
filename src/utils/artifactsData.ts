@@ -1,5 +1,17 @@
-
 import { Perk } from './types';
+
+// Static image imports for artifacts
+import ArtifactDefault from '@/assets/images/icons/a1.png';
+import Artifact1 from '@/assets/images/icons/a2.png';
+import Artifact2 from '@/assets/images/icons/a3.png';
+import Artifact3 from '@/assets/images/icons/a4.png';
+import Artifact4 from '@/assets/images/icons/a5.png';
+import Artifact5 from '@/assets/images/icons/a6.png';
+import Artifact6 from '@/assets/images/icons/a7.png';
+import Artifact7 from '@/assets/images/icons/a8.png';
+import Artifact8 from '@/assets/images/icons/a9.png';
+import Artifact9 from '@/assets/images/icons/a10.png';
+import Artifact10 from '@/assets/images/icons/a11.png';
 
 /**
  * Artifact Interface
@@ -12,7 +24,7 @@ export interface Artifact {
   name: string;            // Display name
   description: string;     // Describes what the artifact is
   bonus: string;           // Description of the artifact's passive bonus
-  avatar: string;          // URL to avatar image
+  avatar: string;          // Path to avatar image (static import)
   cost: number;            // Essence cost to acquire
   effect?: {               // Gameplay effect (automatically applied when owned)
     type: string;          // Type of effect (production, tap, essence, cost, startingCoins)
@@ -41,7 +53,7 @@ export const artifacts: Artifact[] = [
     name: "Ordinary Rock",
     description: "Just a regular rock you found on your first day",
     bonus: "Provides absolutely no benefit whatsoever",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=rock",
+    avatar: ArtifactDefault,  // Static import (a1.png)
     cost: 0
   },
   {
@@ -49,7 +61,7 @@ export const artifacts: Artifact[] = [
     name: "Quantum Computer",
     description: "Advanced computational device using quantum mechanics",
     bonus: "Increases all production by 10%",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=computer",
+    avatar: Artifact1,  // Static import (a2.png)
     cost: 1,
     effect: {
       type: "production",
@@ -90,7 +102,7 @@ export const artifacts: Artifact[] = [
     name: "Space Rocket",
     description: "Propulsion system for interstellar mining",
     bonus: "1.5x tap multiplier",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=rocket",
+    avatar: Artifact2,  // Static import (a3.png)
     cost: 2,
     effect: {
       type: "tap",
@@ -131,7 +143,7 @@ export const artifacts: Artifact[] = [
     name: "Element Scanner",
     description: "High precision detection of rare elements",
     bonus: "125% more essence from prestiging",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=scanner",
+    avatar: Artifact3,  // Static import (a4.png)
     cost: 4,
     effect: {
       type: "essence",
@@ -172,7 +184,7 @@ export const artifacts: Artifact[] = [
     name: "Telescope Array",
     description: "Network of deep space observation instruments",
     bonus: "Reduces upgrade costs by 10%",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=telescope",
+    avatar: Artifact4,  // Static import (a5.png)
     cost: 8,
     effect: {
       type: "cost",
@@ -213,7 +225,7 @@ export const artifacts: Artifact[] = [
     name: "Crystalline Gem",
     description: "Focus crystal that amplifies mining energy",
     bonus: "Start with 100,000 coins after each prestige",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=gem",
+    avatar: Artifact5,  // Static import (a6.png)
     cost: 16,
     effect: {
       type: "startingCoins",
@@ -254,7 +266,7 @@ export const artifacts: Artifact[] = [
     name: "Neutron Wand",
     description: "Channels cosmic energy into a powerful beam",
     bonus: "Increases all production by 25%",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=wand",
+    avatar: Artifact6,  // Static import (a7.png)
     cost: 32,
     effect: {
       type: "production",
@@ -295,7 +307,7 @@ export const artifacts: Artifact[] = [
     name: "Molecular Flask",
     description: "Contains rare element transmutation formulae",
     bonus: "2.5x tap multiplier",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=flask",
+    avatar: Artifact7,  // Static import (a8.png)
     cost: 64,
     effect: {
       type: "tap",
@@ -336,7 +348,7 @@ export const artifacts: Artifact[] = [
     name: "Quantum Microscope",
     description: "Views matter at the subatomic level",
     bonus: "225% more essence from prestiging",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=microscope",
+    avatar: Artifact8,  // Static import (a9.png)
     cost: 128,
     effect: {
       type: "essence",
@@ -377,7 +389,7 @@ export const artifacts: Artifact[] = [
     name: "Satellite Network",
     description: "Orbital array of mining assistance devices",
     bonus: "Reduces upgrade costs by 25%",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=satellite",
+    avatar: Artifact9,  // Static import (a10.png)
     cost: 256,
     effect: {
       type: "cost",
@@ -418,7 +430,7 @@ export const artifacts: Artifact[] = [
     name: "Energy Core",
     description: "The heart of an extinct alien civilization",
     bonus: "Start with 1,000,000 coins after each prestige",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=core",
+    avatar: Artifact10,  // Static import (a11.png)
     cost: 512,
     effect: {
       type: "startingCoins",
