@@ -299,7 +299,7 @@ const initialAbilities: Ability[] = [
 const UPGRADE_COST_GROWTH = 1.15;
 
 const initialState: GameState = {
-  coins: 1000000000000000,
+  coins: 0,
   coinsPerClick: 1,
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({

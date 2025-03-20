@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGame } from '@/context/GameContext';
@@ -95,7 +96,6 @@ const Managers: React.FC = () => {
                 ${isOwned ? 'opacity-100' : 'opacity-50'}`}
             >
               <Avatar className="h-16 w-16 rounded-xl border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/10">
-                {/* manager.avatar is now a static import path, compatible with src */}
                 <AvatarImage src={manager.avatar} alt={manager.name} />
                 <AvatarFallback className="bg-indigo-900/50 text-indigo-300 rounded-xl">
                   {manager.id.includes("manager-1") ? (
