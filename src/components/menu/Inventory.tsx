@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from './types';
 import { Button } from "@/components/ui/button";
+import { useToast } from '@/components/ui/use-toast';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -14,7 +15,6 @@ const rarityColors = {
   legendary: 'bg-yellow-700/40 border-yellow-500',
 };
 
-// Item slot component
 const ItemSlot: React.FC<{ 
   item?: InventoryItem; 
   onItemClick: (item: InventoryItem) => void;
@@ -54,7 +54,6 @@ const ItemSlot: React.FC<{
   );
 };
 
-// Use item popover
 const UseItemPopover: React.FC<{ 
   item: InventoryItem; 
   onUse: (item: InventoryItem, quantity: number) => void;
@@ -133,7 +132,6 @@ const UseItemPopover: React.FC<{
   );
 };
 
-// Notification component
 const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) => void }> = ({ boost, onDismiss }) => {
   const [timeLeft, setTimeLeft] = useState(boost.remainingTime || 0);
 
@@ -179,13 +177,13 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
 
 const Inventory: React.FC = () => {
   const { state, useItem, addItem } = useGame();
+  const { toast } = useToast();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   const [notifications, setNotifications] = useState<BoostEffect[]>([]);
   
-  // Create virtual inventory with resource items
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
       { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins) },
@@ -206,20 +204,25 @@ const Inventory: React.FC = () => {
     if (item.usable) {
       const trackedBoostIds = [
         'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
-        'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
+        'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost',
+        'boost-perma-tap', 'boost-perma-passive'
       ];
       
+      useItem(item.id, quantity);
+      
+      toast({
+        title: `${item.name} Used`,
+        description: `${quantity > 1 ? `${quantity}x ` : ''}${item.description}`,
+        duration: 3000,
+      });
+      
       if (trackedBoostIds.includes(item.id)) {
-        useItem(item.id, quantity);
-        
         setTimeout(() => {
           const newBoost = state.activeBoosts.find(boost => boost.id === item.id);
           if (newBoost && !notifications.some(n => n.id === newBoost.id)) {
             setNotifications([...notifications, newBoost]);
           }
         }, 100);
-      } else {
-        useItem(item.id, quantity);
       }
       
       setSelectedItem(null);
@@ -230,7 +233,6 @@ const Inventory: React.FC = () => {
     setNotifications(notifications.filter(n => n.id !== id));
   };
   
-  // Filter and search logic
   const filteredItems = virtualInventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -334,7 +336,6 @@ const Inventory: React.FC = () => {
         />
       )}
       
-      {/* Notification Area */}
       <div className="fixed bottom-4 right-4 flex flex-col items-end space-y-2">
         {notifications.map(boost => (
           <BoostNotification key={boost.id + (boost.activatedAt || 0)} boost={boost} onDismiss={dismissNotification} />
@@ -345,3 +346,4 @@ const Inventory: React.FC = () => {
 };
 
 export default Inventory;
+

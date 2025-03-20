@@ -24,7 +24,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
   const { toast } = useToast();
   const cost = item.cost || 0;
   const canAfford = state.gems >= cost;
-  const isMaxed = item.purchased >= item.maxPurchases;
+  const isMaxed = item.purchased >= (item.maxPurchases || Infinity);
   
   const handlePurchase = () => {
     if (!item.purchasable) {
@@ -58,6 +58,7 @@ const BoostItem: React.FC<BoostItemProps> = ({
     showUnlockAnimation(item);
   };
 
+  // @ts-ignore - Suppressing type error as requested
   const isPermanentAndPurchased = item.effect?.duration === undefined && item.purchased > 0;
 
   return (

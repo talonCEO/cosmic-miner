@@ -848,7 +848,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
       const trackedBoostIds = [
         'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
-        'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
+        'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
+        'boost-perma-tap', 'boost-perma-passive'
       ];
       
       if (trackedBoostIds.includes(item.id) && item.effect) {
@@ -1283,3 +1284,4 @@ export const useGame = () => {
   }
   return context;
 };
+

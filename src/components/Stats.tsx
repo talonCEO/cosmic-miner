@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -78,11 +79,14 @@ const Stats: React.FC = () => {
   const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
   
+  // Updated tracked boost IDs to include cheap-upgrades and exclude time-warp
   const trackedBoostIds = [
-    'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
-    'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
+    'boost-double-coins', 'boost-auto-tap',
+    'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
+    'boost-perma-tap', 'boost-perma-passive'
   ];
   
+  // Filter out time-warp from active boosts display
   const activeBoosts = state.activeBoosts.filter(boost => 
     trackedBoostIds.includes(boost.id)
   );
@@ -149,11 +153,11 @@ const Stats: React.FC = () => {
         </div>
         
         {/* Active Boosts Section */}
-        {state.activeBoosts && state.activeBoosts.length > 0 && (
+        {activeBoosts && activeBoosts.length > 0 && (
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2 text-indigo-400">Active Boosts</h3>
             <div className="space-y-2">
-              {state.activeBoosts.map((boost) => {
+              {activeBoosts.map((boost) => {
                 const remainingTimeText = boost.remainingTime 
                   ? `${Math.floor(boost.remainingTime / 60)}m ${Math.floor(boost.remainingTime % 60)}s` 
                   : 'Permanent';
@@ -235,15 +239,15 @@ const Stats: React.FC = () => {
               <p className="text-md font-bold text-indigo-300">+{formatNumber(calculatePotentialEssenceReward())} Essence</p>
             </div>
             
-            {/* Active Boosts Section in Dialog */}
-            {state.activeBoosts && state.activeBoosts.length > 0 && (
+            {/* Active Boosts Section in Dialog - also filtered to exclude time-warp */}
+            {activeBoosts && activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
                   <Sparkles size={16} className="text-indigo-400 mr-2" />
                   Active Boosts
                 </h3>
                 <div className="space-y-2 mt-2">
-                  {state.activeBoosts.map(boost => (
+                  {activeBoosts.map(boost => (
                     <ActiveBoost key={boost.id} boost={boost} />
                   ))}
                 </div>
