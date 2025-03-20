@@ -6,7 +6,7 @@ import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, 
 import CoinsImage from '@/assets/images/icons/coins.png';
 import GemsImage from '@/assets/images/icons/gems.png';
 import EssenceImage from '@/assets/images/icons/essence.png';
-import SkillPointsImage from '@/assets/images/icons/skillpoint.png';
+import SkillPointsImage from '@/assets/images/icons/points.png';
 import DoubleCoinsImage from '@/assets/images/icons/boost3.png';
 import TimeWarpImage from '@/assets/images/icons/boost2.png';
 import AutoTapImage from '@/assets/images/icons/boost1.png';
