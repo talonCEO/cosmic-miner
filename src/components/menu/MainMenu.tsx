@@ -74,7 +74,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
             <Globe size={20} />
             <span>Worlds</span>
             <span className="absolute text-xs text-gray-300 opacity-75 rotate-[-10deg] pointer-events-none">
-              Coming Soon
+              
             </span>
           </button>
         </div>
