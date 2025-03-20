@@ -827,75 +827,75 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievements: action.achievements
       };
     }
-    case 'USE_ITEM': {
-      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
-      if (itemIndex === -1) return state;
-      
-      const item = state.inventory[itemIndex];
-      if (!item.usable) return state;
+case 'USE_ITEM': {
+  const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+  if (itemIndex === -1) return state;
+  
+  const item = state.inventory[itemIndex];
+  if (!item.usable) return state;
 
-      const updatedInventory = [...state.inventory];
-      const quantity = action.quantity || 1;
-      
-      if (item.quantity <= quantity) {
-        updatedInventory.splice(itemIndex, 1);
-      } else {
-        updatedInventory[itemIndex] = {
-          ...item,
-          quantity: item.quantity - quantity
-        };
-      }
+  const updatedInventory = [...state.inventory];
+  const quantity = action.quantity || 1;
+  
+  if (item.quantity <= quantity) {
+    updatedInventory.splice(itemIndex, 1);
+  } else {
+    updatedInventory[itemIndex] = {
+      ...item,
+      quantity: item.quantity - quantity
+    };
+  }
 
-      const trackedBoostIds = [
-        'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
-        'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
-        'boost-perma-tap', 'boost-perma-passive'
-      ];
+  const trackedBoostIds = [
+    'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
+    'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
+    'boost-perma-tap', 'boost-perma-passive'
+  ];
+  
+  if (trackedBoostIds.includes(item.id) && item.effect) {
+    const existingBoostIndex = state.activeBoosts.findIndex(boost => boost.id === item.id);
+    const now = Math.floor(Date.now() / 1000);
+    
+    let newActiveBoosts = [...state.activeBoosts];
+    
+    if (existingBoostIndex >= 0) {
+      const existingBoost = newActiveBoosts[existingBoostIndex];
+      const effectDuration = item.effect.duration || 0; // Safe access since we checked item.effect exists
       
-      if (trackedBoostIds.includes(item.id) && item.effect) {
-        const existingBoostIndex = state.activeBoosts.findIndex(boost => boost.id === item.id);
-        const now = Math.floor(Date.now() / 1000);
-        
-        let newActiveBoosts = [...state.activeBoosts];
-        
-        if (existingBoostIndex >= 0) {
-          const existingBoost = newActiveBoosts[existingBoostIndex];
-          const effectDuration = item.effect?.duration || 0;
-          
-          newActiveBoosts[existingBoostIndex] = {
-            ...existingBoost,
-            quantity: existingBoost.quantity + quantity,
-            activatedAt: now,
-            remainingTime: effectDuration > 0 ? 
-              (existingBoost.remainingTime || 0) + effectDuration : undefined,
-          };
-        } else {
-          const newBoost: BoostEffect = {
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            quantity: quantity,
-            value: item.effect.value,
-            duration: item.effect.duration,
-            activatedAt: now,
-            remainingTime: item.effect.duration,
-            icon: item.icon
-          };
-          newActiveBoosts.push(newBoost);
-        }
-        
-        return {
-          ...state,
-          inventory: updatedInventory,
-          activeBoosts: newActiveBoosts
-        };
-      }
-        
-      return {
-        ...state,
-        inventory: updatedInventory
+      newActiveBoosts[existingBoostIndex] = {
+        ...existingBoost,
+        quantity: existingBoost.quantity + quantity,
+        activatedAt: now,
+        remainingTime: effectDuration > 0 ? 
+          (existingBoost.remainingTime || 0) + effectDuration : undefined,
       };
+    } else {
+      const newBoost: BoostEffect = {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        quantity: quantity,
+        value: item.effect.value, // Safe access
+        duration: item.effect.duration, // Safe access
+        activatedAt: now,
+        remainingTime: item.effect.duration, // Safe access
+        icon: item.icon
+      };
+      newActiveBoosts.push(newBoost);
     }
+    
+    return {
+      ...state,
+      inventory: updatedInventory,
+      activeBoosts: newActiveBoosts
+    };
+  }
+        
+  return {
+    ...state,
+    inventory: updatedInventory
+  };
+}
     case 'ADD_ITEM': {
       const currentItems = state.inventory.reduce(
         (total, item) => total + (item.stackable ? 1 : item.quantity), 
