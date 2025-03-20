@@ -851,7 +851,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
       ];
       
-      if (trackedBoostIds.includes(item.id)) {
+      if (trackedBoostIds.includes(item.id) && item.effect) {
         const existingBoostIndex = state.activeBoosts.findIndex(boost => boost.id === item.id);
         const now = Math.floor(Date.now() / 1000);
         
@@ -874,10 +874,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             name: item.name,
             description: item.description,
             quantity: quantity,
-            value: item.effect?.value || 0,
-            duration: item.effect?.duration,
+            value: item.effect.value,
+            duration: item.effect.duration,
             activatedAt: now,
-            remainingTime: item.effect?.duration,
+            remainingTime: item.effect.duration,
             icon: item.icon
           };
           newActiveBoosts.push(newBoost);
@@ -973,14 +973,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         },
       };
     }
-    case 'UPDATE_USERNAME':
-      return { ...state, username: action.username };
-    case 'UPDATE_TITLE':
-      return { ...state, title: action.title };
-    case 'UPDATE_PORTRAIT':
-      return { ...state, portrait: action.portrait };
-    case 'UPDATE_NAME_CHANGE_COUNT':
-      return { ...state, nameChangeCount: action.count };
     case 'UPDATE_BOOST_TIMERS': {
       const now = Math.floor(Date.now() / 1000);
       
@@ -997,11 +989,24 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         return boost;
       });
       
+      // Filter out expired boosts
+      const filteredBoosts = updatedBoosts.filter(
+        boost => !boost.duration || !boost.remainingTime || boost.remainingTime > 0
+      );
+      
       return {
         ...state,
-        activeBoosts: updatedBoosts
+        activeBoosts: filteredBoosts
       };
     }
+    case 'UPDATE_USERNAME':
+      return { ...state, username: action.username };
+    case 'UPDATE_TITLE':
+      return { ...state, title: action.title };
+    case 'UPDATE_PORTRAIT':
+      return { ...state, portrait: action.portrait };
+    case 'UPDATE_NAME_CHANGE_COUNT':
+      return { ...state, nameChangeCount: action.count };
     default:
       return state;
   }
@@ -1189,7 +1194,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     return () => clearInterval(boostTimerInterval);
   }, []);
-  
+
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;

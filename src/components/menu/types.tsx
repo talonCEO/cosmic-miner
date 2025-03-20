@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Coins, Gem, Sparkles, Brain, Clock, Zap, CircleDollarSign, DollarSign, Percent, Star, Rocket, VideoOff, PackagePlus, Box } from 'lucide-react';
 
@@ -36,7 +35,7 @@ export interface Ability {
   effect?: string;
 }
 
-// Add the BoostEffect type to track used inventory items
+// BoostEffect type to track used inventory items
 export interface BoostEffect {
   id: string;
   name: string;
@@ -67,6 +66,11 @@ export interface InventoryItem {
   obtained: number;
   cost?: number;
   maxPurchases?: number;
+}
+
+// Type guard to check if an item is a boost with cost
+export function isBoostWithCost(item: InventoryItem): item is InventoryItem & { cost: number } {
+  return item.type === 'boost' && item.cost !== undefined;
 }
 
 export const INVENTORY_ITEMS = {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -23,7 +22,6 @@ import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import { BoostEffect } from '@/components/menu/types';
 
-// Active boost component
 const ActiveBoost: React.FC<{ boost: BoostEffect }> = ({ boost }) => {
   const [timeLeft, setTimeLeft] = useState<number>(boost.remainingTime || 0);
   
@@ -80,7 +78,6 @@ const Stats: React.FC = () => {
   const globalMultiplier = calculateGlobalIncomeMultiplier();
   const tapPower = calculateTapValue(state);
   
-  // Filter tracked boost IDs
   const trackedBoostIds = [
     'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
     'boost-tap-boost', 'boost-essence-boost', 'boost-perma-tap', 'boost-perma-passive'
@@ -152,16 +149,33 @@ const Stats: React.FC = () => {
         </div>
         
         {/* Active Boosts Section */}
-        {activeBoosts.length > 0 && (
+        {state.activeBoosts && state.activeBoosts.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2 text-slate-200 flex items-center">
-              <Sparkles size={14} className="text-indigo-400 mr-1" />
-              Active Boosts
-            </h3>
+            <h3 className="text-lg font-semibold mb-2 text-indigo-400">Active Boosts</h3>
             <div className="space-y-2">
-              {activeBoosts.map(boost => (
-                <ActiveBoost key={boost.id} boost={boost} />
-              ))}
+              {state.activeBoosts.map((boost) => {
+                const remainingTimeText = boost.remainingTime 
+                  ? `${Math.floor(boost.remainingTime / 60)}m ${Math.floor(boost.remainingTime % 60)}s` 
+                  : 'Permanent';
+                  
+                return (
+                  <div key={boost.id} className="flex items-center justify-between p-2 bg-slate-800/40 rounded-md border border-indigo-500/20">
+                    <div className="flex items-center">
+                      <div className="mr-2">{boost.icon}</div>
+                      <div>
+                        <div className="font-medium">{boost.name}</div>
+                        <div className="text-xs text-slate-400">{boost.description}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-green-400 font-medium">×{boost.quantity}</div>
+                      {boost.remainingTime !== undefined && (
+                        <div className="text-xs text-yellow-400">{remainingTimeText}</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -222,14 +236,14 @@ const Stats: React.FC = () => {
             </div>
             
             {/* Active Boosts Section in Dialog */}
-            {activeBoosts.length > 0 && (
+            {state.activeBoosts && state.activeBoosts.length > 0 && (
               <div className="bg-slate-700/50 p-3 rounded-lg">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
                   <Sparkles size={16} className="text-indigo-400 mr-2" />
                   Active Boosts
                 </h3>
                 <div className="space-y-2 mt-2">
-                  {activeBoosts.map(boost => (
+                  {state.activeBoosts.map(boost => (
                     <ActiveBoost key={boost.id} boost={boost} />
                   ))}
                 </div>
