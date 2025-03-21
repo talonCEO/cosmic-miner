@@ -55,7 +55,7 @@ const Stats: React.FC = () => {
           <div className="flex flex-col items-center justify-center bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
             <div className="flex items-center mb-1">
               <MousePointer size={18} className="text-yellow-400 mr-2" />
-              <span className="text-xs font-medium text-slate-300">Drill Power</span>
+              <span className="text-xs font-medium text-slate-300">Tap Power</span>
             </div>
             <span className="text-lg font-bold text-yellow-300">{formatNumber(tapPower)}</span>
             <span className="text-xs text-slate-500 mt-1">Clicks: {formatNumber(state.totalClicks)}</span>
@@ -162,7 +162,7 @@ const Stats: React.FC = () => {
                       <td className="py-2 px-3 text-emerald-300">{formatNumber(state.gems)}</td>
                     </tr>
                     <tr className="border-b border-slate-700/50">
-                      <td className="py-2 px-3">Drill Power</td>
+                      <td className="py-2 px-3">Tap Power</td>
                       <td className="py-2 px-3 text-yellow-300">{formatNumber(tapPower)}</td>
                     </tr>
                     <tr className="border-b border-slate-700/50">
