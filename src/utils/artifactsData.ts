@@ -2,16 +2,16 @@ import { Perk } from './types';
 
 // Static image imports for artifacts
 import ArtifactDefault from '@/assets/images/icons/a1.png';
-import Artifact1 from '@/assets/images/icons/a2.png';
-import Artifact2 from '@/assets/images/icons/a3.png';
-import Artifact3 from '@/assets/images/icons/a4.png';
-import Artifact4 from '@/assets/images/icons/a5.png';
-import Artifact5 from '@/assets/images/icons/a6.png';
-import Artifact6 from '@/assets/images/icons/a7.png';
-import Artifact7 from '@/assets/images/icons/a8.png';
-import Artifact8 from '@/assets/images/icons/a9.png';
-import Artifact9 from '@/assets/images/icons/a10.png';
-import Artifact10 from '@/assets/images/icons/a11.png';
+import Artifact1 from '@/assets/images/artifacts/art10.png';
+import Artifact2 from '@/assets/images/artifacts/art9.png';
+import Artifact3 from '@/assets/images/artifacts/art8.png';
+import Artifact4 from '@/assets/images/artifacts/art7.png';
+import Artifact5 from '@/assets/images/artifacts/art6.png';
+import Artifact6 from '@/assets/images/artifacts/art5.png';
+import Artifact7 from '@/assets/images/artifacts/art4.png';
+import Artifact8 from '@/assets/images/artifacts/art3.png';
+import Artifact9 from '@/assets/images/artifacts/art2.png';
+import Artifact10 from '@/assets/images/artifacts/art1.png';
 
 /**
  * Artifact Interface
