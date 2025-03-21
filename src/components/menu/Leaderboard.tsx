@@ -31,7 +31,7 @@ const playerTitles = [
 const topPortraits = [
   { value: 'galactic_guardian', image: PortraitIcon6 },
   { value: 'singularity_lord', image: PortraitIcon7 },
-  { value: 'Stellar Supporter', image: PortraitIcon8 },
+  { value: 'love', image: PortraitIcon8 },
 ];
 
 // Generate realistic player data for leaderboard
