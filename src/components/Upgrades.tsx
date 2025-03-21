@@ -1,141 +1,92 @@
-
-import React from "react";
-import { useGameContext } from "../context/GameContext";
-import PerkButton from "./PerkButton";
-import { formatNumber } from "../utils/GameMechanics";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
-import { ScrollArea } from "./ui/scroll-area";
-import { toast } from "sonner";
-import { Trophy, ShoppingCart } from "lucide-react";
+import React from 'react';
+import { useGame } from '@/context/GameContext';
+import { formatNumber } from '@/utils/gameLogic';
+import PerkButton from './PerkButton';
+import { Button } from './ui/button';
+import { Separator } from './ui/separator';
+import { ScrollArea } from './ui/scroll-area';
+import { Trophy, ShoppingCart } from 'lucide-react';
 
 const Upgrades = () => {
   const {
-    gameState,
-    setGameState,
+    state: gameState,
+    buyUpgrade,
     calculateUpgradeCost,
-    calculateIncomePerSecond,
-  } = useGameContext();
+    calculateTotalCoinsPerSecond,
+  } = useGame();
 
-  const handleUpgrade = (upgradeId: number) => {
-    const upgrade = gameState.upgrades.find((u) => u.id === upgradeId);
+  const handleUpgrade = (upgradeId: string) => {
+    const upgrade = gameState.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) return;
 
-    const cost = calculateUpgradeCost(upgrade);
-    if (gameState.cosmicCredits >= cost) {
-      setGameState((prev) => {
-        const updatedUpgrades = prev.upgrades.map((u) =>
-          u.id === upgradeId ? { ...u, level: u.level + 1 } : u
-        );
-
-        // Update stats
-        return {
-          ...prev,
-          cosmicCredits: prev.cosmicCredits - cost,
-          upgrades: updatedUpgrades,
-          stats: {
-            ...prev.stats,
-            totalUpgradesPurchased: prev.stats.totalUpgradesPurchased + 1,
-            lifetimeSpent: prev.stats.lifetimeSpent + cost,
-          },
-        };
-      });
-
-      toast.success(
-        `Upgraded ${upgrade.name} to level ${upgrade.level + 1}!`,
-        {
-          position: "bottom-right",
-          duration: 2000,
-        }
-      );
-    } else {
-      toast.error("Not enough Cosmic Credits!", {
-        position: "bottom-right",
-        duration: 2000,
-      });
+    const cost = calculateUpgradeCost(upgradeId);
+    if (gameState.coins >= cost) { // Changed cosmicCredits to coins
+      buyUpgrade(upgradeId);
     }
   };
 
-  const toggleAutoBuy = (upgradeId: number) => {
-    setGameState((prev) => {
-      const updatedUpgrades = prev.upgrades.map((u) =>
-        u.id === upgradeId ? { ...u, autoBuy: !u.autoBuy } : u
-      );
-      return { ...prev, upgrades: updatedUpgrades };
-    });
+  const toggleAutoBuy = (upgradeId: string) => {
+    // Auto-buy toggle not fully implemented in GameContext; placeholder for now
+    console.log(`Toggle auto-buy for ${upgradeId}`);
   };
 
-  // Find the most expensive upgrade the user can afford
   const buyBestAffordableUpgrade = () => {
     const affordableUpgrades = gameState.upgrades.filter(
-      (upgrade) => calculateUpgradeCost(upgrade) <= gameState.cosmicCredits
+      upgrade => calculateUpgradeCost(upgrade.id) <= gameState.coins
     );
 
-    if (affordableUpgrades.length === 0) {
-      toast.error("You can't afford any upgrades right now!", {
-        position: "bottom-right",
-        duration: 2000,
-      });
-      return;
-    }
+    if (affordableUpgrades.length === 0) return;
 
-    // Sort by cost descending and get the most expensive
     const mostExpensiveAffordable = affordableUpgrades.sort(
-      (a, b) => calculateUpgradeCost(b) - calculateUpgradeCost(a)
+      (a, b) => calculateUpgradeCost(b.id) - calculateUpgradeCost(a.id)
     )[0];
 
     handleUpgrade(mostExpensiveAffordable.id);
   };
 
-  // Show all upgrades that the player has unlocked
   const unlockedUpgrades = gameState.upgrades.filter(
-    (upgrade) => upgrade.level > 0 || calculateUpgradeCost(upgrade) <= gameState.cosmicCredits * 10
+    upgrade => upgrade.level > 0 || calculateUpgradeCost(upgrade.id) <= gameState.coins * 10
   );
 
   return (
-    <div className="w-full h-full flex flex-col space-y-2 p-2">
-      <div className="w-full flex items-center justify-between">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <Trophy className="h-5 w-5" /> Upgrades
+    <div className='w-full h-full flex flex-col space-y-2 p-2'>
+      <div className='w-full flex items-center justify-between'>
+        <h2 className='text-xl font-bold flex items-center gap-2'>
+          <Trophy className='h-5 w-5' /> Upgrades
         </h2>
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <Button
             onClick={buyBestAffordableUpgrade}
-            className="h-8 bg-emerald-600 hover:bg-emerald-700"
+            className='h-8 bg-emerald-600 hover:bg-emerald-700'
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className='h-4 w-4 mr-2' />
             Buy Best
           </Button>
         </div>
       </div>
       <Separator />
-      <ScrollArea className="h-[calc(100vh-13rem)] pr-4">
-        <div className="space-y-2">
-          {unlockedUpgrades.map((upgrade) => {
-            const cost = calculateUpgradeCost(upgrade);
-            const currentIncome = calculateIncomePerSecond(upgrade);
-            const nextIncome = upgrade.level > 0 
-              ? calculateIncomePerSecond({
-                  ...upgrade,
-                  level: upgrade.level + 1,
-                })
-              : upgrade.baseMiningRate;
+      <ScrollArea className='h-[calc(100vh-13rem)] pr-4'>
+        <div className='space-y-2'>
+          {unlockedUpgrades.map(upgrade => {
+            const cost = calculateUpgradeCost(upgrade.id);
+            const currentState = { ...gameState, upgrades: gameState.upgrades.map(u => u.id === upgrade.id ? { ...u, level: u.level - 1 } : u) };
+            const currentIncome = upgrade.level > 0 ? calculateTotalCoinsPerSecond(currentState) : 0;
+            const nextIncome = calculateTotalCoinsPerSecond({ ...gameState, upgrades: gameState.upgrades.map(u => u.id === upgrade.id ? { ...u, level: u.level + 1 } : u) });
             const incomeIncrease = nextIncome - currentIncome;
 
             return (
-              <div key={upgrade.id} className="upgrade-item">
+              <div key={upgrade.id} className='upgrade-item'>
                 <PerkButton
-                  name={upgrade.name}
-                  description={`Level ${upgrade.level} • +${formatNumber(
-                    incomeIncrease
-                  )}/s`}
-                  image={upgrade.image}
-                  cost={cost}
-                  level={upgrade.level}
-                  onClick={() => handleUpgrade(upgrade.id)}
-                  onToggleAutoBuy={() => toggleAutoBuy(upgrade.id)}
-                  autoBuy={upgrade.autoBuy}
-                  canAfford={gameState.cosmicCredits >= cost}
+                  perk={{
+                    id: upgrade.id,
+                    name: upgrade.name,
+                    description: `Level ${upgrade.level} • +${formatNumber(incomeIncrease)}/s`,
+                    cost,
+                    effect: { type: 'production', value: incomeIncrease },
+                  }}
+                  parentId={`upgrade-${upgrade.id}`}
+                  onUnlock={() => handleUpgrade(upgrade.id)}
+                  canAfford={gameState.coins >= cost}
                 />
               </div>
             );
