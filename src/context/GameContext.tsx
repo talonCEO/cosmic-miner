@@ -145,9 +145,9 @@ type GameAction =
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
   maxLevel: 1000,
-  cost: upgrade.baseCost * 1.5,
-  baseCost: upgrade.baseCost * 1.5,
-  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 0.5
+  cost: upgrade.baseCost * 1,
+  baseCost: upgrade.baseCost * 1,
+  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 1
 }));
 
 const initialAbilities: Ability[] = [
