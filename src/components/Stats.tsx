@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import { BoostEffect } from '@/components/menu/types';
-import { getLevelFromExp, getUnlockedTitles, getUnlockedPortraits, TITLES, PORTRAITS } from '@/data/playerProgression';
+import { getLevelFromExp, getUnlockedTitles, getUnlockedPortraits, TITLES, PORTRAITS } from '@/data/playerProgressionData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 
