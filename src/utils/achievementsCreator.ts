@@ -1,6 +1,5 @@
 import { Achievement, GameState } from '@/context/GameContext';
 import GemIcon from '@/assets/images/icons/gems1.png';
-import PortraitIcon2 from '@/assets/images/portraits/2.png'; // nebula_voyager
 import PortraitIcon3 from '@/assets/images/portraits/3.png'; // astral_navigator
 import PortraitIcon4 from '@/assets/images/portraits/4.png'; // stellar_seeker
 import PortraitIcon5 from '@/assets/images/portraits/5.png'; // eclipse_warden
@@ -13,7 +12,7 @@ export const createAchievements = (): Achievement[] => {
   return [
     // Clicking Achievements (Early to Mid-Game)
     { id: 'clicks-1', name: 'Mining Apprentice', description: 'Tap 100 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 100, rewards: { type: 'gems', value: 10, image: GemIcon } },
-    { id: 'clicks-2', name: 'Mining Enthusiast', description: 'Tap 1,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 1000, rewards: { type: 'portrait', value: 'nebula_voyager', image: PortraitIcon2 } }, // Easier: 2.png
+    { id: 'clicks-2', name: 'Mining Enthusiast', description: 'Tap 1,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 1000, rewards: { type: 'gems', value: 10, image: GemIcon } }, // Changed from nebula_voyager
     { id: 'clicks-3', name: 'Mining Expert', description: 'Tap 10,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 10000, rewards: { type: 'portrait', value: 'astral_navigator', image: PortraitIcon3 } }, // Easier: 3.png
     { id: 'clicks-4', name: 'Mining Master', description: 'Tap 100,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 100000, rewards: { type: 'gems', value: 20, image: GemIcon } },
     { id: 'clicks-5', name: 'Mining Legend', description: 'Tap 1,000,000 times', unlocked: false, checkCondition: (state: GameState) => state.totalClicks >= 1000000, rewards: { type: 'title', value: 'quantum_miner', image: 'Quantum Miner' } }, // Rare
