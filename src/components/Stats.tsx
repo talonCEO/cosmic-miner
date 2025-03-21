@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
@@ -287,10 +288,10 @@ const Stats: React.FC = () => {
                     return (
                       <tr key={boostId} className="border-b border-slate-700/50">
                         <td className="py-2 px-3 flex items-center">
-                          {boost.icon && <span className="mr-2">{boost.icon}</span>}
-                          {boost.name}
+                          {activeBoost?.icon && <span className="mr-2">{activeBoost.icon}</span>}
+                          {activeBoost?.name || boostId}
                         </td>
-                        <td className="py-2 px-3 text-slate-400">{boost.description}</td>
+                        <td className="py-2 px-3 text-slate-400">{activeBoost?.description || "No description available"}</td>
                         <td className="py-2 px-3 text-green-400">{activeBoost?.quantity || 0}</td>
                         <td className="py-2 px-3 text-yellow-400">
                           {activeBoost?.remainingTime !== undefined ? formatNumber(activeBoost.remainingTime) + 's' : 'N/A'}
