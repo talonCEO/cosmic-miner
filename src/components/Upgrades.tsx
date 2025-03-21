@@ -58,7 +58,6 @@ const Upgrades: React.FC = () => {
   const tapUpgrades = unlockedUpgrades.filter(u => u.category === UPGRADE_CATEGORIES.TAP);
   
   const sortedElementUpgrades = [...elementUpgrades].sort((a, b) => a.baseCost - b.baseCost);
-  
   const sortedUpgrades = [...sortedElementUpgrades, ...tapUpgrades];
 
   const handleBulkPurchase = (upgradeId: string, quantity: number) => {
@@ -109,41 +108,60 @@ const Upgrades: React.FC = () => {
     }
   };
 
+  const handleBuyMostExpensive = () => {
+    const affordableUpgrades = sortedUpgrades
+      .filter(u => u.level < u.maxLevel && state.coins >= u.cost)
+      .sort((a, b) => b.cost - a.cost); // Sort by cost descending
+    
+    if (affordableUpgrades.length > 0) {
+      const mostExpensive = affordableUpgrades[0];
+      handleBulkPurchase(mostExpensive.id, 1);
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-slate-100">Element Mining</h2>
-        <TooltipProvider>
-          <Tooltip open={showTooltip}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleAutoBuyClick}
-                className={`text-sm px-3 py-1.5 rounded-lg border border-indigo-500/30 transition-all
-                  ${isAutoBuyUnlocked 
-                    ? (state.autoBuy 
-                      ? 'bg-indigo-600/60 text-white font-medium' 
-                      : 'bg-slate-800/40 text-slate-400 opacity-70')
-                    : 'bg-slate-800/40 text-slate-500 opacity-50 cursor-not-allowed'}`}
+        <div className="flex gap-2">
+          <button
+            onClick={handleBuyMostExpensive}
+            className="text-sm px-3 py-1.5 rounded-lg border border-indigo-500/30 bg-slate-800/40 text-slate-400 hover:bg-indigo-600/60 hover:text-white transition-all"
+          >
+            Buy
+          </button>
+          <TooltipProvider>
+            <Tooltip open={showTooltip}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleAutoBuyClick}
+                  className={`text-sm px-3 py-1.5 rounded-lg border border-indigo-500/30 transition-all
+                    ${isAutoBuyUnlocked 
+                      ? (state.autoBuy 
+                        ? 'bg-indigo-600/60 text-white font-medium' 
+                        : 'bg-slate-800/40 text-slate-400 opacity-70')
+                      : 'bg-slate-800/40 text-slate-500 opacity-50 cursor-not-allowed'}`}
+                >
+                  {isAutoBuyUnlocked ? (
+                    "Auto Buy"
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <Lock size={14} />
+                      <span>Auto Buy</span>
+                    </div>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="left" 
+                align="start"
+                className="bg-slate-800 text-white border-slate-700 p-3 max-w-[200px] break-words"
               >
-                {isAutoBuyUnlocked ? (
-                  "Auto Buy"
-                ) : (
-                  <div className="flex items-center gap-1">
-                    <Lock size={14} />
-                    <span>Auto Buy</span>
-                  </div>
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent 
-              side="left" 
-              align="start"
-              className="bg-slate-800 text-white border-slate-700 p-3 max-w-[200px] break-words"
-            >
-              <p>Purchase Auto Buy from the Premium Store to unlock</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+                <p>Purchase Auto Buy from the Premium Store to unlock</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
       
       <div className="space-y-4">
