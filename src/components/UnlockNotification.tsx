@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import { X } from 'lucide-react';
 
-// Props for the notification
 interface UnlockNotificationProps {
   type: 'manager' | 'artifact' | 'achievement';
   id: string;
@@ -17,7 +16,6 @@ interface UnlockNotificationProps {
 const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClose }) => {
   const { state } = useGame();
   const notificationRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Find the unlocked item
   const getUnlockedItem = () => {
@@ -25,7 +23,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
       case 'manager':
         return managers.find((m) => m.id === id);
       case 'artifact':
-        return artifacts.find((a) => m.id === id);
+        return artifacts.find((a) => a.id === id); // Fixed typo: 'm.id' -> 'a.id'
       case 'achievement':
         return state.achievements.find((a) => a.id === id);
       default:
@@ -35,15 +33,20 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
 
   const unlockedItem = getUnlockedItem();
 
+  // Log for debugging
+  useEffect(() => {
+    console.log('UnlockNotification triggered:', { type, id, unlockedItem });
+  }, [type, id, unlockedItem]);
+
   // Determine image and content
   const getImage = () => {
-    if (type === 'manager') return (unlockedItem as typeof managers[0])?.avatar;
-    if (type === 'artifact') return (unlockedItem as typeof artifacts[0])?.avatar;
+    if (type === 'manager') return (unlockedItem as typeof managers[0])?.avatar || '/default-avatar.png';
+    if (type === 'artifact') return (unlockedItem as typeof artifacts[0])?.avatar || '/default-avatar.png';
     if (type === 'achievement') {
       const achievement = unlockedItem as Achievement;
-      return achievement?.rewards?.image || (achievement?.rewards?.type === 'gems' ? '/gem-icon.png' : '');
+      return achievement?.rewards?.image || (achievement?.rewards?.type === 'gems' ? '/gem-icon.png' : '/default-reward.png');
     }
-    return '';
+    return '/default-avatar.png';
   };
 
   const getContent = () => {
@@ -62,7 +65,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
         detail: achievement?.description || 'No requirement',
       };
     }
-    return { title: '', detail: '' };
+    return { title: 'Unknown', detail: 'No detail' };
   };
 
   const image = getImage();
@@ -87,45 +90,6 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
     }
   }, []);
 
-  // Canvas Sparkles
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = 300;
-    canvas.height = 80;
-    const particles: { x: number; y: number; size: number; speedX: number; speedY: number; life: number }[] = [];
-
-    for (let i = 0; i < 20; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 5 + 2,
-        speedX: (Math.random() - 0.5) * 2,
-        speedY: (Math.random() - 0.5) * 2,
-        life: Math.random() * 60 + 30,
-      });
-    }
-
-    const animateParticles = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p, i) => {
-        p.x += p.speedX;
-        p.y += p.speedY;
-        p.life -= 1;
-        ctx.fillStyle = `rgba(255, 215, 0, ${p.life / 60})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-        if (p.life <= 0) particles.splice(i, 1);
-      });
-      if (particles.length > 0) requestAnimationFrame(animateParticles);
-    };
-    animateParticles();
-  }, []);
-
   // Handle close with GSAP exit
   const handleClose = () => {
     if (notificationRef.current) {
@@ -142,72 +106,50 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
     }
   };
 
-  if (!unlockedItem) return null;
+  if (!unlockedItem) {
+    console.log('No unlocked item found for:', { type, id });
+    return null;
+  }
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex justify-center items-end"
+      className="fixed bottom-0 left-0 right-0 flex justify-center z-[100]"
       onClick={handleClose}
     >
       <motion.div
         ref={notificationRef}
-        className="relative bg-gradient-to-r from-indigo-900 to-purple-900 border border-yellow-400 rounded-lg p-3 mb-4 max-w-[90vw] md:max-w-md shadow-lg overflow-hidden"
+        className="relative bg-indigo-900 border border-yellow-400 rounded-lg p-3 mb-4 w-full max-w-md shadow-lg flex items-center"
         style={{ boxShadow: '0 0 15px rgba(255, 215, 0, 0.5)' }}
         onClick={(e) => e.stopPropagation()}
         animate={{ scale: [1, 1.02, 1], transition: { duration: 1, repeat: Infinity } }}
       >
-        {/* Canvas Sparkles */}
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 pointer-events-none"
-          style={{ opacity: 0.7 }}
-        />
-
-        {/* Content */}
-        <div className="relative flex items-center z-10">
-          {/* Left: Title and Detail */}
-          <div className="flex-1 pr-3">
-            <h3 className="text-yellow-300 font-bold text-sm md:text-base animate-pulse">
-              {title}
-            </h3>
-            <p className="text-blue-200 text-xs md:text-sm">
-              {type === 'achievement' ? 'Requirement:' : 'Bonus:'} {detail}
-            </p>
-          </div>
-
-          {/* Right: Image */}
-          <div className="flex-shrink-0">
-            <motion.img
-              src={image}
-              alt={title}
-              className="h-10 w-10 md:h-12 md:w-12 rounded-full border-2 border-yellow-400 object-cover"
-              initial={{ rotate: -10 }}
-              animate={{ rotate: 10 }}
-              transition={{ duration: 0.5, yoyo: Infinity }}
-            />
-          </div>
-
-          {/* Close Button */}
-          <button
-            onClick={handleClose}
-            className="absolute top-1 right-1 text-yellow-300 hover:text-yellow-100 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+        {/* Left: Title and Detail */}
+        <div className="flex-1 pr-3">
+          <h3 className="text-yellow-300 font-bold text-sm md:text-base">{title}</h3>
+          <p className="text-blue-200 text-xs md:text-sm">
+            {type === 'achievement' ? 'Requirement:' : 'Bonus:'} {detail}
+          </p>
         </div>
 
-        {/* CSS Keyframe Glow */}
-        <style jsx>{`
-          @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
-            100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
-          }
-          .glow-effect {
-            animation: glow 1.5s infinite;
-          }
-        `}</style>
-        <div className="absolute inset-0 glow-effect pointer-events-none" />
+        {/* Right: Image */}
+        <div className="flex-shrink-0">
+          <motion.img
+            src={image}
+            alt={title}
+            className="h-10 w-10 md:h-12 md:w-12 rounded-full border-2 border-yellow-400 object-cover"
+            initial={{ rotate: -10 }}
+            animate={{ rotate: 10 }}
+            transition={{ duration: 0.5, yoyo: Infinity }}
+          />
+        </div>
+
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-1 right-1 text-yellow-300 hover:text-yellow-100 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </motion.div>
     </div>
   );
@@ -232,6 +174,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     );
     if (newManagers.length > 0) {
       setNotifications((prev) => [...prev, { type: 'manager', id: newManagers[0] }]);
+      console.log('New Manager Unlocked:', newManagers[0]);
     }
 
     const newArtifacts = state.ownedArtifacts.filter(
@@ -239,6 +182,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     );
     if (newArtifacts.length > 0) {
       setNotifications((prev) => [...prev, { type: 'artifact', id: newArtifacts[0] }]);
+      console.log('New Artifact Unlocked:', newArtifacts[0]);
     }
 
     const newAchievements = state.achievements.filter(
@@ -246,6 +190,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     );
     if (newAchievements.length > 0) {
       setNotifications((prev) => [...prev, { type: 'achievement', id: newAchievements[0].id }]);
+      console.log('New Achievement Unlocked:', newAchievements[0].id);
     }
 
     setPrevState(state);
