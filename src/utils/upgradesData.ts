@@ -1,4 +1,3 @@
-
 import { Upgrade } from '@/context/GameContext';
 
 // Categories
@@ -10,17 +9,17 @@ export const UPGRADE_CATEGORIES = {
 /**
  * Game Balance Philosophy:
  * 
- * 1. Early Progress: Fast enough to hook players (~5-10 minutes to get first few upgrades)
- * 2. Mid Game: Moderate slowdown with meaningful choices (~hours to days for mid-tier)
- * 3. Late Game: Significant time investment for top-tier elements (~weeks for completion)
- * 4. Logarithmic Growth: Each upgrade tier takes approximately 2-3x longer than previous
- * 5. Prestige Acceleration: Prestige resets provide meaningful acceleration
+ * 1. Early Progress: Fast (~5-10 minutes for first upgrades)
+ * 2. Mid Game: Moderate (~hours to days for mid-tier)
+ * 3. Late Game: 20-25 hours total to max all upgrades
+ * 4. Smoother Scaling: Reduced cost growth and higher passive income late-game
+ * 5. Prestige Acceleration: Unchanged (handled elsewhere)
  */
 
 // Constants for progression balancing
-const BASE_COST_MULTIPLIER = 1.15;        // Cost increases by 15% per level
-const CLICK_VALUE_MULTIPLIER = 1.05;      // Click value increases by 5% per level 
-const PASSIVE_VALUE_MULTIPLIER = 1.07;    // Passive income increases by 7% per level
+const BASE_COST_MULTIPLIER = 1.08;        // Reduced from 1.15 to 1.08 for gentler late-game costs
+const CLICK_VALUE_MULTIPLIER = 1.05;      // Unchanged (5% per level)
+const PASSIVE_VALUE_MULTIPLIER = 1.10;    // Increased from 1.07 to 1.10 for better passive scaling
 
 // Helper function to create element upgrades
 const createElementUpgrade = (
@@ -37,7 +36,7 @@ const createElementUpgrade = (
   const tierMultiplier = Math.pow(1.5, Math.floor((id - 1) / 5));
   const scaledBaseCost = baseCost * tierMultiplier;
   const scaledClickValue = clickValue * Math.sqrt(tierMultiplier);
-  const scaledPassiveValue = passiveValue * Math.sqrt(tierMultiplier);
+  const scaledPassiveValue = passiveValue * tierMultiplier * 2; // Doubled passive income
   
   return {
     id: `element-${id}`,
@@ -67,16 +66,16 @@ const createTapPowerUpgrade = (): Upgrade => {
     baseCost: 100,
     level: 0,
     maxLevel: 1000,
-    coinsPerClickBonus: 0.05, // Changed from 0.1 (10%) to 0.05 (5%)
+    coinsPerClickBonus: 0.05,
     coinsPerSecondBonus: 0,
     multiplierBonus: 0,
     icon: 'hand',
-    unlocked: true, // Available from the start
+    unlocked: true,
     category: UPGRADE_CATEGORIES.TAP
   };
 };
 
-// Initial upgrades list with 50 element-themed upgrades in order of value
+// Initial upgrades list with 50 element-themed upgrades
 export const upgradesList: Upgrade[] = [
   // Common elements (1-10)
   createElementUpgrade(1, 'Hydrogen', 'H', 10, 1, 0.2, 'The most abundant element in the universe', 'atom'),
