@@ -149,15 +149,15 @@ const Stats: React.FC = () => {
                   <tbody>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Coins</td>
-                      <td className="py-2 px-3 text-yellow-300">{formatNumber(state.coins)}</td>
+                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.coins)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Total Coins</td>
-                      <td className="py-2 px-3 text-yellow-300">{formatNumber(state.totalEarned)}</td>
+                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.totalEarned)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Essence</td>
-                      <td className="py-2 px-3 text-purple-300">{formatNumber(state.essence)}</td>
+                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.essence)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Gems</td>
@@ -165,7 +165,7 @@ const Stats: React.FC = () => {
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Tap Power</td>
-                      <td className="py-2 px-3 text-yellow-300">{formatNumber(tapPower)}</td>
+                      <td className="py-2 px-3 text-blue-300">{formatNumber(tapPower)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Mining Rate</td>
@@ -173,11 +173,11 @@ const Stats: React.FC = () => {
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Global Multiplier</td>
-                      <td className="py-2 px-3 text-purple-300">x{formatNumber(globalMultiplier)}</td>
+                      <td className="py-2 px-3 text-blue-300">x{formatNumber(globalMultiplier)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Total Clicks</td>
-                      <td className="py-2 px-3 text-green-300">{formatNumber(state.totalClicks)}</td>
+                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.totalClicks)}</td>
                     </tr>
                   </tbody>
                 </table>
