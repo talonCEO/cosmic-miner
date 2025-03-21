@@ -3,9 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
-import { useBoostManager } from '@/hooks/useBoostManager';
 
-// Particle effect when clicking
 interface ParticleProps {
   x: number;
   y: number;
@@ -15,16 +13,14 @@ interface ParticleProps {
   onAnimationEnd: () => void;
 }
 
-const Particle: React.FC<ParticleProps> = ({ 
-  x, y, color, size, duration, onAnimationEnd 
-}) => {
-  const randomSize = size || Math.floor(Math.random() * 4) + 2; // 2-5px
-  const randomDuration = duration || (Math.random() * 0.5) + 0.5; // 0.5-1s
-  const randomOpacity = (Math.random() * 0.5) + 0.5; // 0.5-1
+const Particle: React.FC<ParticleProps> = ({ x, y, color, size, duration, onAnimationEnd }) => {
+  const randomSize = size || Math.floor(Math.random() * 4) + 2;
+  const randomDuration = duration || (Math.random() * 0.5) + 0.5;
+  const randomOpacity = (Math.random() * 0.5) + 0.5;
   
   return (
     <div 
-      className="absolute rounded-full pointer-events-none"
+      className='absolute rounded-full pointer-events-none'
       style={{ 
         left: x, 
         top: y, 
@@ -39,7 +35,6 @@ const Particle: React.FC<ParticleProps> = ({
   );
 };
 
-// Click effect component
 interface ClickEffectProps {
   x: number;
   y: number;
@@ -50,7 +45,7 @@ interface ClickEffectProps {
 const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }) => {
   return (
     <div 
-      className="click-effect text-yellow-400 font-medium text-shadow-glow"
+      className='click-effect text-yellow-400 font-medium text-shadow-glow'
       style={{ left: x, top: y }}
       onAnimationEnd={onAnimationEnd}
     >
@@ -76,10 +71,7 @@ const ClickArea: React.FC = () => {
     
     const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
     
-    setClickEffects(prev => [
-      ...prev, 
-      { id: nextId.current++, x: effectX, y: effectY }
-    ]);
+    setClickEffects(prev => [...prev, { id: nextId.current++, x: effectX, y: effectY }]);
     
     const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
     const newParticles = [];
@@ -87,33 +79,21 @@ const ClickArea: React.FC = () => {
     for (let i = 0; i < particleCount; i++) {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
-      
-      // Yellow sparkle colors
-      const colors = [
-        "#FFD700", // Gold
-        "#FFFF00", // Yellow
-        "#FFEC8B", // Light Yellow
-        "#FFC125"  // Goldenrod
-      ];
-      
+      const colors = ['#FFD700', '#FFFF00', '#FFEC8B', '#FFC125'];
       const color = colors[Math.floor(Math.random() * colors.length)];
-      
       newParticles.push({ 
         id: nextId.current++, 
         x: particleX, 
         y: particleY,
-        color: color,
-        size: size
+        color,
+        size
       });
     }
     
     setParticles(prev => [...prev, ...newParticles]);
-    
     click();
-    
-    // Trigger the shake animation
     setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 150); // Matches the duration of the shake animation
+    setTimeout(() => setIsAnimating(false), 150);
   };
   
   const removeClickEffect = (id: number) => {
@@ -125,16 +105,13 @@ const ClickArea: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col items-center justify-center py-6 relative z-20">
+    <div className='flex flex-col items-center justify-center py-6 relative z-20'>
       <div 
         ref={containerRef}
         className={`relative w-64 h-64 mb-5 flex items-center justify-center select-none ${isAnimating ? 'shake' : ''}`}
       >
-        <div className="w-64 h-64 rounded-full cursor-pointer">
-          <AnimatedAsteroid 
-            onClick={handleAreaClick}
-            isAnimating={isAnimating}
-          />
+        <div className='w-64 h-64 rounded-full cursor-pointer'>
+          <AnimatedAsteroid onClick={handleAreaClick} isAnimating={isAnimating} />
         </div>
         
         {clickEffects.map(effect => (
@@ -160,15 +137,14 @@ const ClickArea: React.FC = () => {
       </div>
       
       {state.coinsPerSecond > 0 && (
-        <div className="text-center mb-8 animate-slide-up">
-          <p className="text-sm text-white text-shadow-sm">
+        <div className='text-center mb-8 animate-slide-up'>
+          <p className='text-sm text-white text-shadow-sm'>
             +{formatNumber(state.coinsPerSecond)} coins per second
           </p>
         </div>
       )}
 
-      {/* Inline CSS for the shake animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes shake {
           0% { transform: translate(0, 0); }
           20% { transform: translate(-2px, 2px); }
