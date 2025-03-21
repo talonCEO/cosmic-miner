@@ -140,7 +140,8 @@ type GameAction =
   | { type: 'UPDATE_USERNAME'; username: string }
   | { type: 'UPDATE_TITLE'; title: string }
   | { type: 'UPDATE_PORTRAIT'; portrait: string }
-  | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number };
+  | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number }
+  | { type: 'APPLY_TIME_WARP'; amount: number };
 
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
@@ -345,7 +346,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           state.boosts["boost-tap-boost"].active = false;
         }
       }
-      
       return {
         ...state,
         coins: Math.max(0, state.coins + totalClickAmount),
@@ -1008,6 +1008,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, portrait: action.portrait };
     case 'UPDATE_NAME_CHANGE_COUNT':
       return { ...state, nameChangeCount: action.count };
+    case 'APPLY_TIME_WARP': {
+      return {
+        ...state,
+        coins: Math.max(0, state.coins + action.amount),
+        totalEarned: state.totalEarned + action.amount,
+      };
+    }
     default:
       return state;
   }
@@ -1065,6 +1072,7 @@ interface GameContextType {
   updateTitle: (title: string) => void;
   updatePortrait: (portrait: string) => void;
   updateBoostTimers: () => void;
+  applyTimeWarp: (amount: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1237,7 +1245,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateTitle = (title: string) => dispatch({ type: 'UPDATE_TITLE', title });
   const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
   const updateBoostTimers = () => dispatch({ type: 'UPDATE_BOOST_TIMERS' });
-
+  const applyTimeWarp = (amount: number) => dispatch({ type: 'APPLY_TIME_WARP', amount });
+  
   const contextValue = {
     state,
     dispatch,
@@ -1265,7 +1274,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     updateUsername,
     updateTitle,
     updatePortrait,
-    updateBoostTimers
+    updateBoostTimers,
+    applyTimeWarp,
   };
   
   gameContextHolder.current = contextValue;
