@@ -945,6 +945,7 @@ interface GameContextType {
   updateTitle: (title: string) => void;
   updatePortrait: (portrait: string) => void;
   updateBoostTimers: () => void;
+  calculateTotalCoinsPerSecond: (state: GameState) => number; // Added
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1122,7 +1123,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     updateUsername,
     updateTitle,
     updatePortrait,
-    updateBoostTimers
+    updateBoostTimers,
+    calculateTotalCoinsPerSecond: GameMechanics.calculateTotalCoinsPerSecond // Added
   };
 
   gameContextHolder.current = contextValue;
