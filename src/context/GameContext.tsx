@@ -299,7 +299,7 @@ const initialAbilities: Ability[] = [
 const UPGRADE_COST_GROWTH = 1.08;
 
 const initialState: GameState = {
-  coins: 0,
+  coins: 10000000000000000,
   coinsPerClick: 1,
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
@@ -309,7 +309,7 @@ const initialState: GameState = {
   totalEarned: 0,
   autoBuy: false,
   autoTap: false,
-  essence: 0,
+  essence: 10000000000,
   ownedManagers: ["manager-default"],
   ownedArtifacts: ["artifact-default"],
   achievements: createAchievements(),
@@ -318,12 +318,12 @@ const initialState: GameState = {
   artifacts: artifacts,
   prestigeCount: 0,
   incomeMultiplier: 1.0,
-  skillPoints: 0,
+  skillPoints: 100000000,
   abilities: initialAbilities,
   unlockedPerks: [],
   inventory: [],
   inventoryCapacity: 25,
-  gems: 0,
+  gems: 1000000000000,
   boosts: {},
   hasNoAds: false,
   username: "Default1976",
