@@ -3,9 +3,6 @@
  */
 import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
 
-// New import for the gem-themed portrait image (placeholder; replace with actual path)
-import GemPatronPortraitImage from '@/assets/images/portraits/love.png'; // Add this to your assets
-
 export interface LevelData {
   level: number;
   expRequired: number;
@@ -88,18 +85,7 @@ export const TITLES: TitleData[] = [
   { id: 'nebula_master', name: 'Nebula Master', description: 'Mastered the art of harnessing nebula energy', rarity: 'epic', unlockCriteria: 'Prestige 10 times', unlockCondition: { type: 'prestige', value: 10 }, color: 'text-pink-500' },
   { id: 'celestial_sovereign', name: 'Celestial Sovereign', description: 'Rules over the cosmic mining operation with unmatched expertise', rarity: 'legendary', unlockCriteria: 'Reach Level 100', unlockCondition: { type: 'level', value: 100 }, color: 'text-yellow-400' },
   { id: 'void_emperor', name: 'Void Emperor', description: 'Conquered the infinite void through relentless prestige', rarity: 'legendary', unlockCriteria: 'Prestige 25 times', unlockCondition: { type: 'prestige', value: 25 }, color: 'text-gray-300' },
-  { id: 'cosmic_deity', name: 'Cosmic Deity', description: 'Transcended mortal limitations in cosmic mining', rarity: 'legendary', unlockCriteria: 'Complete all achievements', unlockCondition: { type: 'collection', value: 100 }, color: 'text-gradient-cosmic', special: true },
-  // New Title for Gem Supporters
-  { 
-    id: 'gem_patron', 
-    name: 'Gem Patron', 
-    description: 'A dazzling title for those whose gem purchases fuel the cosmic mining empire', 
-    rarity: 'legendary', 
-    unlockCriteria: 'Support the game with significant gem purchases', 
-    unlockCondition: { type: 'purchase' }, 
-    color: 'text-emerald-300', 
-    special: true 
-  }
+  { id: 'cosmic_deity', name: 'Cosmic Deity', description: 'Transcended mortal limitations in cosmic mining', rarity: 'legendary', unlockCriteria: 'Complete all achievements', unlockCondition: { type: 'collection', value: 100 }, color: 'text-gradient-cosmic', special: true }
 ];
 
 export interface PortraitData {
@@ -124,20 +110,10 @@ export const PORTRAITS: PortraitData[] = [
   { id: 'eclipse_warden', name: 'Eclipse Warden', description: 'A shadowed figure guarding the cosmic balance.', rarity: 'rare', unlockCriteria: 'Reach Level 45', unlockCondition: { type: 'level', value: 45 }, pngPath: '7.png' },
   { id: 'galactic_guardian', name: 'Galactic Guardian', description: 'A majestic portrait awarded for protecting the galaxy’s riches.', rarity: 'epic', unlockCriteria: 'Reach Level 60', unlockCondition: { type: 'level', value: 60 }, pngPath: '4.png' },
   { id: 'singularity_lord', name: 'Singularity Lord', description: 'A powerful visage born from the heart of a black hole.', rarity: 'epic', unlockCriteria: 'Reach Level 80', unlockCondition: { type: 'level', value: 80 }, pngPath: '8.png' },
-  { id: 'cosmic_overlord', name: 'Cosmic Overlord', description: 'A supreme portrait for the ultimate ruler of the cosmic mining empire.', rarity: 'legendary', unlockCriteria: 'Complete the "Master Miner" achievement', unlockCondition: { type: 'achievement', achievementId: 'master_miner' }, pngPath: '5.png' },
-  // New Portrait for Gem Supporters
-  { 
-    id: 'gem_patron', 
-    name: 'Gem Patron', 
-    description: 'A gem-encrusted visage radiating wealth and cosmic generosity.', 
-    rarity: 'legendary', 
-    unlockCriteria: 'Support the game with significant gem purchases', 
-    unlockCondition: { type: 'purchase' }, 
-    pngPath: 'love.png' 
-  }
+  { id: 'cosmic_overlord', name: 'Cosmic Overlord', description: 'A supreme portrait for the ultimate ruler of the cosmic mining empire.', rarity: 'legendary', unlockCriteria: 'Complete the "Master Miner" achievement', unlockCondition: { type: 'achievement', achievementId: 'master_miner' }, pngPath: '5.png' }
 ];
 
-// Helper Functions (updated to handle 'purchase' type)
+// Helper Functions (unchanged)
 export const getLevelFromExp = (exp: number): { currentLevel: LevelData, nextLevel: LevelData | null, progress: number } => {
   let currentLevel = LEVELS[0];
   let nextLevel: LevelData | null = LEVELS[1];
@@ -168,21 +144,20 @@ export const getLevelFromExp = (exp: number): { currentLevel: LevelData, nextLev
 export const getTitleById = (id: string): TitleData | undefined => TITLES.find(title => title.id === id);
 export const getPortraitById = (id: string): PortraitData | undefined => PORTRAITS.find(portrait => portrait.id === id);
 
-export const isTitleUnlocked = (titleId: string, userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0, purchaseCount: number = 0): boolean => {
+export const isTitleUnlocked = (titleId: string, userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0): boolean => {
   const title = getTitleById(titleId);
   if (!title) return false;
   switch (title.unlockCondition.type) {
     case 'starting': return true;
     case 'level': return userLevel >= (title.unlockCondition.value || 0);
     case 'achievement': return userAchievements.includes(title.unlockCondition.achievementId || '');
-    case 'prestige': returnPrestigeCount >= (title.unlockCondition.value || 0);
+    case 'prestige': return prestigeCount >= (title.unlockCondition.value || 0);
     case 'collection': return false; // Placeholder
-    case 'purchase': return purchaseCount > 0; // Simplified; adjust based on your purchase logic
     default: return false;
   }
 };
 
-export const isPortraitUnlocked = (portraitId: string, userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0, purchaseCount: number = 0): boolean => {
+export const isPortraitUnlocked = (portraitId: string, userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0): boolean => {
   const portrait = getPortraitById(portraitId);
   if (!portrait) return false;
   switch (portrait.unlockCondition.type) {
@@ -191,17 +166,16 @@ export const isPortraitUnlocked = (portraitId: string, userLevel: number, userAc
     case 'achievement': return userAchievements.includes(portrait.unlockCondition.achievementId || '');
     case 'prestige': return prestigeCount >= (portrait.unlockCondition.value || 0);
     case 'collection': return false; // Placeholder
-    case 'purchase': return purchaseCount > 0; // Simplified; adjust based on your purchase logic
     default: return false;
   }
 };
 
-export const getUnlockedTitles = (userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0, purchaseCount: number = 0, unlockAll: boolean = false): TitleData[] => {
+export const getUnlockedTitles = (userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0, unlockAll: boolean = false): TitleData[] => {
   if (unlockAll) return TITLES;
-  return TITLES.filter(title => isTitleUnlocked(title.id, userLevel, userAchievements, prestigeCount, purchaseCount));
+  return TITLES.filter(title => isTitleUnlocked(title.id, userLevel, userAchievements, prestigeCount));
 };
 
-export const getUnlockedPortraits = (userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0, purchaseCount: number = 0, unlockAll: boolean = false): PortraitData[] => {
+export const getUnlockedPortraits = (userLevel: number, userAchievements: string[] = [], prestigeCount: number = 0, unlockAll: boolean = false): PortraitData[] => {
   if (unlockAll) return PORTRAITS;
-  return PORTRAITS.filter(portrait => isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount, purchaseCount));
+  return PORTRAITS.filter(portrait => isPortraitUnlocked(portrait.id, userLevel, userAchievements, prestigeCount));
 };
