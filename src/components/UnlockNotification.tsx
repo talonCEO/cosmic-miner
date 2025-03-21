@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 import { Achievement, GameState } from '@/context/GameContext';
-import { motion } from 'framer-motion';
-import { gsap } from 'gsap';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 interface UnlockNotificationProps {
@@ -15,7 +14,6 @@ interface UnlockNotificationProps {
 
 const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClose }) => {
   const { state } = useGame();
-  const notificationRef = useRef<HTMLDivElement>(null);
 
   // Find the unlocked item
   const getUnlockedItem = () => {
@@ -23,7 +21,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
       case 'manager':
         return managers.find((m) => m.id === id);
       case 'artifact':
-        return artifacts.find((a) => a.id === id); // Fixed typo: 'm.id' -> 'a.id'
+        return artifacts.find((a) => a.id === id);
       case 'achievement':
         return state.achievements.find((a) => a.id === id);
       default:
@@ -32,11 +30,6 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
   };
 
   const unlockedItem = getUnlockedItem();
-
-  // Log for debugging
-  useEffect(() => {
-    console.log('UnlockNotification triggered:', { type, id, unlockedItem });
-  }, [type, id, unlockedItem]);
 
   // Determine image and content
   const getImage = () => {
@@ -74,84 +67,80 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ type, id, onClo
   // Auto-close after 3 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
-      handleClose();
+      onClose();
     }, 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [onClose]);
 
-  // GSAP Entrance Animation
-  useEffect(() => {
-    if (notificationRef.current) {
-      gsap.fromTo(
-        notificationRef.current,
-        { y: 100, scale: 0.8, opacity: 0 },
-        { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
-      );
-    }
-  }, []);
-
-  // Handle close with GSAP exit
-  const handleClose = () => {
-    if (notificationRef.current) {
-      gsap.to(notificationRef.current, {
-        opacity: 0,
-        y: 50,
-        rotate: 5,
-        duration: 0.4,
-        ease: 'power2.in',
-        onComplete: onClose,
-      });
-    } else {
-      onClose();
-    }
-  };
-
-  if (!unlockedItem) {
-    console.log('No unlocked item found for:', { type, id });
-    return null;
-  }
+  if (!unlockedItem) return null;
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 flex justify-center z-[100]"
-      onClick={handleClose}
-    >
+    <AnimatePresence>
       <motion.div
-        ref={notificationRef}
-        className="relative bg-indigo-900 border border-yellow-400 rounded-lg p-3 mb-4 w-full max-w-md shadow-lg flex items-center"
-        style={{ boxShadow: '0 0 15px rgba(255, 215, 0, 0.5)' }}
-        onClick={(e) => e.stopPropagation()}
-        animate={{ scale: [1, 1.02, 1], transition: { duration: 1, repeat: Infinity } }}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 50 }}
+        transition={{ duration: 0.3 }}
+        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-indigo-900 border border-yellow-400 rounded-lg p-4 max-w-sm w-full text-center shadow-lg"
       >
-        {/* Left: Title and Detail */}
-        <div className="flex-1 pr-3">
-          <h3 className="text-yellow-300 font-bold text-sm md:text-base">{title}</h3>
-          <p className="text-blue-200 text-xs md:text-sm">
-            {type === 'achievement' ? 'Requirement:' : 'Bonus:'} {detail}
-          </p>
-        </div>
-
-        {/* Right: Image */}
-        <div className="flex-shrink-0">
+        {/* Image with Scale, Glow, and Sparkles */}
+        <div className="relative mx-auto w-20 h-20">
           <motion.img
             src={image}
             alt={title}
-            className="h-10 w-10 md:h-12 md:w-12 rounded-full border-2 border-yellow-400 object-cover"
-            initial={{ rotate: -10 }}
-            animate={{ rotate: 10 }}
-            transition={{ duration: 0.5, yoyo: Infinity }}
+            className="w-full h-full rounded-full border-2 border-yellow-400 object-cover"
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1.2 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           />
+          {/* Glow Effect */}
+          <div className="absolute inset-0 rounded-full animate-glow" style={{ boxShadow: '0 0 15px 5px rgba(255, 215, 0, 0.7)' }} />
+          {/* Sparkles */}
+          <div className="absolute inset-0 animate-sparkle bg-[url('/sparkle.png')] bg-no-repeat bg-center" />
         </div>
+
+        {/* Title and Detail */}
+        <h3 className="mt-4 text-yellow-300 font-bold text-lg">{title}</h3>
+        <p className="text-blue-200 text-sm">
+          {type === 'achievement' ? 'Requirement:' : 'Bonus:'} {detail}
+        </p>
+
+        {/* Back Button */}
+        <button
+          onClick={onClose}
+          className="mt-4 bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
+        >
+          Back
+        </button>
 
         {/* Close Button */}
         <button
-          onClick={handleClose}
-          className="absolute top-1 right-1 text-yellow-300 hover:text-yellow-100 transition-colors"
+          onClick={onClose}
+          className="absolute top-2 right-2 text-yellow-300 hover:text-yellow-100 transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
+
+        {/* CSS Animations */}
+        <style jsx>{`
+          @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+          }
+          .animate-glow {
+            animation: glow 1.5s infinite;
+          }
+          @keyframes sparkle {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+          }
+          .animate-sparkle {
+            animation: sparkle 1s infinite;
+          }
+        `}</style>
       </motion.div>
-    </div>
+    </AnimatePresence>
   );
 };
 
@@ -174,7 +163,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     );
     if (newManagers.length > 0) {
       setNotifications((prev) => [...prev, { type: 'manager', id: newManagers[0] }]);
-      console.log('New Manager Unlocked:', newManagers[0]);
+      console.log('New Manager:', newManagers[0]);
     }
 
     const newArtifacts = state.ownedArtifacts.filter(
@@ -182,7 +171,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     );
     if (newArtifacts.length > 0) {
       setNotifications((prev) => [...prev, { type: 'artifact', id: newArtifacts[0] }]);
-      console.log('New Artifact Unlocked:', newArtifacts[0]);
+      console.log('New Artifact:', newArtifacts[0]);
     }
 
     const newAchievements = state.achievements.filter(
@@ -190,7 +179,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     );
     if (newAchievements.length > 0) {
       setNotifications((prev) => [...prev, { type: 'achievement', id: newAchievements[0].id }]);
-      console.log('New Achievement Unlocked:', newAchievements[0].id);
+      console.log('New Achievement:', newAchievements[0].id);
     }
 
     setPrevState(state);
