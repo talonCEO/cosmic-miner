@@ -38,9 +38,9 @@ const topPortraits = [
 const generateLeaderboardData = () => {
   // Realistic gaming usernames
   const names = [
-    "CosmicQuester", "NebulaFox", "StellarVibe", "VoidReaper",
-    "AstroBlaze", "GalacticDrift", "LunaStriker", "OrbitWraith",
-    "StarChaserX", "EclipseRogue"
+    "Dax", "Ralson99", "Zachy", "Írony",
+    "Àkròlolz", "Se7en", "K0ALA", "	Jaimë",
+    "Glassl20", "Veximity"
   ];
 
   // Randomly shuffle names
@@ -88,7 +88,7 @@ const Leaderboard: React.FC = () => {
   }, []);
 
   // Simulated player position
-  const playerPosition = 42; // In a real app, this would be calculated
+  const playerPosition = 999; // In a real app, this would be calculated
 
   return (
     <>
