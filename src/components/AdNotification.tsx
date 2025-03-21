@@ -1,29 +1,63 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
-import { X, Plus, PlayCircle } from 'lucide-react';
+import { useGame } from '@/context/GameContext'; // Import to check hasNoAds
+import { X, Plus, PlayCircle, Gem, Clock } from 'lucide-react';
 
 const AdNotification: React.FC = () => {
-  const { 
+  const {
     showAdNotification,
     adBoostActive,
     adBoostTimeRemaining,
     adBoostMultiplier,
     handleWatchAd,
-    dismissAdNotification
+    dismissAdNotification,
   } = useAd();
-  
+  const { state } = useGame(); // Access hasNoAds
+
+  // Define ad types
+  const adTypes = [
+    {
+      name: 'Income Boost',
+      description: `${adBoostMultiplier}x Income for 10min`,
+      icon: <Plus className="h-3 w-3" />,
+      reward: () => handleWatchAd(), // Existing handler
+    },
+    {
+      name: 'Gems Bonus',
+      description: 'Watch to claim 20 bonus gems!',
+      icon: <Gem className="h-3 w-3" />,
+      reward: () => handleWatchAd('gems'), // Pass type to handler
+    },
+    {
+      name: 'Time Warp',
+      description: 'Watch to instantly earn 60 minutes of passive income!',
+      icon: <Clock className="h-3 w-3" />,
+      reward: () => handleWatchAd('timeWarp'), // Pass type to handler
+    },
+  ];
+
+  // Randomly select an ad when notification appears
+  const [selectedAd, setSelectedAd] = React.useState(() =>
+    adTypes[Math.floor(Math.random() * adTypes.length)]
+  );
+
+  React.useEffect(() => {
+    if (showAdNotification) {
+      setSelectedAd(adTypes[Math.floor(Math.random() * adTypes.length)]);
+    }
+  }, [showAdNotification]);
+
   // Format time remaining as mm:ss
   const formatTimeRemaining = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
-  
+
   return (
     <>
-      {/* Ad notification - responsive positioning for both web and mobile */}
+      {/* Ad notification */}
       <AnimatePresence>
         {showAdNotification && (
           <motion.div
@@ -33,62 +67,61 @@ const AdNotification: React.FC = () => {
             transition={{ duration: 0.3 }}
             className="fixed left-4 top-[11vh] md:top-[11vh] md:-translate-y-1/2 z-[50]"
           >
-            <motion.div 
+            <motion.div
               className="bg-indigo-900/80 backdrop-blur-sm border border-yellow-400 rounded-lg shadow-lg overflow-hidden max-w-[90vw] md:max-w-none"
-              animate={{ 
+              animate={{
                 scale: [1, 1.05, 1],
                 boxShadow: [
-                  "0 4px 6px -1px rgba(255, 215, 0, 0.1), 0 2px 4px -1px rgba(255, 215, 0, 0.06)",
-                  "0 10px 15px -3px rgba(255, 215, 0, 0.2), 0 4px 6px -2px rgba(255, 215, 0, 0.1)",
-                  "0 4px 6px -1px rgba(255, 215, 0, 0.1), 0 2px 4px -1px rgba(255, 215, 0, 0.06)"
-                ]
+                  '0 4px 6px -1px rgba(255, 215, 0, 0.1), 0 2px 4px -1px rgba(255, 215, 0, 0.06)',
+                  '0 10px 15px -3px rgba(255, 215, 0, 0.2), 0 4px 6px -2px rgba(255, 215, 0, 0.1)',
+                  '0 4px 6px -1px rgba(255, 215, 0, 0.1), 0 2px 4px -1px rgba(255, 215, 0, 0.06)',
+                ],
               }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 2
-              }}
+              transition={{ repeat: Infinity, duration: 2 }}
             >
               <div className="p-3 md:p-4 flex items-center gap-2 md:gap-3">
                 <div className="relative">
                   <motion.div
-                    animate={{ 
+                    animate={{
                       scale: [1, 1.2, 1],
-                      opacity: [0.7, 1, 0.7]
+                      opacity: [0.7, 1, 0.7],
                     }}
-                    transition={{ 
-                      repeat: Infinity, 
-                      duration: 1.5
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1.5,
                     }}
                     className="absolute inset-0 bg-yellow-400 rounded-full blur-md"
                   />
-                  <motion.div 
+                  <motion.div
                     className="relative z-10"
                     animate={{ rotate: 360 }}
-                    transition={{ 
-                      repeat: Infinity, 
-                      duration: 8, 
-                      ease: "linear" 
+                    transition={{
+                      repeat: Infinity,
+                      duration: 8,
+                      ease: 'linear',
                     }}
                   >
                     <PlayCircle className="text-yellow-300 h-6 w-6 md:h-8 md:w-8" />
                   </motion.div>
                 </div>
-                
+
                 <div className="flex-1">
-                  <div className="text-yellow-300 font-semibold text-xs md:text-sm">Claim Now</div>
+                  <div className="text-yellow-300 font-semibold text-xs md:text-sm">
+                    {selectedAd.name}
+                  </div>
                   <div className="text-blue-200 text-[10px] md:text-xs flex items-center gap-1">
-                    <Plus className="h-3 w-3" /> {adBoostMultiplier}x Income for 10min
+                    {selectedAd.icon} {selectedAd.description}
                   </div>
                 </div>
-                
-                <button 
-                  onClick={handleWatchAd} 
+
+                <button
+                  onClick={selectedAd.reward}
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-2 md:px-3 py-1 rounded-md text-[10px] md:text-xs font-semibold transition-colors"
                 >
-                  Watch
+                  {state.hasNoAds ? 'Claim' : 'Watch'}
                 </button>
-                
-                <button 
+
+                <button
                   onClick={dismissAdNotification}
                   className="text-blue-300 hover:text-blue-100 transition-colors p-1"
                 >
@@ -99,8 +132,8 @@ const AdNotification: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* Active boost indicator - responsive for mobile */}
+
+      {/* Active boost indicator (only for Income Boost) */}
       <AnimatePresence>
         {adBoostActive && (
           <motion.div
@@ -120,8 +153,12 @@ const AdNotification: React.FC = () => {
                 </div>
               </motion.div>
               <div>
-                <div className="text-yellow-300 text-[10px] md:text-xs font-medium">{adBoostMultiplier}x Income Boost</div>
-                <div className="text-blue-200 text-[10px] md:text-xs">{formatTimeRemaining(adBoostTimeRemaining)} remaining</div>
+                <div className="text-yellow-300 text-[10px] md:text-xs font-medium">
+                  {adBoostMultiplier}x Income Boost
+                </div>
+                <div className="text-blue-200 text-[10px] md:text-xs">
+                  {formatTimeRemaining(adBoostTimeRemaining)} remaining
+                </div>
               </div>
             </div>
           </motion.div>
