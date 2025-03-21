@@ -10,11 +10,10 @@ import PortraitIcon5 from '@/assets/images/portraits/pp9.png';
 import PortraitIcon6 from '@/assets/images/portraits/pp12.png';
 import PortraitIcon7 from '@/assets/images/portraits/pp6.png';
 import PortraitIcon8 from '@/assets/images/portraits/pp7.png';
-
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 // New import for the Gem Patron portrait (matches playerProgressionData.ts)
-import GemPatronPortraitImage from '@/assets/images/portraits/love.png';
+import GemPatronPortraitImage from '@/assets/images/portraits/gem-patron.png';
 
 // Extend the Achievement type to support multiple rewards
 export interface Reward {
@@ -55,7 +54,7 @@ export const createAchievements = (): Achievement[] => {
     { id: 'upgrades-2', name: 'Elemental Explorer', description: 'Purchase 25 element upgrades', unlocked: false, checkCondition: (state: GameState) => state.upgrades.filter(u => u.category === 'element' && u.level > 0).length >= 25, rewards: [{ type: 'gems', value: 15, image: GemIcon }] },
     { id: 'upgrades-3', name: 'Elemental Mastery', description: 'Purchase all element upgrades', unlocked: false, checkCondition: (state: GameState) => state.upgrades.filter(u => u.category === 'element' && u.level > 0).length === state.upgrades.filter(u => u.category === 'element').length && state.upgrades.filter(u => u.category === 'element').length > 0, rewards: [{ type: 'title', value: 'elemental_lord', image: TitleIcon }] },
     { id: 'level-1', name: 'Enhancement Beginner', description: 'Get any upgrade to level 50', unlocked: false, checkCondition: (state: GameState) => state.upgrades.some(u => u.level >= 50), rewards: [{ type: 'gems', value: 10, image: GemIcon }] },
-    { id: 'level-2', name: 'Enhancement Pro', description: 'Get any upgrade to level 100', unlocked: false, checkCondition: (state: GameState traumas) => state.upgrades.some(u => u.level >= 100), rewards: [{ type: 'inventory_item', value: 'TAP_BOOST', image: INVENTORY_ITEMS.TAP_BOOST.icon.props.src || BoostIcon }] },
+    { id: 'level-2', name: 'Enhancement Pro', description: 'Get any upgrade to level 100', unlocked: false, checkCondition: (state: GameState) => state.upgrades.some(u => u.level >= 100), rewards: [{ type: 'inventory_item', value: 'TAP_BOOST', image: INVENTORY_ITEMS.TAP_BOOST.icon.props.src || BoostIcon }] },
     { id: 'level-3', name: 'Enhancement Master', description: 'Get any upgrade to level 500', unlocked: false, checkCondition: (state: GameState) => state.upgrades.some(u => u.level >= 500), rewards: [{ type: 'gems', value: 20, image: GemIcon }] },
     { id: 'upgrades-4', name: 'Upgrade Overlord', description: 'Get 5 upgrades to level 1000', unlocked: false, checkCondition: (state: GameState) => state.upgrades.filter(u => u.level >= 1000).length >= 5, rewards: [{ type: 'portrait', value: 'galactic_guardian', image: PortraitIcon1 }] },
     { id: 'level-4', name: 'Upgrade Titan', description: 'Get 10 upgrades to level 500', unlocked: false, checkCondition: (state: GameState) => state.upgrades.filter(u => u.level >= 500).length >= 10, rewards: [{ type: 'title', value: 'upgrade_titan', image: TitleIcon }] },
@@ -97,10 +96,9 @@ export const createAchievements = (): Achievement[] => {
       unlocked: false,
       checkCondition: (state: GameState) => state.gems >= 10000,
       rewards: [
-        { type: 'title', value: 'gem_patron', image: TitleIcon },
         { type: 'portrait', value: 'gem_patron', image: GemPatronPortraitImage }
       ]
     },
-    { id: 'completion-1', name: 'Cosmic Completionist', description: 'Unlock 75% of all achievements', unlocked: false, checkCondition: (state: GameState) => state.achievements.filter(a => a.unlocked).length / state.achievements.length >= 0.75, rewards: [{ type: 'gems', value: 500, image: GemIcon }] },
+    { id: 'completion-1', name: 'Cosmic Completionist', description: 'Unlock 75% of all achievements', unlocked: false, checkCondition: (state: GameState) => state.achievements.filter(a => a.unlocked).length / state.achievements.length >= 0.75, rewards: [{type: 'portrait', value: 'boost_addict', image: PortraitIcon4 }] },
   ];
 };
