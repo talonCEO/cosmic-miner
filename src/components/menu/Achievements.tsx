@@ -87,12 +87,12 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                             variants={titleVariants}
                             initial="hidden"
                             animate="visible"
-                            className="block text-sm font-bold uppercase text-indigo-300"
+                            className="block text-xs font-bold uppercase text-indigo-300" // Reduced from text-sm to text-xs
                           >
                             {achievement.rewards.image}
                           </motion.strong>
                         ) : (
-                          <strong className="block text-sm font-bold uppercase text-indigo-300">
+                          <strong className="block text-xs font-bold uppercase text-indigo-300"> {/* Reduced from text-sm to text-xs */}
                             {achievement.rewards.image}
                           </strong>
                         )
