@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PortraitIcon6 from '@/assets/images/portraits/normalMax.png'; // galactic_guardian
 import PortraitIcon7 from '@/assets/images/portraits/specialMax.png'; // singularity_lord
 import PortraitIcon8 from '@/assets/images/portraits/uniqueNormal.png'; // cosmic_overlord
+// Import default avatar
+import DefaultAvatar from '@/assets/images/icons/profile.png';
 
 // List of player titles in ascending order of prestige
 const playerTitles = [
@@ -34,11 +36,11 @@ const topPortraits = [
 
 // Generate realistic player data for leaderboard
 const generateLeaderboardData = () => {
-  // More human-like, random names
+  // Realistic gaming usernames
   const names = [
-    "Emma Carter", "Liam Hayes", "Olivia Grant", "Noah Patel",
-    "Sophia Kim", "Ethan Brooks", "Ava Nguyen", "Mason Reed",
-    "Isabella Lopez", "Jameson Ford"
+    "CosmicQuester", "NebulaFox", "StellarVibe", "VoidReaper",
+    "AstroBlaze", "GalacticDrift", "LunaStriker", "OrbitWraith",
+    "StarChaserX", "EclipseRogue"
   ];
 
   // Randomly shuffle names
@@ -46,8 +48,8 @@ const generateLeaderboardData = () => {
 
   // Create leaderboard data
   return shuffledNames.map((username, index) => {
-    // Score starts at 1 trillion (1e12) and decreases slightly
-    const score = 1e12 - (index * 1e11); // 1T down to 0.1T
+    // Random score between 1 trillion (1e12) and 10 trillion (1e13)
+    const score = 1e12 + Math.random() * 9e12; // 1T to 10T
     const level = 100; // All players at level 100
 
     // Randomly select one of the top 3 titles (indices 7, 8, 9)
@@ -60,8 +62,8 @@ const generateLeaderboardData = () => {
     // All players have ELO 3000
     const elo = 3000;
 
-    // Generate initials for the avatar
-    const initials = username.split(' ').map(n => n[0]).join('').toUpperCase();
+    // Generate initials for the avatar (first two characters)
+    const initials = username.substring(0, 2).toUpperCase();
 
     return {
       id: index + 1,
@@ -142,7 +144,7 @@ const Leaderboard: React.FC = () => {
               {/* Portrait and Avatar */}
               <div className="relative flex-shrink-0 mx-2 w-12 h-12">
                 <Avatar className="absolute h-10 w-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
-                  <AvatarImage src={`/placeholder.svg`} alt={player.username} />
+                  <AvatarImage src={DefaultAvatar} alt={player.username} />
                   <AvatarFallback className="bg-indigo-700/50">
                     {player.initials}
                   </AvatarFallback>
