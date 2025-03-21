@@ -129,14 +129,14 @@ const Stats: React.FC = () => {
         <DialogContent className="bg-slate-800 border border-slate-700/50 rounded-xl text-white max-w-2xl max-h-[80vh] p-0">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="text-xl font-semibold text-center text-indigo-300">
-              Analytics Dashboard
+              Detail Report
             </DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] p-4">
             <div className="space-y-6">
               {/* Production Metrics */}
               <div>
-                <h3 className="text-lg font-semibold text-indigo-400 mb-2">Production Metrics</h3>
+                <h3 className="text-lg font-semibold text-indigo-400 mb-2">Analytics</h3>
                 <table className="w-full text-sm text-left text-slate-300">
                   <thead className="bg-slate-700/50">
                     <tr>
