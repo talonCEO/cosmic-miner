@@ -3,8 +3,6 @@ import { useGame } from '@/context/GameContext';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 import { Achievement, GameState } from '@/context/GameContext';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Props for the notification
@@ -17,7 +15,7 @@ interface UnlockNotificationProps {
 
 const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose, type, id }) => {
   const { state } = useGame();
-  const [hasInteracted, setHasInteracted] = useState(false); // Track interaction
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // Find the unlocked item based on type and ID
   const getUnlockedItem = () => {
@@ -35,7 +33,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
 
   const unlockedItem = getUnlockedItem();
 
-  // Determine image and description
+  // Determine image and content
   const getImage = () => {
     if (type === 'manager') return (unlockedItem as typeof managers[0])?.avatar;
     if (type === 'artifact') return (unlockedItem as typeof artifacts[0])?.avatar;
@@ -47,29 +45,32 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
     if (type === 'manager') {
       const manager = unlockedItem as typeof managers[0];
       return {
-        title: manager?.name,
+        title: manager?.name || 'Unknown Manager',
         detail: manager?.bonus || 'No bonus specified',
       };
     }
     if (type === 'artifact') {
       const artifact = unlockedItem as typeof artifacts[0];
       return {
-        title: artifact?.name,
+        title: artifact?.name || 'Unknown Artifact',
         detail: artifact?.bonus || 'No bonus specified',
       };
     }
     if (type === 'achievement') {
       const achievement = unlockedItem as Achievement;
       return {
-        title: achievement?.name,
+        title: achievement?.name || 'Unknown Achievement',
         detail: achievement?.description || 'No requirement specified',
+        reward: achievement?.rewards
+          ? `${achievement.rewards.type === 'gems' ? `${achievement.rewards.value} Gems` : achievement.rewards.value}`
+          : 'No reward',
       };
     }
-    return { title: '', detail: '' };
+    return { title: '', detail: '', reward: '' };
   };
 
   const image = getImage();
-  const { title, detail } = getContent();
+  const { title, detail, reward } = getContent();
 
   // Auto-close after 3 seconds if no interaction
   useEffect(() => {
@@ -77,21 +78,14 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
       const timer = setTimeout(() => {
         onClose();
       }, 3000);
-      return () => clearTimeout(timer); // Cleanup on unmount or interaction
+      return () => clearTimeout(timer);
     }
   }, [isOpen, hasInteracted, onClose]);
 
   // Handle interaction to prevent auto-close
   const handleInteraction = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent click from bubbling to background
+    e.stopPropagation();
     setHasInteracted(true);
-  };
-
-  // Close when clicking outside
-  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
   };
 
   if (!unlockedItem) return null;
@@ -100,68 +94,35 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center z-50 bg-black/20" // Even less visible background
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          onClick={handleBackgroundClick} // Close on background click
+          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[100] flex items-center bg-indigo-900/80 backdrop-blur-sm border border-yellow-400 rounded-lg shadow-lg p-2 max-w-[90vw] md:max-w-md"
+          onClick={handleInteraction}
         >
-          <motion.div
-            className="relative bg-gradient-to-br from-indigo-800 to-slate-700 rounded-lg p-4 w-11/12 max-w-xs border border-indigo-400/20 shadow-sm" // Smaller size
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-            onClick={handleInteraction} // Mark as interacted
-          >
-            {/* Close Button */}
-            <button
-              className="absolute top-1 right-1 text-slate-400 hover:text-white transition-colors"
-              onClick={onClose}
-            >
-              <X size={16} /> {/* Smaller X */}
-            </button>
+          {/* Left Side: Title and Detail */}
+          <div className="flex-1 pr-2">
+            <p className="text-yellow-300 font-semibold text-xs md:text-sm">{title}</p>
+            <p className="text-blue-200 text-[10px] md:text-xs">
+              {type === 'achievement' ? 'Requirement:' : 'Bonus:'} {detail}
+            </p>
+          </div>
 
-            {/* Congratulations Text */}
-            <h2 className="text-xl font-semibold text-center text-yellow-300 mb-2">Congratulations!</h2> {/* Smaller text */}
-
-            {/* Image with Visual Effects */}
-            <div className="flex justify-center mb-2">
-              <motion.div
-                className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-amber-400/30" // Smaller image
-                animate={{
-                  boxShadow: [
-                    '0 0 6px rgba(255, 191, 0, 0.3)',
-                    '0 0 10px rgba(255, 191, 0, 0.5)',
-                    '0 0 6px rgba(255, 191, 0, 0.3)',
-                  ],
-                }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <img
-                  src={image}
-                  alt={title}
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-amber-400/10 pointer-events-none" />
-              </motion.div>
-            </div>
-
-            {/* Title and Detail */}
-            <p className="text-center text-slate-200 text-sm font-medium">{title}</p>
-            <p className="text-center text-slate-300 text-xs mt-1 mb-3">{detail}</p> {/* Smaller detail text */}
-
-            {/* Back Button */}
-            <div className="flex justify-center">
-              <Button
-                className="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1 rounded-md transition-colors text-xs" // Smaller button
-                onClick={onClose}
-              >
-                Back
-              </Button>
-            </div>
-          </motion.div>
+          {/* Right Side: Reward or Image */}
+          <div className="flex-shrink-0">
+            {type === 'achievement' ? (
+              <p className="text-yellow-300 font-medium text-xs md:text-sm text-right">
+                Reward: {reward}
+              </p>
+            ) : (
+              <img
+                src={image}
+                alt={title}
+                className="h-8 w-8 md:h-10 md:w-10 object-contain rounded-full border border-yellow-400/30"
+              />
+            )}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -177,7 +138,6 @@ const UnlockNotificationWrapper: React.FC = () => {
     id: string;
   } | null>(null);
 
-  // Track previous state to detect unlocks
   const [prevState, setPrevState] = useState<GameState | null>(null);
 
   useEffect(() => {
@@ -186,7 +146,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       return;
     }
 
-    // Check for newly unlocked managers
     const newManagers = state.ownedManagers.filter(
       (m) => !prevState.ownedManagers.includes(m) && m !== 'manager-default'
     );
@@ -194,7 +153,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'manager', id: newManagers[0] });
     }
 
-    // Check for newly unlocked artifacts
     const newArtifacts = state.ownedArtifacts.filter(
       (a) => !prevState.ownedArtifacts.includes(a) && a !== 'artifact-default'
     );
@@ -202,7 +160,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'artifact', id: newArtifacts[0] });
     }
 
-    // Check for newly unlocked achievements
     const newAchievements = state.achievements.filter(
       (a) => a.unlocked && !prevState.achievements.find((pa) => pa.id === a.id)?.unlocked
     );
