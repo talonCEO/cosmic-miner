@@ -17,7 +17,7 @@ interface UnlockNotificationProps {
 
 const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose, type, id }) => {
   const { state } = useGame();
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false); // Track interaction
 
   // Find the unlocked item based on type and ID
   const getUnlockedItem = () => {
@@ -35,7 +35,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
 
   const unlockedItem = getUnlockedItem();
 
-  // Determine image and content
+  // Determine image and description
   const getImage = () => {
     if (type === 'manager') return (unlockedItem as typeof managers[0])?.avatar;
     if (type === 'artifact') return (unlockedItem as typeof artifacts[0])?.avatar;
@@ -77,128 +77,91 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
       const timer = setTimeout(() => {
         onClose();
       }, 3000);
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer); // Cleanup on unmount or interaction
     }
   }, [isOpen, hasInteracted, onClose]);
 
   // Handle interaction to prevent auto-close
   const handleInteraction = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent click from bubbling to background
     setHasInteracted(true);
   };
 
+  // Close when clicking outside
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!unlockedItem) return null;
-
-  // Image animation: Bounce up and dazzle
-  const imageVariants = {
-    initial: { y: '100vh', opacity: 0 },
-    animate: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: 'spring',
-        stiffness: 150,
-        damping: 10,
-        duration: 0.5,
-      },
-    },
-    exit: { opacity: 0, transition: { duration: 0.5 } },
-  };
-
-  // Particle-like dazzle effect
-  const dazzleVariants = {
-    animate: {
-      opacity: [0.5, 1, 0.5],
-      scale: [1, 1.2, 1],
-      transition: {
-        duration: 1,
-        repeat: 2,
-        ease: 'easeInOut',
-      },
-    },
-  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center z-50" // No background
+          className="fixed inset-0 flex items-center justify-center z-50 bg-black/20" // Even less visible background
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          onClick={handleInteraction}
+          onClick={handleBackgroundClick} // Close on background click
         >
-          <div className="relative text-center">
-            {/* Congratulations Text */}
-            <motion.h2
-              className="text-xl font-semibold text-yellow-300 mb-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
+          <motion.div
+            className="relative bg-gradient-to-br from-indigo-800 to-slate-700 rounded-lg p-4 w-11/12 max-w-xs border border-indigo-400/20 shadow-sm" // Smaller size
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            onClick={handleInteraction} // Mark as interacted
+          >
+            {/* Close Button */}
+            <button
+              className="absolute top-1 right-1 text-slate-400 hover:text-white transition-colors"
+              onClick={onClose}
             >
-              Congratulations!
-            </motion.h2>
+              <X size={16} /> {/* Smaller X */}
+            </button>
 
-            {/* Image with Bounce and Dazzle */}
-            <motion.div
-              className="relative w-20 h-20 rounded-full overflow-hidden"
-              variants={imageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              <img
-                src={image}
-                alt={title}
-                className="w-full h-full object-contain"
-              />
-              {/* Dazzle Effect */}
+            {/* Congratulations Text */}
+            <h2 className="text-xl font-semibold text-center text-yellow-300 mb-2">Congratulations!</h2> {/* Smaller text */}
+
+            {/* Image with Visual Effects */}
+            <div className="flex justify-center mb-2">
               <motion.div
-                className="absolute inset-0 rounded-full border-2 border-amber-400/50"
-                variants={dazzleVariants}
-                animate="animate"
-              />
-            </motion.div>
+                className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-amber-400/30" // Smaller image
+                animate={{
+                  boxShadow: [
+                    '0 0 6px rgba(255, 191, 0, 0.3)',
+                    '0 0 10px rgba(255, 191, 0, 0.5)',
+                    '0 0 6px rgba(255, 191, 0, 0.3)',
+                  ],
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <img
+                  src={image}
+                  alt={title}
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-amber-400/10 pointer-events-none" />
+              </motion.div>
+            </div>
 
             {/* Title and Detail */}
-            <motion.p
-              className="text-slate-200 text-sm font-medium mt-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-            >
-              {title}
-            </motion.p>
-            <motion.p
-              className="text-slate-300 text-xs mt-1 mb-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.6 }}
-            >
-              {detail}
-            </motion.p>
+            <p className="text-center text-slate-200 text-sm font-medium">{title}</p>
+            <p className="text-center text-slate-300 text-xs mt-1 mb-3">{detail}</p> {/* Smaller detail text */}
 
             {/* Back Button */}
-            {hasInteracted && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+            <div className="flex justify-center">
+              <Button
+                className="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1 rounded-md transition-colors text-xs" // Smaller button
+                onClick={onClose}
               >
-                <Button
-                  className="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1 rounded-md transition-colors text-xs"
-                  onClick={onClose}
-                >
-                  Back
-                </Button>
-              </motion.div>
-            )}
-          </div>
+                Back
+              </Button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -214,6 +177,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     id: string;
   } | null>(null);
 
+  // Track previous state to detect unlocks
   const [prevState, setPrevState] = useState<GameState | null>(null);
 
   useEffect(() => {
@@ -222,6 +186,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       return;
     }
 
+    // Check for newly unlocked managers
     const newManagers = state.ownedManagers.filter(
       (m) => !prevState.ownedManagers.includes(m) && m !== 'manager-default'
     );
@@ -229,6 +194,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'manager', id: newManagers[0] });
     }
 
+    // Check for newly unlocked artifacts
     const newArtifacts = state.ownedArtifacts.filter(
       (a) => !prevState.ownedArtifacts.includes(a) && a !== 'artifact-default'
     );
@@ -236,6 +202,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'artifact', id: newArtifacts[0] });
     }
 
+    // Check for newly unlocked achievements
     const newAchievements = state.achievements.filter(
       (a) => a.unlocked && !prevState.achievements.find((pa) => pa.id === a.id)?.unlocked
     );
