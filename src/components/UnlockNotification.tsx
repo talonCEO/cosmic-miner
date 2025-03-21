@@ -17,6 +17,7 @@ interface UnlockNotificationProps {
 
 const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose, type, id }) => {
   const { state } = useGame();
+  const [interacted, setInteracted] = useState(false); // Track user interaction
 
   // Find the unlocked item based on type and ID
   const getUnlockedItem = () => {
@@ -44,18 +45,38 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
 
   const getDescription = () => {
     if (type === 'manager')
-      return `You’ve hired ${(unlockedItem as typeof managers[0])?.name}! Their expertise will boost your operations.`;
+      return `You’ve hired ${(unlockedItem as typeof managers[0])?.name}!`;
     if (type === 'artifact')
-      return `You’ve discovered ${(unlockedItem as typeof artifacts[0])?.name}! Its powers are now yours.`;
+      return `You’ve discovered ${(unlockedItem as typeof artifacts[0])?.name}!`;
     if (type === 'achievement')
-      return `You’ve unlocked the "${(unlockedItem as Achievement)?.name}" achievement for ${(
-        unlockedItem as Achievement
-      )?.description.toLowerCase()}!`;
+      return `Achievement: ${(unlockedItem as Achievement)?.name}!`;
     return '';
   };
 
   const image = getImage();
   const description = getDescription();
+
+  // Auto-close after 3 seconds if no interaction
+  useEffect(() => {
+    if (isOpen && !interacted) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, interacted, onClose]);
+
+  // Handle interaction (prevents auto-close)
+  const handleInteraction = () => {
+    setInteracted(true);
+  };
+
+  // Close when clicking outside
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   if (!unlockedItem) return null;
 
@@ -63,39 +84,41 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 flex items-center justify-center z-50 bg-black/40" // Lighter background
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
+          onClick={handleBackgroundClick} // Close on background click
         >
           <motion.div
-            className="relative bg-gradient-to-br from-indigo-900 to-slate-800 rounded-xl p-6 w-11/12 max-w-md border border-indigo-500/50 shadow-xl"
-            initial={{ scale: 0.8, opacity: 0 }}
+            className="relative bg-gradient-to-br from-indigo-800 to-slate-700 rounded-lg p-5 w-10/12 max-w-sm border border-indigo-400/30 shadow-md" // Softer colors, smaller size
+            initial={{ scale: 0.9, opacity: 0 }} // More subtle scale
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }} // Gentler spring
+            onClick={handleInteraction} // Mark as interacted on click
           >
             {/* Close Button */}
             <button
-              className="absolute top-3 right-3 text-slate-300 hover:text-white transition-colors"
+              className="absolute top-2 right-2 text-slate-400 hover:text-white transition-colors"
               onClick={onClose}
             >
-              <X size={24} />
+              <X size={20} /> {/* Slightly smaller */}
             </button>
 
             {/* Congratulations Text */}
-            <h2 className="text-3xl font-bold text-center text-yellow-400 mb-4">Congratulations!</h2>
+            <h2 className="text-2xl font-semibold text-center text-yellow-300 mb-3">Congratulations!</h2> {/* Softer yellow, smaller text */}
 
             {/* Image with Visual Effects */}
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-3">
               <motion.div
-                className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-amber-500/50"
+                className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-amber-400/40" // Smaller image, subtler border
                 animate={{
                   boxShadow: [
-                    '0 0 10px rgba(255, 191, 0, 0.5)',
-                    '0 0 20px rgba(255, 191, 0, 0.8)',
-                    '0 0 10px rgba(255, 191, 0, 0.5)',
+                    '0 0 8px rgba(255, 191, 0, 0.4)',
+                    '0 0 12px rgba(255, 191, 0, 0.6)',
+                    '0 0 8px rgba(255, 191, 0, 0.4)',
                   ],
                 }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -105,17 +128,17 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
                   alt={unlockedItem.name}
                   className="w-full h-full object-contain"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-amber-500/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-amber-400/10 pointer-events-none" /> {/* Subtler gradient */}
               </motion.div>
             </div>
 
             {/* Description */}
-            <p className="text-center text-slate-200 text-sm mb-6">{description}</p>
+            <p className="text-center text-slate-300 text-xs mb-4">{description}</p> {/* Smaller text, lighter color */}
 
             {/* Back Button */}
             <div className="flex justify-center">
               <Button
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg transition-colors"
+                className="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-1 rounded-md transition-colors text-sm" // Smaller button
                 onClick={onClose}
               >
                 Back
