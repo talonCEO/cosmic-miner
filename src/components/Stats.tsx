@@ -30,6 +30,8 @@ const Stats: React.FC = () => {
   const levelData = getLevelFromExp(state.experience || 0);
   const unlockedTitles = getUnlockedTitles(levelData.currentLevel.level, state.achievements || [], state.prestigeCount);
   const unlockedPortraits = getUnlockedPortraits(levelData.currentLevel.level, state.achievements || [], state.prestigeCount);
+  const unlockedAchievements = (state.achievements || []).filter(a => a.unlocked).length;
+  const totalAchievements = (state.achievements || []).length;
 
   const calculateUpgradeStats = (upgrade: any) => {
     const levelsPurchased = upgrade.level;
@@ -147,15 +149,15 @@ const Stats: React.FC = () => {
                   <tbody>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Coins</td>
-                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.coins)}</td>
+                      <td className="py-2 px-3 text-yellow-300">{formatNumber(state.coins)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Total Coins</td>
-                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.totalEarned)}</td>
+                      <td className="py-2 px-3 text-yellow-300">{formatNumber(state.totalEarned)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Essence</td>
-                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.essence)}</td>
+                      <td className="py-2 px-3 text-purple-300">{formatNumber(state.essence)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Gems</td>
@@ -163,7 +165,7 @@ const Stats: React.FC = () => {
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Tap Power</td>
-                      <td className="py-2 px-3 text-blue-300">{formatNumber(tapPower)}</td>
+                      <td className="py-2 px-3 text-yellow-300">{formatNumber(tapPower)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Mining Rate</td>
@@ -171,11 +173,11 @@ const Stats: React.FC = () => {
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Global Multiplier</td>
-                      <td className="py-2 px-3 text-blue-300">x{formatNumber(globalMultiplier)}</td>
+                      <td className="py-2 px-3 text-purple-300">x{formatNumber(globalMultiplier)}</td>
                     </tr>
                     <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Total Clicks</td>
-                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.totalClicks)}</td>
+                      <td className="py-2 px-3 text-green-300">{formatNumber(state.totalClicks)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -218,6 +220,10 @@ const Stats: React.FC = () => {
                       <td className="py-2 px-3">Prestige Count</td>
                       <td className="py-2 px-3 text-indigo-300">{state.prestigeCount}</td>
                     </tr>
+                    <tr className="border-b border-indigo-500/20">
+                      <td className="py-2 px-3">Achievements Unlocked</td>
+                      <td className="py-2 px-3 text-blue-300">{unlockedAchievements} / {totalAchievements}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -241,7 +247,7 @@ const Stats: React.FC = () => {
                         <tr key={upgrade.id} className="border-b border-indigo-500/20">
                           <td className="py-2 px-3">{upgrade.name}</td>
                           <td className="py-2 px-3 text-blue-300">{stats.levelsPurchased}</td>
-                          <td className="py-2 px-3 text-blue-300">{formatNumber(stats.coinsPerSecondProduced)}</td>
+                          <td className="py-2 px-3 text-green-300">{formatNumber(stats.coinsPerSecondProduced)}</td>
                           <td className="py-2 px-3 text-red-300">{formatNumber(stats.totalCost)}</td>
                         </tr>
                       );
@@ -262,15 +268,20 @@ const Stats: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {managers.map((manager) => (
-                      <tr key={manager.id} className="border-b border-indigo-500/20">
-                        <td className="py-2 px-3">{manager.name}</td>
-                        <td className="py-2 px-3 text-green-400">{state.ownedManagers?.includes(manager.id) ? 'Yes' : 'No'}</td>
-                        <td className="py-2 px-3 text-blue-300">
-                          {(manager.perks || []).filter(p => p.unlocked).length} / {(manager.perks || []).length}
-                        </td>
-                      </tr>
-                    ))}
+                    {managers.map((manager) => {
+                      const isOwned = state.ownedManagers?.includes(manager.id);
+                      return (
+                        <tr key={manager.id} className="border-b border-indigo-500/20">
+                          <td className="py-2 px-3">{manager.name}</td>
+                          <td className={`py-2 px-3 ${isOwned ? 'text-green-400' : 'text-red-400'}`}>
+                            {isOwned ? 'Yes' : 'No'}
+                          </td>
+                          <td className="py-2 px-3 text-blue-300">
+                            {(manager.perks || []).filter(p => p.unlocked).length} / {(manager.perks || []).length}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -287,15 +298,20 @@ const Stats: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {artifacts.map((artifact) => (
-                      <tr key={artifact.id} className="border-b border-indigo-500/20">
-                        <td className="py-2 px-3">{artifact.name}</td>
-                        <td className="py-2 px-3 text-green-400">{state.ownedArtifacts?.includes(artifact.id) ? 'Yes' : 'No'}</td>
-                        <td className="py-2 px-3 text-blue-300">
-                          {(artifact.perks || []).filter(p => p.unlocked).length} / {(artifact.perks || []).length}
-                        </td>
-                      </tr>
-                    ))}
+                    {artifacts.map((artifact) => {
+                      const isOwned = state.ownedArtifacts?.includes(artifact.id);
+                      return (
+                        <tr key={artifact.id} className="border-b border-indigo-500/20">
+                          <td className="py-2 px-3">{artifact.name}</td>
+                          <td className={`py-2 px-3 ${isOwned ? 'text-green-400' : 'text-red-400'}`}>
+                            {isOwned ? 'Yes' : 'No'}
+                          </td>
+                          <td className="py-2 px-3 text-blue-300">
+                            {(artifact.perks || []).filter(p => p.unlocked).length} / {(artifact.perks || []).length}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
