@@ -140,18 +140,18 @@ const Leaderboard: React.FC = () => {
               </div>
 
               {/* Portrait and Avatar */}
-              <div className="relative flex-shrink-0 mx-2">
-                <img
-                  src={player.portrait}
-                  alt={`${player.username}'s portrait`}
-                  className="w-12 h-12 rounded-full absolute -top-1 -left-1 z-0 opacity-80"
-                />
-                <Avatar className="h-10 w-10 relative z-10">
+              <div className="relative flex-shrink-0 mx-2 w-12 h-12">
+                <Avatar className="absolute h-10 w-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
                   <AvatarImage src={`/placeholder.svg`} alt={player.username} />
                   <AvatarFallback className="bg-indigo-700/50">
                     {player.initials}
                   </AvatarFallback>
                 </Avatar>
+                <img
+                  src={player.portrait}
+                  alt={`${player.username}'s portrait`}
+                  className="absolute w-12 h-12 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10002] object-contain opacity-80 rounded-full"
+                />
               </div>
 
               {/* Player Info */}
