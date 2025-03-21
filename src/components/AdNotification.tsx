@@ -26,12 +26,12 @@ const AdNotification: React.FC = () => {
     },
     gems: {
       name: 'Gems Bonus',
-      description: 'Watch to claim 20 bonus gems!',
+      description: '20 Bonus Gems!',
       icon: <Gem className="h-3 w-3" />,
     },
     timeWarp: {
       name: 'Time Warp',
-      description: 'Watch to instantly earn 60 minutes of passive income!',
+      description: '1hr of Passive Income!',
       icon: <Clock className="h-3 w-3" />,
     },
   };
