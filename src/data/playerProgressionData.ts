@@ -4,7 +4,7 @@
 import { ShieldCheck, Star, Zap, Sparkles, Trophy } from 'lucide-react';
 
 // New import for the gem-themed portrait image (placeholder; replace with actual path)
-import GemPatronPortraitImage from '@/assets/images/portraits/gem-patron.png'; // Add this to your assets
+import GemPatronPortraitImage from '@/assets/images/portraits/love.png'; // Add this to your assets
 
 export interface LevelData {
   level: number;
