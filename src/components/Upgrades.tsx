@@ -11,7 +11,6 @@ const Upgrades = () => {
   const {
     state: gameState,
     buyUpgrade,
-    calculateUpgradeCost,
     calculateTotalCoinsPerSecond,
   } = useGame();
 
@@ -19,8 +18,8 @@ const Upgrades = () => {
     const upgrade = gameState.upgrades.find(u => u.id === upgradeId);
     if (!upgrade) return;
 
-    const cost = calculateUpgradeCost(upgradeId);
-    if (gameState.coins >= cost) { // Changed cosmicCredits to coins
+    const cost = upgrade.cost;
+    if (gameState.coins >= cost) {
       buyUpgrade(upgradeId);
     }
   };
@@ -32,20 +31,20 @@ const Upgrades = () => {
 
   const buyBestAffordableUpgrade = () => {
     const affordableUpgrades = gameState.upgrades.filter(
-      upgrade => calculateUpgradeCost(upgrade.id) <= gameState.coins
+      upgrade => upgrade.cost <= gameState.coins
     );
 
     if (affordableUpgrades.length === 0) return;
 
     const mostExpensiveAffordable = affordableUpgrades.sort(
-      (a, b) => calculateUpgradeCost(b.id) - calculateUpgradeCost(a.id)
+      (a, b) => b.cost - a.cost
     )[0];
 
     handleUpgrade(mostExpensiveAffordable.id);
   };
 
   const unlockedUpgrades = gameState.upgrades.filter(
-    upgrade => upgrade.level > 0 || calculateUpgradeCost(upgrade.id) <= gameState.coins * 10
+    upgrade => upgrade.level > 0 || upgrade.cost <= gameState.coins * 10
   );
 
   return (
@@ -68,7 +67,7 @@ const Upgrades = () => {
       <ScrollArea className='h-[calc(100vh-13rem)] pr-4'>
         <div className='space-y-2'>
           {unlockedUpgrades.map(upgrade => {
-            const cost = calculateUpgradeCost(upgrade.id);
+            const cost = upgrade.cost;
             const currentState = { ...gameState, upgrades: gameState.upgrades.map(u => u.id === upgrade.id ? { ...u, level: u.level - 1 } : u) };
             const currentIncome = upgrade.level > 0 ? calculateTotalCoinsPerSecond(currentState) : 0;
             const nextIncome = calculateTotalCoinsPerSecond({ ...gameState, upgrades: gameState.upgrades.map(u => u.id === upgrade.id ? { ...u, level: u.level + 1 } : u) });
