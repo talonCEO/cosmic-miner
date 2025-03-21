@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAd } from '@/context/AdContext';F
+import { useAd } from '@/context/AdContext';
 import { useGame } from '@/context/GameContext';
 import { X, Plus, Gem, Clock } from 'lucide-react';
 import FilmIcon from '@/assets/images/icons/film.png'; // Import the custom image
@@ -21,17 +21,17 @@ const AdNotification: React.FC = () => {
   const adConfigs = {
     income: {
       name: 'Income Boost',
-      description: `${adBoostMultiplier}x Income for 10min!`,
+      description: `${adBoostMultiplier}x Income for 10min`,
       icon: <Plus className="h-3 w-3" />,
     },
     gems: {
       name: 'Gems Bonus',
-      description: '+20 Bonus Gems!',
+      description: 'Watch to claim 20 bonus gems!',
       icon: <Gem className="h-3 w-3" />,
     },
     timeWarp: {
       name: 'Time Warp',
-      description: '+1hr Passive Earnings! ',
+      description: 'Watch to instantly earn 60 minutes of passive income!',
       icon: <Clock className="h-3 w-3" />,
     },
   };
