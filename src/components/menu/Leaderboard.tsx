@@ -7,9 +7,9 @@ import { formatNumber } from '@/utils/gameLogic';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Import top 3 portraits
-import PortraitIcon6 from '@/assets/images/portraits/normalMax.png'; // galactic_guardian
-import PortraitIcon7 from '@/assets/images/portraits/specialMax.png'; // singularity_lord
-import PortraitIcon8 from '@/assets/images/portraits/uniqueNormal.png'; // cosmic_overlord
+import PortraitIcon6 from '@/assets/images/portraits/specialMax.png'; // galactic_guardian
+import PortraitIcon7 from '@/assets/images/portraits/uniqueNormal.png'; // singularity_lord
+import PortraitIcon8 from '@/assets/images/portraits/love.png.png'; // cosmic_overlord
 // Import default avatar
 import DefaultAvatar from '@/assets/images/icons/profile.png';
 
@@ -29,7 +29,7 @@ const playerTitles = [
 
 // Top 3 portraits for leaderboard
 const topPortraits = [
-  { value: 'galactic_guardian', image: PortraitIcon6 },
+  { value: 'cosmic_overlord', image: PortraitIcon6 },
   { value: 'singularity_lord', image: PortraitIcon7 },
   { value: 'love', image: PortraitIcon8 },
 ];
