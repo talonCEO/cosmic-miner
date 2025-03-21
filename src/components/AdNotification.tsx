@@ -31,7 +31,7 @@ const AdNotification: React.FC = () => {
     },
     timeWarp: {
       name: 'Time Warp',
-      description: '+1hr passive earnings! ',
+      description: '+1hr Passive Earnings! ',
       icon: <Clock className="h-3 w-3" />,
     },
   };
