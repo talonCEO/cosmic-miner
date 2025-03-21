@@ -107,7 +107,7 @@ const Stats: React.FC = () => {
                     <div className="flex items-center">
                       <div className="mr-2">{boost.icon}</div>
                       <div>
-                        <div className="font-medium">{boost.name}</div>
+                        <div className="font-medium text-indigo-300">{boost.name}</div>
                         <div className="text-xs text-slate-400">{boost.description}</div>
                       </div>
                     </div>
@@ -126,10 +126,10 @@ const Stats: React.FC = () => {
       </div>
 
       <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
-        <DialogContent className="bg-slate-800 border border-slate-700/50 rounded-xl text-white max-w-2xl max-h-[80vh] p-0">
-          <DialogHeader className="p-4 pb-0">
+        <DialogContent className="bg-slate-900/80 border border-indigo-500/20 rounded-xl text-white max-w-2xl max-h-[80vh] p-0">
+          <DialogHeader className="p-4 border-b border-indigo-500/20">
             <DialogTitle className="text-xl font-semibold text-center text-indigo-300">
-              Detail Report
+              Detailed Stats
             </DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] p-4">
@@ -138,42 +138,42 @@ const Stats: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-indigo-400 mb-2">Analytics</h3>
                 <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="bg-slate-700/50">
+                  <thead className="bg-indigo-900/30">
                     <tr>
                       <th className="py-2 px-3">Metric</th>
                       <th className="py-2 px-3">Value</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Coins</td>
                       <td className="py-2 px-3 text-yellow-300">{formatNumber(state.coins)}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Total Coins</td>
                       <td className="py-2 px-3 text-yellow-300">{formatNumber(state.totalEarned)}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Essence</td>
                       <td className="py-2 px-3 text-purple-300">{formatNumber(state.essence)}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Gems</td>
-                      <td className="py-2 px-3 text-emerald-300">{formatNumber(state.gems)}</td>
+                      <td className="py-2 px-3 text-blue-300">{formatNumber(state.gems)}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Tap Power</td>
                       <td className="py-2 px-3 text-yellow-300">{formatNumber(tapPower)}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Mining Rate</td>
                       <td className="py-2 px-3 text-blue-300">{formatNumber(totalCPS)}/s</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Global Multiplier</td>
                       <td className="py-2 px-3 text-purple-300">x{formatNumber(globalMultiplier)}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Total Clicks</td>
                       <td className="py-2 px-3 text-green-300">{formatNumber(state.totalClicks)}</td>
                     </tr>
@@ -185,36 +185,36 @@ const Stats: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-indigo-400 mb-2">Player Progression</h3>
                 <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="bg-slate-700/50">
+                  <thead className="bg-indigo-900/30">
                     <tr>
                       <th className="py-2 px-3">Metric</th>
                       <th className="py-2 px-3">Value</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Level</td>
-                      <td className="py-2 px-3 text-cyan-300">{levelData.currentLevel.level}</td>
+                      <td className="py-2 px-3 text-blue-300">{levelData.currentLevel.level}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Experience</td>
-                      <td className="py-2 px-3 text-cyan-300">
+                      <td className="py-2 px-3 text-blue-300">
                         {formatNumber(state.experience || 0)} / {formatNumber(levelData.nextLevel?.expRequired || 0)}
                       </td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Progress to Next Level</td>
-                      <td className="py-2 px-3 text-cyan-300">{levelData.progress.toFixed(2)}%</td>
+                      <td className="py-2 px-3 text-blue-300">{levelData.progress.toFixed(2)}%</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Titles Unlocked</td>
-                      <td className="py-2 px-3 text-cyan-300">{unlockedTitles.length} / {TITLES.length}</td>
+                      <td className="py-2 px-3 text-blue-300">{unlockedTitles.length} / {TITLES.length}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Portraits Unlocked</td>
-                      <td className="py-2 px-3 text-cyan-300">{unlockedPortraits.length} / {PORTRAITS.length}</td>
+                      <td className="py-2 px-3 text-blue-300">{unlockedPortraits.length} / {PORTRAITS.length}</td>
                     </tr>
-                    <tr className="border-b border-slate-700/50">
+                    <tr className="border-b border-indigo-500/20">
                       <td className="py-2 px-3">Prestige Count</td>
                       <td className="py-2 px-3 text-indigo-300">{state.prestigeCount}</td>
                     </tr>
@@ -226,7 +226,7 @@ const Stats: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-indigo-400 mb-2">Upgrades</h3>
                 <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="bg-slate-700/50">
+                  <thead className="bg-indigo-900/30">
                     <tr>
                       <th className="py-2 px-3">Upgrade</th>
                       <th className="py-2 px-3">Levels</th>
@@ -238,9 +238,9 @@ const Stats: React.FC = () => {
                     {state.upgrades.map((upgrade) => {
                       const stats = calculateUpgradeStats(upgrade);
                       return (
-                        <tr key={upgrade.id} className="border-b border-slate-700/50">
+                        <tr key={upgrade.id} className="border-b border-indigo-500/20">
                           <td className="py-2 px-3">{upgrade.name}</td>
-                          <td className="py-2 px-3 text-cyan-300">{stats.levelsPurchased}</td>
+                          <td className="py-2 px-3 text-blue-300">{stats.levelsPurchased}</td>
                           <td className="py-2 px-3 text-blue-300">{formatNumber(stats.coinsPerSecondProduced)}</td>
                           <td className="py-2 px-3 text-red-300">{formatNumber(stats.totalCost)}</td>
                         </tr>
@@ -254,7 +254,7 @@ const Stats: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-indigo-400 mb-2">Managers</h3>
                 <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="bg-slate-700/50">
+                  <thead className="bg-indigo-900/30">
                     <tr>
                       <th className="py-2 px-3">Manager</th>
                       <th className="py-2 px-3">Owned</th>
@@ -263,10 +263,10 @@ const Stats: React.FC = () => {
                   </thead>
                   <tbody>
                     {managers.map((manager) => (
-                      <tr key={manager.id} className="border-b border-slate-700/50">
+                      <tr key={manager.id} className="border-b border-indigo-500/20">
                         <td className="py-2 px-3">{manager.name}</td>
                         <td className="py-2 px-3 text-green-400">{state.ownedManagers?.includes(manager.id) ? 'Yes' : 'No'}</td>
-                        <td className="py-2 px-3 text-cyan-300">
+                        <td className="py-2 px-3 text-blue-300">
                           {(manager.perks || []).filter(p => p.unlocked).length} / {(manager.perks || []).length}
                         </td>
                       </tr>
@@ -279,7 +279,7 @@ const Stats: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-indigo-400 mb-2">Artifacts</h3>
                 <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="bg-slate-700/50">
+                  <thead className="bg-indigo-900/30">
                     <tr>
                       <th className="py-2 px-3">Artifact</th>
                       <th className="py-2 px-3">Owned</th>
@@ -288,10 +288,10 @@ const Stats: React.FC = () => {
                   </thead>
                   <tbody>
                     {artifacts.map((artifact) => (
-                      <tr key={artifact.id} className="border-b border-slate-700/50">
+                      <tr key={artifact.id} className="border-b border-indigo-500/20">
                         <td className="py-2 px-3">{artifact.name}</td>
                         <td className="py-2 px-3 text-green-400">{state.ownedArtifacts?.includes(artifact.id) ? 'Yes' : 'No'}</td>
-                        <td className="py-2 px-3 text-cyan-300">
+                        <td className="py-2 px-3 text-blue-300">
                           {(artifact.perks || []).filter(p => p.unlocked).length} / {(artifact.perks || []).length}
                         </td>
                       </tr>
