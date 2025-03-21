@@ -10,11 +10,11 @@ import PortraitIcon5 from '@/assets/images/portraits/pp9.png';
 import PortraitIcon6 from '@/assets/images/portraits/pp12.png';
 import PortraitIcon7 from '@/assets/images/portraits/pp6.png';
 import PortraitIcon8 from '@/assets/images/portraits/pp7.png';
-import PortraitIcon9 from '@/assets/images/portraits/love.png';
+
 import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 // New import for the Gem Patron portrait (matches playerProgressionData.ts)
-import GemPatronPortraitImage from '@/assets/images/portraits/gem-patron.png';
+import GemPatronPortraitImage from '@/assets/images/portraits/love.png';
 
 // Extend the Achievement type to support multiple rewards
 export interface Reward {
