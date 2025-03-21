@@ -91,53 +91,55 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
-      <div className="flex relative items-start">
-        {/* Left Column: Portrait (Standalone) */}
-        <div className="flex flex-col items-center pt-2 mr-3">
-          <div className="w-24 h-24">
-            <img
-              src={portraitData?.pngPath}
-              alt={portraitData?.name}
-              className="w-24 h-24 rounded-full object-cover opacity-80"
-            />
-          </div>
-          {/* Avatar below the portrait */}
-          <Avatar className="mt-2 h-10 w-10 border-2 border-amber-500/50">
-            <AvatarFallback className="bg-indigo-700/50 text-white text-sm">
-              {playerName.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
-            {titleDisplay}
-          </div>
+      <div className="flex relative">
+        {/* Left Column: Portrait */}
+        <div className="mr-3 pt-2">
+          <img
+            src={portraitData?.pngPath}
+            alt={portraitData?.name}
+            className="w-24 h-24 object-contain opacity-80"
+          />
         </div>
 
-        {/* Middle Column: Name, Level, XP */}
+        {/* Middle Column: Avatar, Name, Level, XP */}
         <div className="flex-1 pt-2">
-          {isEditing ? (
-            <div className="flex items-center gap-2 mb-4">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-7 text-white bg-indigo-700/50 border-indigo-500"
-                maxLength={15}
-              />
-              <Button size="icon" variant="ghost" className="h-7 w-7 p-0" onClick={handleSaveName}>
-                <Check size={14} className="text-green-400" />
-              </Button>
-            </div>
-          ) : (
-            <div className="mb-6 mt-2">
-              <h3 className="text-m font-semibold text-white">{playerName}</h3>
-              {nameChangeCount > 0 && (
-                <span className="flex items-center text-xs text-purple-400 mt-1">
-                  <Gem size={12} className="mr-1" /> 200
-                </span>
+          <div className="flex items-center gap-2 mb-2">
+            <Avatar className="h-10 w-10 border-2 border-amber-500/50">
+              <AvatarFallback className="bg-indigo-700/50 text-white text-sm">
+                {playerName.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              {isEditing ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-7 text-white bg-indigo-700/50 border-indigo-500"
+                    maxLength={15}
+                  />
+                  <Button size="icon" variant="ghost" className="h-7 w-7 p-0" onClick={handleSaveName}>
+                    <Check size={14} className="text-green-400" />
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-m font-semibold text-white">{playerName}</h3>
+                  {nameChangeCount > 0 && (
+                    <span className="flex items-center text-xs text-purple-400">
+                      <Gem size={12} className="mr-1" /> 200
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-          )}
+          </div>
 
-          <div className="flex items-center gap-2 mb-1 pt-3 relative">
+          <div className="mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium inline-block">
+            {titleDisplay}
+          </div>
+
+          <div className="flex items-center gap-2 mt-2 relative">
             <div className="text-white text-xs font-medium">Level {currentLevel.level}</div>
             {currentLevel.rewards && (
               <div className="text-xs text-amber-400">
@@ -164,7 +166,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             </Button>
           </div>
 
-          <div className="space-y-0.5">
+          <div className="space-y-0.5 mt-1">
             <div className="flex justify-between text-xs text-slate-300">
               <span>XP</span>
               <span>{getNextLevelText()}</span>
