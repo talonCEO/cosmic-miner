@@ -3,7 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
 import { Bitcoin, MousePointer, Sparkles, Gauge, Recycle, BarChart } from 'lucide-react';
 import { useBoostManager } from '@/hooks/useBoostManager';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -33,10 +33,9 @@ const Stats: React.FC = () => {
 
   const calculateUpgradeStats = (upgrade: any) => {
     const levelsPurchased = upgrade.level;
-    const coinsPerClickProduced = upgrade.coinsPerClickBonus * levelsPurchased;
     const coinsPerSecondProduced = upgrade.coinsPerSecondBonus * levelsPurchased;
     const totalCost = upgrade.baseCost * ((1 - Math.pow(1.08, levelsPurchased)) / (1 - 1.08));
-    return { levelsPurchased, coinsPerClickProduced, coinsPerSecondProduced, totalCost };
+    return { levelsPurchased, coinsPerSecondProduced, totalCost };
   };
 
   return (
@@ -147,6 +146,22 @@ const Stats: React.FC = () => {
                   </thead>
                   <tbody>
                     <tr className="border-b border-slate-700/50">
+                      <td className="py-2 px-3">Coins</td>
+                      <td className="py-2 px-3 text-yellow-300">{formatNumber(state.coins)}</td>
+                    </tr>
+                    <tr className="border-b border-slate-700/50">
+                      <td className="py-2 px-3">Total Coins</td>
+                      <td className="py-2 px-3 text-yellow-300">{formatNumber(state.totalEarned)}</td>
+                    </tr>
+                    <tr className="border-b border-slate-700/50">
+                      <td className="py-2 px-3">Essence</td>
+                      <td className="py-2 px-3 text-purple-300">{formatNumber(state.essence)}</td>
+                    </tr>
+                    <tr className="border-b border-slate-700/50">
+                      <td className="py-2 px-3">Gems</td>
+                      <td className="py-2 px-3 text-emerald-300">{formatNumber(state.gems)}</td>
+                    </tr>
+                    <tr className="border-b border-slate-700/50">
                       <td className="py-2 px-3">Drill Power</td>
                       <td className="py-2 px-3 text-yellow-300">{formatNumber(tapPower)}</td>
                     </tr>
@@ -215,9 +230,8 @@ const Stats: React.FC = () => {
                     <tr>
                       <th className="py-2 px-3">Upgrade</th>
                       <th className="py-2 px-3">Levels</th>
-                      <th className="py-2 px-3">Click Income</th>
-                      <th className="py-2 px-3">Passive Income</th>
-                      <th className="py-2 px-3">Total Cost</th>
+                      <th className="py-2 px-3">Income</th>
+                      <th className="py-2 px-3">Cost</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -227,7 +241,6 @@ const Stats: React.FC = () => {
                         <tr key={upgrade.id} className="border-b border-slate-700/50">
                           <td className="py-2 px-3">{upgrade.name}</td>
                           <td className="py-2 px-3 text-cyan-300">{stats.levelsPurchased}</td>
-                          <td className="py-2 px-3 text-yellow-300">{formatNumber(stats.coinsPerClickProduced)}</td>
                           <td className="py-2 px-3 text-blue-300">{formatNumber(stats.coinsPerSecondProduced)}</td>
                           <td className="py-2 px-3 text-red-300">{formatNumber(stats.totalCost)}</td>
                         </tr>
