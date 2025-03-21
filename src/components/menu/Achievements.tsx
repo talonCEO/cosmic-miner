@@ -65,7 +65,7 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                   {achievement.rewards && (
                     <div className="text-center">
                       {achievement.rewards.type === 'title' ? (
-                        <strong className="block text-sm font-bold uppercase text-yellow-400 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent px-2 py-1 rounded shadow-md">
+                        <strong className="block text-sm font-bold uppercase text-indigo-300">
                           {achievement.rewards.image}
                         </strong>
                       ) : (
