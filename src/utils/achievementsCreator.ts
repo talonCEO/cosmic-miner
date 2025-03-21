@@ -1,6 +1,5 @@
 import { Achievement, GameState } from '@/context/GameContext';
 import GemIcon from '@/assets/images/icons/gems1.png';
-import BoostIcon from '@/assets/images/icons/gems1.png'; // Placeholder for inventory items
 import PortraitIcon2 from '@/assets/images/portraits/2.png'; // nebula_voyager
 import PortraitIcon3 from '@/assets/images/portraits/3.png'; // astral_navigator
 import PortraitIcon4 from '@/assets/images/portraits/4.png'; // stellar_seeker
@@ -9,7 +8,6 @@ import PortraitIcon6 from '@/assets/images/portraits/normalMax.png'; // galactic
 import PortraitIcon7 from '@/assets/images/portraits/specialMax.png'; // singularity_lord
 import PortraitIcon8 from '@/assets/images/portraits/uniqueNormal.png'; // cosmic_overlord
 import PortraitIcon9 from '@/assets/images/portraits/love.png'; // love (Stellar Supporter)
-import { INVENTORY_ITEMS } from '@/components/menu/types';
 
 export const createAchievements = (): Achievement[] => {
   return [
