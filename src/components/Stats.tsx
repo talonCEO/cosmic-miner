@@ -24,7 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import { BoostEffect } from '@/components/menu/types';
-import { getLevelFromExp, getUnlockedTitles, getUnlockedPortraits } from '@/utils/playerProgression';
+import { getLevelFromExp, getUnlockedTitles, getUnlockedPortraits } from '@/utils/playerProgressionData';
 import { managers } from '@/utils/managersData';
 import { artifacts } from '@/utils/artifactsData';
 
