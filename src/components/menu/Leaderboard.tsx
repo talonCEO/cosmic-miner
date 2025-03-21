@@ -39,7 +39,7 @@ const generateLeaderboardData = () => {
   // Realistic gaming usernames
   const names = [
     "Dax", "Ralson99", "Zachy", "Írony",
-    "Àkròlolz", "Se7en", "K0ALA", "	Jaimë",
+    "Àkròlolz", "Se7en", "K0ALA", "Jaimë",
     "Glassl20", "Veximity"
   ];
 
@@ -47,9 +47,9 @@ const generateLeaderboardData = () => {
   const shuffledNames = [...names].sort(() => 0.5 - Math.random());
 
   // Create leaderboard data
-  return shuffledNames.map((username, index) => {
-    // Random score between 1 trillion (1e12) and 10 trillion (1e13)
-    const score = 1e12 + Math.random() * 9e12; // 1T to 10T
+  const data = shuffledNames.map((username, index) => {
+    // Random score between 100 trillion (1e14) and 1 quadrillion (1e15)
+    const score = 1e14 + Math.random() * 9e14; // 100T to 1Q
     const level = 100; // All players at level 100
 
     // Randomly select one of the top 3 titles (indices 7, 8, 9)
@@ -76,6 +76,9 @@ const generateLeaderboardData = () => {
       portrait: portrait.image, // Add portrait image
     };
   });
+
+  // Sort by score in descending order (highest score at top)
+  return data.sort((a, b) => b.score - a.score);
 };
 
 const Leaderboard: React.FC = () => {
