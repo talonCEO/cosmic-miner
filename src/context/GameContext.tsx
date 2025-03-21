@@ -9,7 +9,7 @@ import * as GameMechanics from '@/utils/GameMechanics';
 import { createAchievements } from '@/utils/achievementsCreator';
 import { StorageService } from '@/services/StorageService';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from '@/components/menu/types';
-import AsteroidDrillIcon from '@/assets/images/icons/asteroid-drill.png';
+import AsteroidDrillIcon from '@/assets/images/icons/aa1.png';
 import QuantumVibrationIcon from '@/assets/images/icons/quantum-vibration.png';
 import NeuralMiningIcon from '@/assets/images/icons/neural-mining.png';
 import GravitonShieldIcon from '@/assets/images/icons/graviton-shield.png';
