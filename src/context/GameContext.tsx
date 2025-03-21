@@ -296,7 +296,7 @@ const initialAbilities: Ability[] = [
   }
 ];
 
-const UPGRADE_COST_GROWTH = 1.15;
+const UPGRADE_COST_GROWTH = 1.08;
 
 const initialState: GameState = {
   coins: 0,
@@ -309,7 +309,7 @@ const initialState: GameState = {
   totalEarned: 0,
   autoBuy: false,
   autoTap: false,
-  essence: 10000,
+  essence: 0,
   ownedManagers: ["manager-default"],
   ownedArtifacts: ["artifact-default"],
   achievements: createAchievements(),
@@ -317,16 +317,16 @@ const initialState: GameState = {
   managers: managers,
   artifacts: artifacts,
   prestigeCount: 0,
-  incomeMultiplier: 10.0,
-  skillPoints: 10000,
+  incomeMultiplier: 1.0,
+  skillPoints: 0,
   abilities: initialAbilities,
   unlockedPerks: [],
   inventory: [],
-  inventoryCapacity: 100,
+  inventoryCapacity: 25,
   gems: 0,
   boosts: {},
   hasNoAds: false,
-  username: "Cosmic Explorer",
+  username: "Default1976",
   title: "space_pilot",
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
   portrait: "default",
