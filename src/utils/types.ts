@@ -35,6 +35,22 @@ export interface Perk {
   };
 }
 
+// Upgrade Interface - For element and tap upgrades
+export interface Upgrade {
+  id: string;
+  name: string;
+  description: string;
+  baseCost: number;
+  cost: number;
+  level: number;
+  maxLevel: number;
+  icon: string;
+  category: string;
+  coinsPerSecondBonus: number;
+  coinsPerClickBonus: number;
+  unlocked: boolean;
+}
+
 // Ability Interface - For TechTree component
 export interface Ability {
   id: string;
