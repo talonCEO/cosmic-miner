@@ -2,7 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
 import { useGame } from '@/context/GameContext';
-import { X, Plus, PlayCircle, Gem, Clock } from 'lucide-react';
+import { X, Plus, Gem, Clock } from 'lucide-react';
+import FilmIcon from '@/assets/images/icons/film.png'; // Import the custom image
 
 const AdNotification: React.FC = () => {
   const {
@@ -90,7 +91,11 @@ const AdNotification: React.FC = () => {
                       ease: 'linear',
                     }}
                   >
-                    <PlayCircle className="text-yellow-300 h-6 w-6 md:h-8 md:w-8" />
+                    <img
+                      src={FilmIcon}
+                      alt="Ad Icon"
+                      className="h-6 w-6 md:h-8 md:w-8 object-contain"
+                    />
                   </motion.div>
                 </div>
 
