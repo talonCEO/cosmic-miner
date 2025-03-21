@@ -85,15 +85,15 @@ export interface PortraitData {
 }
 
 export const PORTRAITS: PortraitData[] = [
-  { id: 'default', name: 'Default', description: 'The standard portrait for all cosmic miners starting their journey.', rarity: 'common', unlockCriteria: 'Default starting portrait', unlockCondition: { type: 'starting' }, pngPath: '/portraits/default.png' },
-  { id: 'nebula_voyager', name: 'Nebula Voyager', description: 'A portrait glowing with the hues of distant nebulae.', rarity: 'uncommon', unlockCriteria: 'Reach Level 15', unlockCondition: { type: 'level', value: 15 }, pngPath: '/portraits/2.png' },
-  { id: 'astral_navigator', name: 'Astral Navigator', description: 'A starry-eyed explorer charting the cosmic expanse.', rarity: 'uncommon', unlockCriteria: 'Reach Level 20', unlockCondition: { type: 'level', value: 20 }, pngPath: '/portraits/3.png' },
-  { id: 'stellar_seeker', name: 'Stellar Seeker', description: 'A radiant portrait for those who pursue the stars relentlessly.', rarity: 'rare', unlockCriteria: 'Reach Level 30', unlockCondition: { type: 'level', value: 30 }, pngPath: '/portraits/4.png' },
-  { id: 'eclipse_warden', name: 'Eclipse Warden', description: 'A shadowed figure guarding the cosmic balance.', rarity: 'rare', unlockCriteria: 'Reach Level 45', unlockCondition: { type: 'level', value: 45 }, pngPath: '/portraits/5.png' },
-  { id: 'galactic_guardian', name: 'Galactic Guardian', description: 'A majestic portrait awarded for protecting the galaxy’s riches.', rarity: 'epic', unlockCriteria: 'Reach Level 60', unlockCondition: { type: 'level', value: 60 }, pngPath: '/portraits/normalMax.png' },
-  { id: 'singularity_lord', name: 'Singularity Lord', description: 'A powerful visage born from the heart of a black hole.', rarity: 'epic', unlockCriteria: 'Reach Level 80', unlockCondition: { type: 'level', value: 80 }, pngPath: '/portraits/specialMax.png' },
-  { id: 'cosmic_overlord', name: 'Cosmic Overlord', description: 'A supreme portrait for the ultimate ruler of the cosmic mining empire.', rarity: 'legendary', unlockCriteria: 'Complete the "Master Miner" achievement', unlockCondition: { type: 'achievement', achievementId: 'master_miner' }, pngPath: '/portraits/uniqueNormal.png' },
-  { id: 'love', name: 'Stellar Supporter', description: 'A shimmering, heart-infused portrait radiating cosmic gratitude for supporting the game.', rarity: 'legendary', unlockCriteria: 'Support the game with any purchase', unlockCondition: { type: 'purchase' }, pngPath: '/portraits/love.png' },
+  { id: 'default', name: 'Default', description: 'The standard portrait for all cosmic miners starting their journey.', rarity: 'common', unlockCriteria: 'Default starting portrait', unlockCondition: { type: 'starting' }, pngPath: 'default.png' },
+  { id: 'nebula_voyager', name: 'Nebula Voyager', description: 'A portrait glowing with the hues of distant nebulae.', rarity: 'uncommon', unlockCriteria: 'Reach Level 15', unlockCondition: { type: 'level', value: 15 }, pngPath: '2.png' },
+  { id: 'astral_navigator', name: 'Astral Navigator', description: 'A starry-eyed explorer charting the cosmic expanse.', rarity: 'uncommon', unlockCriteria: 'Reach Level 20', unlockCondition: { type: 'level', value: 20 }, pngPath: '3.png' },
+  { id: 'stellar_seeker', name: 'Stellar Seeker', description: 'A radiant portrait for those who pursue the stars relentlessly.', rarity: 'rare', unlockCriteria: 'Reach Level 30', unlockCondition: { type: 'level', value: 30 }, pngPath: '4.png' },
+  { id: 'eclipse_warden', name: 'Eclipse Warden', description: 'A shadowed figure guarding the cosmic balance.', rarity: 'rare', unlockCriteria: 'Reach Level 45', unlockCondition: { type: 'level', value: 45 }, pngPath: '5.png' },
+  { id: 'galactic_guardian', name: 'Galactic Guardian', description: 'A majestic portrait awarded for protecting the galaxy’s riches.', rarity: 'epic', unlockCriteria: 'Reach Level 60', unlockCondition: { type: 'level', value: 60 }, pngPath: 'normalMax.png' },
+  { id: 'singularity_lord', name: 'Singularity Lord', description: 'A powerful visage born from the heart of a black hole.', rarity: 'epic', unlockCriteria: 'Reach Level 80', unlockCondition: { type: 'level', value: 80 }, pngPath: 'specialMax.png' },
+  { id: 'cosmic_overlord', name: 'Cosmic Overlord', description: 'A supreme portrait for the ultimate ruler of the cosmic mining empire.', rarity: 'legendary', unlockCriteria: 'Complete the "Master Miner" achievement', unlockCondition: { type: 'achievement', achievementId: 'master_miner' }, pngPath: 'uniqueNormal.png' },
+  { id: 'love', name: 'Stellar Supporter', description: 'A shimmering, heart-infused portrait radiating cosmic gratitude for supporting the game.', rarity: 'legendary', unlockCriteria: 'Support the game with any purchase', unlockCondition: { type: 'purchase' }, pngPath: 'love.png' },
 ];
 
 // Helper Functions (unchanged)
