@@ -40,7 +40,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
     if (type === 'artifact') return (unlockedItem as typeof artifacts[0])?.avatar;
     if (type === 'achievement') {
       const achievement = unlockedItem as Achievement;
-      return achievement?.rewards?.image || (achievement?.rewards?.type === 'gems' ? '/path/to/gem-icon.png' : '');
+      return achievement?.rewards?.image || (achievement?.rewards?.type === 'gems' ? '@/assets/images/icons/gems.png' : '');
     }
     return '';
   };
