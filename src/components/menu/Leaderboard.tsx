@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Import top 3 portraits
 import PortraitIcon6 from '@/assets/images/portraits/specialMax.png'; // galactic_guardian
 import PortraitIcon7 from '@/assets/images/portraits/uniqueNormal.png'; // singularity_lord
-import PortraitIcon8 from '@/assets/images/portraits/love.png.png'; // cosmic_overlord
+import PortraitIcon8 from '@/assets/images/portraits/love.png'; // cosmic_overlord
 // Import default avatar
 import DefaultAvatar from '@/assets/images/icons/profile.png';
 
