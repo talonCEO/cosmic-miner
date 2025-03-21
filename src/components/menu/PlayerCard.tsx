@@ -94,11 +94,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       <div className="flex relative">
         {/* Left Column: Portrait */}
         <div className="flex flex-col items-center pt-2">
-          <div className="relative w-24 h-24 mb-1 overflow-visible">
+          <div className="relative w-24 h-24 mb-1">
             <img
               src={portraitData?.pngPath}
               alt={portraitData?.name}
-              className="absolute h-24 w-24 -top-0 -left-0 z-[10002] rounded-full object-cover opacity-80"
+              className="absolute w-24 h-24 -top-0 -left-0 z-[10002] object-contain opacity-80"
             />
             <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
