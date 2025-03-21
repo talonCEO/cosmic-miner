@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAd } from '@/context/AdContext';
-import { useGame } from '@/context/GameContext'; // Import to check hasNoAds
+import { useGame } from '@/context/GameContext';
 import { X, Plus, PlayCircle, Gem, Clock } from 'lucide-react';
 
 const AdNotification: React.FC = () => {
@@ -12,41 +12,30 @@ const AdNotification: React.FC = () => {
     adBoostMultiplier,
     handleWatchAd,
     dismissAdNotification,
+    selectedAdType,
   } = useAd();
-  const { state } = useGame(); // Access hasNoAds
+  const { state } = useGame();
 
-  // Define ad types
-  const adTypes = [
-    {
+  // Ad type configurations
+  const adConfigs = {
+    income: {
       name: 'Income Boost',
       description: `${adBoostMultiplier}x Income for 10min`,
       icon: <Plus className="h-3 w-3" />,
-      reward: () => handleWatchAd(), // Existing handler
     },
-    {
+    gems: {
       name: 'Gems Bonus',
       description: 'Watch to claim 20 bonus gems!',
       icon: <Gem className="h-3 w-3" />,
-      reward: () => handleWatchAd('gems'), // Pass type to handler
     },
-    {
+    timeWarp: {
       name: 'Time Warp',
       description: 'Watch to instantly earn 60 minutes of passive income!',
       icon: <Clock className="h-3 w-3" />,
-      reward: () => handleWatchAd('timeWarp'), // Pass type to handler
     },
-  ];
+  };
 
-  // Randomly select an ad when notification appears
-  const [selectedAd, setSelectedAd] = React.useState(() =>
-    adTypes[Math.floor(Math.random() * adTypes.length)]
-  );
-
-  React.useEffect(() => {
-    if (showAdNotification) {
-      setSelectedAd(adTypes[Math.floor(Math.random() * adTypes.length)]);
-    }
-  }, [showAdNotification]);
+  const selectedAd = adConfigs[selectedAdType];
 
   // Format time remaining as mm:ss
   const formatTimeRemaining = (seconds: number): string => {
@@ -115,7 +104,7 @@ const AdNotification: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={selectedAd.reward}
+                  onClick={handleWatchAd}
                   className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-2 md:px-3 py-1 rounded-md text-[10px] md:text-xs font-semibold transition-colors"
                 >
                   {state.hasNoAds ? 'Claim' : 'Watch'}
