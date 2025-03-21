@@ -17,7 +17,7 @@ interface UnlockNotificationProps {
 
 const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose, type, id }) => {
   const { state } = useGame();
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false); // Track interaction
 
   // Find the unlocked item based on type and ID
   const getUnlockedItem = () => {
@@ -35,7 +35,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
 
   const unlockedItem = getUnlockedItem();
 
-  // Determine image and content
+  // Determine image and description
   const getImage = () => {
     if (type === 'manager') return (unlockedItem as typeof managers[0])?.avatar;
     if (type === 'artifact') return (unlockedItem as typeof artifacts[0])?.avatar;
@@ -77,13 +77,13 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
       const timer = setTimeout(() => {
         onClose();
       }, 3000);
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer); // Cleanup on unmount or interaction
     }
   }, [isOpen, hasInteracted, onClose]);
 
   // Handle interaction to prevent auto-close
   const handleInteraction = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent click from bubbling to background
     setHasInteracted(true);
   };
 
@@ -100,36 +100,36 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center z-50 bg-black/20"
+          className="fixed inset-0 flex items-center justify-center z-50 bg-black/20" // Even less visible background
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          onClick={handleBackgroundClick}
+          onClick={handleBackgroundClick} // Close on background click
         >
           <motion.div
-            className="relative bg-gradient-to-br from-indigo-800 to-slate-700 rounded-lg p-3 w-11/12 max-w-[200px] border border-indigo-400/20 shadow-sm" // Even smaller
+            className="relative bg-gradient-to-br from-indigo-800 to-slate-700 rounded-lg p-4 w-11/12 max-w-xs border border-indigo-400/20 shadow-sm" // Smaller size
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-            onClick={handleInteraction}
+            onClick={handleInteraction} // Mark as interacted
           >
             {/* Close Button */}
             <button
               className="absolute top-1 right-1 text-slate-400 hover:text-white transition-colors"
               onClick={onClose}
             >
-              <X size={14} /> {/* Smaller X */}
+              <X size={16} /> {/* Smaller X */}
             </button>
 
             {/* Congratulations Text */}
-            <h2 className="text-lg font-semibold text-center text-yellow-300 mb-1">Congratulations!</h2> {/* Smaller text */}
+            <h2 className="text-xl font-semibold text-center text-yellow-300 mb-2">Congratulations!</h2> {/* Smaller text */}
 
             {/* Image with Visual Effects */}
-            <div className="flex justify-center mb-1">
+            <div className="flex justify-center mb-2">
               <motion.div
-                className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400/30" // Smaller image
+                className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-amber-400/30" // Smaller image
                 animate={{
                   boxShadow: [
                     '0 0 6px rgba(255, 191, 0, 0.3)',
@@ -149,13 +149,13 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
             </div>
 
             {/* Title and Detail */}
-            <p className="text-center text-slate-200 text-xs font-medium">{title}</p>
-            <p className="text-center text-slate-300 text-[10px] mt-1 mb-2">{detail}</p> {/* Even smaller detail */}
+            <p className="text-center text-slate-200 text-sm font-medium">{title}</p>
+            <p className="text-center text-slate-300 text-xs mt-1 mb-3">{detail}</p> {/* Smaller detail text */}
 
             {/* Back Button */}
             <div className="flex justify-center">
               <Button
-                className="bg-indigo-500 hover:bg-indigo-400 text-white px-2 py-0.5 rounded-md transition-colors text-[10px]" // Smaller button
+                className="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1 rounded-md transition-colors text-xs" // Smaller button
                 onClick={onClose}
               >
                 Back
@@ -177,6 +177,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     id: string;
   } | null>(null);
 
+  // Track previous state to detect unlocks
   const [prevState, setPrevState] = useState<GameState | null>(null);
 
   useEffect(() => {
@@ -185,6 +186,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       return;
     }
 
+    // Check for newly unlocked managers
     const newManagers = state.ownedManagers.filter(
       (m) => !prevState.ownedManagers.includes(m) && m !== 'manager-default'
     );
@@ -192,6 +194,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'manager', id: newManagers[0] });
     }
 
+    // Check for newly unlocked artifacts
     const newArtifacts = state.ownedArtifacts.filter(
       (a) => !prevState.ownedArtifacts.includes(a) && a !== 'artifact-default'
     );
@@ -199,6 +202,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'artifact', id: newArtifacts[0] });
     }
 
+    // Check for newly unlocked achievements
     const newAchievements = state.achievements.filter(
       (a) => a.unlocked && !prevState.achievements.find((pa) => pa.id === a.id)?.unlocked
     );
