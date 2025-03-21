@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { getTitleById, getLevelFromExp, getPortraitById } from '@/data/playerPro
 import { useGame } from '@/context/GameContext';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import EditCustomization from './EditCustomization';
+import DefaultAvatar from '@/assets/images/icons/profile.png'; // Import default avatar
 
 interface PlayerCardProps {
   playerName: string;
@@ -101,6 +102,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               className="absolute w-24 h-24 -top-0 -left-0 z-[10002] object-contain opacity-80"
             />
             <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
+              <AvatarImage src={DefaultAvatar} alt={playerName} />
               <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
                 {playerName.substring(0, 2).toUpperCase()}
               </AvatarFallback>
