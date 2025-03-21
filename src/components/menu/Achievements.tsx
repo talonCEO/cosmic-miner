@@ -64,17 +64,22 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                 <div className="w-16 flex items-center justify-center ml-3">
                   {achievement.rewards && (
                     <div className="text-center">
-                      <img
-                        src={achievement.rewards.image}
-                        alt={achievement.rewards.type}
-                        className="w-8 h-8 mx-auto"
-                      />
-                      <span className="text-xs text-slate-300">
-                        {achievement.rewards.type === 'gems' ? `${achievement.rewards.value} Gems` :
-                         achievement.rewards.type === 'inventory_item' ? 'Boost' :
-                         achievement.rewards.type === 'title' ? 'Title' :
-                         'Portrait'}
-                      </span>
+                      {achievement.rewards.type === 'title' ? (
+                        <strong className="block text-sm font-bold uppercase text-yellow-400 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent px-2 py-1 rounded shadow-md">
+                          {achievement.rewards.image}
+                        </strong>
+                      ) : (
+                        <>
+                          <img
+                            src={achievement.rewards.image}
+                            alt={achievement.rewards.type}
+                            className="w-8 h-8 mx-auto"
+                          />
+                          <span className="text-xs text-slate-300">
+                            {achievement.rewards.type === 'gems' ? `${achievement.rewards.value} Gems` : 'Portrait'}
+                          </span>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
