@@ -3,6 +3,7 @@ import { Award } from 'lucide-react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GameState } from '@/context/GameContext';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion } from 'framer-motion';
 
 interface AchievementsProps {
   achievements: GameState['achievements'];
@@ -16,6 +17,22 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
   };
 
   const progress = achievementProgress();
+
+  // Animation variants for the title
+  const titleVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        duration: 0.5, 
+        ease: 'easeOut', 
+        type: 'spring', 
+        stiffness: 100, 
+        damping: 15 
+      } 
+    },
+  };
 
   return (
     <>
@@ -65,9 +82,20 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                   {achievement.rewards && (
                     <div className="text-center">
                       {achievement.rewards.type === 'title' ? (
-                        <strong className="block text-sm font-bold uppercase text-indigo-300">
-                          {achievement.rewards.image}
-                        </strong>
+                        achievement.unlocked ? (
+                          <motion.strong
+                            variants={titleVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className="block text-sm font-bold uppercase text-indigo-300"
+                          >
+                            {achievement.rewards.image}
+                          </motion.strong>
+                        ) : (
+                          <strong className="block text-sm font-bold uppercase text-indigo-300">
+                            {achievement.rewards.image}
+                          </strong>
+                        )
                       ) : (
                         <>
                           <img
