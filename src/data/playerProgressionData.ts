@@ -133,7 +133,7 @@ export const PORTRAITS: PortraitData[] = [
     rarity: 'legendary', 
     unlockCriteria: 'Support the game with significant gem purchases', 
     unlockCondition: { type: 'purchase' }, 
-    pngPath: 'gem-patron.png' 
+    pngPath: 'love.png' 
   }
 ];
 
