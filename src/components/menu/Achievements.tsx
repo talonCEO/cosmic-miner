@@ -96,7 +96,7 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                             {achievement.rewards.image}
                           </strong>
                         )
-                      ) : (
+                      ) : achievement.rewards.type === 'gems' ? (
                         <>
                           <img
                             src={achievement.rewards.image}
@@ -104,9 +104,15 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                             className="w-8 h-8 mx-auto"
                           />
                           <span className="text-xs text-slate-300">
-                            {achievement.rewards.type === 'gems' ? `${achievement.rewards.value} Gems` : 'Portrait'}
+                            {achievement.rewards.value} Gems
                           </span>
                         </>
+                      ) : (
+                        <img
+                          src={achievement.rewards.image}
+                          alt={achievement.rewards.type}
+                          className="w-12 h-12 mx-auto"
+                        />
                       )}
                     </div>
                   )}
