@@ -1,7 +1,7 @@
 import { Perk } from './types';
 
 // Static image imports for artifacts
-import ArtifactDefault from '@/assets/images/icons/a1.png';
+import ArtifactDefault from '@/assets/images/artifacts/art.png';
 import Artifact1 from '@/assets/images/artifacts/art10.png';
 import Artifact2 from '@/assets/images/artifacts/art9.png';
 import Artifact3 from '@/assets/images/artifacts/art8.png';
