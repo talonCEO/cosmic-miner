@@ -326,7 +326,7 @@ const initialState: GameState = {
   inventoryCapacity: 25,
   gems: 1000000000000,
   boosts: {},
-  hasNoAds: false,
+  hasNoAds: true,
   username: "Default1976",
   title: "space_pilot",
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
