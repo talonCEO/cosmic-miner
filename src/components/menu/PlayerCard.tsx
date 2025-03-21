@@ -9,6 +9,33 @@ import { useGame } from '@/context/GameContext';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import EditCustomization from './EditCustomization';
 
+// New PlayerPortrait component to isolate the portrait rendering
+interface PlayerPortraitProps {
+  portraitId: string;
+  playerName: string;
+}
+
+const PlayerPortrait: React.FC<PlayerPortraitProps> = ({ portraitId, playerName }) => {
+  const portraitData = getPortraitById(portraitId) || getPortraitById('default');
+
+  return (
+    <div className="relative w-24 h-24 flex items-center justify-center z-[10003]">
+      {/* Portrait image on top layer */}
+      <img
+        src={portraitData?.pngPath}
+        alt={portraitData?.name}
+        className="w-24 h-24 rounded-full object-cover opacity-80"
+      />
+      {/* Avatar as a fallback or decorative center */}
+      <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10002]">
+        <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
+          {playerName.substring(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+    </div>
+  );
+};
+
 interface PlayerCardProps {
   playerName: string;
   playerTitle: string;
@@ -87,25 +114,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     return `${roundedExp}/${nextLevel.expRequired}`;
   };
 
-  const portraitData = getPortraitById(portrait) || getPortraitById('default');
-
   return (
     <div className="bg-indigo-600/20 rounded-lg p-3 border border-indigo-500/30 mb-3">
       <div className="flex relative">
         {/* Left Column: Portrait */}
         <div className="flex flex-col items-center pt-2">
-          <div className="relative w-24 h-24 mb-1 overflow-visible">
-            <img
-              src={portraitData?.pngPath}
-              alt={portraitData?.name}
-              className="absolute h-24 w-24 -top-0 -left-0 z-[10002] rounded-full object-cover opacity-80"
-            />
-            <Avatar className="absolute h-20 w-20 border-2 border-amber-500/50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
-              <AvatarFallback className="bg-indigo-700/50 text-white text-lg">
-                {playerName.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <PlayerPortrait portraitId={portrait} playerName={playerName} />
           <div className="mt-1 pt-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium text-center">
             {titleDisplay}
           </div>
