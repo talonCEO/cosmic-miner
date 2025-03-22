@@ -387,6 +387,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const newLevel = upgrade.level + maxPossibleQuantity;
       const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
       
+      let newCoinsPerClick = state.coinsPerClick;
+      let newCoinsPerSecond = state.coinsPerSecond;
+      if (upgrade.category === UPGRADE_CATEGORIES.TAP) {
+        // TAP category upgrades handled by GameMechanics.calculateTapValue if needed
+      } else {
+        newCoinsPerClick += upgrade.coinsPerClickBonus * maxPossibleQuantity;
+        newCoinsPerSecond += upgrade.coinsPerSecondBonus * maxPossibleQuantity;
+      }
+      
       const updatedUpgrade = {
         ...upgrade,
         level: newLevel,
@@ -407,6 +416,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const newState = {
         ...state,
         coins: state.coins - totalCost,
+        coinsPerClick: newCoinsPerClick,
+        coinsPerSecond: newCoinsPerSecond,
         upgrades: newUpgrades
       };
       
@@ -423,12 +434,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, incomeMultiplier: action.multiplier };
     case 'TICK': {
       let newState = { ...state };
-      const passiveIncome = GameMechanics.calculatePassiveIncome(newState);
-      if (passiveIncome > 0) {
+      if (state.coinsPerSecond > 0) {
+        const passiveAmount = GameMechanics.calculatePassiveIncome(newState) * 0.1; // 100ms tick
         newState = {
           ...newState,
-          coins: Math.max(0, newState.coins + passiveIncome),
-          totalEarned: newState.totalEarned + passiveIncome
+          coins: Math.max(0, newState.coins + passiveAmount),
+          totalEarned: newState.totalEarned + passiveAmount
         };
       }
 
@@ -459,6 +470,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           const newLevel = bestUpgrade.level + 1;
           const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
           const totalCost = GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id);
+          
+          let newCoinsPerClick = newState.coinsPerClick + bestUpgrade.coinsPerClickBonus;
+          let newCoinsPerSecond = newState.coinsPerSecond + bestUpgrade.coinsPerSecondBonus;
+          
           const updatedUpgrade = {
             ...bestUpgrade,
             level: newLevel,
@@ -466,6 +481,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           };
           const newUpgrades = [...newState.upgrades];
           newUpgrades[upgradeIndex] = updatedUpgrade;
+          
           newState.upgrades.forEach((u, index) => {
             if (!u.unlocked && u.unlocksAt && 
                 u.unlocksAt.upgradeId === bestUpgrade.id && 
@@ -473,11 +489,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
               newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
             }
           });
+          
           newState = {
             ...newState,
             coins: newState.coins - totalCost,
+            coinsPerClick: newCoinsPerClick,
+            coinsPerSecond: newCoinsPerSecond,
             upgrades: newUpgrades
           };
+          
           if (shouldAwardSkillPoint) {
             newState = { ...newState, skillPoints: newState.skillPoints + 1 };
           }
@@ -661,6 +681,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const item = state.inventory[itemIndex];
       if (!item.usable || !item.effect) return state;
       const quantity = action.quantity || 1;
+ niin: true;
       if (item.quantity < quantity) return state;
 
       const updatedInventory = [...state.inventory];
@@ -789,7 +810,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         boosts: {
           ...state.boosts,
           [action.boostId]: {
-            active: false, // Not activated yet
+            active: false,
             purchased: (state.boosts[action.boostId]?.purchased || 0) + 1
           }
         }
