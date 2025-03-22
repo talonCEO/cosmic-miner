@@ -2,31 +2,14 @@ import { GameState, Ability } from '@/context/GameContext';
 import { calculateClickMultiplier as utilsCalculateClickMultiplier } from '@/hooks/useGameMechanics';
 import { BoostEffect } from '@/components/menu/types';
 
-/**
- * GameMechanics.ts
- * 
- * This file centralizes all game mechanics calculations, including:
- * - Income calculations (per click and passive)
- * - Upgrade costs and effects
- * - Boost effects from abilities, managers, artifacts, perks
- * - Resource gain calculations (coins, essence)
- * - NEW: Applying active boost effects from inventory items
- */
-
 const enhanceGameMechanics = (state: GameState): GameState => {
   let enhancedState = { ...state };
-
-  // Calculate base values without active boosts
   enhancedState.coinsPerClick = calculateBaseTapValue(enhancedState);
   enhancedState.coinsPerSecond = calculateBasePassiveIncome(enhancedState);
-
-  // Apply active boosts from inventory items
   enhancedState = applyActiveBoosts(enhancedState);
-
   return enhancedState;
 };
 
-// Define boost IDs for clarity
 const BOOST_IDS = {
   DOUBLE_COINS: 'boost-double-coins',
   TIME_WARP: 'boost-time-warp',
@@ -38,18 +21,17 @@ const BOOST_IDS = {
   PERMA_PASSIVE: 'boost-perma-passive'
 };
 
-// Helper to calculate remaining time for timed boosts
 const getRemaining = (boost: BoostEffect): number => {
-  if (!boost.duration || !boost.activatedAt) return Infinity; // Permanent boosts
-  const now = Date.now() / 1000; // Current time in seconds
+  if (!boost.duration || !boost.activatedAt) return Infinity;
+  const now = Date.now() / 1000;
   const elapsed = now - boost.activatedAt;
   return Math.max(0, boost.duration - elapsed);
 };
 
-// Apply effects of active boosts from inventory items
 const applyActiveBoosts = (state: GameState): GameState => {
   let updatedState = { ...state };
   const activeBoosts = updatedState.activeBoosts || [];
+  let costReductionMultiplier = 1;
 
   activeBoosts.forEach(boost => {
     const remaining = getRemaining(boost);
@@ -57,9 +39,10 @@ const applyActiveBoosts = (state: GameState): GameState => {
 
     switch (boost.id) {
       case BOOST_IDS.DOUBLE_COINS:
-        const doubleCoinsMultiplier = Math.pow(2, boost.quantity);
-        updatedState.coinsPerClick *= doubleCoinsMultiplier;
-        updatedState.coinsPerSecond *= doubleCoinsMultiplier;
+        if (remaining > 0) {
+          updatedState.coinsPerClick *= 2;
+          updatedState.coinsPerSecond *= 2;
+        }
         break;
       case BOOST_IDS.TIME_WARP:
         const income = updatedState.coinsPerSecond * 2 * 60 * 60; // 2 hours
@@ -68,11 +51,13 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
         break;
       case BOOST_IDS.AUTO_TAP:
-        updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
+        if (remaining > 0) {
+          updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + 5;
+        }
         break;
       case BOOST_IDS.TAP_BOOST:
         if ((updatedState.tapBoostTapsRemaining || 0) > 0) {
-          updatedState.coinsPerClick *= 5 * boost.quantity;
+          updatedState.coinsPerClick *= 5;
           updatedState.tapBoostTapsRemaining = (updatedState.tapBoostTapsRemaining || 0) - 1;
           if (updatedState.tapBoostTapsRemaining <= 0) {
             updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TAP_BOOST);
@@ -80,83 +65,71 @@ const applyActiveBoosts = (state: GameState): GameState => {
         }
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
-        updatedState.costReductionMultiplier = (updatedState.costReductionMultiplier || 1) * Math.pow(0.9, boost.quantity);
+        if (remaining > 0) {
+          costReductionMultiplier *= Math.pow(0.9, boost.quantity);
+        }
         break;
       case BOOST_IDS.ESSENCE_BOOST:
-        updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * Math.pow(1.25, boost.quantity);
+        if (remaining > 0) {
+          updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * 1.25;
+        }
         break;
       case BOOST_IDS.PERMA_TAP:
-        updatedState.coinsPerClickBase = (updatedState.coinsPerClickBase || updatedState.coinsPerClick) + boost.quantity;
+        updatedState.coinsPerClickBase += boost.quantity;
+        updatedState.coinsPerClick = calculateBaseTapValue(updatedState);
+        updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.PERMA_TAP);
         break;
       case BOOST_IDS.PERMA_PASSIVE:
-        updatedState.coinsPerSecondBase = (updatedState.coinsPerSecondBase || updatedState.coinsPerSecond) + boost.quantity;
+        updatedState.coinsPerSecondBase += boost.quantity;
+        updatedState.coinsPerSecond = calculateBasePassiveIncome(updatedState);
+        updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.PERMA_PASSIVE);
         break;
     }
   });
 
+  updatedState.costReductionMultiplier = costReductionMultiplier;
   return updatedState;
 };
 
-/**
- * Calculate the total tap/click value considering all boosts
- */
 export const calculateTapValue = (state: GameState): number => {
   return enhanceGameMechanics(state).coinsPerClick;
 };
 
-/**
- * Base tap value calculation (without active boosts)
- */
 const calculateBaseTapValue = (state: GameState): number => {
   const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
   const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
   const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
-  const baseClickValue = state.coinsPerClickBase || state.coinsPerClick;
+  const baseClickValue = state.coinsPerClickBase;
   const coinsPerSecondBonus = state.coinsPerSecond * 0.05;
   const abilityTapMultiplier = calculateAbilityTapMultiplier(state.abilities);
   return (baseClickValue + coinsPerSecondBonus) * clickMultiplier * tapBoostMultiplier * abilityTapMultiplier;
 };
 
-/**
- * Calculate passive income considering all boosts
- */
 export const calculatePassiveIncome = (state: GameState, tickInterval: number = 100): number => {
   const enhancedState = enhanceGameMechanics(state);
   return enhancedState.coinsPerSecond * (tickInterval / 1000);
 };
 
-/**
- * Base passive income calculation (without active boosts)
- */
 const calculateBasePassiveIncome = (state: GameState): number => {
-  if (state.coinsPerSecond <= 0) return 0;
+  if (state.coinsPerSecondBase <= 0) return 0;
   const passiveIncomeMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
   const artifactProductionMultiplier = calculateArtifactProductionMultiplier(state);
   const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
-  return (state.coinsPerSecondBase || state.coinsPerSecond) * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
+  return state.coinsPerSecondBase * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
 };
 
-/**
- * Calculate the total CPS (Coins Per Second) with all multipliers applied
- */
 export const calculateTotalCoinsPerSecond = (state: GameState): number => {
   return enhanceGameMechanics(state).coinsPerSecond;
 };
 
-/**
- * Calculate artifact production multiplier based on owned artifacts and their perks
- */
 export const calculateArtifactProductionMultiplier = (state: GameState): number => {
   let multiplier = 1;
-  
   if (state.ownedArtifacts.includes("artifact-1")) {
     const artifact = state.artifacts.find(a => a.id === "artifact-1");
     if (artifact && artifact.effect) {
       multiplier += artifact.effect.value;
       if (artifact.perks) {
-        const unlockedPerks = artifact.perks.filter(perk => 
-          perk.unlocked || state.unlockedPerks.includes(perk.id)
-        );
+        const unlockedPerks = artifact.perks.filter(perk => perk.unlocked || state.unlockedPerks.includes(perk.id));
         if (unlockedPerks.length > 0) {
           const highestPerk = unlockedPerks.sort((a, b) => b.effect.value - a.effect.value)[0];
           multiplier = multiplier - artifact.effect.value + highestPerk.effect.value;
@@ -164,15 +137,12 @@ export const calculateArtifactProductionMultiplier = (state: GameState): number 
       }
     }
   }
-  
   if (state.ownedArtifacts.includes("artifact-6")) {
     const artifact = state.artifacts.find(a => a.id === "artifact-6");
     if (artifact && artifact.effect) {
       multiplier += artifact.effect.value;
       if (artifact.perks) {
-        const unlockedPerks = artifact.perks.filter(perk => 
-          perk.unlocked || state.unlockedPerks.includes(perk.id)
-        );
+        const unlockedPerks = artifact.perks.filter(perk => perk.unlocked || state.unlockedPerks.includes(perk.id));
         if (unlockedPerks.length > 0) {
           const highestPerk = unlockedPerks.sort((a, b) => b.effect.value - a.effect.value)[0];
           multiplier = multiplier - artifact.effect.value + highestPerk.effect.value;
@@ -180,55 +150,38 @@ export const calculateArtifactProductionMultiplier = (state: GameState): number 
       }
     }
   }
-  
   return multiplier;
 };
 
-/**
- * Calculate manager boost multiplier based on owned managers and their perks
- */
 export const calculateManagerBoostMultiplier = (state: GameState): number => {
   let totalMultiplier = 1;
-  
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.boosts) {
       let managerBoostValue = 0.5;
       if (manager.perks) {
-        const unlockedPerks = manager.perks.filter(perk => 
-          perk.unlocked || state.unlockedPerks.includes(perk.id)
-        );
-        const boostPerks = unlockedPerks.filter(perk => 
-          perk.effect && perk.effect.type === "elementBoost"
-        );
+        const unlockedPerks = manager.perks.filter(perk => perk.unlocked || state.unlockedPerks.includes(perk.id));
+        const boostPerks = unlockedPerks.filter(perk => perk.effect && perk.effect.type === "elementBoost");
         if (boostPerks.length > 0) {
           const highestPerk = boostPerks.sort((a, b) => b.effect.value - a.effect.value)[0];
           managerBoostValue = highestPerk.effect.value;
         }
       }
-      
       manager.boosts.forEach(elementId => {
         const elementUpgrade = state.upgrades.find(u => u.id === elementId);
         if (elementUpgrade) {
           const elementCPS = elementUpgrade.coinsPerSecondBonus * elementUpgrade.level;
           const elementBoost = elementCPS * managerBoostValue;
-          if (state.coinsPerSecond > 0) {
-            totalMultiplier += (elementBoost / state.coinsPerSecond);
-          }
+          if (state.coinsPerSecond > 0) totalMultiplier += (elementBoost / state.coinsPerSecond);
         }
       });
     }
   });
-  
   return totalMultiplier;
 };
 
-/**
- * Calculate auto-tap income considering all boosts
- */
 export const calculateAutoTapIncome = (state: GameState, tickInterval: number = 100): number => {
   const enhancedState = enhanceGameMechanics(state);
   if (!state.autoTap && !enhancedState.autoTapTapsPerSecond) return 0;
-
   const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
   const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
   const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
@@ -238,32 +191,22 @@ export const calculateAutoTapIncome = (state: GameState, tickInterval: number = 
   return (baseClickValue + coinsPerSecondBonus) * clickMultiplier * tapBoostMultiplier * totalTapsPerSecond * (tickInterval / 1000) * 0.4;
 };
 
-/**
- * Calculate costs for upgrades with all reductions
- */
 export const calculateUpgradeCost = (state: GameState, upgradeId: string, quantity: number = 1): number => {
   const enhancedState = enhanceGameMechanics(state);
   const upgrade = enhancedState.upgrades.find(u => u.id === upgradeId);
   if (!upgrade) return Infinity;
-  
   const costReduction = calculateCostReduction(enhancedState) * (enhancedState.costReductionMultiplier || 1);
-  return Math.floor(calculateBulkPurchaseCost(upgrade.baseCost, upgrade.level, quantity, 1.15) * costReduction);
+  return Math.floor(calculateBulkPurchaseCost(upgrade.baseCost, upgrade.level, quantity, 1.08) * costReduction);
 };
 
-/**
- * Calculate the total cost reduction from all sources
- */
 export const calculateCostReduction = (state: GameState): number => {
   let costReduction = 1.0;
-  
   if (state.ownedArtifacts.includes("artifact-1")) costReduction -= 0.05;
   if (state.ownedArtifacts.includes("artifact-6")) costReduction -= 0.1;
-  
   if (state.abilities.find(a => a.id === "ability-3" && a.unlocked)) costReduction -= 0.05;
   if (state.abilities.find(a => a.id === "ability-4" && a.unlocked)) costReduction -= 0.15;
   if (state.abilities.find(a => a.id === "ability-9" && a.unlocked)) costReduction -= 0.30;
   if (state.abilities.find(a => a.id === "ability-12" && a.unlocked)) costReduction -= 0.45;
-  
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
@@ -271,22 +214,15 @@ export const calculateCostReduction = (state: GameState): number => {
       });
     }
   });
-  
   return Math.max(0.5, costReduction);
 };
 
-/**
- * Calculate bulk purchase cost for multiple levels of an upgrade
- */
-export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.15): number => {
+export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.08): number => {
   const a = baseCost * Math.pow(growthRate, currentLevel);
   return Math.floor(a * (1 - Math.pow(growthRate, quantity)) / (1 - growthRate));
 };
 
-/**
- * Calculate maximum affordable quantity of an upgrade
- */
-export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number = 1.15): number => {
+export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number = 1.08): number => {
   const a = baseCost * Math.pow(growthRate, currentLevel);
   const term = (coins * (1 - growthRate)) / a;
   const rightSide = 1 - term;
@@ -294,9 +230,6 @@ export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, 
   return Math.floor(Math.log(rightSide) / Math.log(growthRate));
 };
 
-/**
- * Calculate click multiplier from artifacts and other sources
- */
 export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number => {
   let multiplier = 1;
   if (ownedArtifacts.includes("artifact-2")) multiplier += 0.5;
@@ -304,9 +237,6 @@ export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number 
   return multiplier;
 };
 
-/**
- * Calculate ability tap/click multiplier
- */
 export const calculateAbilityTapMultiplier = (abilities: Ability[]): number => {
   let multiplier = 1;
   if (abilities.find(a => a.id === "ability-2" && a.unlocked)) multiplier += 0.5;
@@ -315,9 +245,6 @@ export const calculateAbilityTapMultiplier = (abilities: Ability[]): number => {
   return multiplier;
 };
 
-/**
- * Calculate ability passive income multiplier
- */
 export const calculateAbilityPassiveMultiplier = (abilities: Ability[]): number => {
   let multiplier = 1;
   if (abilities.find(a => a.id === "ability-2" && a.unlocked)) multiplier += 0.25;
@@ -329,9 +256,6 @@ export const calculateAbilityPassiveMultiplier = (abilities: Ability[]): number 
   return multiplier;
 };
 
-/**
- * Calculate global income multiplier from all sources
- */
 export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
   let multiplier = 1;
   if (state.abilities.find(a => a.id === "ability-3" && a.unlocked)) multiplier += 0.4;
@@ -339,7 +263,6 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
   if (state.abilities.find(a => a.id === "ability-10" && a.unlocked)) multiplier += 0.55;
   if (state.abilities.find(a => a.id === "ability-11" && a.unlocked)) multiplier += 0.8;
   if (state.abilities.find(a => a.id === "ability-13" && a.unlocked)) multiplier += 1.0;
-  
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
@@ -347,23 +270,17 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
       });
     }
   });
-  
   return multiplier;
 };
 
-/**
- * Calculate essence reward with improved formula
- */
 export const calculateEssenceReward = (totalCoins: number, state: GameState): number => {
   if (totalCoins < 100000) return 0;
   const enhancedState = enhanceGameMechanics(state);
-  
   let essence = 0;
   let remaining = totalCoins;
   let threshold = 100000;
   let tierSize = 5;
   let tierProgress = 0;
-  
   while (remaining >= threshold && essence < 1000) {
     essence++;
     tierProgress++;
@@ -373,14 +290,12 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
       threshold *= 2;
     }
   }
-  
   let multiplier = 1;
   if (state.ownedArtifacts.includes("artifact-3")) multiplier += 0.25;
   if (state.ownedArtifacts.includes("artifact-8")) multiplier += 0.5;
   if (state.abilities.find(a => a.id === "ability-7" && a.unlocked)) multiplier += 0.15;
   if (state.abilities.find(a => a.id === "ability-10" && a.unlocked)) multiplier += 0.2;
   if (state.abilities.find(a => a.id === "ability-13" && a.unlocked)) multiplier += 0.35;
-  
   state.managers.forEach(manager => {
     if (state.ownedManagers.includes(manager.id) && manager.perks) {
       manager.perks.forEach(perk => {
@@ -388,7 +303,6 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
       });
     }
   });
-  
   state.artifacts.forEach(artifact => {
     if (state.ownedArtifacts.includes(artifact.id) && artifact.perks) {
       artifact.perks.forEach(perk => {
@@ -396,22 +310,15 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
       });
     }
   });
-  
   return Math.floor(essence * multiplier * (enhancedState.essenceMultiplier || 1));
 };
 
-/**
- * Check if an upgrade has crossed a 100-level milestone for skill point rewards
- */
 export const checkUpgradeMilestone = (oldLevel: number, newLevel: number): boolean => {
   const oldMilestone = Math.floor(oldLevel / 100);
   const newMilestone = Math.floor(newLevel / 100);
   return newMilestone > oldMilestone;
 };
 
-/**
- * Calculate starting coins after prestige based on artifacts
- */
 export const calculateStartingCoins = (ownedArtifacts: string[]): number => {
   let startingCoins = 0;
   if (ownedArtifacts.includes("artifact-4")) startingCoins += 1000;
@@ -419,9 +326,6 @@ export const calculateStartingCoins = (ownedArtifacts: string[]): number => {
   return startingCoins;
 };
 
-/**
- * Evaluate if an upgrade is a good value (worth buying)
- */
 export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean => {
   if (coinsPerSecondBonus <= 0) return false;
   const paybackPeriod = cost / coinsPerSecondBonus;
