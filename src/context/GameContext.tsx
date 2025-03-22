@@ -79,7 +79,7 @@ export interface GameState {
   totalEarned: number;
   autoBuy: boolean;
   autoTap: boolean;
-  autoTapTapsPerSecond?: number; // Added for boost-auto-tap stacking
+  autoTapTapsPerSecond?: number;
   essence: number;
   ownedManagers: string[];
   ownedArtifacts: string[];
@@ -711,7 +711,16 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         inventory: updatedInventory,
-        activeBoosts: newActiveBoosts
+        activeBoosts: newActiveBoosts,
+        boosts: {
+          ...state.boosts,
+          [item.id]: {
+            ...state.boosts[item.id],
+            active: true,
+            remainingTime: item.effect.duration,
+            purchased: state.boosts[item.id]?.purchased || 0
+          }
+        }
       };
     }
     case 'ADD_ITEM': {
@@ -751,41 +760,39 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'ACTIVATE_BOOST': {
       const boost = Object.values(INVENTORY_ITEMS).find(b => b.id === action.boostId);
       if (!boost || !boost.usable) return state;
-      const now = Math.floor(Date.now() / 1000);
-      let newActiveBoosts = [...state.activeBoosts];
-      const existingBoostIndex = newActiveBoosts.findIndex(b => b.id === action.boostId);
-      if (existingBoostIndex >= 0) {
-        const existingBoost = newActiveBoosts[existingBoostIndex];
-        newActiveBoosts[existingBoostIndex] = {
-          ...existingBoost,
-          quantity: existingBoost.quantity + 1,
-          remainingTime: boost.effect?.duration ? (existingBoost.remainingTime || 0) + boost.effect.duration : undefined,
-          activatedAt: now
-        };
+      const newItem = createInventoryItem(boost, 1);
+      const currentItems = state.inventory.reduce(
+        (total, item) => total + (item.stackable ? 1 : item.quantity), 
+        0
+      );
+      let newInventory = [...state.inventory];
+      if (currentItems < state.inventoryCapacity || boost.stackable) {
+        if (boost.stackable) {
+          const existingItemIndex = newInventory.findIndex(item => item.id === boost.id);
+          if (existingItemIndex !== -1) {
+            newInventory[existingItemIndex] = {
+              ...newInventory[existingItemIndex],
+              quantity: newInventory[existingItemIndex].quantity + 1
+            };
+          } else {
+            newInventory.push(newItem);
+          }
+        } else {
+          newInventory.push(newItem);
+        }
       } else {
-        newActiveBoosts.push({
-          id: action.boostId,
-          name: boost.name,
-          description: boost.description,
-          quantity: 1,
-          value: boost.effect?.value || 1,
-          duration: boost.effect?.duration,
-          activatedAt: now,
-          remainingTime: boost.effect?.duration,
-          icon: boost.icon
-        });
+        return state; // Inventory full, no change
       }
       return {
         ...state,
+        inventory: newInventory,
         boosts: {
           ...state.boosts,
           [action.boostId]: {
-            active: !!boost.effect?.duration,
-            remainingTime: boost.effect?.duration,
-            purchased: (state.boosts[action.boostId]?.purchased || 0) + 1,
-          },
-        },
-        activeBoosts: newActiveBoosts
+            active: false, // Not activated yet
+            purchased: (state.boosts[action.boostId]?.purchased || 0) + 1
+          }
+        }
       };
     }
     case 'UPDATE_BOOST_TIMERS': {
@@ -801,7 +808,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const filteredBoosts = updatedBoosts.filter(
         boost => boost.id === 'boost-tap-boost' ? (state.tapBoostTapsRemaining || 0) > 0 : (!boost.duration || boost.remainingTime! > 0)
       );
-      return { ...state, activeBoosts: filteredBoosts };
+      const newBoosts = { ...state.boosts };
+      updatedBoosts.forEach(boost => {
+        if (boost.remainingTime === 0 && boost.duration) {
+          newBoosts[boost.id] = { ...newBoosts[boost.id], active: false };
+        }
+      });
+      return { ...state, activeBoosts: filteredBoosts, boosts: newBoosts };
     }
     case 'UPDATE_USERNAME':
       return { ...state, username: action.username };
@@ -976,7 +989,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateTitle = (title: string) => dispatch({ type: 'UPDATE_TITLE', title });
   const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
   const updateBoostTimers = () => dispatch({ type: 'UPDATE_BOOST_TIMERS' });
-  const applyTimeWarp = () => dispatch({ type: 'APPLY_TIME_WARP', amount: 0 }); // Amount calculated in reducer
+  const applyTimeWarp = () => dispatch({ type: 'APPLY_TIME_WARP', amount: 0 });
   
   const contextValue = {
     state,
