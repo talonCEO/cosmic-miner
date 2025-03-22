@@ -832,12 +832,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       if (itemIndex === -1) return state;
       
       const item = state.inventory[itemIndex];
-      if (!item.usable) return state;
+      if (!item.usable || !item.effect) return state;
+
+      const quantity = action.quantity || 1;
+      if (item.quantity < quantity) return state;
 
       const updatedInventory = [...state.inventory];
-      const quantity = action.quantity || 1;
-      
-      if (item.quantity <= quantity) {
+      if (item.quantity === quantity) {
         updatedInventory.splice(itemIndex, 1);
       } else {
         updatedInventory[itemIndex] = {
@@ -846,54 +847,52 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
 
-      const trackedBoostIds = [
-        'boost-double-coins', 'boost-time-warp', 'boost-auto-tap',
-        'boost-tap-boost', 'boost-cheap-upgrades', 'boost-essence-boost', 
-        'boost-perma-tap', 'boost-perma-passive'
-      ];
-      
-      if (trackedBoostIds.includes(item.id) && item.effect) {
-        const existingBoostIndex = state.activeBoosts.findIndex(boost => boost.id === item.id);
-        const now = Math.floor(Date.now() / 1000);
-        
-        let newActiveBoosts = [...state.activeBoosts];
-        
-        if (existingBoostIndex >= 0) {
-          const existingBoost = newActiveBoosts[existingBoostIndex];
-          const effectDuration = item.effect?.duration || 0;
-          
-          newActiveBoosts[existingBoostIndex] = {
-            ...existingBoost,
-            quantity: existingBoost.quantity + quantity,
-            activatedAt: now,
-            remainingTime: effectDuration > 0 ? 
-              (existingBoost.remainingTime || 0) + effectDuration : undefined,
-          };
-        } else {
-          const newBoost: BoostEffect = {
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            quantity: quantity,
-            value: item.effect.value,
-            duration: item.effect.duration,
-            activatedAt: now,
-            remainingTime: item.effect.duration,
-            icon: item.icon
-          };
-          newActiveBoosts.push(newBoost);
-        }
-        
+      const now = Math.floor(Date.now() / 1000);
+      let newActiveBoosts = [...state.activeBoosts];
+      const existingBoostIndex = newActiveBoosts.findIndex(boost => boost.id === item.id);
+
+      if (existingBoostIndex >= 0) {
+        // Stack the boost
+        const existingBoost = newActiveBoosts[existingBoostIndex];
+        const effectDuration = item.effect.duration || 0;
+        newActiveBoosts[existingBoostIndex] = {
+          ...existingBoost,
+          quantity: existingBoost.quantity + quantity,
+          activatedAt: now,
+          remainingTime: effectDuration > 0 ? 
+            Math.max(existingBoost.remainingTime || 0, effectDuration) + (effectDuration * (quantity - 1)) : undefined
+        };
+      } else {
+        // Add new boost
+        const newBoost: BoostEffect = {
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          quantity,
+          value: item.effect.value,
+          duration: item.effect.duration,
+          activatedAt: now,
+          remainingTime: item.effect.duration,
+          icon: item.icon
+        };
+        newActiveBoosts.push(newBoost);
+      }
+
+      // Special handling for tap-boost (uses-based)
+      if (item.id === 'boost-tap-boost') {
+        const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (item.effect.duration || 0) * quantity;
         return {
           ...state,
           inventory: updatedInventory,
-          activeBoosts: newActiveBoosts
+          activeBoosts: newActiveBoosts,
+          tapBoostTapsRemaining: tapsRemaining
         };
       }
-        
+
       return {
         ...state,
-        inventory: updatedInventory
+        inventory: updatedInventory,
+        activeBoosts: newActiveBoosts
       };
     }
     case 'ADD_ITEM': {
@@ -990,9 +989,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         return boost;
       });
       
-      // Filter out expired boosts
+      // Filter out expired boosts (except tap-boost, handled by taps remaining)
       const filteredBoosts = updatedBoosts.filter(
-        boost => !boost.duration || !boost.remainingTime || boost.remainingTime > 0
+        boost => boost.id === 'boost-tap-boost' || !boost.duration || !boost.remainingTime || boost.remainingTime > 0
       );
       
       return {
@@ -1294,4 +1293,3 @@ export const useGame = () => {
   }
   return context;
 };
-
