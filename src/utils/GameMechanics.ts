@@ -57,39 +57,29 @@ const applyActiveBoosts = (state: GameState): GameState => {
 
     switch (boost.id) {
       case BOOST_IDS.DOUBLE_COINS:
-        const doubleCoinsMultiplier = Math.pow(2, boost.quantity);
-        updatedState.coinsPerClick *= doubleCoinsMultiplier;
-        updatedState.coinsPerSecond *= doubleCoinsMultiplier;
+        updatedState.coinsPerClick *= 2;
+        updatedState.coinsPerSecond *= 2;
         break;
       case BOOST_IDS.TIME_WARP:
         const income = updatedState.coinsPerSecond * 2 * 60 * 60; // 2 hours
-        updatedState.coins += income * boost.quantity;
-        updatedState.totalEarned += income * boost.quantity;
+        updatedState.coins += income;
+        updatedState.totalEarned += income;
         updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
         break;
       case BOOST_IDS.AUTO_TAP:
-        updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
+        updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + 5;
         break;
       case BOOST_IDS.TAP_BOOST:
         if ((updatedState.tapBoostTapsRemaining || 0) > 0) {
-          updatedState.coinsPerClick *= 5 * boost.quantity;
+          updatedState.coinsPerClick *= 5;
           updatedState.tapBoostTapsRemaining = (updatedState.tapBoostTapsRemaining || 0) - 1;
           if (updatedState.tapBoostTapsRemaining <= 0) {
             updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TAP_BOOST);
           }
         }
         break;
-      case BOOST_IDS.CHEAP_UPGRADES:
-        updatedState.costReductionMultiplier = (updatedState.costReductionMultiplier || 1) * Math.pow(0.9, boost.quantity);
-        break;
       case BOOST_IDS.ESSENCE_BOOST:
-        updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * Math.pow(1.25, boost.quantity);
-        break;
-      case BOOST_IDS.PERMA_TAP:
-        updatedState.coinsPerClickBase = (updatedState.coinsPerClickBase || updatedState.coinsPerClick) + boost.quantity;
-        break;
-      case BOOST_IDS.PERMA_PASSIVE:
-        updatedState.coinsPerSecondBase = (updatedState.coinsPerSecondBase || updatedState.coinsPerSecond) + boost.quantity;
+        updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * 1.25;
         break;
     }
   });
@@ -246,8 +236,18 @@ export const calculateUpgradeCost = (state: GameState, upgradeId: string, quanti
   const upgrade = enhancedState.upgrades.find(u => u.id === upgradeId);
   if (!upgrade) return Infinity;
   
-  const costReduction = calculateCostReduction(enhancedState) * (enhancedState.costReductionMultiplier || 1);
-  return Math.floor(calculateBulkPurchaseCost(upgrade.baseCost, upgrade.level, quantity, 1.15) * costReduction);
+  // Calculate base cost with standard reductions (artifacts, abilities, etc.)
+  const baseCost = calculateBulkPurchaseCost(upgrade.baseCost, upgrade.level, quantity, 1.15);
+  const costReduction = calculateCostReduction(enhancedState);
+  let finalCost = Math.floor(baseCost * costReduction);
+
+  // Apply CHEAP_UPGRADES boost after base cost calculation if active
+  const cheapUpgradesBoost = enhancedState.activeBoosts.find(b => b.id === BOOST_IDS.CHEAP_UPGRADES);
+  if (cheapUpgradesBoost && getRemaining(cheapUpgradesBoost) > 0) {
+    finalCost = Math.floor(finalCost * 0.9);
+  }
+
+  return finalCost;
 };
 
 /**
