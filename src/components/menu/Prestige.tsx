@@ -34,7 +34,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
         <div className="border-t border-indigo-500/20 w-full my-2"></div>
         
         <p className="text-sm text-slate-400 mb-4 text-center">
-        Conquer this planet to unlock a universe of new worlds. Max it out, claim your rewards, and explore the stars!
+          Essence reward scales based on your total coins earned. The more essence you earn, the more coins you'll need for additional essence.
         </p>
         
         <button

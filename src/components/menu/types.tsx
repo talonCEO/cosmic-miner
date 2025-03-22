@@ -7,17 +7,17 @@ import CoinsImage from '@/assets/images/icons/coins.png';
 import GemsImage from '@/assets/images/icons/gems.png';
 import EssenceImage from '@/assets/images/icons/essence.png';
 import SkillPointsImage from '@/assets/images/icons/points.png';
-import DoubleCoinsImage from '@/assets/images/icons/potion1.png';
-import TimeWarpImage from '@/assets/images/icons/potion2.png';
-import AutoTapImage from '@/assets/images/icons/potion2.png';
-import TapBoostImage from '@/assets/images/icons/potion3.png';
-import CheapUpgradesImage from '@/assets/images/icons/potion4.png';
-import EssenceBoostImage from '@/assets/images/icons/potion5.png';
-import PermaTapImage from '@/assets/images/icons/potion6.png';
-import PermaPassiveImage from '@/assets/images/icons/potion7.png';
-import NoAdsImage from '@/assets/images/icons/potion8.png';
-import AutoBuyImage from '@/assets/images/icons/potion9.png'; // Reused as example
-import InventoryExpansionImage from '@/assets/images/icons/potion10.png'; // Reused as example
+import DoubleCoinsImage from '@/assets/images/icons/potions1.png';
+import TimeWarpImage from '@/assets/images/icons/potions2.png';
+import AutoTapImage from '@/assets/images/icons/potions2.png';
+import TapBoostImage from '@/assets/images/icons/potions3.png';
+import CheapUpgradesImage from '@/assets/images/icons/potions4.png';
+import EssenceBoostImage from '@/assets/images/icons/potions5.png';
+import PermaTapImage from '@/assets/images/icons/potions6.png';
+import PermaPassiveImage from '@/assets/images/icons/potions7.png';
+import NoAdsImage from '@/assets/images/icons/potions8.png';
+import AutoBuyImage from '@/assets/images/icons/potions9.png'; // Reused as example
+import InventoryExpansionImage from '@/assets/images/icons/potions10.png'; // Reused as example
 
 export type MenuType = "none" | "main" | "achievements" | "prestige" | "shop" | "techTree" | "premium" | "profile" | "inventory" | "leaderboard";
 
