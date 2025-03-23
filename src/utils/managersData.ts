@@ -1,17 +1,17 @@
 import { Perk } from './types';
 
 // Static image imports (replace these with your actual image paths)
-import SteveAvatar from '@/assets/images/icons/11.png';
-import HydrogenAvatar from '@/assets/images/icons/22.png';
-import CarbonAvatar from '@/assets/images/icons/33.png';
-import OxygenAvatar from '@/assets/images/icons/44.png';
-import SiliconAvatar from '@/assets/images/icons/55.png';
-import IronAvatar from '@/assets/images/icons/6.png';
-import GoldAvatar from '@/assets/images/icons/7.png';
-import UraniumAvatar from '@/assets/images/icons/8.png';
-import PlatinumAvatar from '@/assets/images/icons/9.png';
-import ExoticAvatar from '@/assets/images/icons/111.png';
-import AntimatterAvatar from '@/assets/images/icons/222.png';
+import SteveAvatar from '@/assets/images/managers/22.png';
+import HydrogenAvatar from '@/assets/images/managers/11.png';
+import CarbonAvatar from '@/assets/images/managers/33.png';
+import OxygenAvatar from '@/assets/images/managers/44.png';
+import SiliconAvatar from '@/assets/images/managers/55.png';
+import IronAvatar from '@/assets/images/managers/6.png';
+import GoldAvatar from '@/assets/images/managers/7.png';
+import UraniumAvatar from '@/assets/images/managers/8.png';
+import PlatinumAvatar from '@/assets/images/managers/9.png';
+import ExoticAvatar from '@/assets/images/managers/111.png';
+import AntimatterAvatar from '@/assets/images/managers/222.png';
 
 /**
  * Manager Interface
