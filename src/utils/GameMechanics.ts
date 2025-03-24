@@ -5,12 +5,11 @@ import { BoostEffect } from '@/components/menu/types';
 /**
  * GameMechanics.ts
  * 
- * This file centralizes all game mechanics calculations, including:
- * - Income calculations (per click and passive)
+ * Centralizes all game mechanics calculations:
+ * - Income (click and passive)
  * - Upgrade costs and effects
- * - Boost effects from abilities, managers, artifacts, perks
- * - Resource gain calculations (coins, essence)
- * - NEW: Applying active boost effects from inventory items
+ * - Boost effects (abilities, managers, artifacts, perks, inventory items)
+ * - Resource gain (coins, essence)
  */
 
 const enhanceGameMechanics = (state: GameState): GameState => {
@@ -49,11 +48,11 @@ const getRemaining = (boost: BoostEffect): number => {
 // Apply effects of active boosts from inventory items
 const applyActiveBoosts = (state: GameState): GameState => {
   let updatedState = { ...state };
-  const activeBoosts = updatedState.activeBoosts || [];
+  let activeBoosts = [...updatedState.activeBoosts || []];
 
-  activeBoosts.forEach(boost => {
+  activeBoosts.forEach((boost, index) => {
     const remaining = getRemaining(boost);
-    if (remaining <= 0 && boost.id !== BOOST_IDS.TAP_BOOST) return;
+    if (remaining <= 0 && boost.id !== BOOST_IDS.TAP_BOOST && boost.id !== BOOST_IDS.TIME_WARP) return;
 
     switch (boost.id) {
       case BOOST_IDS.DOUBLE_COINS:
@@ -62,16 +61,21 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.coinsPerSecond *= doubleCoinsMultiplier;
         break;
       case BOOST_IDS.TIME_WARP:
-        const income = updatedState.coinsPerSecond * 7200; // 2 hours (7200 seconds) per stack
-        updatedState.coins += income * boost.quantity;
-        updatedState.totalEarned += income * boost.quantity;
-        updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
+        const now = Math.floor(Date.now() / 1000);
+        const recentlyActivated = now - boost.activatedAt < 1; // Apply within 1 second
+        if (recentlyActivated) {
+          const income = calculateTotalCoinsPerSecond(state) * 7200 * boost.quantity; // 2 hours per stack
+          updatedState.coins = Math.max(0, updatedState.coins + income);
+          updatedState.totalEarned += income;
+          // Remove the boost after applying (one-time effect)
+          activeBoosts.splice(index, 1);
+        }
         break;
       case BOOST_IDS.AUTO_TAP:
         updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
         break;
       case BOOST_IDS.TAP_BOOST:
-        // No need to apply here; handled in calculateTapValue
+        // Handled in calculateTapValue
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
         updatedState.costReductionMultiplier = 0.9; // Set to 0.9 directly, no stacking
@@ -88,6 +92,7 @@ const applyActiveBoosts = (state: GameState): GameState => {
     }
   });
 
+  updatedState.activeBoosts = activeBoosts;
   return updatedState;
 };
 
