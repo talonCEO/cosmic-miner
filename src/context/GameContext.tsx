@@ -800,7 +800,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             newState.gems += reward.value as number;
             break;
           case 'boost':
-            newState.boosts['boost-generic'] = { active: true, remainingTime: reward.value as number, purchased: (state.boosts['boost-generic']?.purchased || 0) + 1 };
+            newState.boosts['boost-generic'] = { 
+              active: true, 
+              remainingTime: reward.value as number, 
+              purchased: (state.boosts['boost-generic']?.purchased || 0) + 1 
+            };
             break;
           case 'title':
             newState.title = reward.value as string;
@@ -815,4 +819,89 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
       return newState;
     }
-    case
+    case 'CHECK_ACHIEVEMENTS': {
+      const newAchievements = [...state.achievements];
+      const newCheckedAchievements = { ...state.achievementsChecked };
+      let newSkillPoints = state.skillPoints;
+      
+      newAchievements.forEach((achievement, index) => {
+        if (!achievement.unlocked && !newCheckedAchievements[achievement.id]) {
+          const isUnlocked = achievement.checkCondition(state);
+          if (isUnlocked) {
+            newAchievements[index] = { ...achievement, unlocked: true };
+            newCheckedAchievements[achievement.id] = true;
+            newSkillPoints += 1;
+            
+            const reward = newAchievements[index].rewards;
+            if (reward) {
+              switch (reward.type) {
+                case 'gems':
+                  state.gems += reward.value as number;
+                  break;
+                case 'boost':
+                  state.boosts['boost-generic'] = { 
+                    active: true, 
+                    remainingTime: reward.value as number, 
+                    purchased: (state.boosts['boost-generic']?.purchased || 0) + 1 
+                  };
+                  break;
+                case 'title':
+                  state.title = reward.value as string;
+                  break;
+                case 'portrait':
+                  state.portrait = reward.value as string;
+                  break;
+                case 'inventory_item':
+                  state.inventory = [...state.inventory, createInventoryItem(INVENTORY_ITEMS[reward.value as keyof typeof INVENTORY_ITEMS], 1)];
+                  break;
+              }
+            }
+          }
+        }
+      });
+      
+      return {
+        ...state,
+        achievements: newAchievements,
+        achievementsChecked: newCheckedAchievements,
+        skillPoints: newSkillPoints
+      };
+    }
+    case 'CHECK_WORLD_UNLOCK': {
+      const shouldUnlockNextWorld = checkWorldUnlock(state);
+      if (shouldUnlockNextWorld) {
+        const currentWorldIndex = state.currentWorld;
+        if (currentWorldIndex < state.worlds.length) {
+          const newWorlds = [...state.worlds];
+          newWorlds[currentWorldIndex] = {
+            ...newWorlds[currentWorldIndex],
+            unlocked: true
+          };
+          return {
+            ...state,
+            worlds: newWorlds
+          };
+        }
+      }
+      return state;
+    }
+    case 'CHANGE_WORLD': {
+      if (action.worldId === state.currentWorld) return state;
+      
+      if (!state.worlds[action.worldId - 1].unlocked) return state;
+      
+      // Reset upgrades for the new world
+      const resetState = resetUpgradesForNewWorld(state);
+      
+      return {
+        ...resetState,
+        currentWorld: action.worldId
+      };
+    }
+    default:
+      return state;
+  }
+};
+
+export const GameContext = createContext<GameState | null>(null);
+export const useGameContext = () => useContext(GameContext);
