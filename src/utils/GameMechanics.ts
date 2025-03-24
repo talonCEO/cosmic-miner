@@ -401,7 +401,11 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
     }
   });
   
-  return Math.floor(essence * multiplier * (enhancedState.essenceMultiplier || 1));
+  // Apply temporary essence boost for this prestige only (resets on next prestige)
+  const tempEssenceBoostStacks = state.tempEssenceBoostStacks || 0;
+  const tempEssenceMultiplier = Math.pow(1.25, tempEssenceBoostStacks); // +25% per stack
+  
+  return Math.floor(essence * multiplier * (enhancedState.essenceMultiplier || 1) * tempEssenceMultiplier);
 };
 
 /**
