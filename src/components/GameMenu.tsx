@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -15,6 +16,7 @@ import PremiumStore from './menu/PremiumStore';
 import Profile from './menu/Profile';
 import Inventory from './menu/Inventory';
 import Leaderboard from './menu/Leaderboard';
+import Worlds from './menu/Worlds';
 
 interface GameMenuProps {
   menuType?: 'main' | 'premium';
@@ -121,6 +123,10 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
           <PremiumStore 
             onBuyGemPackage={handleBuyGemPackage}
           />
+        )}
+        
+        {activeMenuType === "worlds" && (
+          <Worlds setMenuType={handleMenuChange} />
         )}
       </DialogContent>
     </Dialog>

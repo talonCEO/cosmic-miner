@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
@@ -67,6 +68,8 @@ const ClickArea: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
   
+  const currentWorld = state.worlds[state.currentWorld - 1];
+  
   const handleAreaClick = () => {
     if (!containerRef.current) return;
     
@@ -88,7 +91,7 @@ const ClickArea: React.FC = () => {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
       
-      // Yellow sparkle colors
+      // Use world-specific colors if available
       const colors = [
         "#FFD700", // Gold
         "#FFFF00", // Yellow
@@ -126,6 +129,13 @@ const ClickArea: React.FC = () => {
   
   return (
     <div className="flex flex-col items-center justify-center py-6 relative z-20">
+      {/* World name banner */}
+      <div className="bg-indigo-900/70 px-4 py-1 mb-4 rounded-full shadow-xl border border-indigo-400/30 text-center">
+        <span className="text-sm font-medium text-white">
+          {currentWorld.name} <span className="text-xs opacity-75">({state.currentWorld}/10)</span>
+        </span>
+      </div>
+      
       <div 
         ref={containerRef}
         className={`relative w-64 h-64 mb-5 flex items-center justify-center select-none ${isAnimating ? 'shake' : ''}`}
@@ -167,8 +177,16 @@ const ClickArea: React.FC = () => {
         </div>
       )}
 
+      {/* World multiplier indicator */}
+      <div className="text-center mb-2">
+        <p className="text-sm text-indigo-300 text-shadow-sm">
+          World Multiplier: ×{currentWorld.multiplier.toFixed(1)}
+        </p>
+      </div>
+
       {/* Inline CSS for the shake animation */}
-      <style jsx>{`
+      <style jsx>
+        {`
         @keyframes shake {
           0% { transform: translate(0, 0); }
           20% { transform: translate(-2px, 2px); }
@@ -196,7 +214,8 @@ const ClickArea: React.FC = () => {
         .text-shadow-glow {
           text-shadow: 0 0 5px rgba(74, 222, 128, 0.8), 0 0 10px rgba(74, 222, 128, 0.6);
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
