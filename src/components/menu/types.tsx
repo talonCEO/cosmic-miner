@@ -163,7 +163,7 @@ export const INVENTORY_ITEMS = {
   AUTO_TAP: {
     id: 'boost-auto-tap',
     name: 'Auto Tap',
-    description: 'Automatically taps 5 times per second for 10 minutes',
+    description: 'Automatically taps 5 times per second for 5 minutes',
     type: 'boost' as const,
     rarity: 'uncommon' as const,
     icon: <img src={AutoTapImage} alt="Auto Tap" className="w-8 h-8" />,
