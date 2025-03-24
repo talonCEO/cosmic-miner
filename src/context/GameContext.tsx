@@ -32,8 +32,8 @@ export interface Achievement {
   checkCondition: (state: GameState) => boolean;
   rewards?: {
     type: 'gems' | 'boost' | 'title' | 'portrait' | 'inventory_item';
-    value: number | string; // Number for gems, string for boost/title/portrait ID
-    image: string; // Path to reward image
+    value: number | string;
+    image: string;
   };
 }
 
@@ -79,7 +79,7 @@ export interface GameState {
   tempEssenceBoostStacks: number;
   autoBuy: boolean;
   autoTap: boolean;
-  autoTapActive: boolean; // Added for auto-tap boost status
+  autoTapActive: boolean;
   essence: number;
   ownedManagers: string[];
   ownedArtifacts: string[];
@@ -110,7 +110,8 @@ export interface GameState {
   activeBoosts: BoostEffect[];
   permaTapBoosts: number;
   permaPassiveBoosts: number;
-  tapBoostTapsRemaining?: number; // Added for tap boost
+  tapBoostTapsRemaining?: number;
+  tapBoostActive?: boolean; // Added to track tap boost activation
 }
 
 type GameAction =
@@ -343,7 +344,8 @@ const initialState: GameState = {
   activeBoosts: [],
   permaTapBoosts: 0,
   permaPassiveBoosts: 0,
-  tapBoostTapsRemaining: 0
+  tapBoostTapsRemaining: 0,
+  tapBoostActive: false
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -351,19 +353,23 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'CLICK': {
       let totalClickAmount = GameMechanics.calculateTapValue(state);
       let newTapBoostTapsRemaining = state.tapBoostTapsRemaining || 0;
+      let newTapBoostActive = state.tapBoostActive || false;
 
       if (newTapBoostTapsRemaining > 0) {
-        totalClickAmount *= 5; // Apply ×5 multiplier per stack
+        totalClickAmount *= 5; // Apply ×5 multiplier
         newTapBoostTapsRemaining -= 1;
 
         if (newTapBoostTapsRemaining <= 0) {
+          newTapBoostActive = false; // Deactivate boost
           return {
             ...state,
             coins: Math.max(0, state.coins + totalClickAmount),
             totalClicks: state.totalClicks + 1,
             totalEarned: state.totalEarned + totalClickAmount,
             tapBoostTapsRemaining: 0,
-            activeBoosts: state.activeBoosts.filter(b => b.id !== 'boost-tap-boost')
+            tapBoostActive: false,
+            coinsPerClick: GameMechanics.calculateTapValue(state), // Reset to base value
+            activeBoosts: state.activeBoosts.filter(b => b.id !== 'boost-tap-boost'),
           };
         }
       }
@@ -373,7 +379,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         coins: Math.max(0, state.coins + totalClickAmount),
         totalClicks: state.totalClicks + 1,
         totalEarned: state.totalEarned + totalClickAmount,
-        tapBoostTapsRemaining: newTapBoostTapsRemaining
+        tapBoostTapsRemaining: newTapBoostTapsRemaining,
+        tapBoostActive: newTapBoostActive,
       };
     }
     case 'ADD_COINS':
@@ -516,6 +523,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
 
+      if (newState.tapBoostTapsRemaining === 0 && newState.tapBoostActive) {
+        newState = {
+          ...newState,
+          tapBoostActive: false,
+          coinsPerClick: GameMechanics.calculateTapValue(newState), // Reset to base value
+          activeBoosts: newState.activeBoosts.filter(b => b.id !== 'boost-tap-boost'),
+        };
+      }
+
       if (newState.autoBuy) {
         const affordableUpgrades = newState.upgrades
           .filter(u => u.unlocked && u.level < u.maxLevel &&
@@ -614,6 +630,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         permaTapBoosts: state.permaTapBoosts,
         permaPassiveBoosts: state.permaPassiveBoosts,
         tapBoostTapsRemaining: 0,
+        tapBoostActive: false,
         autoTapActive: false
       };
     }
@@ -924,11 +941,14 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       } else if (item.id === 'boost-tap-boost') {
         const tapsPerStack = 100; // 100 clicks per stack
         const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (tapsPerStack * quantity);
+        const baseTapValue = GameMechanics.calculateTapValue(state); // Get base value before boost
         return {
           ...state,
           inventory: updatedInventory,
           activeBoosts: newActiveBoosts,
-          tapBoostTapsRemaining: tapsRemaining
+          tapBoostTapsRemaining: tapsRemaining,
+          tapBoostActive: true, // Activate boost
+          coinsPerClick: baseTapValue * 5, // Apply ×5 multiplier to coinsPerClick
         };
       }
 
@@ -1176,6 +1196,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             permaTapBoosts: savedState.permaTapBoosts || 0,
             permaPassiveBoosts: savedState.permaPassiveBoosts || 0,
             tapBoostTapsRemaining: savedState.tapBoostTapsRemaining || 0,
+            tapBoostActive: savedState.tapBoostActive || false,
             autoTapActive: savedState.autoTapActive || false
           };
 
