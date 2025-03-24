@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { motion, useAnimation, useMotionValue, useTransform, animate } from 'framer-motion';
