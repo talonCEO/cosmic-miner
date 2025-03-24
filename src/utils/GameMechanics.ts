@@ -231,15 +231,32 @@ export const calculateManagerBoostMultiplier = (state: GameState): number => {
  */
 export const calculateAutoTapIncome = (state: GameState, tickInterval: number = 100): number => {
   const enhancedState = enhanceGameMechanics(state);
+
+  // If neither base auto-tap nor boost is active, return 0
   if (!state.autoTap && !enhancedState.autoTapTapsPerSecond) return 0;
 
+  // Calculate the base tap value (without active boosts like TAP_BOOST)
   const tapPowerUpgrade = state.upgrades.find(u => u.id === 'tap-power-1');
   const tapBoostMultiplier = tapPowerUpgrade ? 1 + (tapPowerUpgrade.level * tapPowerUpgrade.coinsPerClickBonus) : 1;
   const clickMultiplier = calculateClickMultiplier(state.ownedArtifacts);
   const baseClickValue = enhancedState.coinsPerClickBase || enhancedState.coinsPerClick;
   const coinsPerSecondBonus = enhancedState.coinsPerSecond * 0.05;
-  const totalTapsPerSecond = (state.autoTap ? 1 : 0) + (enhancedState.autoTapTapsPerSecond || 0);
-  return (baseClickValue + coinsPerSecondBonus) * clickMultiplier * tapBoostMultiplier * totalTapsPerSecond * (tickInterval / 1000) * 0.4;
+  const abilityTapMultiplier = calculateAbilityTapMultiplier(state.abilities);
+  const baseTapValue = (baseClickValue + coinsPerSecondBonus) * clickMultiplier * tapBoostMultiplier * abilityTapMultiplier;
+
+  // Determine total taps per second
+  const baseAutoTapTapsPerSecond = state.autoTap ? 1 : 0; // Base auto-tap (1 tap/sec if enabled)
+  const boostAutoTapTapsPerSecond = enhancedState.autoTapTapsPerSecond || 0; // From boost-auto-tap (5 taps/sec per stack)
+
+  // If boost-auto-tap is active, override with tap value × 5 per second
+  if (boostAutoTapTapsPerSecond > 0) {
+    const boostIncomePerSecond = baseTapValue * 5; // tap value × 5 coins per second
+    return boostIncomePerSecond * (tickInterval / 1000); // Adjust for tick interval
+  }
+
+  // Otherwise, calculate base auto-tap income (40% efficiency)
+  const totalTapsPerSecond = baseAutoTapTapsPerSecond;
+  return baseTapValue * totalTapsPerSecond * (tickInterval / 1000) * 0.4;
 };
 
 /**
