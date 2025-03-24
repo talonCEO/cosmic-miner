@@ -101,7 +101,9 @@ const applyActiveBoosts = (state: GameState): GameState => {
  * Calculate the total tap/click value considering all boosts
  */
 export const calculateTapValue = (state: GameState): number => {
-  return enhanceGameMechanics(state).coinsPerClick;
+  const enhancedState = enhanceGameMechanics(state);
+  // Apply permanent tap boost at the end
+  return Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
 };
 
 /**
@@ -140,7 +142,9 @@ const calculateBasePassiveIncome = (state: GameState): number => {
  * Calculate the total CPS (Coins Per Second) with all multipliers applied
  */
 export const calculateTotalCoinsPerSecond = (state: GameState): number => {
-  return enhanceGameMechanics(state).coinsPerSecond;
+  const enhancedState = enhanceGameMechanics(state);
+  // Apply permanent passive boost at the end
+  return Math.max(0, enhancedState.coinsPerSecond + (state.permaPassiveBoosts || 0));
 };
 
 /**
