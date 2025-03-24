@@ -111,7 +111,8 @@ export interface GameState {
   permaTapBoosts: number;
   permaPassiveBoosts: number;
   tapBoostTapsRemaining?: number;
-  tapBoostActive?: boolean; // Added to track tap boost activation
+  tapBoostActive?: boolean;
+  showTimeWarpFlash?: boolean; // Added for white flash animation
 }
 
 type GameAction =
@@ -345,7 +346,8 @@ const initialState: GameState = {
   permaTapBoosts: 0,
   permaPassiveBoosts: 0,
   tapBoostTapsRemaining: 0,
-  tapBoostActive: false
+  tapBoostActive: false,
+  showTimeWarpFlash: false // Initialize flash state
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -588,6 +590,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         }
       }
 
+      // Reset flash after a short duration (e.g., 0.5s)
+      if (newState.showTimeWarpFlash) {
+        setTimeout(() => {
+          newState.showTimeWarpFlash = false;
+        }, 500);
+      }
+
       return newState;
     }
     case 'PRESTIGE': {
@@ -631,7 +640,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         permaPassiveBoosts: state.permaPassiveBoosts,
         tapBoostTapsRemaining: 0,
         tapBoostActive: false,
-        autoTapActive: false
+        autoTapActive: false,
+        showTimeWarpFlash: false
       };
     }
     case 'BUY_MANAGER': {
@@ -792,14 +802,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const parentIndex = updatedCollections[parentCollection].findIndex(item => item.id === action.parentId);
       if (parentIndex === -1) return state;
 
-      const updatedParent = {...updatedCollections[parentCollection][parentIndex]};
+      const updatedParent = { ...updatedCollections[parentCollection][parentIndex] };
       if (!updatedParent.perks) return state;
 
       const perkIndex = updatedParent.perks.findIndex(p => p.id === action.perkId);
       if (perkIndex === -1) return state;
 
       let perksToUnlock = [action.perkId];
-      let unlockedPerksCost = perk.cost;
       const selectedPerkCost = perk.cost;
 
       updatedParent.perks.forEach(p => {
@@ -950,6 +959,16 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           tapBoostActive: true, // Activate boost
           coinsPerClick: baseTapValue * 5, // Apply ×5 multiplier to coinsPerClick
         };
+      } else if (item.id === 'boost-time-warp') {
+        const timeWarpIncome = GameMechanics.calculateTotalCoinsPerSecond(state) * 7200 * quantity;
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          showTimeWarpFlash: true, // Trigger flash animation
+          coins: Math.max(0, state.coins + timeWarpIncome),
+          totalEarned: state.totalEarned + timeWarpIncome
+        };
       }
 
       return {
@@ -1074,6 +1093,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         coins: Math.max(0, state.coins + action.amount),
         totalEarned: state.totalEarned + action.amount,
+        showTimeWarpFlash: true // Trigger flash animation
       };
     }
     default:
@@ -1197,7 +1217,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             permaPassiveBoosts: savedState.permaPassiveBoosts || 0,
             tapBoostTapsRemaining: savedState.tapBoostTapsRemaining || 0,
             tapBoostActive: savedState.tapBoostActive || false,
-            autoTapActive: savedState.autoTapActive || false
+            autoTapActive: savedState.autoTapActive || false,
+            showTimeWarpFlash: false
           };
 
           for (const key in restoredState) {
@@ -1269,6 +1290,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return () => clearInterval(boostTimerInterval);
   }, []);
+
+  // Reset the flash effect after it triggers
+  useEffect(() => {
+    if (state.showTimeWarpFlash) {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'RESTORE_STATE_PROPERTY', property: 'showTimeWarpFlash', value: false });
+      }, 500); // Flash duration: 0.5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [state.showTimeWarpFlash]);
 
   const calculateMaxPurchaseAmount = (upgradeId: string): number => {
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
