@@ -37,8 +37,7 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
         {/* Display essence boost bonus if active */}
         {hasEssenceBoost && (
           <p className="text-sm text-green-400 mb-4 text-center">
-            Essence Boost Active: +{essenceBoostBonus.toFixed(1)}% this prestige ({tempEssenceBoostStacks} stack{tempEssenceBoostStacks !== 1 ? 's' : ''})
-          </p>
+            Boost Active: +{essenceBoostBonus.toFixed(1)}% 
         )}
         
         <p className="text-center text-slate-300 mb-4">
