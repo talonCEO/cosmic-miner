@@ -212,3 +212,29 @@ export const calculateMaxAffordableQuantity = (
   
   return quantity;
 };
+
+// Additional helper functions needed by other components
+export const calculateClickMultiplier = (state: GameState): number => {
+  // Simple placeholder implementation
+  return 1.0 + (state.prestigeCount * 0.1);
+};
+
+export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
+  // Simple placeholder implementation
+  return state.incomeMultiplier;
+};
+
+export const calculateArtifactProductionMultiplier = (state: GameState, elementId?: string): number => {
+  // Simple placeholder implementation
+  return 1.0 + (state.ownedArtifacts.length * 0.05);
+};
+
+export const calculateTotalCoinsPerSecond = (state: GameState): number => {
+  // Simple placeholder implementation
+  return state.coinsPerSecond * calculateGlobalIncomeMultiplier(state);
+};
+
+// Utility function for checking values
+export const isGoodValue = (value: number): boolean => {
+  return value > 0 && !isNaN(value) && isFinite(value);
+};

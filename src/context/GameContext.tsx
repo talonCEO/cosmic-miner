@@ -425,27 +425,34 @@ const initialState: GameState = {
   worlds: WORLDS
 };
 
-// Function to check if enough upgrades have been unlocked to progress to next world
+const calculateBaseCoinsPerSecond = (state: GameState): number => {
+  let baseCoinsPerSecond = 0;
+  state.upgrades.forEach(upgrade => {
+    baseCoinsPerSecond += upgrade.level * upgrade.coinsPerSecondBonus;
+  });
+  return baseCoinsPerSecond;
+};
+
+const calculateBaseCoinsPerClick = (state: GameState): number => {
+  let baseCoinsPerClick = state.coinsPerClick;
+  return baseCoinsPerClick;
+};
+
 const checkWorldUnlock = (state: GameState): boolean => {
-  // Only check unlocking the next world if not all worlds are unlocked yet
   const currentWorldIndex = state.currentWorld - 1;
   if (currentWorldIndex >= state.worlds.length - 1) return false;
   
-  // Check if the next world is already unlocked
   if (state.worlds[currentWorldIndex + 1].unlocked) return false;
   
-  // Calculate how many element upgrades are unlocked in the current world
   const totalUpgrades = state.upgrades.filter(u => u.category === UPGRADE_CATEGORIES.TAP).length;
   const unlockedUpgrades = state.upgrades.filter(u => 
     u.category === UPGRADE_CATEGORIES.TAP && u.level > 0
   ).length;
   
-  // Need to unlock 75% of upgrades to unlock the next world
   const unlockThreshold = Math.ceil(totalUpgrades * 0.75);
   return unlockedUpgrades >= unlockThreshold;
 };
 
-// Function to reset upgrades when changing worlds
 const resetUpgradesForNewWorld = (state: GameState): GameState => {
   const resetUpgrades = state.upgrades.map(upgrade => ({
     ...upgrade,
@@ -466,7 +473,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'CLICK': {
       let totalClickAmount = GameMechanics.calculateTapValue(state);
       
-      // Apply world multiplier to click amount
       const worldMultiplier = state.worlds[state.currentWorld - 1].multiplier;
       totalClickAmount *= worldMultiplier;
       
@@ -539,7 +545,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       let newCoinsPerSecond = state.coinsPerSecond;
       
       if (upgrade.category === UPGRADE_CATEGORIES.TAP) {
-        // Handled by GameMechanics.calculateTapValue
       } else {
         newCoinsPerClick += upgrade.coinsPerClickBonus * maxPossibleQuantity;
         newCoinsPerSecond += upgrade.coinsPerSecondBonus * maxPossibleQuantity;
@@ -608,7 +613,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       let newState = { ...state, boosts: newBoosts };
 
       if (state.coinsPerSecond > 0) {
-        // Apply world multiplier to passive income
         const worldMultiplier = state.worlds[state.currentWorld - 1].multiplier;
         const passiveAmount = GameMechanics.calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond * worldMultiplier;
         
@@ -619,26 +623,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
 
-      // Check if the next world should be unlocked
-      if (newState.upgrades.some(upgrade => upgrade.level > 0)) {
-        const shouldUnlockNextWorld = checkWorldUnlock(newState);
-        if (shouldUnlockNextWorld) {
-          const currentWorldIndex = newState.currentWorld;
-          if (currentWorldIndex < newState.worlds.length) {
-            const newWorlds = [...newState.worlds];
-            newWorlds[currentWorldIndex] = {
-              ...newWorlds[currentWorldIndex],
-              unlocked: true
-            };
-            newState = {
-              ...newState,
-              worlds: newWorlds
-            };
-          }
-        }
-      }
-
-      // Continue with the rest of the TICK logic
       if (newState.autoTap) {
         const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
         const autoTapBoost = newBoosts["boost-auto-tap"]?.active 
@@ -706,6 +690,24 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             newState = {
               ...newState,
               skillPoints: newState.skillPoints + 1
+            };
+          }
+        }
+      }
+
+      if (newState.upgrades.some(upgrade => upgrade.level > 0)) {
+        const shouldUnlockNextWorld = checkWorldUnlock(newState);
+        if (shouldUnlockNextWorld) {
+          const currentWorldIndex = newState.currentWorld;
+          if (currentWorldIndex < newState.worlds.length) {
+            const newWorlds = [...newState.worlds];
+            newWorlds[currentWorldIndex] = {
+              ...newWorlds[currentWorldIndex],
+              unlocked: true
+            };
+            newState = {
+              ...newState,
+              worlds: newWorlds
             };
           }
         }
@@ -890,7 +892,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       if (!state.worlds[action.worldId - 1].unlocked) return state;
       
-      // Reset upgrades for the new world
       const resetState = resetUpgradesForNewWorld(state);
       
       return {
@@ -903,5 +904,144 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   }
 };
 
-export const GameContext = createContext<GameState | null>(null);
-export const useGameContext = () => useContext(GameContext);
+const GameContext = createContext<{
+  state: GameState;
+  dispatch: React.Dispatch<GameAction>;
+  click: () => void;
+  handleClick: () => void;
+  prestige: () => void;
+  addCoins: (amount: number) => void;
+  addEssence: (amount: number) => void;
+  toggleAutoBuy: () => void;
+  toggleAutoTap: () => void;
+  buyUpgrade: (upgradeId: string, quantity?: number) => void;
+  buyManager: (managerId: string) => void;
+  buyArtifact: (artifactId: string) => void;
+  setIncomeMultiplier: (multiplier: number) => void;
+  unlockAchievement: (achievementId: string) => void;
+  unlockAbility: (abilityId: string) => void;
+  unlockPerk: (perkId: string, parentId: string) => void;
+  calculatePotentialEssenceReward: () => number;
+  useItem: (itemId: string, quantity?: number) => void;
+  addItem: (item: InventoryItem) => void;
+  removeItem: (itemId: string, quantity?: number) => void;
+  addGems: (amount: number) => void;
+  activateBoost: (boostId: string, duration?: number, value?: number) => void;
+  updateUsername: (username: string) => void;
+  updateTitle: (title: string) => void;
+  updatePortrait: (portrait: string) => void;
+  changeWorld: (worldId: number) => void;
+}>({
+  state: initialState,
+  dispatch: () => null,
+  click: () => {},
+  handleClick: () => {},
+  prestige: () => {},
+  addCoins: () => {},
+  addEssence: () => {},
+  toggleAutoBuy: () => {},
+  toggleAutoTap: () => {},
+  buyUpgrade: () => {},
+  buyManager: () => {},
+  buyArtifact: () => {},
+  setIncomeMultiplier: () => {},
+  unlockAchievement: () => {},
+  unlockAbility: () => {},
+  unlockPerk: () => {},
+  calculatePotentialEssenceReward: () => 0,
+  useItem: () => {},
+  addItem: () => {},
+  removeItem: () => {},
+  addGems: () => {},
+  activateBoost: () => {},
+  updateUsername: () => {},
+  updateTitle: () => {},
+  updatePortrait: () => {},
+  changeWorld: () => {}
+});
+
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  
+  const click = () => dispatch({ type: 'CLICK' });
+  const handleClick = () => dispatch({ type: 'HANDLE_CLICK' });
+  const prestige = () => dispatch({ type: 'PRESTIGE' });
+  const addCoins = (amount: number) => dispatch({ type: 'ADD_COINS', amount });
+  const addEssence = (amount: number) => dispatch({ type: 'ADD_ESSENCE', amount });
+  const toggleAutoBuy = () => dispatch({ type: 'TOGGLE_AUTO_BUY' });
+  const toggleAutoTap = () => dispatch({ type: 'TOGGLE_AUTO_TAP' });
+  const buyUpgrade = (upgradeId: string, quantity?: number) => dispatch({ type: 'BUY_UPGRADE', upgradeId, quantity });
+  const buyManager = (managerId: string) => dispatch({ type: 'BUY_MANAGER', managerId });
+  const buyArtifact = (artifactId: string) => dispatch({ type: 'BUY_ARTIFACT', artifactId });
+  const setIncomeMultiplier = (multiplier: number) => dispatch({ type: 'SET_INCOME_MULTIPLIER', multiplier });
+  const unlockAchievement = (achievementId: string) => dispatch({ type: 'UNLOCK_ACHIEVEMENT', achievementId });
+  const unlockAbility = (abilityId: string) => dispatch({ type: 'UNLOCK_ABILITY', abilityId });
+  const unlockPerk = (perkId: string, parentId: string) => dispatch({ type: 'UNLOCK_PERK', perkId, parentId });
+  const useItem = (itemId: string, quantity?: number) => dispatch({ type: 'USE_ITEM', itemId, quantity });
+  const addItem = (item: InventoryItem) => dispatch({ type: 'ADD_ITEM', item });
+  const removeItem = (itemId: string, quantity?: number) => dispatch({ type: 'REMOVE_ITEM', itemId, quantity });
+  const addGems = (amount: number) => dispatch({ type: 'ADD_GEMS', amount });
+  const activateBoost = (boostId: string, duration?: number, value?: number) => 
+    dispatch({ type: 'ACTIVATE_BOOST', boostId, duration, value });
+  const updateUsername = (username: string) => dispatch({ type: 'UPDATE_USERNAME', username });
+  const updateTitle = (title: string) => dispatch({ type: 'UPDATE_TITLE', title });
+  const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
+  const changeWorld = (worldId: number) => dispatch({ type: 'CHANGE_WORLD', worldId });
+
+  const calculatePotentialEssenceReward = () => {
+    return GameMechanics.calculateEssenceReward(state.totalEarned, state);
+  };
+
+  useEffect(() => {
+    const gameLoop = setInterval(() => {
+      dispatch({ type: 'TICK' });
+      dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+      dispatch({ type: 'CHECK_WORLD_UNLOCK' });
+    }, 100);
+
+    return () => clearInterval(gameLoop);
+  }, []);
+
+  return (
+    <GameContext.Provider
+      value={{
+        state,
+        dispatch,
+        click,
+        handleClick,
+        prestige,
+        addCoins,
+        addEssence,
+        toggleAutoBuy,
+        toggleAutoTap,
+        buyUpgrade,
+        buyManager,
+        buyArtifact,
+        setIncomeMultiplier,
+        unlockAchievement,
+        unlockAbility,
+        unlockPerk,
+        calculatePotentialEssenceReward,
+        useItem,
+        addItem,
+        removeItem,
+        addGems,
+        activateBoost,
+        updateUsername,
+        updateTitle,
+        updatePortrait,
+        changeWorld
+      }}
+    >
+      {children}
+    </GameContext.Provider>
+  );
+};
+
+export const useGame = () => {
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
+};

@@ -185,7 +185,7 @@ const ClickArea: React.FC = () => {
       </div>
 
       {/* Inline CSS for the shake animation */}
-      <style jsx>
+      <style>
         {`
         @keyframes shake {
           0% { transform: translate(0, 0); }

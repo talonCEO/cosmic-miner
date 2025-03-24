@@ -18,6 +18,9 @@ export interface InventoryItem {
     duration?: number;
     value: number;
   };
+  cost?: number;
+  maxPurchases?: number;
+  type?: string;
 }
 
 export interface BoostEffect {
@@ -40,6 +43,11 @@ export const createInventoryItem = (template: ItemTemplate, quantity: number): I
 };
 
 interface ItemTemplate extends Omit<InventoryItem, 'quantity'> {}
+
+// Helper function for premium store
+export const isBoostWithCost = (item: InventoryItem): boolean => {
+  return item.cost !== undefined && item.cost > 0;
+};
 
 export const INVENTORY_ITEMS = {
   DOUBLE_COINS: {
@@ -170,6 +178,67 @@ export const INVENTORY_ITEMS = {
     effect: {
       type: 'inventoryExpansion',
       value: 5
+    }
+  },
+  // Add the missing resource items
+  COINS: {
+    id: 'resource-coins',
+    name: 'Coins',
+    description: 'Basic currency for upgrades',
+    stackable: true,
+    rarity: 'common' as const,
+    icon: '/src/assets/images/icons/coins.png',
+    category: 'resource' as const,
+    usable: false,
+    type: 'currency',
+    effect: {
+      type: 'none',
+      value: 0
+    }
+  },
+  GEMS: {
+    id: 'resource-gems',
+    name: 'Gems',
+    description: 'Premium currency',
+    stackable: true,
+    rarity: 'epic' as const,
+    icon: '/src/assets/images/icons/gems.png',
+    category: 'resource' as const,
+    usable: false,
+    type: 'currency',
+    effect: {
+      type: 'none',
+      value: 0
+    }
+  },
+  ESSENCE: {
+    id: 'resource-essence',
+    name: 'Essence',
+    description: 'Used for purchasing managers and artifacts',
+    stackable: true,
+    rarity: 'rare' as const,
+    icon: '/src/assets/images/icons/essence.png',
+    category: 'resource' as const,
+    usable: false,
+    type: 'currency',
+    effect: {
+      type: 'none',
+      value: 0
+    }
+  },
+  SKILL_POINTS: {
+    id: 'resource-skill-points',
+    name: 'Skill Points',
+    description: 'Used for unlocking abilities and perks',
+    stackable: true,
+    rarity: 'epic' as const,
+    icon: '/src/assets/images/icons/skill_points.png',
+    category: 'resource' as const,
+    usable: false,
+    type: 'currency',
+    effect: {
+      type: 'none',
+      value: 0
     }
   }
 };
