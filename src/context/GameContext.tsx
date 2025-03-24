@@ -76,6 +76,7 @@ export interface GameState {
   upgrades: Upgrade[];
   totalClicks: number;
   totalEarned: number;
+  tempEssenceBoostStacks: number;
   autoBuy: boolean;
   autoTap: boolean;
   essence: number;
@@ -311,6 +312,7 @@ const initialState: GameState = {
   })),
   totalClicks: 0,
   totalEarned: 0,
+  tempEssenceBoostStacks: 0,
   autoBuy: false,
   autoTap: false,
   essence: 10000000000,
@@ -600,6 +602,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         portrait: state.portrait,
         nameChangeCount: state.nameChangeCount,
         activeBoosts: [],
+        tempEssenceBoostStacks: 0,
         permaTapBoosts: state.permaTapBoosts,  // Persist across prestige
         permaPassiveBoosts: state.permaPassiveBoosts  // Persist across prestige
       };
@@ -835,90 +838,97 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     }
     case 'USE_ITEM': {
-      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
-      if (itemIndex === -1) return state;
-      
-      const item = state.inventory[itemIndex];
-      if (!item.usable || !item.effect) return state;
+  const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+  if (itemIndex === -1) return state;
+  
+  const item = state.inventory[itemIndex];
+  if (!item.usable || !item.effect) return state;
 
-      const quantity = action.quantity || 1;
-      if (item.quantity < quantity) return state;
+  const quantity = action.quantity || 1;
+  if (item.quantity < quantity) return state;
 
-      const updatedInventory = [...state.inventory];
-      if (item.quantity === quantity) {
-        updatedInventory.splice(itemIndex, 1);
-      } else {
-        updatedInventory[itemIndex] = {
-          ...item,
-          quantity: item.quantity - quantity
-        };
-      }
+  const updatedInventory = [...state.inventory];
+  if (item.quantity === quantity) {
+    updatedInventory.splice(itemIndex, 1);
+  } else {
+    updatedInventory[itemIndex] = {
+      ...item,
+      quantity: item.quantity - quantity
+    };
+  }
 
-      const now = Math.floor(Date.now() / 1000);
-      let newActiveBoosts = [...state.activeBoosts];
-      const existingBoostIndex = newActiveBoosts.findIndex(boost => boost.id === item.id);
+  const now = Math.floor(Date.now() / 1000);
+  let newActiveBoosts = [...state.activeBoosts];
+  const existingBoostIndex = newActiveBoosts.findIndex(boost => boost.id === item.id);
 
-      if (existingBoostIndex >= 0) {
-        // Stack the boost
-        const existingBoost = newActiveBoosts[existingBoostIndex];
-        const effectDuration = item.effect.duration || 0;
-        newActiveBoosts[existingBoostIndex] = {
-          ...existingBoost,
-          quantity: existingBoost.quantity + quantity,
-          activatedAt: now,
-          remainingTime: effectDuration > 0 ? 
-            Math.max(existingBoost.remainingTime || 0, effectDuration) + (effectDuration * (quantity - 1)) : undefined
-        };
-      } else {
-        // Add new boost
-        const newBoost: BoostEffect = {
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          quantity,
-          value: item.effect.value,
-          duration: item.effect.duration,
-          activatedAt: now,
-          remainingTime: item.effect.duration,
-          icon: item.icon
-        };
-        newActiveBoosts.push(newBoost);
-      }
+  if (existingBoostIndex >= 0) {
+    // Stack the boost
+    const existingBoost = newActiveBoosts[existingBoostIndex];
+    const effectDuration = item.effect.duration || 0;
+    newActiveBoosts[existingBoostIndex] = {
+      ...existingBoost,
+      quantity: existingBoost.quantity + quantity,
+      activatedAt: now,
+      remainingTime: effectDuration > 0 ? 
+        Math.max(existingBoost.remainingTime || 0, effectDuration) + (effectDuration * (quantity - 1)) : undefined
+    };
+  } else {
+    // Add new boost
+    const newBoost: BoostEffect = {
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      quantity,
+      value: item.effect.value,
+      duration: item.effect.duration,
+      activatedAt: now,
+      remainingTime: item.effect.duration,
+      icon: item.icon
+    };
+    newActiveBoosts.push(newBoost);
+  }
 
-      // Handle permanent boosts
-      if (item.id === 'boost-perma-tap') {
-        return {
-          ...state,
-          inventory: updatedInventory,
-          activeBoosts: newActiveBoosts,
-          permaTapBoosts: state.permaTapBoosts + quantity  // Increment permanent tap boosts
-        };
-      } else if (item.id === 'boost-perma-passive') {
-        return {
-          ...state,
-          inventory: updatedInventory,
-          activeBoosts: newActiveBoosts,
-          permaPassiveBoosts: state.permaPassiveBoosts + quantity  // Increment permanent passive boosts
-        };
-      }
+  // Handle permanent boosts and essence boost
+  if (item.id === 'boost-perma-tap') {
+    return {
+      ...state,
+      inventory: updatedInventory,
+      activeBoosts: newActiveBoosts,
+      permaTapBoosts: (state.permaTapBoosts || 0) + quantity  // Increment permanent tap boosts
+    };
+  } else if (item.id === 'boost-perma-passive') {
+    return {
+      ...state,
+      inventory: updatedInventory,
+      activeBoosts: newActiveBoosts,
+      permaPassiveBoosts: (state.permaPassiveBoosts || 0) + quantity  // Increment permanent passive boosts
+    };
+  } else if (item.id === 'boost-essence-boost') {
+    return {
+      ...state,
+      inventory: updatedInventory,
+      activeBoosts: newActiveBoosts,
+      tempEssenceBoostStacks: (state.tempEssenceBoostStacks || 0) + quantity  // Increment temporary essence boost stacks
+    };
+  }
 
-      // Special handling for tap-boost (uses-based)
-      if (item.id === 'boost-tap-boost') {
-        const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (item.effect.duration || 0) * quantity;
-        return {
-          ...state,
-          inventory: updatedInventory,
-          activeBoosts: newActiveBoosts,
-          tapBoostTapsRemaining: tapsRemaining
-        };
-      }
+  // Special handling for tap-boost (uses-based)
+  if (item.id === 'boost-tap-boost') {
+    const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (item.effect.duration || 0) * quantity;
+    return {
+      ...state,
+      inventory: updatedInventory,
+      activeBoosts: newActiveBoosts,
+      tapBoostTapsRemaining: tapsRemaining
+    };
+  }
 
-      return {
-        ...state,
-        inventory: updatedInventory,
-        activeBoosts: newActiveBoosts
-      };
-    }
+  return {
+    ...state,
+    inventory: updatedInventory,
+    activeBoosts: newActiveBoosts
+  };
+}
     case 'ADD_ITEM': {
       const currentItems = state.inventory.reduce(
         (total, item) => total + (item.stackable ? 1 : item.quantity), 
