@@ -13,95 +13,10 @@ const ASTEROID_SIZE = 350;
 const BASE_POINTS = 18; // More points for smoother shape
 const BASE_RADIUS = 150;
 
-// World-specific colors
-const WORLD_COLORS = {
-  1: { // Asteroid Belt
-    main: ['#b0b0b0', '#808080', '#404040'],
-    crater: 'rgba(30, 30, 30, 0.5)',
-    highlight: 'rgba(120, 120, 120, 0.5)',
-    shadow: 'rgba(0, 0, 0, 0.5)',
-    glow: 'rgba(180, 180, 220, 0.25)',
-    particles: ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"]
-  },
-  2: { // Lunar Surface
-    main: ['#e0e0e0', '#c0c0c0', '#909090'],
-    crater: 'rgba(60, 60, 60, 0.5)',
-    highlight: 'rgba(220, 220, 220, 0.5)',
-    shadow: 'rgba(30, 30, 30, 0.5)',
-    glow: 'rgba(200, 200, 240, 0.2)',
-    particles: ["#E0E0E0", "#D0D0D0", "#C0C0C0", "#B0B0B0"]
-  },
-  3: { // Mars Mines
-    main: ['#d58a63', '#c26b43', '#a04f2a'],
-    crater: 'rgba(70, 30, 15, 0.5)',
-    highlight: 'rgba(230, 150, 120, 0.5)',
-    shadow: 'rgba(50, 20, 10, 0.5)',
-    glow: 'rgba(255, 200, 180, 0.25)',
-    particles: ["#FF6347", "#FF7F50", "#FF8C69", "#FFA07A"]
-  },
-  4: { // Europa Ice Fields
-    main: ['#a0c8e0', '#80a0c0', '#607080'],
-    crater: 'rgba(40, 60, 80, 0.5)',
-    highlight: 'rgba(200, 230, 255, 0.5)',
-    shadow: 'rgba(20, 40, 60, 0.5)',
-    glow: 'rgba(150, 200, 255, 0.3)',
-    particles: ["#ADD8E6", "#B0E0E6", "#87CEEB", "#87CEFA"]
-  },
-  5: { // Saturn's Rings
-    main: ['#e0c080', '#c0a060', '#a08040'],
-    crater: 'rgba(80, 60, 40, 0.5)',
-    highlight: 'rgba(255, 230, 180, 0.5)',
-    shadow: 'rgba(60, 40, 20, 0.5)',
-    glow: 'rgba(255, 240, 200, 0.35)',
-    particles: ["#FFD700", "#F0E68C", "#DAA520", "#B8860B"]
-  },
-  6: { // Titan Methane Lakes
-    main: ['#607890', '#405870', '#203050'],
-    crater: 'rgba(20, 30, 50, 0.5)',
-    highlight: 'rgba(100, 140, 180, 0.5)',
-    shadow: 'rgba(10, 20, 40, 0.5)',
-    glow: 'rgba(100, 160, 220, 0.3)',
-    particles: ["#4682B4", "#5F9EA0", "#6495ED", "#7B68EE"]
-  },
-  7: { // Uranus Gas Clouds
-    main: ['#80c0c0', '#60a0a0', '#408080'],
-    crater: 'rgba(40, 80, 80, 0.5)',
-    highlight: 'rgba(160, 240, 240, 0.5)',
-    shadow: 'rgba(20, 60, 60, 0.5)',
-    glow: 'rgba(160, 255, 255, 0.3)',
-    particles: ["#40E0D0", "#48D1CC", "#00CED1", "#20B2AA"]
-  },
-  8: { // Neptune's Core
-    main: ['#4060a0', '#304080', '#202060'],
-    crater: 'rgba(20, 20, 60, 0.5)',
-    highlight: 'rgba(80, 120, 200, 0.5)',
-    shadow: 'rgba(10, 10, 40, 0.5)',
-    glow: 'rgba(100, 140, 255, 0.4)',
-    particles: ["#1E90FF", "#4169E1", "#0000FF", "#0000CD"]
-  },
-  9: { // Kuiper Belt
-    main: ['#a0a0c0', '#8080a0', '#606080'],
-    crater: 'rgba(40, 40, 60, 0.5)',
-    highlight: 'rgba(180, 180, 220, 0.5)',
-    shadow: 'rgba(30, 30, 50, 0.5)',
-    glow: 'rgba(180, 180, 255, 0.35)',
-    particles: ["#9370DB", "#8A2BE2", "#9400D3", "#BA55D3"]
-  },
-  10: { // Oort Cloud
-    main: ['#c060c0', '#a040a0', '#802080'],
-    crater: 'rgba(60, 20, 60, 0.5)',
-    highlight: 'rgba(240, 120, 240, 0.5)',
-    shadow: 'rgba(40, 10, 40, 0.5)',
-    glow: 'rgba(255, 150, 255, 0.4)',
-    particles: ["#FF00FF", "#FF69B4", "#DA70D6", "#EE82EE"]
-  },
-};
-
 // Create glowing orb component
 const GlowingOrb: React.FC<{
   index: number;
-  worldId: number;
-}> = ({ index, worldId }) => {
+}> = ({ index }) => {
   const angle = (index / 12) * Math.PI * 2;
   const radius = 170 + Math.random() * 30;
   const baseX = Math.cos(angle) * radius;
@@ -148,7 +63,6 @@ const cratersOverlap = (crater1: CraterType, crater2: CraterType): boolean => {
 const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimating }) => {
   const { state } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const worldId = state.currentWorld;
   
   // Animation values with Framer Motion
   const rotation = useMotionValue(0);
@@ -208,7 +122,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     }
     
     setCraters(tempCraters);
-  }, [worldId]); // Reset craters when world changes
+  }, []);
   
   // Generate asteroid path points
   const generateAsteroidPoints = () => {
@@ -296,14 +210,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     };
   }, []);
   
-  // Reset vertex variations when world changes
-  useEffect(() => {
-    vertexVariations.current = Array.from(
-      { length: BASE_POINTS }, 
-      () => Math.random() * 0.4 - 0.2
-    );
-  }, [worldId]);
-  
   // Draw the asteroid on canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -322,9 +228,6 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     // Get current animation values
     const currentShadowX = shadowOffsetX.get();
     const currentShadowY = shadowOffsetY.get();
-    
-    // Get world-specific colors
-    const worldColors = WORLD_COLORS[worldId as keyof typeof WORLD_COLORS] || WORLD_COLORS[1];
     
     // Start drawing
     ctx.save();
@@ -350,14 +253,14 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     ctx.shadowOffsetX = currentShadowX;
     ctx.shadowOffsetY = currentShadowY;
     
-    // Create gradient for the asteroid body - use world-specific colors
+    // Create gradient for the asteroid body
     const gradient = ctx.createRadialGradient(
       -BASE_RADIUS * 0.4, -BASE_RADIUS * 0.4, 0,
       0, 0, BASE_RADIUS * 1.2
     );
-    gradient.addColorStop(0, worldColors.main[0]);
-    gradient.addColorStop(0.4, worldColors.main[1]);
-    gradient.addColorStop(0.8, worldColors.main[2]);
+    gradient.addColorStop(0, '#b0b0b0');
+    gradient.addColorStop(0.4, '#808080');
+    gradient.addColorStop(0.8, '#404040');
     gradient.addColorStop(1, 'rgba(30, 30, 30, 0)');
     
     ctx.fillStyle = gradient;
@@ -374,7 +277,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       // Draw darker crater base
       ctx.beginPath();
       ctx.arc(crater.x, crater.y, crater.size, 0, Math.PI * 2);
-      ctx.fillStyle = worldColors.crater; 
+      ctx.fillStyle = 'rgba(30, 30, 30, 0.5)'; // 50% opacity
       ctx.fill();
       
       // Draw crater highlight
@@ -386,13 +289,13 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
         0,
         Math.PI * 2
       );
-      ctx.fillStyle = worldColors.highlight;
+      ctx.fillStyle = 'rgba(120, 120, 120, 0.5)'; // 50% opacity
       ctx.fill();
       
       // Draw crater inner shadow
       ctx.beginPath();
       ctx.arc(crater.x, crater.y, crater.size * 0.8, 0, Math.PI * 2);
-      ctx.fillStyle = worldColors.shadow;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // 50% opacity
       ctx.fill();
     });
     
@@ -410,7 +313,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     }
     
     ctx.restore();
-  }, [shadowOffsetX, shadowOffsetY, craters, worldId]);
+  }, [shadowOffsetX, shadowOffsetY, craters]);
   
   // Handle click animation
   useEffect(() => {
@@ -433,16 +336,13 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
     }
   }, [isAnimating]);
   
-  // Get world-specific colors
-  const worldColors = WORLD_COLORS[worldId as keyof typeof WORLD_COLORS] || WORLD_COLORS[1];
-  
   return (
     <div className="w-full h-full relative flex items-center justify-center">
       {/* Pulsating glow */}
       <motion.div
         className="absolute rounded-full"
         style={{
-          background: `radial-gradient(circle at 30% 30%, transparent 30%, ${worldColors.glow} 70%, transparent 100%)`,
+          background: 'radial-gradient(circle at 30% 30%, transparent 30%, rgba(180, 180, 220, 0.25) 70%, transparent 100%)',
           width: '100%',
           height: '100%',
           scale: glowScale
@@ -471,7 +371,7 @@ const AnimatedAsteroid: React.FC<AnimatedAsteroidProps> = ({ onClick, isAnimatin
       {/* Glowing orbs */}
       <div className="absolute w-full h-full pointer-events-none flex items-center justify-center">
         {Array.from({ length: 12 }).map((_, i) => (
-          <GlowingOrb key={`orb-${i}`} index={i} worldId={worldId} />
+          <GlowingOrb key={`orb-${i}`} index={i} />
         ))}
       </div>
     </div>
