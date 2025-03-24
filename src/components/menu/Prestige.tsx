@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useGame } from '@/context/GameContext';
 
 interface PrestigeProps {
   potentialEssenceReward: number;
@@ -9,10 +9,17 @@ interface PrestigeProps {
 }
 
 const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handlePrestige }) => {
+  const { state } = useGame(); // Access game state to get tempEssenceBoostStacks
   const onPrestige = () => {
     handlePrestige();
   };
-  
+
+  // Calculate the essence boost bonus percentage
+  const tempEssenceBoostStacks = state.tempEssenceBoostStacks || 0;
+  const essenceBoostMultiplier = Math.pow(1.25, tempEssenceBoostStacks); // 1.25 per stack
+  const essenceBoostBonus = (essenceBoostMultiplier - 1) * 100; // Convert to percentage increase
+  const hasEssenceBoost = tempEssenceBoostStacks > 0;
+
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20">
@@ -26,6 +33,13 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
             <span className="text-xl font-bold text-purple-400">{potentialEssenceReward}</span>
           </div>
         </div>
+
+        {/* Display essence boost bonus if active */}
+        {hasEssenceBoost && (
+          <p className="text-sm text-green-400 mb-4 text-center">
+            Essence Boost Active: +{essenceBoostBonus.toFixed(1)}% this prestige ({tempEssenceBoostStacks} stack{tempEssenceBoostStacks !== 1 ? 's' : ''})
+          </p>
+        )}
         
         <p className="text-center text-slate-300 mb-4">
           Reset your progress in exchange for essence, allowing you to buy powerful upgrades from the shop.
