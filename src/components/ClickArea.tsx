@@ -154,7 +154,7 @@ const ClickArea: React.FC = () => {
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 150);
     }
-  }, state.autoTapActive ? 1000 : null); // 1000ms = 1 second
+  }, state.autoTapActive ? 200 : null); // 200ms = 0.2 second
   
   const removeClickEffect = (id: number) => {
     setClickEffects(prev => prev.filter(effect => effect.id !== id));
