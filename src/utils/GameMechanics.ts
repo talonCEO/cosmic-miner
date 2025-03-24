@@ -62,7 +62,7 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.coinsPerSecond *= doubleCoinsMultiplier;
         break;
       case BOOST_IDS.TIME_WARP:
-        const income = updatedState.coinsPerSecond * 7200; // 2 hours (7200 seconds)
+        const income = updatedState.coinsPerSecond * 2 * 60 * 60; // 2 hours
         updatedState.coins += income * boost.quantity;
         updatedState.totalEarned += income * boost.quantity;
         updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
