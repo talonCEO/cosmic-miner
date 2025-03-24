@@ -8,11 +8,10 @@ import { GameProvider } from "@/context/GameContext";
 import { AdProvider } from "@/context/AdContext";
 import { AudioProvider } from "@/context/AudioContext";
 import UnlockNotificationWrapper from "@/components/UnlockNotification";
-import VisualEffects from "@/components/VisualEffects"; // Added import
+import VisualEffects from "@/components/VisualEffects";
 
 const queryClient = new QueryClient();
 
-// AnimatedRoutes component for page transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -33,7 +32,7 @@ const AnimatedRoutes = () => {
                   <AudioProvider>
                     <Index />
                     <UnlockNotificationWrapper />
-                    <VisualEffects /> {/* Integrated here */}
+                    <VisualEffects />
                   </AudioProvider>
                 </AdProvider>
               </GameProvider>
