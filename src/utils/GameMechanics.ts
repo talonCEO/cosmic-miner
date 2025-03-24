@@ -71,7 +71,7 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
         break;
       case BOOST_IDS.TAP_BOOST:
-        // Handled in CLICK action in GameContext.tsx
+        // No need to apply here; handled in calculateTapValue
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
         updatedState.costReductionMultiplier = 0.9; // Set to 0.9 directly, no stacking
@@ -96,7 +96,14 @@ const applyActiveBoosts = (state: GameState): GameState => {
  */
 export const calculateTapValue = (state: GameState): number => {
   const enhancedState = enhanceGameMechanics(state);
-  return Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
+  let tapValue = Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
+  
+  // Apply tap boost if active
+  if (state.tapBoostActive && (state.tapBoostTapsRemaining || 0) > 0) {
+    tapValue *= 5; // ×5 multiplier when boost is active
+  }
+  
+  return tapValue;
 };
 
 /**
@@ -232,13 +239,18 @@ export const calculateAutoTapIncome = (state: GameState, tickInterval: number = 
   const baseClickValue = enhancedState.coinsPerClickBase || enhancedState.coinsPerClick;
   const coinsPerSecondBonus = enhancedState.coinsPerSecond * 0.05;
   const abilityTapMultiplier = calculateAbilityTapMultiplier(state.abilities);
-  const baseTapValue = (baseClickValue + coinsPerSecondBonus) * clickMultiplier * tapBoostMultiplier * abilityTapMultiplier;
+  let baseTapValue = (baseClickValue + coinsPerSecondBonus) * clickMultiplier * tapBoostMultiplier * abilityTapMultiplier;
+
+  // Apply tap boost to baseTapValue if active
+  if (state.tapBoostActive && (state.tapBoostTapsRemaining || 0) > 0) {
+    baseTapValue *= 5;
+  }
 
   const baseAutoTapTapsPerSecond = state.autoTap ? 1 : 0;
   const boostAutoTapTapsPerSecond = enhancedState.autoTapTapsPerSecond || 0;
 
   if (boostAutoTapTapsPerSecond > 0) {
-    const boostIncomePerSecond = baseTapValue * 5;
+    const boostIncomePerSecond = baseTapValue * 5; // Auto-tap boost multiplier
     return boostIncomePerSecond * (tickInterval / 1000);
   }
 
