@@ -33,7 +33,7 @@ const AnimatedRoutes = () => {
                   <AudioProvider>
                     <Index />
                     <UnlockNotificationWrapper />
-                    <VisualEffects /> {/* Added here */}
+                    <VisualEffects /> {/* Integrated here */}
                   </AudioProvider>
                 </AdProvider>
               </GameProvider>
