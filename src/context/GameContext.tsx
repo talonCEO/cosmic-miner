@@ -815,3 +815,4 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
       return newState;
     }
+    case
