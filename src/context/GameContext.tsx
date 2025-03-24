@@ -382,37 +382,19 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     case 'BUY_UPGRADE': {
       const upgradeIndex = state.upgrades.findIndex(u => u.id === action.upgradeId);
-      
       if (upgradeIndex === -1) return state;
       
       const upgrade = state.upgrades[upgradeIndex];
-      
-      const costReduction = GameMechanics.calculateCostReduction(state);
-      
       const quantity = action.quantity || 1;
-      
       if (upgrade.level >= upgrade.maxLevel) return state;
       
-      const maxPossibleQuantity = Math.min(
-        quantity, 
-        upgrade.maxLevel - upgrade.level
-      );
-      
-      let totalCost = Math.floor(GameMechanics.calculateBulkPurchaseCost(
-        upgrade.baseCost, 
-        upgrade.level, 
-        maxPossibleQuantity, 
-        UPGRADE_COST_GROWTH
-      ) * costReduction);
-      if (state.boosts["boost-cheap-upgrades"]?.active) {
-        totalCost *= INVENTORY_ITEMS.CHEAP_UPGRADES.effect!.value;
-      }
+      const maxPossibleQuantity = Math.min(quantity, upgrade.maxLevel - upgrade.level);
+      const totalCost = GameMechanics.calculateUpgradeCost(state, upgrade.id, maxPossibleQuantity);
       
       if (state.coins < totalCost) return state;
       
       const oldLevel = upgrade.level;
       const newLevel = upgrade.level + maxPossibleQuantity;
-      
       const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
       
       let newCoinsPerClick = state.coinsPerClick;
@@ -428,7 +410,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const updatedUpgrade = {
         ...upgrade,
         level: newLevel,
-        cost: Math.floor(upgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * costReduction)
+        cost: GameMechanics.calculateUpgradeCost(state, upgrade.id, 1) // Update cost for next level
       };
       
       const newUpgrades = [...state.upgrades];
@@ -498,7 +480,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
       // Handle auto-tap boost (tap value × 5 per second for 5 minutes)
       if (newState.autoTapActive) {
-        const autoTapAmount = GameMechanics.calculateTapValue(state) * 5 * 0.1; // 0.1s tick interval
+        const autoTapAmount = GameMechanics.calculateAutoTapIncome(state); // Already adjusted for 100ms tick
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + autoTapAmount),
@@ -525,13 +507,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
 
       if (newState.autoBuy) {
-        const costReduction = GameMechanics.calculateCostReduction(state);
         const affordableUpgrades = newState.upgrades
           .filter(u => u.unlocked && u.level < u.maxLevel && 
-                   newState.coins >= (u.cost * costReduction))
+                   newState.coins >= GameMechanics.calculateUpgradeCost(newState, u.id, 1))
           .map(u => ({
             upgrade: u,
-            roi: u.coinsPerSecondBonus > 0 ? (u.cost / u.coinsPerSecondBonus) : Infinity
+            roi: u.coinsPerSecondBonus > 0 ? (GameMechanics.calculateUpgradeCost(newState, u.id, 1) / u.coinsPerSecondBonus) : Infinity
           }))
           .sort((a, b) => a.roi - b.roi);
 
@@ -550,7 +531,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           const updatedUpgrade = {
             ...bestUpgrade,
             level: newLevel,
-            cost: Math.floor(bestUpgrade.baseCost * Math.pow(UPGRADE_COST_GROWTH, newLevel) * costReduction)
+            cost: GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id, 1) // Update cost for next level
           };
 
           const newUpgrades = [...newState.upgrades];
@@ -566,7 +547,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
 
           newState = {
             ...newState,
-            coins: state.coins - bestUpgrade.cost,
+            coins: newState.coins - GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id, 1),
             coinsPerClick: newCoinsPerClick,
             coinsPerSecond: newCoinsPerSecond,
             upgrades: newUpgrades
@@ -1271,11 +1252,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const upgrade = state.upgrades.find(u => u.id === upgradeId);
     if (!upgrade || upgrade.level >= upgrade.maxLevel) return 0;
     
-    const costReduction = GameMechanics.calculateCostReduction(state);
-    
     return GameMechanics.calculateMaxAffordableQuantity(
       state.coins,
-      upgrade.baseCost * costReduction,
+      upgrade.baseCost,
       upgrade.level,
       UPGRADE_COST_GROWTH
     );
