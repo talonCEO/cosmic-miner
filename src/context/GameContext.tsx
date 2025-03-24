@@ -106,6 +106,8 @@ export interface GameState {
   portrait: string;
   nameChangeCount: number;
   activeBoosts: BoostEffect[];
+  permaTapBoosts: number;  // Added to track permanent tap boosts
+  permaPassiveBoosts: number;  // Added to track permanent passive boosts
 }
 
 type GameAction =
@@ -333,7 +335,9 @@ const initialState: GameState = {
   userId: Math.floor(10000000 + Math.random() * 90000000).toString(),
   portrait: "default",
   nameChangeCount: 0,
-  activeBoosts: []
+  activeBoosts: [],
+  permaTapBoosts: 0,  // Initialize permanent tap boosts
+  permaPassiveBoosts: 0  // Initialize permanent passive boosts
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -595,7 +599,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         userId: state.userId,
         portrait: state.portrait,
         nameChangeCount: state.nameChangeCount,
-        activeBoosts: []
+        activeBoosts: [],
+        permaTapBoosts: state.permaTapBoosts,  // Persist across prestige
+        permaPassiveBoosts: state.permaPassiveBoosts  // Persist across prestige
       };
     }
     case 'BUY_MANAGER': {
@@ -879,6 +885,23 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         newActiveBoosts.push(newBoost);
       }
 
+      // Handle permanent boosts
+      if (item.id === 'boost-perma-tap') {
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          permaTapBoosts: state.permaTapBoosts + quantity  // Increment permanent tap boosts
+        };
+      } else if (item.id === 'boost-perma-passive') {
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          permaPassiveBoosts: state.permaPassiveBoosts + quantity  // Increment permanent passive boosts
+        };
+      }
+
       // Special handling for tap-boost (uses-based)
       if (item.id === 'boost-tap-boost') {
         const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (item.effect.duration || 0) * quantity;
@@ -1131,7 +1154,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             title: savedState.title || initialState.title,
             userId: savedState.userId || initialState.userId,
             portrait: savedState.portrait || initialState.portrait,
-            nameChangeCount: savedState.nameChangeCount || 0
+            nameChangeCount: savedState.nameChangeCount || 0,
+            permaTapBoosts: savedState.permaTapBoosts || 0,  // Restore from saved state
+            permaPassiveBoosts: savedState.permaPassiveBoosts || 0  // Restore from saved state
           };
           
           for (const key in restoredState) {
