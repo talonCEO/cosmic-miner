@@ -3,7 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
 import { calculateTapValue } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
-import { useBoostManager } from '@/hooks/useBoostManager';
+import { useInterval } from '@/hooks/useInterval';
 
 // Particle effect when clicking
 interface ParticleProps {
@@ -115,6 +115,46 @@ const ClickArea: React.FC = () => {
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 150); // Matches the duration of the shake animation
   };
+
+  // Auto-tap animation trigger
+  useInterval(() => {
+    if (state.autoTapActive && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
+      
+      setClickEffects(prev => [
+        ...prev,
+        { id: nextId.current++, x: effectX, y: effectY }
+      ]);
+      
+      const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
+      const newParticles = [];
+      
+      for (let i = 0; i < particleCount; i++) {
+        const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
+        const size = Math.random() * 5 + 2;
+        
+        const colors = ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        newParticles.push({
+          id: nextId.current++,
+          x: particleX,
+          y: particleY,
+          color: color,
+          size: size
+        });
+      }
+      
+      setParticles(prev => [...prev, ...newParticles]);
+      
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 150);
+    }
+  }, state.autoTapActive ? 1000 : null); // 1000ms = 1 second
   
   const removeClickEffect = (id: number) => {
     setClickEffects(prev => prev.filter(effect => effect.id !== id));
