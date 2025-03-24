@@ -475,121 +475,122 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         incomeMultiplier: action.multiplier
       };
-    case 'TICK': {
-      const newBoosts = { ...state.boosts };
-      Object.keys(newBoosts).forEach(boostId => {
-        if (newBoosts[boostId].remainingTime) {
-          newBoosts[boostId].remainingTime -= 0.1;
-          if (newBoosts[boostId].remainingTime <= 0) {
-            newBoosts[boostId].active = false;
-          }
+case 'TICK': {
+  const newBoosts = { ...state.boosts };
+  Object.keys(newBoosts).forEach(boostId => {
+    if (newBoosts[boostId].remainingTime) {
+      newBoosts[boostId].remainingTime -= 0.1;
+      if (newBoosts[boostId].remainingTime <= 0) {
+        newBoosts[boostId].active = false;
+      }
+    }
+  });
+
+  // Apply active boosts (including time warp)
+  let newState = GameMechanics.applyActiveBoosts({ ...state, boosts: newBoosts });
+
+  if (newState.coinsPerSecond > 0) {
+    const passiveAmount = GameMechanics.calculatePassiveIncome(newState) * calculateBaseCoinsPerSecond(newState) / newState.coinsPerSecond;
+    newState = {
+      ...newState,
+      coins: Math.max(0, newState.coins + passiveAmount),
+      totalEarned: newState.totalEarned + passiveAmount
+    };
+  }
+
+  if (newState.autoTapActive) {
+    const autoTapAmount = GameMechanics.calculateAutoTapIncome(newState);
+    newState = {
+      ...newState,
+      coins: Math.max(0, newState.coins + autoTapAmount),
+      totalEarned: newState.totalEarned + autoTapAmount,
+      totalClicks: newState.totalClicks + 1
+    };
+
+    const autoTapBoost = newState.activeBoosts.find(b => b.id === 'boost-auto-tap');
+    if (autoTapBoost && autoTapBoost.remainingTime && autoTapBoost.remainingTime <= 0) {
+      newState.autoTapActive = false;
+      newState.activeBoosts = newState.activeBoosts.filter(b => b.id !== 'boost-auto-tap');
+    }
+  }
+
+  if (newState.autoTap && !newState.autoTapActive) {
+    const autoTapBase = GameMechanics.calculateAutoTapIncome(newState);
+    newState = {
+      ...newState,
+      coins: Math.max(0, newState.coins + autoTapBase),
+      totalEarned: newState.totalEarned + autoTapBase,
+      totalClicks: newState.totalClicks + 1
+    };
+  }
+
+  if (newState.tapBoostTapsRemaining === 0 && newState.tapBoostActive) {
+    newState = {
+      ...newState,
+      tapBoostActive: false,
+      coinsPerClick: GameMechanics.calculateTapValue(newState),
+      activeBoosts: newState.activeBoosts.filter(b => b.id !== 'boost-tap-boost'),
+    };
+  }
+
+  if (newState.autoBuy) {
+    const affordableUpgrades = newState.upgrades
+      .filter(u => u.unlocked && u.level < u.maxLevel &&
+               newState.coins >= GameMechanics.calculateUpgradeCost(newState, u.id, 1))
+      .map(u => ({
+        upgrade: u,
+        roi: u.coinsPerSecondBonus > 0 ? (GameMechanics.calculateUpgradeCost(newState, u.id, 1) / u.coinsPerSecondBonus) : Infinity
+      }))
+      .sort((a, b) => a.roi - b.roi);
+
+    if (affordableUpgrades.length > 0) {
+      const bestUpgrade = affordableUpgrades[0].upgrade;
+      const upgradeIndex = newState.upgrades.findIndex(u => u.id === bestUpgrade.id);
+
+      const oldLevel = bestUpgrade.level;
+      const newLevel = bestUpgrade.level + 1;
+
+      const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
+
+      const newCoinsPerClick = newState.coinsPerClick + bestUpgrade.coinsPerClickBonus;
+      const newCoinsPerSecond = newState.coinsPerSecond + bestUpgrade.coinsPerSecondBonus;
+
+      const updatedUpgrade = {
+        ...bestUpgrade,
+        level: newLevel,
+        cost: GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id, 1)
+      };
+
+      const newUpgrades = [...newState.upgrades];
+      newUpgrades[upgradeIndex] = updatedUpgrade;
+
+      newState.upgrades.forEach((u, index) => {
+        if (!u.unlocked && u.unlocksAt &&
+            u.unlocksAt.upgradeId === bestUpgrade.id &&
+            updatedUpgrade.level >= u.unlocksAt.level) {
+          newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
         }
       });
 
-      let newState = { ...state, boosts: newBoosts };
+      newState = {
+        ...newState,
+        coins: newState.coins - GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id, 1),
+        coinsPerClick: newCoinsPerClick,
+        coinsPerSecond: newCoinsPerSecond,
+        upgrades: newUpgrades
+      };
 
-      if (state.coinsPerSecond > 0) {
-        const passiveAmount = GameMechanics.calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
+      if (shouldAwardSkillPoint) {
         newState = {
           ...newState,
-          coins: Math.max(0, newState.coins + passiveAmount),
-          totalEarned: newState.totalEarned + passiveAmount
+          skillPoints: newState.skillPoints + 1
         };
       }
-
-      if (newState.autoTapActive) {
-        const autoTapAmount = GameMechanics.calculateAutoTapIncome(state);
-        newState = {
-          ...newState,
-          coins: Math.max(0, newState.coins + autoTapAmount),
-          totalEarned: newState.totalEarned + autoTapAmount,
-          totalClicks: newState.totalClicks + 1
-        };
-
-        const autoTapBoost = newState.activeBoosts.find(b => b.id === 'boost-auto-tap');
-        if (autoTapBoost && autoTapBoost.remainingTime && autoTapBoost.remainingTime <= 0) {
-          newState.autoTapActive = false;
-          newState.activeBoosts = newState.activeBoosts.filter(b => b.id !== 'boost-auto-tap');
-        }
-      }
-
-      if (newState.autoTap && !newState.autoTapActive) {
-        const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
-        newState = {
-          ...newState,
-          coins: Math.max(0, newState.coins + autoTapBase),
-          totalEarned: newState.totalEarned + autoTapBase,
-          totalClicks: newState.totalClicks + 1
-        };
-      }
-
-      if (newState.tapBoostTapsRemaining === 0 && newState.tapBoostActive) {
-        newState = {
-          ...newState,
-          tapBoostActive: false,
-          coinsPerClick: GameMechanics.calculateTapValue(newState), // Reset to base value
-          activeBoosts: newState.activeBoosts.filter(b => b.id !== 'boost-tap-boost'),
-        };
-      }
-
-      if (newState.autoBuy) {
-        const affordableUpgrades = newState.upgrades
-          .filter(u => u.unlocked && u.level < u.maxLevel &&
-                   newState.coins >= GameMechanics.calculateUpgradeCost(newState, u.id, 1))
-          .map(u => ({
-            upgrade: u,
-            roi: u.coinsPerSecondBonus > 0 ? (GameMechanics.calculateUpgradeCost(newState, u.id, 1) / u.coinsPerSecondBonus) : Infinity
-          }))
-          .sort((a, b) => a.roi - b.roi);
-
-        if (affordableUpgrades.length > 0) {
-          const bestUpgrade = affordableUpgrades[0].upgrade;
-          const upgradeIndex = newState.upgrades.findIndex(u => u.id === bestUpgrade.id);
-
-          const oldLevel = bestUpgrade.level;
-          const newLevel = bestUpgrade.level + 1;
-
-          const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
-
-          const newCoinsPerClick = newState.coinsPerClick + bestUpgrade.coinsPerClickBonus;
-          const newCoinsPerSecond = newState.coinsPerSecond + bestUpgrade.coinsPerSecondBonus;
-
-          const updatedUpgrade = {
-            ...bestUpgrade,
-            level: newLevel,
-            cost: GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id, 1)
-          };
-
-          const newUpgrades = [...newState.upgrades];
-          newUpgrades[upgradeIndex] = updatedUpgrade;
-
-          newState.upgrades.forEach((u, index) => {
-            if (!u.unlocked && u.unlocksAt &&
-                u.unlocksAt.upgradeId === bestUpgrade.id &&
-                updatedUpgrade.level >= u.unlocksAt.level) {
-              newUpgrades[index] = { ...newUpgrades[index], unlocked: true };
-            }
-          });
-
-          newState = {
-            ...newState,
-            coins: newState.coins - GameMechanics.calculateUpgradeCost(newState, bestUpgrade.id, 1),
-            coinsPerClick: newCoinsPerClick,
-            coinsPerSecond: newCoinsPerSecond,
-            upgrades: newUpgrades
-          };
-
-          if (shouldAwardSkillPoint) {
-            newState = {
-              ...newState,
-              skillPoints: newState.skillPoints + 1
-            };
-          }
-        }
-      }
-
-      return newState;
     }
+  }
+
+  return newState;
+}
     case 'PRESTIGE': {
       const essenceReward = GameMechanics.calculateEssenceReward(state.totalEarned, state) *
         (state.boosts["boost-essence-boost"]?.purchased ? INVENTORY_ITEMS.ESSENCE_BOOST.effect!.value : 1);
