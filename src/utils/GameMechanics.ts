@@ -80,7 +80,7 @@ const applyActiveBoosts = (state: GameState): GameState => {
         }
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
-        updatedState.costReductionMultiplier = (updatedState.costReductionMultiplier || 1) * Math.pow(0.9, boost.quantity);
+        updatedState.costReductionMultiplier = 0.9; // Set to 0.9 directly, no stacking
         break;
       case BOOST_IDS.ESSENCE_BOOST:
         updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * Math.pow(1.25, boost.quantity);
@@ -267,12 +267,21 @@ export const calculateUpgradeCost = (state: GameState, upgradeId: string, quanti
   const upgrade = enhancedState.upgrades.find(u => u.id === upgradeId);
   if (!upgrade) return Infinity;
   
-  const costReduction = calculateCostReduction(enhancedState) * (enhancedState.costReductionMultiplier || 1);
-  return Math.floor(calculateBulkPurchaseCost(upgrade.baseCost, upgrade.level, quantity, 1.15) * costReduction);
+  const costReduction = calculateCostReduction(enhancedState);
+  let totalCost = calculateBulkPurchaseCost(upgrade.baseCost, upgrade.level, quantity, 1.08); // Use 1.08 growth rate from GameContext
+  totalCost *= costReduction; // Apply other reductions first
+  
+  // Apply CHEAP_UPGRADES boost at the end (0.9 multiplier, no stacking below 0.9)
+  const hasCheapUpgrades = enhancedState.activeBoosts.some(b => b.id === BOOST_IDS.CHEAP_UPGRADES && getRemaining(b) > 0);
+  if (hasCheapUpgrades) {
+    totalCost *= 0.9;
+  }
+
+  return Math.floor(totalCost);
 };
 
 /**
- * Calculate the total cost reduction from all sources
+ * Calculate the total cost reduction from all sources (excluding CHEAP_UPGRADES)
  */
 export const calculateCostReduction = (state: GameState): number => {
   let costReduction = 1.0;
@@ -293,13 +302,13 @@ export const calculateCostReduction = (state: GameState): number => {
     }
   });
   
-  return Math.max(0.5, costReduction);
+  return Math.max(0.5, costReduction); // Minimum 50% cost (before CHEAP_UPGRADES)
 };
 
 /**
  * Calculate bulk purchase cost for multiple levels of an upgrade
  */
-export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.15): number => {
+export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.08): number => {
   const a = baseCost * Math.pow(growthRate, currentLevel);
   return Math.floor(a * (1 - Math.pow(growthRate, quantity)) / (1 - growthRate));
 };
@@ -307,7 +316,7 @@ export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number
 /**
  * Calculate maximum affordable quantity of an upgrade
  */
-export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number = 1.15): number => {
+export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number = 1.08): number => {
   const a = baseCost * Math.pow(growthRate, currentLevel);
   const term = (coins * (1 - growthRate)) / a;
   const rightSide = 1 - term;
