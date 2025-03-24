@@ -45,14 +45,16 @@ const getRemaining = (boost: BoostEffect): number => {
   return Math.max(0, boost.duration - elapsed);
 };
 
-// Apply effects of active boosts from inventory items
 const applyActiveBoosts = (state: GameState): GameState => {
   let updatedState = { ...state };
-  let activeBoosts = [...updatedState.activeBoosts || []];
+  let activeBoosts = updatedState.activeBoosts ? [...updatedState.activeBoosts] : [];
 
-  activeBoosts.forEach((boost, index) => {
+  // Filter and apply boosts in a single pass
+  activeBoosts = activeBoosts.filter((boost, index) => {
     const remaining = getRemaining(boost);
-    if (remaining <= 0 && boost.id !== BOOST_IDS.TAP_BOOST && boost.id !== BOOST_IDS.TIME_WARP) return;
+    if (remaining <= 0 && boost.id !== BOOST_IDS.TAP_BOOST && boost.id !== BOOST_IDS.TIME_WARP) {
+      return false; // Remove expired boosts (except tap and time warp)
+    }
 
     switch (boost.id) {
       case BOOST_IDS.DOUBLE_COINS:
@@ -62,13 +64,12 @@ const applyActiveBoosts = (state: GameState): GameState => {
         break;
       case BOOST_IDS.TIME_WARP:
         const now = Math.floor(Date.now() / 1000);
-        const recentlyActivated = now - boost.activatedAt < 1; // Apply within 1 second
+        const recentlyActivated = now - boost.activatedAt < 1;
         if (recentlyActivated) {
-          const income = calculateTotalCoinsPerSecond(state) * 7200 * boost.quantity; // 2 hours per stack
+          const income = calculateTotalCoinsPerSecond(state) * 7200 * boost.quantity;
           updatedState.coins = Math.max(0, updatedState.coins + income);
           updatedState.totalEarned += income;
-          // Remove the boost after applying (one-time effect)
-          activeBoosts.splice(index, 1);
+          return false; // Remove time warp after applying
         }
         break;
       case BOOST_IDS.AUTO_TAP:
@@ -78,7 +79,7 @@ const applyActiveBoosts = (state: GameState): GameState => {
         // Handled in calculateTapValue
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
-        updatedState.costReductionMultiplier = 0.9; // Set to 0.9 directly, no stacking
+        updatedState.costReductionMultiplier = 0.9;
         break;
       case BOOST_IDS.ESSENCE_BOOST:
         updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * Math.pow(1.25, boost.quantity);
@@ -90,7 +91,12 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.coinsPerSecondBase = (updatedState.coinsPerSecondBase || updatedState.coinsPerSecond) + boost.quantity;
         break;
     }
+    return true; // Keep boost if not removed
   });
+
+  updatedState.activeBoosts = activeBoosts;
+  return updatedState;
+};
 
   updatedState.activeBoosts = activeBoosts;
   return updatedState;
