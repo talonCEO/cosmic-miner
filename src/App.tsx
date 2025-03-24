@@ -7,7 +7,8 @@ import NotFound from "./pages/NotFound";
 import { GameProvider } from "@/context/GameContext";
 import { AdProvider } from "@/context/AdContext";
 import { AudioProvider } from "@/context/AudioContext";
-import UnlockNotificationWrapper from "@/components/UnlockNotification"; // Added import
+import UnlockNotificationWrapper from "@/components/UnlockNotification";
+import VisualEffects from "@/components/VisualEffects"; // Added import
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,8 @@ const AnimatedRoutes = () => {
                 <AdProvider>
                   <AudioProvider>
                     <Index />
-                    <UnlockNotificationWrapper /> {/* Added here */}
+                    <UnlockNotificationWrapper />
+                    <VisualEffects /> {/* Added here */}
                   </AudioProvider>
                 </AdProvider>
               </GameProvider>
