@@ -79,6 +79,7 @@ export interface GameState {
   tempEssenceBoostStacks: number;
   autoBuy: boolean;
   autoTap: boolean;
+  autoTapActive: boolean; // Added for auto-tap boost status
   essence: number;
   ownedManagers: string[];
   ownedArtifacts: string[];
@@ -107,8 +108,9 @@ export interface GameState {
   portrait: string;
   nameChangeCount: number;
   activeBoosts: BoostEffect[];
-  permaTapBoosts: number;  // Added to track permanent tap boosts
-  permaPassiveBoosts: number;  // Added to track permanent passive boosts
+  permaTapBoosts: number;
+  permaPassiveBoosts: number;
+  tapBoostTapsRemaining?: number; // Added for tap boost
 }
 
 type GameAction =
@@ -315,6 +317,7 @@ const initialState: GameState = {
   tempEssenceBoostStacks: 0,
   autoBuy: false,
   autoTap: false,
+  autoTapActive: false, // Initialize auto-tap boost status
   essence: 10000000000,
   ownedManagers: ["manager-default"],
   ownedArtifacts: ["artifact-default"],
@@ -338,8 +341,9 @@ const initialState: GameState = {
   portrait: "default",
   nameChangeCount: 0,
   activeBoosts: [],
-  permaTapBoosts: 0,  // Initialize permanent tap boosts
-  permaPassiveBoosts: 0  // Initialize permanent passive boosts
+  permaTapBoosts: 0,
+  permaPassiveBoosts: 0,
+  tapBoostTapsRemaining: 0
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -492,17 +496,30 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       }
 
-      if (newState.autoTap) {
-        const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
-        const autoTapBoost = newBoosts["boost-auto-tap"]?.active 
-          ? calculateBaseCoinsPerClick(state) * INVENTORY_ITEMS.AUTO_TAP.effect!.value * 0.1
-          : 0;
-        const autoTapAmount = autoTapBase + autoTapBoost;
-
+      // Handle auto-tap boost (tap value × 5 per second for 5 minutes)
+      if (newState.autoTapActive) {
+        const autoTapAmount = GameMechanics.calculateTapValue(state) * 5 * 0.1; // 0.1s tick interval
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + autoTapAmount),
           totalEarned: newState.totalEarned + autoTapAmount,
+          totalClicks: newState.totalClicks + 1
+        };
+
+        // Check if the auto-tap boost has expired
+        const autoTapBoost = newState.activeBoosts.find(b => b.id === 'boost-auto-tap');
+        if (autoTapBoost && autoTapBoost.remainingTime && autoTapBoost.remainingTime <= 0) {
+          newState.autoTapActive = false;
+          newState.activeBoosts = newState.activeBoosts.filter(b => b.id !== 'boost-auto-tap');
+        }
+      }
+
+      if (newState.autoTap && !newState.autoTapActive) {
+        const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
+        newState = {
+          ...newState,
+          coins: Math.max(0, newState.coins + autoTapBase),
+          totalEarned: newState.totalEarned + autoTapBase,
           totalClicks: newState.totalClicks + 1
         };
       }
@@ -603,8 +620,10 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         nameChangeCount: state.nameChangeCount,
         activeBoosts: [],
         tempEssenceBoostStacks: 0,
-        permaTapBoosts: state.permaTapBoosts,  // Persist across prestige
-        permaPassiveBoosts: state.permaPassiveBoosts  // Persist across prestige
+        permaTapBoosts: state.permaTapBoosts,
+        permaPassiveBoosts: state.permaPassiveBoosts,
+        tapBoostTapsRemaining: 0,
+        autoTapActive: false // Reset on prestige
       };
     }
     case 'BUY_MANAGER': {
@@ -838,97 +857,104 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     }
     case 'USE_ITEM': {
-  const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
-  if (itemIndex === -1) return state;
-  
-  const item = state.inventory[itemIndex];
-  if (!item.usable || !item.effect) return state;
+      const itemIndex = state.inventory.findIndex(item => item.id === action.itemId);
+      if (itemIndex === -1) return state;
+      
+      const item = state.inventory[itemIndex];
+      if (!item.usable || !item.effect) return state;
 
-  const quantity = action.quantity || 1;
-  if (item.quantity < quantity) return state;
+      const quantity = action.quantity || 1;
+      if (item.quantity < quantity) return state;
 
-  const updatedInventory = [...state.inventory];
-  if (item.quantity === quantity) {
-    updatedInventory.splice(itemIndex, 1);
-  } else {
-    updatedInventory[itemIndex] = {
-      ...item,
-      quantity: item.quantity - quantity
-    };
-  }
+      const updatedInventory = [...state.inventory];
+      if (item.quantity === quantity) {
+        updatedInventory.splice(itemIndex, 1);
+      } else {
+        updatedInventory[itemIndex] = {
+          ...item,
+          quantity: item.quantity - quantity
+        };
+      }
 
-  const now = Math.floor(Date.now() / 1000);
-  let newActiveBoosts = [...state.activeBoosts];
-  const existingBoostIndex = newActiveBoosts.findIndex(boost => boost.id === item.id);
+      const now = Math.floor(Date.now() / 1000);
+      let newActiveBoosts = [...state.activeBoosts];
+      const existingBoostIndex = newActiveBoosts.findIndex(boost => boost.id === item.id);
 
-  if (existingBoostIndex >= 0) {
-    // Stack the boost
-    const existingBoost = newActiveBoosts[existingBoostIndex];
-    const effectDuration = item.effect.duration || 0;
-    newActiveBoosts[existingBoostIndex] = {
-      ...existingBoost,
-      quantity: existingBoost.quantity + quantity,
-      activatedAt: now,
-      remainingTime: effectDuration > 0 ? 
-        Math.max(existingBoost.remainingTime || 0, effectDuration) + (effectDuration * (quantity - 1)) : undefined
-    };
-  } else {
-    // Add new boost
-    const newBoost: BoostEffect = {
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      quantity,
-      value: item.effect.value,
-      duration: item.effect.duration,
-      activatedAt: now,
-      remainingTime: item.effect.duration,
-      icon: item.icon
-    };
-    newActiveBoosts.push(newBoost);
-  }
+      if (existingBoostIndex >= 0) {
+        // Stack the boost
+        const existingBoost = newActiveBoosts[existingBoostIndex];
+        const effectDuration = item.effect.duration || 0;
+        newActiveBoosts[existingBoostIndex] = {
+          ...existingBoost,
+          quantity: existingBoost.quantity + quantity,
+          activatedAt: now,
+          remainingTime: effectDuration > 0 ? 
+            Math.max(existingBoost.remainingTime || 0, effectDuration) + (effectDuration * (quantity - 1)) : undefined
+        };
+      } else {
+        // Add new boost
+        const newBoost: BoostEffect = {
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          quantity,
+          value: item.effect.value,
+          duration: item.effect.duration,
+          activatedAt: now,
+          remainingTime: item.effect.duration,
+          icon: item.icon
+        };
+        newActiveBoosts.push(newBoost);
+      }
 
-  // Handle permanent boosts and essence boost
-  if (item.id === 'boost-perma-tap') {
-    return {
-      ...state,
-      inventory: updatedInventory,
-      activeBoosts: newActiveBoosts,
-      permaTapBoosts: (state.permaTapBoosts || 0) + quantity  // Increment permanent tap boosts
-    };
-  } else if (item.id === 'boost-perma-passive') {
-    return {
-      ...state,
-      inventory: updatedInventory,
-      activeBoosts: newActiveBoosts,
-      permaPassiveBoosts: (state.permaPassiveBoosts || 0) + quantity  // Increment permanent passive boosts
-    };
-  } else if (item.id === 'boost-essence-boost') {
-    return {
-      ...state,
-      inventory: updatedInventory,
-      activeBoosts: newActiveBoosts,
-      tempEssenceBoostStacks: (state.tempEssenceBoostStacks || 0) + quantity  // Increment temporary essence boost stacks
-    };
-  }
+      // Handle boosts
+      if (item.id === 'boost-perma-tap') {
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          permaTapBoosts: (state.permaTapBoosts || 0) + quantity
+        };
+      } else if (item.id === 'boost-perma-passive') {
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          permaPassiveBoosts: (state.permaPassiveBoosts || 0) + quantity
+        };
+      } else if (item.id === 'boost-essence-boost') {
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          tempEssenceBoostStacks: (state.tempEssenceBoostStacks || 0) + quantity
+        };
+      } else if (item.id === 'boost-auto-tap') {
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          autoTapActive: true // Activate auto-tap boost
+        };
+      }
 
-  // Special handling for tap-boost (uses-based)
-  if (item.id === 'boost-tap-boost') {
-    const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (item.effect.duration || 0) * quantity;
-    return {
-      ...state,
-      inventory: updatedInventory,
-      activeBoosts: newActiveBoosts,
-      tapBoostTapsRemaining: tapsRemaining
-    };
-  }
+      // Special handling for tap-boost (uses-based)
+      if (item.id === 'boost-tap-boost') {
+        const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (item.effect.duration || 0) * quantity;
+        return {
+          ...state,
+          inventory: updatedInventory,
+          activeBoosts: newActiveBoosts,
+          tapBoostTapsRemaining: tapsRemaining
+        };
+      }
 
-  return {
-    ...state,
-    inventory: updatedInventory,
-    activeBoosts: newActiveBoosts
-  };
-}
+      return {
+        ...state,
+        inventory: updatedInventory,
+        activeBoosts: newActiveBoosts
+      };
+    }
     case 'ADD_ITEM': {
       const currentItems = state.inventory.reduce(
         (total, item) => total + (item.stackable ? 1 : item.quantity), 
@@ -1165,8 +1191,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             userId: savedState.userId || initialState.userId,
             portrait: savedState.portrait || initialState.portrait,
             nameChangeCount: savedState.nameChangeCount || 0,
-            permaTapBoosts: savedState.permaTapBoosts || 0,  // Restore from saved state
-            permaPassiveBoosts: savedState.permaPassiveBoosts || 0  // Restore from saved state
+            permaTapBoosts: savedState.permaTapBoosts || 0,
+            permaPassiveBoosts: savedState.permaPassiveBoosts || 0,
+            tapBoostTapsRemaining: savedState.tapBoostTapsRemaining || 0,
+            autoTapActive: savedState.autoTapActive || false
           };
           
           for (const key in restoredState) {
@@ -1281,8 +1309,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
   const updateBoostTimers = () => dispatch({ type: 'UPDATE_BOOST_TIMERS' });
   const applyTimeWarp = (amount: number) => dispatch({ type: 'APPLY_TIME_WARP', amount });
-  
-  const contextValue = {
+
+  const contextValue: GameContextType = {
     state,
     dispatch,
     click,
@@ -1312,9 +1340,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     updateBoostTimers,
     applyTimeWarp,
   };
-  
+
   gameContextHolder.current = contextValue;
-  
+
   return (
     <GameContext.Provider value={contextValue}>
       {children}
@@ -1324,7 +1352,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useGame = () => {
   const context = useContext(GameContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useGame must be used within a GameProvider');
   }
   return context;
