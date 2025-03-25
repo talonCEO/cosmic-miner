@@ -58,7 +58,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🧪",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-1", "element-4"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-1", "element-4"] }
       },
       {
         id: "manager-1-perk-2",
@@ -67,7 +67,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "⚛️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-1", "element-4"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-1", "element-4"] }
       },
       {
         id: "manager-1-perk-3",
@@ -76,7 +76,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🌌",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-1", "element-4"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-1", "element-4"] }
       }
     ]
   },
@@ -97,7 +97,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🌱",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-2", "element-3"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-2", "element-3"] }
       },
       {
         id: "manager-2-perk-2",
@@ -106,7 +106,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🧬",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-2", "element-3"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-2", "element-3"] }
       },
       {
         id: "manager-2-perk-3",
@@ -115,7 +115,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🔬",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-2", "element-3"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-2", "element-3"] }
       }
     ]
   },
@@ -136,7 +136,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💨",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-3", "element-5"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-3", "element-5"] }
       },
       {
         id: "manager-3-perk-2",
@@ -145,7 +145,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔥",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-3", "element-5"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-3", "element-5"] }
       },
       {
         id: "manager-3-perk-3",
@@ -154,7 +154,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "⚗️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-3", "element-5"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-3", "element-5"] }
       }
     ]
   },
@@ -175,7 +175,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💻",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-5", "element-23"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-5", "element-23"] }
       },
       {
         id: "manager-4-perk-2",
@@ -184,7 +184,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔌",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-5", "element-23"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-5", "element-23"] }
       },
       {
         id: "manager-4-perk-3",
@@ -193,7 +193,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🤖",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-5", "element-23"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-5", "element-23"] }
       }
     ]
   },
@@ -214,7 +214,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "⚒️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-7", "element-14"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-7", "element-14"] }
       },
       {
         id: "manager-5-perk-2",
@@ -223,7 +223,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔨",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-7", "element-14"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-7", "element-14"] }
       },
       {
         id: "manager-5-perk-3",
@@ -232,7 +232,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "⚙️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-7", "element-14"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-7", "element-14"] }
       }
     ]
   },
@@ -253,7 +253,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💰",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-32", "element-17"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-32", "element-17"] }
       },
       {
         id: "manager-6-perk-2",
@@ -262,7 +262,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "⚡",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-32", "element-17"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-32", "element-17"] }
       },
       {
         id: "manager-6-perk-3",
@@ -271,7 +271,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🛠️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-32", "element-17"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-32", "element-17"] }
       }
     ]
   },
@@ -292,7 +292,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "☢️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-20", "element-41"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-20", "element-41"] }
       },
       {
         id: "manager-7-perk-2",
@@ -301,7 +301,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🧬",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-20", "element-41"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-20", "element-41"] }
       },
       {
         id: "manager-7-perk-3",
@@ -310,7 +310,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "💥",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-20", "element-41"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-20", "element-41"] }
       }
     ]
   },
@@ -331,7 +331,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🧪",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-33", "element-30"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-33", "element-30"] }
       },
       {
         id: "manager-8-perk-2",
@@ -340,7 +340,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "⚗️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-33", "element-30"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-33", "element-30"] }
       },
       {
         id: "manager-8-perk-3",
@@ -349,7 +349,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "✨",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-33", "element-30"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-33", "element-30"] }
       }
     ]
   },
@@ -370,7 +370,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "🌑",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-50", "element-49"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-50", "element-49"] }
       },
       {
         id: "manager-9-perk-2",
@@ -379,7 +379,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔮",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-50", "element-49"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-50", "element-49"] }
       },
       {
         id: "manager-9-perk-3",
@@ -388,7 +388,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🌌",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-50", "element-49"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-50", "element-49"] }
       }
     ]
   },
@@ -409,7 +409,7 @@ export const managers: Manager[] = [
         cost: 3,
         icon: "💫",
         unlocked: false,
-        effect: { type: "elementBoost", value: 0.75, elements: ["element-49", "element-48"] }
+        effect: { type: "elementBoost", value: 1.0, elements: ["element-49", "element-48"] }
       },
       {
         id: "manager-10-perk-2",
@@ -418,7 +418,7 @@ export const managers: Manager[] = [
         cost: 6,
         icon: "🔄",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.0, elements: ["element-49", "element-48"] }
+        effect: { type: "elementBoost", value: 1.5, elements: ["element-49", "element-48"] }
       },
       {
         id: "manager-10-perk-3",
@@ -427,7 +427,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🕳️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 1.5, elements: ["element-49", "element-48"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-49", "element-48"] }
       }
     ]
   }
