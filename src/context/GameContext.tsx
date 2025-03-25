@@ -880,7 +880,6 @@ case 'USE_ITEM': {
 
   let newActiveBoosts = [...state.activeBoosts];
   let newState = { ...state };
-
   const existingBoostIndex = newActiveBoosts.findIndex(b => b.id === action.itemId);
   const duration = item.effect.duration || 0;
   const totalDuration = duration * quantity;
@@ -893,6 +892,7 @@ case 'USE_ITEM': {
         newActiveBoosts[existingBoostIndex] = {
           ...newActiveBoosts[existingBoostIndex],
           duration: newActiveBoosts[existingBoostIndex].duration + totalDuration,
+          quantity: newActiveBoosts[existingBoostIndex].quantity + quantity,
         };
       } else {
         newActiveBoosts.push({
@@ -911,6 +911,7 @@ case 'USE_ITEM': {
         newActiveBoosts[existingBoostIndex] = {
           ...newActiveBoosts[existingBoostIndex],
           duration: newActiveBoosts[existingBoostIndex].duration + totalDuration,
+          quantity: newActiveBoosts[existingBoostIndex].quantity + quantity,
         };
         newState.tapBoostTapsRemaining = Math.min(100, (newState.tapBoostTapsRemaining || 0) + (quantity * 100));
       } else {
@@ -925,33 +926,13 @@ case 'USE_ITEM': {
       newState.tapBoostActive = true;
       break;
     case 'boost-time-warp':
-      newActiveBoosts.push({
-        id: action.itemId,
-        quantity: quantity,
-        activatedAt: Date.now() / 1000,
-      });
-      break;
     case 'boost-essence-boost':
-      newState.tempEssenceBoostStacks = (newState.tempEssenceBoostStacks || 0) + quantity;
-      newActiveBoosts.push({
-        id: action.itemId,
-        quantity: quantity,
-        activatedAt: Date.now() / 1000,
-      });
-      break;
     case 'boost-perma-tap':
-      newState.permaTapBoosts = (newState.permaTapBoosts || 0) + quantity;
-      newActiveBoosts.push({
-        id: action.itemId,
-        quantity: quantity,
-        activatedAt: Date.now() / 1000,
-      });
-      break;
     case 'boost-perma-passive':
-      newState.permaPassiveBoosts = (newState.permaPassiveBoosts || 0) + quantity;
       newActiveBoosts.push({
         id: action.itemId,
         quantity: quantity,
+        duration: totalDuration || undefined, // Only set duration if applicable
         activatedAt: Date.now() / 1000,
       });
       break;
@@ -964,11 +945,12 @@ case 'USE_ITEM': {
     newInventory.splice(itemIndex, 1);
   }
 
-  return {
+  // Apply boosts immediately via enhanceGameMechanics
+  return GameMechanics.enhanceGameMechanics({
     ...newState,
     inventory: newInventory,
     activeBoosts: newActiveBoosts,
-  };
+  });
 }
     case 'ADD_ITEM': {
       const currentItems = state.inventory.reduce(
