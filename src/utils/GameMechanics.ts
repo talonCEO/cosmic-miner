@@ -46,7 +46,6 @@ const getRemaining = (boost: BoostEffect): number => {
   return Math.max(0, boost.duration - elapsed);
 };
 
-// Apply effects of active boosts from inventory items
 const applyActiveBoosts = (state: GameState): GameState => {
   let updatedState = { ...state };
   const activeBoosts = updatedState.activeBoosts || [];
@@ -60,12 +59,6 @@ const applyActiveBoosts = (state: GameState): GameState => {
         const doubleCoinsMultiplier = Math.pow(2, boost.quantity);
         updatedState.coinsPerClick *= doubleCoinsMultiplier;
         updatedState.coinsPerSecond *= doubleCoinsMultiplier;
-        break;
-      case BOOST_IDS.TIME_WARP:
-        const income = updatedState.coinsPerSecond * 2 * 60 * 60; // 2 hours
-        updatedState.coins += income * boost.quantity;
-        updatedState.totalEarned += income * boost.quantity;
-        updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
         break;
       case BOOST_IDS.AUTO_TAP:
         updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
