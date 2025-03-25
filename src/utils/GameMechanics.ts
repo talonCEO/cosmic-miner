@@ -168,19 +168,36 @@ const calculateBasePassiveIncome = (state: GameState): number => {
   return totalBasePassive * globalScaling * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
 };
 
-// Cap cost growth after level 300
-export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.05): number => {
+export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.04): number => {
   let totalCost = 0;
   for (let i = 0; i < quantity; i++) {
     const level = currentLevel + i;
-    if (level <= 300) {
+    if (level <= 200) {
       totalCost += baseCost * Math.pow(growthRate, level);
     } else {
-      const capCost = baseCost * Math.pow(growthRate, 300);
-      totalCost += capCost * (1 + (level - 300) * 0.02); // 2% linear increase after 300
+      const capCost = baseCost * Math.pow(growthRate, 200);
+      totalCost += capCost * (1 + (level - 200) * 0.01); // 1% linear after 200
     }
   }
   return Math.floor(totalCost);
+};
+
+const calculateBasePassiveIncome = (state: GameState): number => {
+  if (state.coinsPerSecond <= 0) return 0;
+  let totalBasePassive = 0;
+  state.upgrades.forEach(upgrade => {
+    if (upgrade.category === 'element' && upgrade.coinsPerSecondBonus > 0) {
+      const baseIncome = upgrade.coinsPerSecondBonus * upgrade.level;
+      const boostMultiplier = getLevelBoostMultiplier(upgrade.level);
+      totalBasePassive += baseIncome * (1 + boostMultiplier);
+    }
+  });
+  const totalLevels = state.upgrades.reduce((sum, u) => sum + u.level, 0);
+  const globalScaling = 1 + totalLevels / 500; // Increased from /1000 to /500
+  const passiveIncomeMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
+  const artifactProductionMultiplier = calculateArtifactProductionMultiplier(state);
+  const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
+  return totalBasePassive * globalScaling * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
 };
 
 /**
