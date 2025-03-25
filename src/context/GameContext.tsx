@@ -153,9 +153,9 @@ type GameAction =
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
   maxLevel: 1000,
-  cost: upgrade.baseCost * 1.5,
-  baseCost: upgrade.baseCost * 1.5,
-  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 0.5
+  cost: upgrade.baseCost * 1,
+  baseCost: upgrade.baseCost * 1,
+  coinsPerSecondBonus: upgrade.coinsPerSecondBonus * 1
 }));
 
 const initialAbilities: Ability[] = [
@@ -311,9 +311,8 @@ const initialState: GameState = {
   coinsPerClick: 1,
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
-  ...upgrade,
-  level: upgrade.id === "element-1" ? 10 : 0 // Give Hydrogen 10 levels
-})),
+    ...upgrade
+  })),
   totalClicks: 0,
   totalEarned: 0,
   tempEssenceBoostStacks: 0,
