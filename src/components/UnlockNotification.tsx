@@ -129,25 +129,7 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
   );
 };
 
-// White Flash Animation Component
-const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = ({ trigger, onComplete }) => {
-  return (
-    <AnimatePresence>
-      {trigger && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-white z-[9999]"
-          onAnimationComplete={onComplete}
-        />
-      )}
-    </AnimatePresence>
-  );
-};
-
-// Wrapper component to track unlocks and manage state, including time_warp flash
+// Wrapper component to track unlocks and manage state
 const UnlockNotificationWrapper: React.FC = () => {
   const { state } = useGame();
   const [notification, setNotification] = useState<{
@@ -156,7 +138,6 @@ const UnlockNotificationWrapper: React.FC = () => {
     id: string;
   } | null>(null);
   const [prevState, setPrevState] = useState<GameState | null>(null);
-  const [showFlash, setShowFlash] = useState(false);
 
   useEffect(() => {
     if (!prevState) {
@@ -188,13 +169,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'achievement', id: newAchievements[0].id });
     }
 
-    // Check for time_warp usage
-    const prevTimeWarpBoosts = prevState.activeBoosts.filter(b => b.id === 'boost-time-warp');
-    const currentTimeWarpBoosts = state.activeBoosts.filter(b => b.id === 'boost-time-warp');
-    if (currentTimeWarpBoosts.length > prevTimeWarpBoosts.length) {
-      setShowFlash(true);
-    }
-
     setPrevState(state);
   }, [state, prevState]);
 
@@ -202,20 +176,13 @@ const UnlockNotificationWrapper: React.FC = () => {
     setNotification((prev) => (prev ? { ...prev, isOpen: false } : null));
   };
 
-  const handleFlashComplete = () => {
-    setShowFlash(false);
-  };
-
   return (
-    <>
-      <UnlockNotification
-        isOpen={notification?.isOpen || false}
-        onClose={handleClose}
-        type={notification?.type || 'achievement'}
-        id={notification?.id || ''}
-      />
-      <FlashAnimation trigger={showFlash} onComplete={handleFlashComplete} />
-    </>
+    <UnlockNotification
+      isOpen={notification?.isOpen || false}
+      onClose={handleClose}
+      type={notification?.type || 'achievement'}
+      id={notification?.id || ''}
+    />
   );
 };
 
