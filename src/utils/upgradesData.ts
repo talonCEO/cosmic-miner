@@ -17,11 +17,10 @@ export const UPGRADE_CATEGORIES = {
  */
 
 // Constants for progression balancing
-const BASE_COST_MULTIPLIER = 1.08;        // Reduced from 1.15 to 1.08 for gentler late-game costs
-const CLICK_VALUE_MULTIPLIER = 1.05;      // Unchanged (5% per level)
-const PASSIVE_VALUE_MULTIPLIER = 1.10;    // Increased from 1.07 to 1.10 for better passive scaling
+const BASE_COST_MULTIPLIER = 1.05;        // Reduced from 1.08 to 1.05
+const CLICK_VALUE_MULTIPLIER = 1.05;      // Unchanged
+const PASSIVE_VALUE_MULTIPLIER = 1.15;    // Increased from 1.10 to 1.15
 
-// Helper function to create element upgrades
 const createElementUpgrade = (
   id: number,
   element: string,
@@ -32,11 +31,10 @@ const createElementUpgrade = (
   description: string,
   icon: string
 ): Upgrade => {
-  // Exponentially scale cost and benefits as we progress through elements
-  const tierMultiplier = Math.pow(1.5, Math.floor((id - 1) / 5));
+  const tierMultiplier = Math.pow(1.3, Math.floor((id - 1) / 5)); // Reduced from 1.5 to 1.3
   const scaledBaseCost = baseCost * tierMultiplier;
   const scaledClickValue = clickValue * Math.sqrt(tierMultiplier);
-  const scaledPassiveValue = passiveValue * tierMultiplier * 2; // Doubled passive income
+  const scaledPassiveValue = passiveValue * tierMultiplier * 3; // Increased from *2 to *3
   
   return {
     id: `element-${id}`,
@@ -50,7 +48,7 @@ const createElementUpgrade = (
     coinsPerSecondBonus: scaledPassiveValue,
     multiplierBonus: 0,
     icon,
-    unlocked: id === 1, // Only the first element is unlocked by default
+    unlocked: id === 1,
     unlocksAt: id > 1 ? { upgradeId: `element-${id-1}`, level: 1 } : undefined,
     category: UPGRADE_CATEGORIES.ELEMENT
   };
