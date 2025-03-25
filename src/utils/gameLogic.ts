@@ -72,20 +72,11 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
  * As brackets of essence are earned, the cost for the next brackets increases exponentially
  */
 export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: string[] = []): number => {
-  if (totalCoins < 1000000) return 0; // Minimum 1M coins to get any essence
-  
-  // Basic logarithmic scaling
-  let baseEssence = Math.floor(Math.log10(totalCoins) * 2 - 10);
-  
-  // Apply artifact bonuses
+  if (totalCoins < 100000) return 0; // Was 1M
+  let baseEssence = Math.floor(Math.log10(totalCoins) * 3 - 8); // Increased from *2 - 10
   let multiplier = 1;
-  if (ownedArtifacts?.includes("artifact-3")) { // Element Scanner
-    multiplier += 0.25;
-  }
-  if (ownedArtifacts?.includes("artifact-8")) { // Quantum Microscope
-    multiplier += 1.25;
-  }
-  
+  if (ownedArtifacts?.includes("artifact-3")) multiplier += 0.25;
+  if (ownedArtifacts?.includes("artifact-8")) multiplier += 1.25;
   return Math.max(0, Math.floor(baseEssence * multiplier));
 };
 
