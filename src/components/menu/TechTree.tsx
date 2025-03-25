@@ -4,6 +4,7 @@ import { useGame } from '@/context/GameContext';
 import { useToast } from '@/hooks/use-toast';
 import { Ability } from '@/utils/types'; // Import from utils/types
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatNumber } from '@/utils/gameLogic';
 
 const TechTree: React.FC = () => {
   const { state, unlockAbility } = useGame();
