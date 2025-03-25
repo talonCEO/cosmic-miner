@@ -184,15 +184,15 @@ const Inventory: React.FC = () => {
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   const [notifications, setNotifications] = useState<BoostEffect[]>([]);
   
-  useEffect(() => {
-    const resourceItems: InventoryItem[] = [
-      { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins) },
-      { ...INVENTORY_ITEMS.GEMS, quantity: state.gems },
-      { ...INVENTORY_ITEMS.ESSENCE, quantity: state.essence },
-      { ...INVENTORY_ITEMS.SKILL_POINTS, quantity: state.skillPoints },
-    ];
-    setVirtualInventory([...resourceItems, ...state.inventory]);
-  }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
+useEffect(() => {
+  const resourceItems: InventoryItem[] = [
+    { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins), name: `${formatNumber(Math.floor(state.coins))} Coins` },
+    { ...INVENTORY_ITEMS.GEMS, quantity: state.gems, name: `${formatNumber(state.gems)} Gems` },
+    { ...INVENTORY_ITEMS.ESSENCE, quantity: state.essence, name: `${formatNumber(state.essence)} Essence` },
+    { ...INVENTORY_ITEMS.SKILL_POINTS, quantity: state.skillPoints, name: `${formatNumber(state.skillPoints)} Skill Points` },
+  ];
+  setVirtualInventory([...resourceItems, ...state.inventory]);
+}, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
   
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
