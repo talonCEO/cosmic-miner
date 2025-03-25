@@ -46,6 +46,7 @@ const getRemaining = (boost: BoostEffect): number => {
   return Math.max(0, boost.duration - elapsed);
 };
 
+// Apply effects of active boosts from inventory items
 const applyActiveBoosts = (state: GameState): GameState => {
   let updatedState = { ...state };
   const activeBoosts = updatedState.activeBoosts || [];
@@ -82,6 +83,21 @@ const applyActiveBoosts = (state: GameState): GameState => {
   });
 
   return updatedState;
+};
+
+/**
+ * Calculate the total tap/click value considering all boosts
+ */
+export const calculateTapValue = (state: GameState): number => {
+  const enhancedState = enhanceGameMechanics(state);
+  let tapValue = Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
+  
+  // Apply tap boost if active
+  if (state.tapBoostActive && (state.tapBoostTapsRemaining || 0) > 0) {
+    tapValue *= 5; // ×5 multiplier when boost is active
+  }
+  
+  return tapValue;
 };
 
 /**
