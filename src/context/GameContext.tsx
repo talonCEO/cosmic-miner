@@ -304,7 +304,7 @@ const initialAbilities: Ability[] = [
   }
 ];
 
-const UPGRADE_COST_GROWTH = 1.08;
+const UPGRADE_COST_GROWTH = 1.05;
 
 const initialState: GameState = {
   coins: 10000000000000000,
