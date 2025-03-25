@@ -122,7 +122,6 @@ const calculateBaseTapValue = (state: GameState): number => {
 /**
  * Calculate the boost multiplier based on upgrade level thresholds
  */
-// Adjusted boost multiplier for better late-game scaling
 export const getLevelBoostMultiplier = (level: number): number => {
   const thresholds = [
     { level: 1000, boost: 15.0 }, // +1500%
@@ -146,50 +145,63 @@ export const getLevelBoostMultiplier = (level: number): number => {
   return 0;
 };
 
-// Add global scaling based on total upgrade levels
+/**
+ * Calculate base passive income with manager boosts applied per element
+ */
 const calculateBasePassiveIncome = (state: GameState): number => {
-  if (state.coinsPerSecond <= 0) return 0;
+  let totalBasePassive = (state.coinsPerSecondBase || 0); // Start with permanent base
+  const managerBoosts = calculateManagerBoostMultiplier(state);
 
-  let totalBasePassive = 0;
   state.upgrades.forEach(upgrade => {
     if (upgrade.category === 'element' && upgrade.coinsPerSecondBonus > 0) {
       const baseIncome = upgrade.coinsPerSecondBonus * upgrade.level;
-      const boostMultiplier = getLevelBoostMultiplier(upgrade.level);
-      totalBasePassive += baseIncome * (1 + boostMultiplier);
+      const levelBoostMultiplier = getLevelBoostMultiplier(upgrade.level);
+      const managerBoost = managerBoosts[upgrade.id] || 1;
+      totalBasePassive += baseIncome * (1 + levelBoostMultiplier) * managerBoost;
     }
   });
 
   const totalLevels = state.upgrades.reduce((sum, u) => sum + u.level, 0);
   const globalScaling = 1 + totalLevels / 1000; // +0.1% per 10 levels
-
   const passiveIncomeMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
   const artifactProductionMultiplier = calculateArtifactProductionMultiplier(state);
-  const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
-  return totalBasePassive * globalScaling * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
-};
-
-// Cap cost growth after level 300
-export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.05): number => {
-  let totalCost = 0;
-  for (let i = 0; i < quantity; i++) {
-    const level = currentLevel + i;
-    if (level <= 300) {
-      totalCost += baseCost * Math.pow(growthRate, level);
-    } else {
-      const capCost = baseCost * Math.pow(growthRate, 300);
-      totalCost += capCost * (1 + (level - 300) * 0.02); // 2% linear increase after 300
-    }
-  }
-  return Math.floor(totalCost);
+  return totalBasePassive * globalScaling * passiveIncomeMultiplier * artifactProductionMultiplier;
 };
 
 /**
- * Calculate the total CPS (Coins Per Second) with all multipliers applied
+ * Calculate total CPS (Coins Per Second) with all multipliers applied
  */
 export const calculateTotalCoinsPerSecond = (state: GameState): number => {
   const enhancedState = enhanceGameMechanics(state);
   return Math.max(0, enhancedState.coinsPerSecond + (state.permaPassiveBoosts || 0));
 };
+
+/**
+ * Calculate manager boost multiplier per element
+ */
+export const calculateManagerBoostMultiplier = (state: GameState): Record<string, number> => {
+  const elementBoosts: Record<string, number> = {};
+  state.managers.forEach(manager => {
+    if (state.ownedManagers.includes(manager.id) && manager.boosts) {
+      let managerBoostValue = 0.5; // Base boost of 50%
+      if (manager.perks) {
+        const boostPerks = manager.perks.filter(perk =>
+          (perk.unlocked || state.unlockedPerks.includes(perk.id)) &&
+          perk.effect?.type === "elementBoost"
+        );
+        if (boostPerks.length > 0) {
+          const highestPerk = boostPerks.sort((a, b) => b.effect.value - a.effect.value)[0];
+          managerBoostValue += highestPerk.effect.value; // Add highest perk value
+        }
+      }
+      manager.boosts.forEach(elementId => {
+        elementBoosts[elementId] = (elementBoosts[elementId] || 1) * (1 + managerBoostValue);
+      });
+    }
+  });
+  return elementBoosts;
+};
+
 /**
  * Calculate artifact production multiplier based on owned artifacts and their perks
  */
@@ -229,44 +241,6 @@ export const calculateArtifactProductionMultiplier = (state: GameState): number 
   }
 
   return multiplier;
-};
-
-/**
- * Calculate manager boost multiplier based on owned managers and their perks
- */
-export const calculateManagerBoostMultiplier = (state: GameState): number => {
-  let totalMultiplier = 1;
-
-  state.managers.forEach(manager => {
-    if (state.ownedManagers.includes(manager.id) && manager.boosts) {
-      let managerBoostValue = 0.5;
-      if (manager.perks) {
-        const unlockedPerks = manager.perks.filter(perk =>
-          perk.unlocked || state.unlockedPerks.includes(perk.id)
-        );
-        const boostPerks = unlockedPerks.filter(perk =>
-          perk.effect && perk.effect.type === "elementBoost"
-        );
-        if (boostPerks.length > 0) {
-          const highestPerk = boostPerks.sort((a, b) => b.effect.value - a.effect.value)[0];
-          managerBoostValue = highestPerk.effect.value;
-        }
-      }
-
-      manager.boosts.forEach(elementId => {
-        const elementUpgrade = state.upgrades.find(u => u.id === elementId);
-        if (elementUpgrade) {
-          const elementCPS = elementUpgrade.coinsPerSecondBonus * elementUpgrade.level;
-          const elementBoost = elementCPS * managerBoostValue;
-          if (state.coinsPerSecond > 0) {
-            totalMultiplier += (elementBoost / state.coinsPerSecond);
-          }
-        }
-      });
-    }
-  });
-
-  return totalMultiplier;
 };
 
 /**
