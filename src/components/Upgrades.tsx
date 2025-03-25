@@ -149,12 +149,8 @@ const Upgrades: React.FC = () => {
           const nextThreshold = thresholds[currentThresholdIndex + 1] || 1000;
           const prevThreshold = thresholds[currentThresholdIndex] || 0;
           const progressToNext = ((upgrade.level - prevThreshold) / (nextThreshold - prevThreshold)) * 100;
-          const glowIntensity = Math.min(currentThresholdIndex + 1, 10) * 0.2;
-
-          // Calculate color transition from red to green
-          const red = Math.round(255 * (1 - progressToNext / 100));
-          const green = Math.round(255 * (progressToNext / 100));
-          const barColor = `rgb(${red}, ${green}, 0)`;
+          const segments = 8; // Chosen for balance between detail and clarity
+          const filledSegments = Math.floor((progressToNext / 100) * segments);
 
           return (
             <div 
@@ -169,28 +165,6 @@ const Upgrades: React.FC = () => {
                 ${!isMaxLevel && canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20 cursor-pointer' : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              {/* Progress Meter */}
-              <div className="flex-shrink-0 w-3 h-[80px] rounded-full bg-slate-900/50 overflow-hidden relative">
-                <div
-                  className={`absolute bottom-0 w-full transition-all duration-700 ease-in-out animate-pulse`}
-                  style={{
-                    height: `${progressToNext}%`,
-                    background: `linear-gradient(to top, ${barColor}, rgba(${red}, ${green}, 0, 0.7))`,
-                    boxShadow: `0 0 ${15 * glowIntensity}px ${5 * glowIntensity}px rgba(${red}, ${green}, 0, ${glowIntensity})`,
-                    animation: `pulse 1.5s infinite, glow 0.5s infinite alternate`,
-                  }}
-                ></div>
-                {/* Particle-like effect */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(circle at center, rgba(${red}, ${green}, 0, 0.3) 0%, transparent 70%)`,
-                    opacity: progressToNext / 100,
-                    animation: `sparkle 2s infinite`,
-                  }}
-                ></div>
-              </div>
-
               <div className="flex flex-col items-center flex-shrink-0">
                 <Avatar className={`h-14 w-14 rounded-xl border-2 ${isTapUpgrade ? 'border-amber-500/50' : 'border-indigo-500/30'} shadow-lg ${isTapUpgrade ? 'shadow-amber-500/20' : 'shadow-indigo-500/10'} md:h-16 md:w-16`}>
                   <div className={`flex items-center justify-center w-full h-full rounded-xl ${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'}`}>
@@ -206,14 +180,29 @@ const Upgrades: React.FC = () => {
                     <>
                       <p className="text-indigo-300">Total: {formatNumber(totalPassiveIncome)}/s</p>
                       <p className="text-indigo-200">Boost: +{boostPercentage.toFixed(0)}%</p>
+                      {/* Progress Meter */}
+                      <div className="w-full h-2 mt-1 flex gap-[2px]">
+                        {Array.from({ length: segments }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`flex-1 h-full rounded-sm transition-all duration-500 ${
+                              i < filledSegments
+                                ? isTapUpgrade
+                                  ? 'bg-amber-500'
+                                  : 'bg-green-500'
+                                : 'bg-slate-700/50'
+                            }`}
+                          ></div>
+                        ))}
+                      </div>
                     </>
                   )}
                 </div>
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <h3 className={`font-bold ${isTapUpgrade ? 'text-amber-100' : 'text-slate-100'} truncate`}>{upgrade.name}</h3>
+                <div className="flex justify-between items-start gap-2">
+                  <h3 className={`font-bold ${isTapUpgrade ? 'text-amber-100' : 'text-slate-100'} flex-grow min-w-0`}>{upgrade.name}</h3>
                   <div className="text-right flex-shrink-0">
                     <p className={`font-medium ${canAfford ? (isTapUpgrade ? 'text-amber-500' : (isUpgradeGoodValue ? 'text-green-500' : 'text-indigo-500')) : 'text-slate-400'}`}>
                       {isMaxLevel ? 'MAX' : formatNumber(upgrade.cost)}
@@ -266,23 +255,6 @@ const Upgrades: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* CSS Keyframes for animations */}
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(1.05); }
-        }
-        @keyframes glow {
-          0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-          100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
-        }
-        @keyframes sparkle {
-          0% { opacity: 0.3; transform: translateY(0); }
-          50% { opacity: 0.6; transform: translateY(-10px); }
-          100% { opacity: 0.3; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 };
