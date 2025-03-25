@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { UPGRADE_CATEGORIES } from '@/utils/upgradesData';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import * as GameMechanics from '@/utils/GameMechanics';
 
 const Upgrades: React.FC = () => {
   const { state, buyUpgrade, toggleAutoBuy, calculateMaxPurchaseAmount } = useGame();
@@ -26,7 +27,7 @@ const Upgrades: React.FC = () => {
     'gem': <Gem size={20} />, 'truck': <Truck size={20} />, 'globe': <Globe size={20} />,
     'pickaxe': <Pickaxe size={20} />, 'plane': <Plane size={20} />, 'lightbulb': <Lightbulb size={20} />,
     'banknote': <Banknote size={20} />, 'database': <Database size={20} />, 'test-tube': <TestTube size={20} />,
-    'hand': <Hand size={20} />
+    'hand': <Hand size={20} />, 'lock': <Lock size={20} />,
   };
   
   const isAutoBuyUnlocked = state.boosts["boost-auto-buy"]?.purchased > 0;
@@ -134,8 +135,21 @@ const Upgrades: React.FC = () => {
           let upgradeDescription = upgrade.description;
           let bonusText = isTapUpgrade 
             ? `+${(upgrade.level * upgrade.coinsPerClickBonus * 100).toFixed(0)}% tap power` 
-            : upgrade.coinsPerSecondBonus > 0 ? `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec` : '';
+            : `+${formatNumber(upgrade.coinsPerSecondBonus)} per sec`;
           if (isTapUpgrade) isUpgradeGoodValue = true;
+
+          // Calculate total passive income and boost percentage for element upgrades
+          const boostMultiplier = isTapUpgrade ? 0 : GameMechanics.getLevelBoostMultiplier(upgrade.level);
+          const totalPassiveIncome = isTapUpgrade ? 0 : upgrade.coinsPerSecondBonus * upgrade.level * (1 + boostMultiplier);
+          const boostPercentage = isTapUpgrade ? 0 : boostMultiplier * 100;
+
+          // Progress meter logic
+          const thresholds = [5, 10, 25, 50, 100, 200, 300, 500, 750, 1000];
+          const currentThresholdIndex = thresholds.findIndex(t => upgrade.level < t) - 1;
+          const nextThreshold = thresholds[currentThresholdIndex + 1] || 1000;
+          const prevThreshold = thresholds[currentThresholdIndex] || 0;
+          const progressToNext = ((upgrade.level - prevThreshold) / (nextThreshold - prevThreshold)) * 100;
+          const glowIntensity = Math.min(currentThresholdIndex + 1, 10) * 0.1;
 
           return (
             <div 
@@ -145,19 +159,30 @@ const Upgrades: React.FC = () => {
                 ${isMaxLevel ? 'border-slate-600' : canAfford 
                   ? (isUpgradeGoodValue ? 'border-green-500/40' : 'border-indigo-500/40') 
                   : 'border-slate-700/40'} 
-                p-4 flex items-start gap-4 transition-all
+                p-4 flex items-start gap-4 transition-all relative
                 ${isTapUpgrade ? 'bg-slate-800/60 border-amber-500/40' : ''}
                 ${!isMaxLevel && canAfford ? 'hover:shadow-md hover:shadow-indigo-500/20 cursor-pointer' : ''}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <Avatar className={`h-16 w-16 rounded-xl border-2 ${isTapUpgrade ? 'border-amber-500/50' : 'border-indigo-500/30'} shadow-lg ${isTapUpgrade ? 'shadow-amber-500/20' : 'shadow-indigo-500/10'}`}>
-                <div className={`flex items-center justify-center w-full h-full rounded-xl ${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'}`}>
-                  {iconMap[upgrade.icon]}
+              <div className="flex flex-col items-center">
+                <Avatar className={`h-16 w-16 rounded-xl border-2 ${isTapUpgrade ? 'border-amber-500/50' : 'border-indigo-500/30'} shadow-lg ${isTapUpgrade ? 'shadow-amber-500/20' : 'shadow-indigo-500/10'}`}>
+                  <div className={`flex items-center justify-center w-full h-full rounded-xl ${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'}`}>
+                    {iconMap[upgrade.icon]}
+                  </div>
+                  <AvatarFallback className={`${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'} rounded-xl`}>
+                    {upgrade.name.substring(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-center text-xs mt-2">
+                  <p className={isTapUpgrade ? 'text-amber-400' : 'text-indigo-400'}>{bonusText}</p>
+                  {!isTapUpgrade && (
+                    <>
+                      <p className="text-indigo-300">Total: {formatNumber(totalPassiveIncome)}/s</p>
+                      <p className="text-indigo-200">Boost: +{boostPercentage.toFixed(0)}%</p>
+                    </>
+                  )}
                 </div>
-                <AvatarFallback className={`${isTapUpgrade ? 'bg-amber-900/50 text-amber-300' : 'bg-indigo-900/50 text-indigo-300'} rounded-xl`}>
-                  {upgrade.name.substring(0, 2)}
-                </AvatarFallback>
-              </Avatar>
+              </div>
               
               <div className="flex-1">
                 <div className="flex justify-between items-start">
@@ -180,10 +205,7 @@ const Upgrades: React.FC = () => {
                       ></div>
                     </div>
                     <div className="flex justify-between items-center text-xs mt-2">
-                      <span className={isTapUpgrade ? 'text-amber-400' : (isUpgradeGoodValue ? 'text-green-400' : 'text-indigo-400')}>
-                        {bonusText}
-                      </span>
-                      {!canAfford && <span className="text-slate-400">{timeToSave}</span>}
+                      <span className="text-slate-400">{timeToSave}</span>
                     </div>
                     <div className="flex gap-1 justify-end mt-2">
                       {[1, 10, 50, 100].map(quantity => (
@@ -206,6 +228,17 @@ const Upgrades: React.FC = () => {
                     </div>
                   </>
                 )}
+              </div>
+
+              {/* Progress Meter */}
+              <div className="absolute right-2 top-4 bottom-4 w-2 rounded-full bg-slate-900/50 overflow-hidden">
+                <div
+                  className={`absolute bottom-0 w-full transition-all duration-500 ease-out ${isTapUpgrade ? 'bg-amber-500' : 'bg-indigo-500'}`}
+                  style={{
+                    height: `${progressToNext}%`,
+                    boxShadow: `0 0 ${10 * glowIntensity}px ${5 * glowIntensity}px ${isTapUpgrade ? 'rgba(251, 191, 36, 0.8)' : 'rgba(99, 102, 241, 0.8)'}`,
+                  }}
+                ></div>
               </div>
             </div>
           );
