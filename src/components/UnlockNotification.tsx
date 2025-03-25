@@ -137,6 +137,7 @@ const UnlockNotificationWrapper: React.FC = () => {
     type: 'manager' | 'artifact' | 'achievement';
     id: string;
   } | null>(null);
+
   const [prevState, setPrevState] = useState<GameState | null>(null);
 
   useEffect(() => {
@@ -145,7 +146,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       return;
     }
 
-    // Check for new managers
     const newManagers = state.ownedManagers.filter(
       (m) => !prevState.ownedManagers.includes(m) && m !== 'manager-default'
     );
@@ -153,7 +153,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'manager', id: newManagers[0] });
     }
 
-    // Check for new artifacts
     const newArtifacts = state.ownedArtifacts.filter(
       (a) => !prevState.ownedArtifacts.includes(a) && a !== 'artifact-default'
     );
@@ -161,7 +160,6 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'artifact', id: newArtifacts[0] });
     }
 
-    // Check for new achievements
     const newAchievements = state.achievements.filter(
       (a) => a.unlocked && !prevState.achievements.find((pa) => pa.id === a.id)?.unlocked
     );

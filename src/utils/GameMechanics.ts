@@ -61,6 +61,12 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.coinsPerClick *= doubleCoinsMultiplier;
         updatedState.coinsPerSecond *= doubleCoinsMultiplier;
         break;
+      case BOOST_IDS.TIME_WARP:
+        const income = updatedState.coinsPerSecond * 2 * 60 * 60; // 2 hours
+        updatedState.coins += income * boost.quantity;
+        updatedState.totalEarned += income * boost.quantity;
+        updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
+        break;
       case BOOST_IDS.AUTO_TAP:
         updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
         break;
@@ -83,21 +89,6 @@ const applyActiveBoosts = (state: GameState): GameState => {
   });
 
   return updatedState;
-};
-
-/**
- * Calculate the total tap/click value considering all boosts
- */
-export const calculateTapValue = (state: GameState): number => {
-  const enhancedState = enhanceGameMechanics(state);
-  let tapValue = Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
-  
-  // Apply tap boost if active
-  if (state.tapBoostActive && (state.tapBoostTapsRemaining || 0) > 0) {
-    tapValue *= 5; // ×5 multiplier when boost is active
-  }
-  
-  return tapValue;
 };
 
 /**
