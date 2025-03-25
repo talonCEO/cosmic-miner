@@ -111,7 +111,7 @@ export interface GameState {
   permaTapBoosts: number;
   permaPassiveBoosts: number;
   tapBoostTapsRemaining?: number;
-  tapBoostActive?: boolean; // Added to track tap boost activation
+  tapBoostActive?: boolean;
 }
 
 type GameAction =
@@ -626,7 +626,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         portrait: state.portrait,
         nameChangeCount: state.nameChangeCount,
         activeBoosts: [],
-        tempEssenceBoostStacks: 0,
+        tempEssenceBoost CENstacks: 0,
         permaTapBoosts: state.permaTapBoosts,
         permaPassiveBoosts: state.permaPassiveBoosts,
         tapBoostTapsRemaining: 0,
@@ -941,13 +941,13 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       } else if (item.id === 'boost-tap-boost') {
         const tapsPerStack = 100; // 100 clicks per stack
         const tapsRemaining = (state.tapBoostTapsRemaining || 0) + (tapsPerStack * quantity);
-        const baseTapValue = GameMechanics.calculateTapValue(state); // Get base value before boost
+        const baseTapValue = GameMechanics.calculateTapValue({ ...state, tapBoostActive: false }); // Get base value before boost
         return {
           ...state,
           inventory: updatedInventory,
           activeBoosts: newActiveBoosts,
           tapBoostTapsRemaining: tapsRemaining,
-          tapBoostActive: true, // Activate boost
+          tapBoostActive: true,
           coinsPerClick: baseTapValue * 5, // Apply ×5 multiplier to coinsPerClick
         };
       }
