@@ -6,6 +6,7 @@ import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from './types';
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/components/ui/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -175,6 +176,24 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
   );
 };
 
+// White Flash Animation Component
+const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = ({ trigger, onComplete }) => {
+  return (
+    <AnimatePresence>
+      {trigger && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 bg-white z-[9999]"
+          onAnimationComplete={onComplete}
+        />
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Inventory: React.FC = () => {
   const { state, useItem, addItem } = useGame();
   const { toast } = useToast();
@@ -183,7 +202,9 @@ const Inventory: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [virtualInventory, setVirtualInventory] = useState<InventoryItem[]>([]);
   const [notifications, setNotifications] = useState<BoostEffect[]>([]);
-  
+  const [showFlash, setShowFlash] = useState(false);
+  const [prevBoosts, setPrevBoosts] = useState<BoostEffect[]>([]);
+
   useEffect(() => {
     const resourceItems: InventoryItem[] = [
       { ...INVENTORY_ITEMS.COINS, quantity: Math.floor(state.coins) },
@@ -193,6 +214,18 @@ const Inventory: React.FC = () => {
     ];
     setVirtualInventory([...resourceItems, ...state.inventory]);
   }, [state.coins, state.gems, state.essence, state.skillPoints, state.inventory]);
+
+  // Detect when boost-time-warp is used
+  useEffect(() => {
+    const currentTimeWarpBoosts = state.activeBoosts.filter(b => b.id === 'boost-time-warp');
+    const prevTimeWarpBoosts = prevBoosts.filter(b => b.id === 'boost-time-warp');
+
+    if (currentTimeWarpBoosts.length > prevTimeWarpBoosts.length) {
+      setShowFlash(true); // Trigger flash when a new time-warp boost is added
+    }
+
+    setPrevBoosts(state.activeBoosts);
+  }, [state.activeBoosts, prevBoosts]);
   
   const handleUseItem = (item: InventoryItem) => {
     if (item.usable) {
@@ -265,6 +298,10 @@ const Inventory: React.FC = () => {
       }
     }
     return <div className="grid grid-cols-5 gap-3">{slots}</div>;
+  };
+
+  const handleFlashComplete = () => {
+    setShowFlash(false);
   };
   
   return (
@@ -341,9 +378,10 @@ const Inventory: React.FC = () => {
           <BoostNotification key={boost.id + (boost.activatedAt || 0)} boost={boost} onDismiss={dismissNotification} />
         ))}
       </div>
+
+      <FlashAnimation trigger={showFlash} onComplete={handleFlashComplete} />
     </>
   );
 };
 
 export default Inventory;
-
