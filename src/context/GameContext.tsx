@@ -148,7 +148,8 @@ type GameAction =
   | { type: 'UPDATE_TITLE'; title: string }
   | { type: 'UPDATE_PORTRAIT'; portrait: string }
   | { type: 'UPDATE_NAME_CHANGE_COUNT'; count: number }
-  | { type: 'APPLY_TIME_WARP'; amount: number };
+  | { type: 'APPLY_TIME_WARP'; amount: number }
+  | { type: 'TRIGGER_FLASH' };
 
 const updatedUpgradesList = upgradesList.map(upgrade => ({
   ...upgrade,
@@ -1086,6 +1087,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         totalEarned: state.totalEarned + action.amount,
       };
     }
+    case 'TRIGGER_FLASH': {
+      return state; // No state change needed, just triggers the effect
+    }
     default:
       return state;
   }
@@ -1143,7 +1147,8 @@ interface GameContextType {
   updateTitle: (title: string) => void;
   updatePortrait: (portrait: string) => void;
   updateBoostTimers: () => void;
-  applyTimeWarp: (amount: number) => void;
+  applyTimeWarp: (amount: number) => void
+  triggerFlash: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1320,6 +1325,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updatePortrait = (portrait: string) => dispatch({ type: 'UPDATE_PORTRAIT', portrait });
   const updateBoostTimers = () => dispatch({ type: 'UPDATE_BOOST_TIMERS' });
   const applyTimeWarp = (amount: number) => dispatch({ type: 'APPLY_TIME_WARP', amount });
+  const triggerFlash = () => dispatch({ type: 'TRIGGER_FLASH' });
 
   const contextValue: GameContextType = {
     state,
@@ -1350,6 +1356,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     updatePortrait,
     updateBoostTimers,
     applyTimeWarp,
+    triggerFlash,
   };
 
   gameContextHolder.current = contextValue;
