@@ -120,6 +120,31 @@ const calculateBaseTapValue = (state: GameState): number => {
 };
 
 /**
+ * Calculate the boost multiplier based on upgrade level thresholds
+ */
+export const getLevelBoostMultiplier = (level: number): number => {
+  const thresholds = [
+    { level: 1000, boost: 10.0 }, // +1000%
+    { level: 750, boost: 7.0 },   // +700%
+    { level: 500, boost: 5.0 },   // +500%
+    { level: 300, boost: 3.5 },   // +350%
+    { level: 200, boost: 2.5 },   // +250%
+    { level: 100, boost: 1.5 },   // +150%
+    { level: 50, boost: 1.0 },    // +100%
+    { level: 25, boost: 0.5 },    // +50%
+    { level: 10, boost: 0.25 },   // +25%
+    { level: 5, boost: 0.1 },     // +10%
+  ];
+
+  for (const threshold of thresholds) {
+    if (level >= threshold.level) {
+      return threshold.boost;
+    }
+  }
+  return 0; // No boost below level 5
+};
+
+/**
  * Calculate passive income considering all boosts
  */
 export const calculatePassiveIncome = (state: GameState, tickInterval: number = 100): number => {
@@ -132,10 +157,20 @@ export const calculatePassiveIncome = (state: GameState, tickInterval: number = 
  */
 const calculateBasePassiveIncome = (state: GameState): number => {
   if (state.coinsPerSecond <= 0) return 0;
+
+  let totalBasePassive = 0;
+  state.upgrades.forEach(upgrade => {
+    if (upgrade.category === 'element' && upgrade.coinsPerSecondBonus > 0) {
+      const baseIncome = upgrade.coinsPerSecondBonus * upgrade.level;
+      const boostMultiplier = getLevelBoostMultiplier(upgrade.level);
+      totalBasePassive += baseIncome * (1 + boostMultiplier);
+    }
+  });
+
   const passiveIncomeMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
   const artifactProductionMultiplier = calculateArtifactProductionMultiplier(state);
   const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
-  return (state.coinsPerSecondBase || state.coinsPerSecond) * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
+  return totalBasePassive * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
 };
 
 /**
@@ -145,7 +180,6 @@ export const calculateTotalCoinsPerSecond = (state: GameState): number => {
   const enhancedState = enhanceGameMechanics(state);
   return Math.max(0, enhancedState.coinsPerSecond + (state.permaPassiveBoosts || 0));
 };
-
 /**
  * Calculate artifact production multiplier based on owned artifacts and their perks
  */
