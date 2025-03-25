@@ -2,7 +2,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { createPortal } from "react-dom"; // Added for portal
+import { createPortal } from "react-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { GameProvider, useGame } from "@/context/GameContext";
@@ -10,7 +10,8 @@ import { AdProvider } from "@/context/AdContext";
 import { AudioProvider } from "@/context/AudioContext";
 import UnlockNotificationWrapper from "@/components/UnlockNotification";
 
-// FlashAnimation Component
+const queryClient = new QueryClient();
+
 const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = ({ trigger, onComplete }) => {
   return createPortal(
     <AnimatePresence>
@@ -29,21 +30,23 @@ const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = (
   );
 };
 
-// AppContent to manage flash state
 const AppContent = () => {
-  const { dispatch } = useGame();
+  const { state } = useGame();
   const [showFlash, setShowFlash] = React.useState(false);
+  const [prevBoosts, setPrevBoosts] = React.useState(state.activeBoosts);
   const location = useLocation();
 
-  // Listen for TRIGGER_FLASH action
+  // Detect boost-time-warp usage
   React.useEffect(() => {
-    const handleFlash = () => {
+    const currentTimeWarpBoosts = state.activeBoosts.filter(b => b.id === 'boost-time-warp');
+    const prevTimeWarpBoosts = prevBoosts.filter(b => b.id === 'boost-time-warp');
+
+    if (currentTimeWarpBoosts.length > prevTimeWarpBoosts.length) {
       setShowFlash(true);
-    };
-    // Since we're using dispatch directly, we'll trigger it in Inventory.tsx
-    // This effect is just a placeholder to reset flash; actual trigger comes from context
-    return () => {};
-  }, [dispatch]);
+    }
+
+    setPrevBoosts(state.activeBoosts);
+  }, [state.activeBoosts]);
 
   const handleFlashComplete = () => {
     setShowFlash(false);
@@ -62,14 +65,12 @@ const AppContent = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <GameProvider>
-                  <AdProvider>
-                    <AudioProvider>
-                      <Index />
-                      <UnlockNotificationWrapper />
-                    </AudioProvider>
-                  </AdProvider>
-                </GameProvider>
+                <AdProvider>
+                  <AudioProvider>
+                    <Index />
+                    <UnlockNotificationWrapper />
+                  </AudioProvider>
+                </AdProvider>
               </motion.div>
             }
           />
@@ -93,14 +94,14 @@ const AppContent = () => {
   );
 };
 
-const queryClient = new QueryClient();
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <GameProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </GameProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
