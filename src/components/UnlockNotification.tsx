@@ -129,7 +129,25 @@ const UnlockNotification: React.FC<UnlockNotificationProps> = ({ isOpen, onClose
   );
 };
 
-// Wrapper component to track unlocks and manage state
+// White Flash Animation Component
+const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = ({ trigger, onComplete }) => {
+  return (
+    <AnimatePresence>
+      {trigger && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 bg-white z-[9999]"
+          onAnimationComplete={onComplete}
+        />
+      )}
+    </AnimatePresence>
+  );
+};
+
+// Wrapper component to track unlocks and manage state, including time_warp flash
 const UnlockNotificationWrapper: React.FC = () => {
   const { state } = useGame();
   const [notification, setNotification] = useState<{
@@ -137,8 +155,8 @@ const UnlockNotificationWrapper: React.FC = () => {
     type: 'manager' | 'artifact' | 'achievement';
     id: string;
   } | null>(null);
-
   const [prevState, setPrevState] = useState<GameState | null>(null);
+  const [showFlash, setShowFlash] = useState(false);
 
   useEffect(() => {
     if (!prevState) {
@@ -146,6 +164,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       return;
     }
 
+    // Check for new managers
     const newManagers = state.ownedManagers.filter(
       (m) => !prevState.ownedManagers.includes(m) && m !== 'manager-default'
     );
@@ -153,6 +172,7 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'manager', id: newManagers[0] });
     }
 
+    // Check for new artifacts
     const newArtifacts = state.ownedArtifacts.filter(
       (a) => !prevState.ownedArtifacts.includes(a) && a !== 'artifact-default'
     );
@@ -160,11 +180,19 @@ const UnlockNotificationWrapper: React.FC = () => {
       setNotification({ isOpen: true, type: 'artifact', id: newArtifacts[0] });
     }
 
+    // Check for new achievements
     const newAchievements = state.achievements.filter(
       (a) => a.unlocked && !prevState.achievements.find((pa) => pa.id === a.id)?.unlocked
     );
     if (newAchievements.length > 0) {
       setNotification({ isOpen: true, type: 'achievement', id: newAchievements[0].id });
+    }
+
+    // Check for time_warp usage
+    const prevTimeWarpBoosts = prevState.activeBoosts.filter(b => b.id === 'boost-time-warp');
+    const currentTimeWarpBoosts = state.activeBoosts.filter(b => b.id === 'boost-time-warp');
+    if (currentTimeWarpBoosts.length > prevTimeWarpBoosts.length) {
+      setShowFlash(true);
     }
 
     setPrevState(state);
@@ -174,13 +202,20 @@ const UnlockNotificationWrapper: React.FC = () => {
     setNotification((prev) => (prev ? { ...prev, isOpen: false } : null));
   };
 
+  const handleFlashComplete = () => {
+    setShowFlash(false);
+  };
+
   return (
-    <UnlockNotification
-      isOpen={notification?.isOpen || false}
-      onClose={handleClose}
-      type={notification?.type || 'achievement'}
-      id={notification?.id || ''}
-    />
+    <>
+      <UnlockNotification
+        isOpen={notification?.isOpen || false}
+        onClose={handleClose}
+        type={notification?.type || 'achievement'}
+        id={notification?.id || ''}
+      />
+      <FlashAnimation trigger={showFlash} onComplete={handleFlashComplete} />
+    </>
   );
 };
 
