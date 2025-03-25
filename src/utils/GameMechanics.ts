@@ -57,9 +57,11 @@ const applyActiveBoosts = (state: GameState): GameState => {
 
     switch (boost.id) {
       case BOOST_IDS.DOUBLE_COINS:
-        const doubleCoinsMultiplier = Math.pow(2, boost.quantity);
-        updatedState.coinsPerClick *= doubleCoinsMultiplier;
-        updatedState.coinsPerSecond *= doubleCoinsMultiplier;
+        // Changed: Fixed ×2 multiplier, no stacking beyond that
+        if (remaining > 0) {
+          updatedState.coinsPerClick *= 2;
+          updatedState.coinsPerSecond *= 2;
+        }
         break;
       case BOOST_IDS.TIME_WARP:
         const income = updatedState.coinsPerSecond * 2 * 60 * 60; // 2 hours
@@ -68,15 +70,22 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
         break;
       case BOOST_IDS.AUTO_TAP:
-        updatedState.autoTapTapsPerSecond = (updatedState.autoTapTapsPerSecond || 0) + (5 * boost.quantity);
+        // Changed: Fixed 5 taps/sec, no stacking beyond that
+        if (remaining > 0) {
+          updatedState.autoTapTapsPerSecond = 5;
+        }
         break;
       case BOOST_IDS.TAP_BOOST:
-        // No need to apply here; handled in calculateTapValue
+        // Moved to calculateTapValue; no effect applied here
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
-        updatedState.costReductionMultiplier = 0.9; // Set to 0.9 directly, no stacking
+        // Remains fixed at 0.9 multiplier
+        if (remaining > 0) {
+          updatedState.costReductionMultiplier = 0.9;
+        }
         break;
       case BOOST_IDS.ESSENCE_BOOST:
+        // Unchanged: Multiplicative stacking as per original design
         updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * Math.pow(1.25, boost.quantity);
         break;
       case BOOST_IDS.PERMA_TAP:
@@ -98,9 +107,9 @@ export const calculateTapValue = (state: GameState): number => {
   const enhancedState = enhanceGameMechanics(state);
   let tapValue = Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
   
-  // Apply tap boost if active
+  // Apply tap boost if active and taps remain
   if (state.tapBoostActive && (state.tapBoostTapsRemaining || 0) > 0) {
-    tapValue *= 5; // ×5 multiplier when boost is active
+    tapValue *= 5; // Fixed ×5 multiplier, no more
   }
   
   return tapValue;
@@ -250,7 +259,8 @@ export const calculateAutoTapIncome = (state: GameState, tickInterval: number = 
   const boostAutoTapTapsPerSecond = enhancedState.autoTapTapsPerSecond || 0;
 
   if (boostAutoTapTapsPerSecond > 0) {
-    const boostIncomePerSecond = baseTapValue * 5; // Auto-tap boost multiplier
+    // Changed: Fixed at 5 taps/sec when AUTO_TAP is active
+    const boostIncomePerSecond = baseTapValue * boostAutoTapTapsPerSecond;
     return boostIncomePerSecond * (tickInterval / 1000);
   }
 
@@ -272,7 +282,7 @@ export const calculateUpgradeCost = (state: GameState, upgradeId: string, quanti
 
   const hasCheapUpgrades = enhancedState.activeBoosts.some(b => b.id === BOOST_IDS.CHEAP_UPGRADES && getRemaining(b) > 0);
   if (hasCheapUpgrades) {
-    totalCost *= 0.9;
+    totalCost *= 0.9; // Fixed 10% reduction
   }
 
   return Math.floor(totalCost);
