@@ -10,6 +10,7 @@ import { gemPackages } from './types/premiumStore';
 import { useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INVENTORY_ITEMS, InventoryItem, isBoostWithCost } from '@/components/menu/types';
+import { formatNumber } from '@/utils/gameLogic';
 
 const getPlaceholderImage = (itemName: string): string => {
   return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&h=400&q=80';
