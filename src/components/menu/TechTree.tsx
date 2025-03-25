@@ -181,7 +181,7 @@ const TechTree: React.FC = () => {
               <svg width={24} height={24} className="text-blue-400">
                 <path d="M12 2L2 9L12 16L22 9L12 2Z" fill="currentColor" />
               </svg>
-              <span className="text-blue-300 font-semibold text-xl">{state.skillPoints} Skill Points</span>
+              <span className="text-blue-300 font-semibold text-xl">{formatNumber(state.skillPoints)} Skill Points</span>
             </div>
             <p className="text-xs text-blue-300 mt-1 text-center">
               Skill Points are earned from unlocking achievements, hiring managers, discovering artifacts, and reaching upgrade milestones.
