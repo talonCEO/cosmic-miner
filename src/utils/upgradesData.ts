@@ -43,7 +43,7 @@ const createElementUpgrade = (
     cost: scaledBaseCost,
     baseCost: scaledBaseCost,
     level: 0,
-    maxLevel: 500,
+    maxLevel: 1000,
     coinsPerClickBonus: scaledClickValue,
     coinsPerSecondBonus: scaledPassiveValue,
     multiplierBonus: 0,
