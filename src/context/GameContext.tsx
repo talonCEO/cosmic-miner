@@ -417,13 +417,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
 
       let newCoinsPerClick = state.coinsPerClick;
-      let newCoinsPerSecond = state.coinsPerSecond;
+      let newCoinsPerSecond = GameMechanics.calculateTotalCoinsPerSecond({
+        ...state,
+        upgrades: state.upgrades.map((u, i) =>
+          i === upgradeIndex ? { ...u, level: newLevel } : u
+        )
+      });
 
       if (upgrade.category === UPGRADE_CATEGORIES.TAP) {
         // Handled by GameMechanics.calculateTapValue
       } else {
         newCoinsPerClick += upgrade.coinsPerClickBonus * maxPossibleQuantity;
-        newCoinsPerSecond += upgrade.coinsPerSecondBonus * maxPossibleQuantity;
       }
 
       const updatedUpgrade = {
@@ -489,7 +493,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       let newState = { ...state, boosts: newBoosts };
 
       if (state.coinsPerSecond > 0) {
-        const passiveAmount = GameMechanics.calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
+        const passiveAmount = GameMechanics.calculateTotalCoinsPerSecond(state) * 0.1; // 100ms tick interval
         newState = {
           ...newState,
           coins: Math.max(0, newState.coins + passiveAmount),
@@ -552,7 +556,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           const shouldAwardSkillPoint = GameMechanics.checkUpgradeMilestone(oldLevel, newLevel);
 
           const newCoinsPerClick = newState.coinsPerClick + bestUpgrade.coinsPerClickBonus;
-          const newCoinsPerSecond = newState.coinsPerSecond + bestUpgrade.coinsPerSecondBonus;
+          const newCoinsPerSecond = GameMechanics.calculateTotalCoinsPerSecond({
+            ...newState,
+            upgrades: newState.upgrades.map((u, i) =>
+              i === upgradeIndex ? { ...u, level: newLevel } : u
+            )
+          });
 
           const updatedUpgrade = {
             ...bestUpgrade,
@@ -830,6 +839,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         skillPoints: state.skillPoints + action.amount
       };
     }
+    case 'SHOW_SKILL_POINT_NOTIFICATION': {
+      return state;
+    }
     case 'HANDLE_CLICK': {
       const totalClickAmount = GameMechanics.calculateTapValue(state);
 
@@ -1019,6 +1031,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     case 'SET_MENU_TYPE': {
       return state;
+    }
+    case 'ADD_GEMS': {
+      return {
+        ...state,
+        gems: state.gems + action.amount
+      };
     }
     case 'ACTIVATE_BOOST': {
       const boost = Object.values(INVENTORY_ITEMS).find(b => b.id === action.boostId);
