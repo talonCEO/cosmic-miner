@@ -9,6 +9,7 @@ import { useGame } from '@/context/GameContext';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import EditCustomization from './EditCustomization';
 import DefaultAvatar from '@/assets/images/icons/profile.png'; // Import default avatar
+import { formatNumber } from '@/utils/gameLogic';
 
 interface PlayerCardProps {
   playerName: string;
