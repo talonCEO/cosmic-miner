@@ -7,11 +7,11 @@ import NotFound from "./pages/NotFound";
 import { GameProvider } from "@/context/GameContext";
 import { AdProvider } from "@/context/AdContext";
 import { AudioProvider } from "@/context/AudioContext";
-import UnlockNotificationWrapper from "@/components/UnlockNotification";
-import VisualEffects from "@/components/VisualEffects";
+import UnlockNotificationWrapper from "@/components/UnlockNotification"; // Added import
 
 const queryClient = new QueryClient();
 
+// AnimatedRoutes component for page transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -31,8 +31,7 @@ const AnimatedRoutes = () => {
                 <AdProvider>
                   <AudioProvider>
                     <Index />
-                    <UnlockNotificationWrapper />
-                    <VisualEffects />
+                    <UnlockNotificationWrapper /> {/* Added here */}
                   </AudioProvider>
                 </AdProvider>
               </GameProvider>
