@@ -95,7 +95,11 @@ export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: strin
  * Default 15% growth rate per level - this is a balanced value for most idle games
  */
 export const calculateUpgradeCost = (baseCost: number, level: number, growthRate: number = 1.15): number => {
-  return Math.floor(baseCost * Math.pow(growthRate, level));
+  let adjustedGrowthRate = growthRate;
+  if (level > 100) {
+    adjustedGrowthRate = 1 + (growthRate - 1) * Math.log10(level) / Math.log10(100); // Slows growth after level 100
+  }
+  return Math.floor(baseCost * Math.pow(adjustedGrowthRate, level));
 };
 
 /**
