@@ -67,36 +67,6 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
 };
 
 /**
- * Calculate essence reward with logarithmic scaling and progressive costs
- * Includes +10% global multiplier per essence earned
- */
-export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: string[] = []): number => {
-  if (totalCoins < 100000) return 0; // Adjusted from 1M to 100k as per previous suggestion
-  
-  // Basic logarithmic scaling
-  let baseEssence = Math.floor(Math.log10(totalCoins) * 3 - 8); // Adjusted from *2 - 10
-  
-  // Apply artifact bonuses
-  let multiplier = 1;
-  if (ownedArtifacts?.includes("artifact-3")) { // Element Scanner
-    multiplier += 0.25;
-  }
-  if (ownedArtifacts?.includes("artifact-8")) { // Quantum Microscope
-    multiplier += 1.25;
-  }
-  
-  return Math.max(0, Math.floor(baseEssence * multiplier));
-};
-
-/**
- * Calculate global production multiplier based on total essence earned
- * +10% per essence point
- */
-export const calculateEssenceMultiplier = (totalEssence: number): number => {
-  return Math.pow(1.10, totalEssence); // +10% per essence
-};
-
-/**
  * Calculate cost for the next level of an upgrade with late-game reduction
  */
 export const calculateUpgradeCost = (baseCost: number, level: number, growthRate: number = 1.15): number => {
@@ -163,4 +133,12 @@ export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number 
  */
 export const calculateProductionMultiplier = (baseMultiplier: number, bonuses: number[]): number => {
   return bonuses.reduce((total, bonus) => total * (1 + bonus), baseMultiplier);
+};
+
+/**
+ * Calculate global production multiplier based on total essence earned
+ * +10% per essence point
+ */
+export const calculateEssenceMultiplier = (totalEssence: number): number => {
+  return Math.pow(1.10, totalEssence); // +10% per essence
 };
