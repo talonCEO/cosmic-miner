@@ -17,9 +17,9 @@ export const UPGRADE_CATEGORIES = {
  */
 
 // Constants for progression balancing
-const BASE_COST_MULTIPLIER = 1.05;        // Reduced from 1.08 to 1.05
+const BASE_COST_MULTIPLIER = 1.04;        // Reduced from 1.08 to 1.05
 const CLICK_VALUE_MULTIPLIER = 1.05;      // Unchanged
-const PASSIVE_VALUE_MULTIPLIER = 1.15;    // Increased from 1.10 to 1.15
+const PASSIVE_VALUE_MULTIPLIER = 1.25;    // Increased from 1.10 to 1.15
 
 const createElementUpgrade = (
   id: number,
@@ -34,7 +34,7 @@ const createElementUpgrade = (
   const tierMultiplier = Math.pow(1.3, Math.floor((id - 1) / 5)); // Reduced from 1.5 to 1.3
   const scaledBaseCost = baseCost * tierMultiplier;
   const scaledClickValue = clickValue * Math.sqrt(tierMultiplier);
-  const scaledPassiveValue = passiveValue * tierMultiplier * 3; // Increased from *2 to *3
+  const scaledPassiveValue = passiveValue * tierMultiplier * 5; // Increased from *2 to *3
   
   return {
     id: `element-${id}`,
