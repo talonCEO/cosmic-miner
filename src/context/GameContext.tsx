@@ -953,11 +953,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         };
       } else if (item.id === 'boost-time-warp') {
         const passiveIncomePerSecond = GameMechanics.calculateTotalCoinsPerSecond(state);
-        const timeWarpAmount = passiveIncomePerSecond * 7200 * quantity; // 2 hours (7200 seconds) per stack
+        const timeWarpAmount = passiveIncomePerSecond * 7200 * quantity;
         return {
           ...state,
           inventory: updatedInventory,
-          activeBoosts: newActiveBoosts,
+          activeBoosts: newActiveBoosts, // Ensure this includes a new boost or updates quantity
           coins: Math.max(0, state.coins + timeWarpAmount),
           totalEarned: state.totalEarned + timeWarpAmount
         };
