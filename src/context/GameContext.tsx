@@ -494,7 +494,7 @@ case 'TICK': {
   }).filter(boost => boost.remainingTime > 0 || boost.id === 'boost-tap-boost');
 
   if (state.coinsPerSecond > 0) {
-    const passiveAmount = GameMechanics.calculatePassiveIncome(state) * calculateBaseCoinsPerSecond(state) / state.coinsPerSecond;
+    const passiveAmount = GameMechanics.calculatePassiveIncome(state, 100);
     newState = {
       ...newState,
       coins: Math.max(0, newState.coins + passiveAmount),
@@ -503,7 +503,7 @@ case 'TICK': {
   }
 
   if (newState.autoTapActive) {
-    const autoTapAmount = GameMechanics.calculateAutoTapIncome(state);
+    const autoTapAmount = GameMechanics.calculateAutoTapIncome(state, 100);
     newState = {
       ...newState,
       coins: Math.max(0, newState.coins + autoTapAmount),
@@ -519,7 +519,7 @@ case 'TICK': {
   }
 
   if (newState.autoTap && !newState.autoTapActive) {
-    const autoTapBase = GameMechanics.calculateAutoTapIncome(state);
+    const autoTapBase = GameMechanics.calculateAutoTapIncome(state, 100);
     newState = {
       ...newState,
       coins: Math.max(0, newState.coins + autoTapBase),
