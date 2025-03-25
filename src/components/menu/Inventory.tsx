@@ -7,6 +7,7 @@ import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
@@ -176,9 +177,9 @@ const BoostNotification: React.FC<{ boost: BoostEffect; onDismiss: (id: string) 
   );
 };
 
-// White Flash Animation Component
+// White Flash Animation Component with Portal
 const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = ({ trigger, onComplete }) => {
-  return (
+  return createPortal(
     <AnimatePresence>
       {trigger && (
         <motion.div
@@ -186,11 +187,12 @@ const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = (
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-white z-[9999]"
+          className="fixed inset-0 bg-white z-[2147484000]" // Higher than Radix UI default
           onAnimationComplete={onComplete}
         />
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
