@@ -77,6 +77,7 @@ export interface GameState {
   totalClicks: number;
   totalEarned: number;
   tempEssenceBoostStacks: number;
+  totalEssence: number;
   autoBuy: boolean;
   autoTap: boolean;
   autoTapActive: boolean;
@@ -315,6 +316,7 @@ const initialState: GameState = {
   })),
   totalClicks: 0,
   totalEarned: 0,
+  totalEssence: 0,
   tempEssenceBoostStacks: 0,
   autoBuy: false,
   autoTap: false,
@@ -615,6 +617,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...initialState,
         coins: startingCoins,
         essence: state.essence + essenceReward,
+        totalEssence: (state.totalEssence || 0) + essenceReward,
         ownedManagers: state.ownedManagers,
         ownedArtifacts: state.ownedArtifacts,
         achievements: state.achievements,
