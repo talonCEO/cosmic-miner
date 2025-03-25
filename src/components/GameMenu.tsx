@@ -60,7 +60,7 @@ const GameMenu: React.FC<GameMenuProps> = ({ menuType: buttonType = 'main' }) =>
     }
   };
 
-  const potentialEssenceReward = calculateEssenceReward();
+  const potentialEssenceReward = calculatePotentialEssenceReward();
   
   const handleMenuChange = (menuType: MenuType) => {
     setActiveMenuType(menuType);
