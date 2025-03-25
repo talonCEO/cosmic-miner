@@ -146,28 +146,6 @@ export const getLevelBoostMultiplier = (level: number): number => {
   return 0;
 };
 
-// Add global scaling based on total upgrade levels
-const calculateBasePassiveIncome = (state: GameState): number => {
-  if (state.coinsPerSecond <= 0) return 0;
-
-  let totalBasePassive = 0;
-  state.upgrades.forEach(upgrade => {
-    if (upgrade.category === 'element' && upgrade.coinsPerSecondBonus > 0) {
-      const baseIncome = upgrade.coinsPerSecondBonus * upgrade.level;
-      const boostMultiplier = getLevelBoostMultiplier(upgrade.level);
-      totalBasePassive += baseIncome * (1 + boostMultiplier);
-    }
-  });
-
-  const totalLevels = state.upgrades.reduce((sum, u) => sum + u.level, 0);
-  const globalScaling = 1 + totalLevels / 1000; // +0.1% per 10 levels
-
-  const passiveIncomeMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
-  const artifactProductionMultiplier = calculateArtifactProductionMultiplier(state);
-  const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
-  return totalBasePassive * globalScaling * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
-};
-
 export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.04): number => {
   let totalCost = 0;
   for (let i = 0; i < quantity; i++) {
