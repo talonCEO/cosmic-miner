@@ -1,4 +1,3 @@
-
 /**
  * Format a number to a readable string with K, M, B, T suffixes
  */
@@ -69,75 +68,77 @@ export const getRandomPosition = (centerX: number, centerY: number, radius: numb
 
 /**
  * Calculate essence reward with logarithmic scaling and progressive costs
- * As brackets of essence are earned, the cost for the next brackets increases exponentially
+ * Includes +10% global multiplier per essence earned
  */
 export const calculateEssenceReward = (totalCoins: number, ownedArtifacts: string[] = []): number => {
-  if (totalCoins < 100000) return 0; // Was 1M
-  let baseEssence = Math.floor(Math.log10(totalCoins) * 3 - 8); // Increased from *2 - 10
+  if (totalCoins < 100000) return 0; // Adjusted from 1M to 100k as per previous suggestion
+  
+  // Basic logarithmic scaling
+  let baseEssence = Math.floor(Math.log10(totalCoins) * 3 - 8); // Adjusted from *2 - 10
+  
+  // Apply artifact bonuses
   let multiplier = 1;
-  if (ownedArtifacts?.includes("artifact-3")) multiplier += 0.25;
-  if (ownedArtifacts?.includes("artifact-8")) multiplier += 1.25;
+  if (ownedArtifacts?.includes("artifact-3")) { // Element Scanner
+    multiplier += 0.25;
+  }
+  if (ownedArtifacts?.includes("artifact-8")) { // Quantum Microscope
+    multiplier += 1.25;
+  }
+  
   return Math.max(0, Math.floor(baseEssence * multiplier));
 };
 
 /**
- * Calculate cost for the next level of an upgrade
- * Uses a compounding interest formula common in idle games
- * Default 15% growth rate per level - this is a balanced value for most idle games
+ * Calculate global production multiplier based on total essence earned
+ * +10% per essence point
+ */
+export const calculateEssenceMultiplier = (totalEssence: number): number => {
+  return Math.pow(1.10, totalEssence); // +10% per essence
+};
+
+/**
+ * Calculate cost for the next level of an upgrade with late-game reduction
  */
 export const calculateUpgradeCost = (baseCost: number, level: number, growthRate: number = 1.15): number => {
   let adjustedGrowthRate = growthRate;
-  if (level > 100) {
-    adjustedGrowthRate = 1 + (growthRate - 1) * Math.log10(level) / Math.log10(100); // Slows growth after level 100
+  if (level > 500) {
+    // Reduce growth rate logarithmically after level 500, capping reduction at 50%
+    adjustedGrowthRate = 1 + (growthRate - 1) * (1 - Math.min(0.5, Math.log10(level - 400) / 3));
   }
   return Math.floor(baseCost * Math.pow(adjustedGrowthRate, level));
 };
 
 /**
  * Calculate bulk purchase cost for multiple levels of an upgrade
- * Uses the sum of geometric series formula
- * Default 15% growth rate per level
  */
 export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.15): number => {
-  // Sum of geometric series: a * (1 - r^n) / (1 - r)
-  // Where a is the first term (baseCost * growthRate^currentLevel)
-  const a = baseCost * Math.pow(growthRate, currentLevel);
-  return Math.floor(a * (1 - Math.pow(growthRate, quantity)) / (1 - growthRate));
+  let totalCost = 0;
+  for (let i = 0; i < quantity; i++) {
+    totalCost += calculateUpgradeCost(baseCost, currentLevel + i, growthRate);
+  }
+  return Math.floor(totalCost); // Simplified for accuracy with new cost scaling
 };
 
 /**
  * Calculate maximum affordable quantity of an upgrade
- * Default 15% growth rate per level
  */
 export const calculateMaxAffordableQuantity = (coins: number, baseCost: number, currentLevel: number, growthRate: number = 1.15): number => {
-  // Solve for n in: coins = baseCost * growthRate^currentLevel * (1 - growthRate^n) / (1 - growthRate)
-  // Simplified to: growthRate^n = 1 - (coins * (1 - growthRate)) / (baseCost * growthRate^currentLevel)
-  
-  const a = baseCost * Math.pow(growthRate, currentLevel);
-  const term = (coins * (1 - growthRate)) / a;
-  const rightSide = 1 - term;
-  
-  // Handle edge cases
-  if (rightSide <= 0) {
-    // Player can afford a very large quantity
-    return 1000; // Set an arbitrary high limit to prevent performance issues
+  let quantity = 0;
+  let remainingCoins = coins;
+  while (remainingCoins >= calculateUpgradeCost(baseCost, currentLevel + quantity, growthRate)) {
+    remainingCoins -= calculateUpgradeCost(baseCost, currentLevel + quantity, growthRate);
+    quantity++;
+    if (quantity >= 1000 - currentLevel) break; // Respect maxLevel
   }
-  
-  // Calculate the quantity: n = log(rightSide) / log(growthRate)
-  return Math.floor(Math.log(rightSide) / Math.log(growthRate));
+  return quantity;
 };
 
 /**
  * Evaluate if an upgrade is a good value (worth buying)
- * Based on Return on Investment (ROI) calculation
  */
 export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean => {
   if (coinsPerSecondBonus <= 0) return false;
-  
-  // Calculate how many seconds it would take to earn back the investment
   const paybackPeriod = cost / coinsPerSecondBonus;
-  
-  // If it pays for itself in less than 100 seconds, it's a good value
   return paybackPeriod < 100;
 };
 
@@ -148,10 +149,10 @@ export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number 
   let multiplier = 1;
   
   if (ownedArtifacts.includes("artifact-2")) { // Space Rocket
-    multiplier += 0.5; // adds 50% (1.5x multiplier)
+    multiplier += 0.5;
   }
   if (ownedArtifacts.includes("artifact-7")) { // Molecular Flask
-    multiplier += 1.5; // adds 150% (additional 2.5x multiplier)
+    multiplier += 1.5;
   }
   
   return multiplier;
@@ -159,7 +160,6 @@ export const calculateClickMultiplier = (ownedArtifacts: string[] = []): number 
 
 /**
  * Calculate total production bonus from abilities and perks
- * Useful for applying multiple bonuses multiplicatively
  */
 export const calculateProductionMultiplier = (baseMultiplier: number, bonuses: number[]): number => {
   return bonuses.reduce((total, bonus) => total * (1 + bonus), baseMultiplier);
