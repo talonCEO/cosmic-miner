@@ -21,6 +21,8 @@ const BASE_COST_MULTIPLIER = 1.03;        // Reduced from 1.08 to 1.05
 const CLICK_VALUE_MULTIPLIER = 1.05;      // Unchanged
 const PASSIVE_VALUE_MULTIPLIER = 1.25;    // Increased from 1.10 to 1.15
 
+const GLOBAL_PRODUCTION_SCALING = 1.005; // 0.5% increase per 100 total levels
+
 const createElementUpgrade = (
   id: number,
   element: string,
@@ -31,11 +33,11 @@ const createElementUpgrade = (
   description: string,
   icon: string
 ): Upgrade => {
-  const tierMultiplier = Math.pow(1.25, Math.floor((id - 1) / 5)); // Reduced from 1.5 to 1.3
+  const tierMultiplier = Math.pow(1.25, Math.floor((id - 1) / 5)); // Kept at 1.25 as adjusted
   const scaledBaseCost = baseCost * tierMultiplier;
   const scaledClickValue = clickValue * Math.sqrt(tierMultiplier);
-  const scaledPassiveValue = passiveValue * tierMultiplier * 5; // Was *3
-  
+  const scaledPassiveValue = passiveValue * tierMultiplier * 3000; // Kept from previous suggestion
+
   return {
     id: `element-${id}`,
     name: `${element} (${symbol})`,
@@ -52,6 +54,11 @@ const createElementUpgrade = (
     unlocksAt: id > 1 ? { upgradeId: `element-${id-1}`, level: 1 } : undefined,
     category: UPGRADE_CATEGORIES.ELEMENT
   };
+};
+
+// New function to calculate global multiplier
+export const calculateGlobalProductionMultiplier = (totalLevels: number): number => {
+  return Math.pow(GLOBAL_PRODUCTION_SCALING, totalLevels / 100); // Scales with every 100 levels
 };
 
 // Create Tap Power upgrade
