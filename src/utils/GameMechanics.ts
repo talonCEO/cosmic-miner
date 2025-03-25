@@ -122,11 +122,13 @@ const calculateBaseTapValue = (state: GameState): number => {
 /**
  * Calculate the boost multiplier based on upgrade level thresholds
  */
+// Adjusted boost multiplier for better late-game scaling
 export const getLevelBoostMultiplier = (level: number): number => {
   const thresholds = [
-    { level: 1000, boost: 10.0 }, // +1000%
-    { level: 750, boost: 7.0 },   // +700%
-    { level: 500, boost: 5.0 },   // +500%
+    { level: 1000, boost: 15.0 }, // +1500%
+    { level: 750, boost: 10.0 },  // +1000%
+    { level: 500, boost: 7.0 },   // +700%
+    { level: 400, boost: 5.0 },   // +500%
     { level: 300, boost: 3.5 },   // +350%
     { level: 200, boost: 2.5 },   // +250%
     { level: 100, boost: 1.5 },   // +150%
@@ -141,20 +143,10 @@ export const getLevelBoostMultiplier = (level: number): number => {
       return threshold.boost;
     }
   }
-  return 0; // No boost below level 5
+  return 0;
 };
 
-/**
- * Calculate passive income considering all boosts
- */
-export const calculatePassiveIncome = (state: GameState, tickInterval: number = 100): number => {
-  const enhancedState = enhanceGameMechanics(state);
-  return enhancedState.coinsPerSecond * (tickInterval / 1000);
-};
-
-/**
- * Base passive income calculation (without active boosts)
- */
+// Add global scaling based on total upgrade levels
 const calculateBasePassiveIncome = (state: GameState): number => {
   if (state.coinsPerSecond <= 0) return 0;
 
@@ -167,10 +159,28 @@ const calculateBasePassiveIncome = (state: GameState): number => {
     }
   });
 
+  const totalLevels = state.upgrades.reduce((sum, u) => sum + u.level, 0);
+  const globalScaling = 1 + totalLevels / 1000; // +0.1% per 10 levels
+
   const passiveIncomeMultiplier = calculateAbilityPassiveMultiplier(state.abilities);
   const artifactProductionMultiplier = calculateArtifactProductionMultiplier(state);
   const managerBoostMultiplier = calculateManagerBoostMultiplier(state);
-  return totalBasePassive * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
+  return totalBasePassive * globalScaling * passiveIncomeMultiplier * artifactProductionMultiplier * managerBoostMultiplier;
+};
+
+// Cap cost growth after level 300
+export const calculateBulkPurchaseCost = (baseCost: number, currentLevel: number, quantity: number, growthRate: number = 1.05): number => {
+  let totalCost = 0;
+  for (let i = 0; i < quantity; i++) {
+    const level = currentLevel + i;
+    if (level <= 300) {
+      totalCost += baseCost * Math.pow(growthRate, level);
+    } else {
+      const capCost = baseCost * Math.pow(growthRate, 300);
+      totalCost += capCost * (1 + (level - 300) * 0.02); // 2% linear increase after 300
+    }
+  }
+  return Math.floor(totalCost);
 };
 
 /**
