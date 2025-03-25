@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import React from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { GameProvider, useGame } from "@/context/GameContext";
@@ -11,6 +12,23 @@ import { AudioProvider } from "@/context/AudioContext";
 import UnlockNotificationWrapper from "@/components/UnlockNotification";
 
 const queryClient = new QueryClient();
+
+// Ensure a flash root exists in the DOM
+const ensureFlashRoot = () => {
+  let flashRoot = document.getElementById("flash-root");
+  if (!flashRoot) {
+    flashRoot = document.createElement("div");
+    flashRoot.id = "flash-root";
+    flashRoot.style.position = "fixed";
+    flashRoot.style.top = "0";
+    flashRoot.style.left = "0";
+    flashRoot.style.width = "100%";
+    flashRoot.style.height = "100%";
+    flashRoot.style.zIndex = "10000000"; // Higher than popup's 999999
+    document.body.appendChild(flashRoot);
+  }
+  return flashRoot;
+};
 
 const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = ({ trigger, onComplete }) => {
   return createPortal(
@@ -21,37 +39,35 @@ const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = (
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-white z-[9999999]" // Increased z-index
+          className="fixed inset-0 bg-white pointer-events-none"
           onAnimationComplete={onComplete}
         />
       )}
     </AnimatePresence>,
-    document.body
+    ensureFlashRoot()
   );
 };
 
 const AppContent = () => {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
   const [showFlash, setShowFlash] = React.useState(false);
-  const [prevBoosts, setPrevBoosts] = React.useState(state.activeBoosts);
+  const [lastFlashTrigger, setLastFlashTrigger] = React.useState<number | null>(null);
   const location = useLocation();
 
-  // Detect every boost-time-warp usage
   React.useEffect(() => {
-    const currentTimeWarpBoosts = state.activeBoosts.filter(b => b.id === 'boost-time-warp');
+    const timeWarpBoosts = state.activeBoosts.filter(b => b.id === "boost-time-warp");
+    const latestActivation = timeWarpBoosts.reduce(
+      (max, boost) => Math.max(max, boost.activatedAt || 0),
+      0
+    );
 
-    // Check if any time-warp boost was newly activated or quantity increased
-    const shouldFlash = currentTimeWarpBoosts.some(current => {
-      const prev = prevBoosts.find(p => p.id === current.id && p.activatedAt === current.activatedAt);
-      return !prev || (prev && current.quantity > prev.quantity);
-    });
-
-    if (shouldFlash) {
+    if (latestActivation > (lastFlashTrigger || 0)) {
       setShowFlash(true);
+      setLastFlashTrigger(latestActivation);
+      // Reset flash after animation duration to allow retriggering
+      setTimeout(() => setShowFlash(false), 200);
     }
-
-    setPrevBoosts(state.activeBoosts);
-  }, [state.activeBoosts, prevBoosts]);
+  }, [state.activeBoosts, lastFlashTrigger]);
 
   const handleFlashComplete = () => {
     setShowFlash(false);
