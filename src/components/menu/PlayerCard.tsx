@@ -209,15 +209,15 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           <div className="absolute bottom-0 right-0 flex flex-col justify-end space-y-1">
             <div className="flex items-center justify-between min-w-20">
               <span className="text-amber-400 text-xs font-semibold">Coins:</span>
-              <span className="text-white text-xs">{formatCurrency(coins)}</span>
+              <p className="text-white">Coins: {formatNumber(state.coins)}</p>
             </div>
             <div className="flex items-center justify-between min-w-20">
               <span className="text-purple-400 text-xs font-semibold">Gems:</span>
-              <span className="text-white text-xs">{formatCurrency(gems)}</span>
+              <p className="text-yellow-400">Gems: {formatNumber(state.gems)}</p>
             </div>
             <div className="flex items-center justify-between min-w-20">
               <span className="text-blue-400 text-xs font-semibold">Essence:</span>
-              <span className="text-white text-xs">{formatCurrency(essence)}</span>
+              <p className="text-purple-400">Essence: {formatNumber(state.essence)}</p>
             </div>
           </div>
         </div>
