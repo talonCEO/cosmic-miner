@@ -34,7 +34,7 @@ const createElementUpgrade = (
   const tierMultiplier = Math.pow(1.25, Math.floor((id - 1) / 5)); // Reduced from 1.5 to 1.3
   const scaledBaseCost = baseCost * tierMultiplier;
   const scaledClickValue = clickValue * Math.sqrt(tierMultiplier);
-  const scaledPassiveValue = passiveValue * tierMultiplier * 3; // Increased from *2 to *3
+  const scaledPassiveValue = passiveValue * tierMultiplier * 3000; // Was *3
   
   return {
     id: `element-${id}`,
