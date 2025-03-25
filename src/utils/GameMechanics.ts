@@ -1,11 +1,12 @@
 import { GameState, Ability } from '@/context/GameContext';
 import { calculateClickMultiplier as utilsCalculateClickMultiplier } from '@/hooks/useGameMechanics';
 import { BoostEffect } from '@/components/menu/types';
+import { calculateEssenceMultiplier } from '@/utils/gameLogic'; // Import essence multiplier
 
 /**
  * GameMechanics.ts
  * 
- * This file centralizes all game mechanics calculations, including:
+ * Centralizes all game mechanics calculations, including:
  * - Income calculations (per click and passive)
  * - Upgrade costs and effects
  * - Boost effects from abilities, managers, artifacts, perks
@@ -19,6 +20,11 @@ const enhanceGameMechanics = (state: GameState): GameState => {
   // Calculate base values without active boosts
   enhancedState.coinsPerClick = calculateBaseTapValue(enhancedState);
   enhancedState.coinsPerSecond = calculateBasePassiveIncome(enhancedState);
+
+  // Apply essence multiplier based on total essence
+  const essenceMultiplier = calculateEssenceMultiplier(state.totalEssence || 0);
+  enhancedState.coinsPerClick *= essenceMultiplier;
+  enhancedState.coinsPerSecond *= essenceMultiplier;
 
   // Apply active boosts from inventory items
   enhancedState = applyActiveBoosts(enhancedState);
@@ -398,11 +404,10 @@ export const calculateGlobalIncomeMultiplier = (state: GameState): number => {
 };
 
 /**
- * Calculate essence reward with improved formula
+ * Calculate essence reward with tiered progression
  */
 export const calculateEssenceReward = (totalCoins: number, state: GameState): number => {
   if (totalCoins < 100000) return 0;
-  const enhancedState = enhanceGameMechanics(state);
 
   let essence = 0;
   let remaining = totalCoins;
@@ -446,7 +451,7 @@ export const calculateEssenceReward = (totalCoins: number, state: GameState): nu
   const tempEssenceBoostStacks = state.tempEssenceBoostStacks || 0;
   const tempEssenceMultiplier = Math.pow(1.25, tempEssenceBoostStacks);
 
-  return Math.floor(essence * multiplier * (enhancedState.essenceMultiplier || 1) * tempEssenceMultiplier);
+  return Math.floor(essence * multiplier * (state.essenceMultiplier || 1) * tempEssenceMultiplier);
 };
 
 /**
@@ -475,4 +480,28 @@ export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean 
   if (coinsPerSecondBonus <= 0) return false;
   const paybackPeriod = cost / coinsPerSecondBonus;
   return paybackPeriod < 100;
+};
+
+export {
+  enhanceGameMechanics,
+  calculateTapValue,
+  calculateBaseTapValue,
+  getLevelBoostMultiplier,
+  calculateBasePassiveIncome,
+  calculateTotalCoinsPerSecond,
+  calculateManagerBoostMultiplier,
+  calculateArtifactProductionMultiplier,
+  calculateAutoTapIncome,
+  calculateUpgradeCost,
+  calculateCostReduction,
+  calculateBulkPurchaseCost,
+  calculateMaxAffordableQuantity,
+  calculateClickMultiplier,
+  calculateAbilityTapMultiplier,
+  calculateAbilityPassiveMultiplier,
+  calculateGlobalIncomeMultiplier,
+  calculateEssenceReward,
+  checkUpgradeMilestone,
+  calculateStartingCoins,
+  isGoodValue
 };
