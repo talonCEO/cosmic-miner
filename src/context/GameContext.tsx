@@ -311,8 +311,9 @@ const initialState: GameState = {
   coinsPerClick: 1,
   coinsPerSecond: 0,
   upgrades: upgradesList.map(upgrade => ({
-    ...upgrade
-  })),
+  ...upgrade,
+  level: upgrade.id === "element-1" ? 10 : 0 // Give Hydrogen 10 levels
+})),
   totalClicks: 0,
   totalEarned: 0,
   tempEssenceBoostStacks: 0,
