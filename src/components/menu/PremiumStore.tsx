@@ -201,7 +201,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
                 transition={{ delay: 0.3 }}
               >
                 <h2 className="text-2xl font-bold text-amber-400 mb-2">
-                  {unlockAnimation.isGemPackage ? `${unlockAnimation.gemAmount} Gems` : unlockAnimation.item?.name}
+                  {unlockAnimation.isGemPackage ? `${formatNumber(unlockAnimation.gemAmount!)} Gems` : unlockAnimation.item?.name}
                 </h2>
                 <p className="text-green-400 font-semibold mb-8">
                   {unlockAnimation.isGemPackage ? "Added to your account" : unlockAnimation.item?.description}
@@ -221,7 +221,7 @@ const PremiumStore: React.FC<PremiumStoreProps> = ({ onBuyGemPackage }) => {
               </h3>
               <div className="flex items-center">
                 <Gem className="w-5 h-5 text-yellow-400 mr-1" />
-                <span className="text-yellow-400 font-bold">{state.gems}</span>
+                <span className="text-yellow-400 font-bold">{formatNumber(state.gems)}</span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
