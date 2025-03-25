@@ -57,9 +57,8 @@ const applyActiveBoosts = (state: GameState): GameState => {
 
     switch (boost.id) {
       case BOOST_IDS.DOUBLE_COINS:
-        // Changed: Fixed ×2 multiplier, no stacking beyond that
         if (remaining > 0) {
-          updatedState.coinsPerClick *= 2;
+          updatedState.coinsPerClick *= 2; // Fixed ×2 multiplier
           updatedState.coinsPerSecond *= 2;
         }
         break;
@@ -70,22 +69,19 @@ const applyActiveBoosts = (state: GameState): GameState => {
         updatedState.activeBoosts = updatedState.activeBoosts.filter(b => b.id !== BOOST_IDS.TIME_WARP);
         break;
       case BOOST_IDS.AUTO_TAP:
-        // Changed: Fixed 5 taps/sec, no stacking beyond that
         if (remaining > 0) {
-          updatedState.autoTapTapsPerSecond = 5;
+          updatedState.autoTapTapsPerSecond = 5; // Fixed 5 taps/sec
         }
         break;
       case BOOST_IDS.TAP_BOOST:
-        // Moved to calculateTapValue; no effect applied here
+        // Handled in calculateTapValue; no direct effect here
         break;
       case BOOST_IDS.CHEAP_UPGRADES:
-        // Remains fixed at 0.9 multiplier
         if (remaining > 0) {
-          updatedState.costReductionMultiplier = 0.9;
+          updatedState.costReductionMultiplier = 0.9; // Fixed 10% reduction
         }
         break;
       case BOOST_IDS.ESSENCE_BOOST:
-        // Unchanged: Multiplicative stacking as per original design
         updatedState.essenceMultiplier = (updatedState.essenceMultiplier || 1) * Math.pow(1.25, boost.quantity);
         break;
       case BOOST_IDS.PERMA_TAP:
@@ -107,9 +103,8 @@ export const calculateTapValue = (state: GameState): number => {
   const enhancedState = enhanceGameMechanics(state);
   let tapValue = Math.max(0, enhancedState.coinsPerClick + (state.permaTapBoosts || 0));
   
-  // Apply tap boost if active and taps remain
   if (state.tapBoostActive && (state.tapBoostTapsRemaining || 0) > 0) {
-    tapValue *= 5; // Fixed ×5 multiplier, no more
+    tapValue *= 5; // Fixed ×5 multiplier
   }
   
   return tapValue;
