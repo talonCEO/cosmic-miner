@@ -351,38 +351,36 @@ const initialState: GameState = {
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
-      let totalClickAmount = GameMechanics.calculateTapValue(state);
-      let newTapBoostTapsRemaining = state.tapBoostTapsRemaining || 0;
-      let newTapBoostActive = state.tapBoostActive || false;
+  let totalClickAmount = GameMechanics.calculateTapValue(state);
+  let newTapBoostTapsRemaining = state.tapBoostTapsRemaining || 0;
+  let newTapBoostActive = state.tapBoostActive || false;
 
-      if (newTapBoostTapsRemaining > 0) {
-        totalClickAmount *= 5; // Apply ×5 multiplier
-        newTapBoostTapsRemaining -= 1;
+  if (newTapBoostActive && newTapBoostTapsRemaining > 0) {
+    newTapBoostTapsRemaining -= 1;
 
-        if (newTapBoostTapsRemaining <= 0) {
-          newTapBoostActive = false; // Deactivate boost
-          return {
-            ...state,
-            coins: Math.max(0, state.coins + totalClickAmount),
-            totalClicks: state.totalClicks + 1,
-            totalEarned: state.totalEarned + totalClickAmount,
-            tapBoostTapsRemaining: 0,
-            tapBoostActive: false,
-            coinsPerClick: GameMechanics.calculateTapValue(state), // Reset to base value
-            activeBoosts: state.activeBoosts.filter(b => b.id !== 'boost-tap-boost'),
-          };
-        }
-      }
-
+    if (newTapBoostTapsRemaining <= 0) {
+      newTapBoostActive = false;
       return {
         ...state,
         coins: Math.max(0, state.coins + totalClickAmount),
         totalClicks: state.totalClicks + 1,
         totalEarned: state.totalEarned + totalClickAmount,
-        tapBoostTapsRemaining: newTapBoostTapsRemaining,
-        tapBoostActive: newTapBoostActive,
+        tapBoostTapsRemaining: 0,
+        tapBoostActive: false,
+        activeBoosts: state.activeBoosts.filter(b => b.id !== 'boost-tap-boost'),
       };
     }
+  }
+
+  return {
+    ...state,
+    coins: Math.max(0, state.coins + totalClickAmount),
+    totalClicks: state.totalClicks + 1,
+    totalEarned: state.totalEarned + totalClickAmount,
+    tapBoostTapsRemaining: newTapBoostTapsRemaining,
+    tapBoostActive: newTapBoostActive,
+  };
+}
     case 'ADD_COINS':
       return {
         ...state,
@@ -892,7 +890,6 @@ case 'USE_ITEM': {
     case 'boost-cheap-upgrades':
     case 'boost-auto-tap':
       if (existingBoostIndex >= 0) {
-        // Stack duration additively
         newActiveBoosts[existingBoostIndex] = {
           ...newActiveBoosts[existingBoostIndex],
           duration: newActiveBoosts[existingBoostIndex].duration + totalDuration,
@@ -911,7 +908,6 @@ case 'USE_ITEM': {
       break;
     case 'boost-tap-boost':
       if (existingBoostIndex >= 0) {
-        // Stack duration and cap taps at 100
         newActiveBoosts[existingBoostIndex] = {
           ...newActiveBoosts[existingBoostIndex],
           duration: newActiveBoosts[existingBoostIndex].duration + totalDuration,
