@@ -6,6 +6,7 @@ import { Package, Filter, Search, Plus, Minus, XCircle } from 'lucide-react';
 import { InventoryItem, INVENTORY_ITEMS, createInventoryItem, BoostEffect } from './types';
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/components/ui/use-toast';
+import { formatNumber } from '@/utils/gameLogic';
 
 const rarityColors = {
   common: 'bg-slate-700 border-slate-500',
