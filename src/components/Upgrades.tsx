@@ -174,11 +174,11 @@ const Upgrades: React.FC = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center text-xs mt-2">
-                  <p className={isTapUpgrade ? 'text-amber-400' : 'text-indigo-400'}>{bonusText}</p>
+                  <p className={isTapUpgrade ? 'text-amber-400' : 'text-indigo-400'}>+{bonusText}/s</p>
                   {!isTapUpgrade && (
                     <>
-                      <p className="text-indigo-300">Total: {formatNumber(totalPassiveIncome)}/s</p>
-                      <p className="text-indigo-200">Boost: +{boostPercentage.toFixed(0)}%</p>
+                      <p className="text-indigo-300">+{formatNumber(totalPassiveIncome)}/s</p>
+                      <p className="text-indigo-200">+{boostPercentage.toFixed(0)}%</p>
                     </>
                   )}
                 </div>
