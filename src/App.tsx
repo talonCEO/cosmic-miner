@@ -21,7 +21,7 @@ const FlashAnimation: React.FC<{ trigger: boolean; onComplete: () => void }> = (
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-white z-[2147484000]"
+          className="fixed inset-0 bg-white z-[9999999]" // Increased z-index
           onAnimationComplete={onComplete}
         />
       )}
@@ -36,17 +36,22 @@ const AppContent = () => {
   const [prevBoosts, setPrevBoosts] = React.useState(state.activeBoosts);
   const location = useLocation();
 
-  // Detect boost-time-warp usage
+  // Detect every boost-time-warp usage
   React.useEffect(() => {
     const currentTimeWarpBoosts = state.activeBoosts.filter(b => b.id === 'boost-time-warp');
-    const prevTimeWarpBoosts = prevBoosts.filter(b => b.id === 'boost-time-warp');
 
-    if (currentTimeWarpBoosts.length > prevTimeWarpBoosts.length) {
+    // Check if any time-warp boost was newly activated or quantity increased
+    const shouldFlash = currentTimeWarpBoosts.some(current => {
+      const prev = prevBoosts.find(p => p.id === current.id && p.activatedAt === current.activatedAt);
+      return !prev || (prev && current.quantity > prev.quantity);
+    });
+
+    if (shouldFlash) {
       setShowFlash(true);
     }
 
     setPrevBoosts(state.activeBoosts);
-  }, [state.activeBoosts]);
+  }, [state.activeBoosts, prevBoosts]);
 
   const handleFlashComplete = () => {
     setShowFlash(false);
