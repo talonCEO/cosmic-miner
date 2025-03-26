@@ -476,7 +476,7 @@ export const calculateStartingCoins = (ownedArtifacts: string[]): number => {
 /**
  * Evaluate if an upgrade is a good value (worth buying)
  */
-export const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean => {
+const isGoodValue = (cost: number, coinsPerSecondBonus: number): boolean => {
   if (coinsPerSecondBonus <= 0) return false;
   const paybackPeriod = cost / coinsPerSecondBonus;
   return paybackPeriod < 100;
