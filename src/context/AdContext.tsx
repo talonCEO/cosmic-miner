@@ -1,18 +1,20 @@
+// src/context/AdContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGame } from './GameContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useInterval } from '@/hooks/useInterval';
 import { adMobService } from '@/services/AdMobService';
 import * as GameMechanics from '@/utils/GameMechanics';
+import { Capacitor } from '@capacitor/core';
 
 interface AdContextType {
   showAdNotification: boolean;
   adBoostActive: boolean;
   adBoostTimeRemaining: number;
   adBoostMultiplier: number;
-  handleWatchAd: () => Promise<void>;
+  handleWatchAd: (isChestReward?: boolean) => Promise<boolean>;
   dismissAdNotification: () => void;
-  selectedAdType: 'income' | 'gems' | 'timeWarp'; // New field to track ad type
+  selectedAdType: 'income' | 'gems' | 'timeWarp';
 }
 
 const AdContext = createContext<AdContextType | undefined>(undefined);
@@ -31,29 +33,24 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isRewardedAdLoaded, setIsRewardedAdLoaded] = useState(false);
   const [selectedAdType, setSelectedAdType] = useState<'income' | 'gems' | 'timeWarp'>('income');
 
-  const adBoostMultiplier = 2; // x2 income boost
-  const adBoostDuration = 10 * 60; // 10 minutes in seconds
-  const minAdInterval = 5 * 60; // 5 minutes minimum between ad offers
-  const maxAdInterval = 15 * 60; // 15 minutes maximum between ad offers
-  const cooldownPeriod = 60; // 60 seconds minimum between ads
-  const adNotificationDuration = 60; // 1 minute auto-dismiss
-  const initialAdDelay = 90; // Delay first ad by 90 seconds (1.5 minutes)
+  const adBoostMultiplier = 2;
+  const adBoostDuration = 10 * 60;
+  const minAdInterval = 5 * 60;
+  const maxAdInterval = 15 * 60;
+  const cooldownPeriod = 60;
+  const adNotificationDuration = 60;
+  const initialAdDelay = 90;
 
-  // Ad types definition
   const adTypes = ['income', 'gems', 'timeWarp'] as const;
 
   useEffect(() => {
     const initAds = async () => {
       try {
         await adMobService.initialize();
-
-        // Load both interstitial and rewarded ads
         const interstitialLoaded = await adMobService.loadInterstitialAd();
         setIsAdLoaded(interstitialLoaded);
-
         const rewardedLoaded = await adMobService.loadRewardedAd();
         setIsRewardedAdLoaded(rewardedLoaded);
-
         setNextAdTime(Date.now() + initialAdDelay * 1000);
       } catch (error) {
         console.error('Error initializing ads:', error);
@@ -79,14 +76,12 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       now - lastAdWatchedTime >= cooldownPeriod * 1000 &&
       !adBoostActive
     ) {
-      // Randomly select an ad type
       const randomType = adTypes[Math.floor(Math.random() * adTypes.length)];
       setSelectedAdType(randomType);
       setShowAdNotification(true);
       setAdNotificationStartTime(now);
       console.log(`Showing ad notification: ${randomType}`);
 
-      // Ensure rewarded ad is loaded
       if (!isRewardedAdLoaded) {
         adMobService.loadRewardedAd()
           .then(success => setIsRewardedAdLoaded(success))
@@ -101,7 +96,6 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     if (adBoostActive && adBoostTimeRemaining > 0) {
       setAdBoostTimeRemaining(prev => Math.max(0, prev - 1));
-
       if (adBoostTimeRemaining === 1) {
         setAdBoostActive(false);
         setIncomeMultiplier(1.0);
@@ -109,60 +103,17 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, 1000);
 
-  const handleWatchAd = async () => {
-    if (adBoostActive && selectedAdType === 'income') {
+  const handleWatchAd = async (isChestReward: boolean = false): Promise<boolean> => {
+    if (adBoostActive && selectedAdType === 'income' && !isChestReward) {
       setShowAdNotification(false);
-      return;
+      return true;
     }
 
     setShowAdNotification(false);
 
     try {
-      if (state.hasNoAds) {
-        // Apply reward directly without ad
-        switch (selectedAdType) {
-          case 'income':
-            setAdBoostActive(true);
-            setAdBoostTimeRemaining(adBoostDuration);
-            setIncomeMultiplier(adBoostMultiplier);
-            toast({
-              title: "2x Income Boost Activated!",
-              description: `You've earned a ${adBoostMultiplier}x income boost for 10 minutes!`,
-              variant: "default",
-            });
-            break;
-          case 'gems':
-            addGems(20);
-            toast({
-              title: "Gems Bonus Claimed!",
-              description: "You've received 20 bonus gems!",
-              variant: "default",
-            });
-            break;
-          case 'timeWarp':
-            const passiveIncome = GameMechanics.calculatePassiveIncome(state) * 3600; // 60 minutes
-            applyTimeWarp(passiveIncome);
-            toast({
-              title: "Time Warp Activated!",
-              description: "You've earned 60 minutes of passive income!",
-              variant: "default",
-            });
-            break;
-        }
-      } else {
-        // Load and show ad
-        if (!isRewardedAdLoaded) {
-          const adLoaded = await adMobService.loadRewardedAd();
-          setIsRewardedAdLoaded(adLoaded);
-          if (!adLoaded) {
-            throw new Error("Failed to load rewarded ad");
-          }
-        }
-
-        const reward = await adMobService.showRewardedAd();
-        setIsRewardedAdLoaded(false);
-
-        if (reward) {
+      if (state.hasNoAds || Capacitor.getPlatform() === 'web') {
+        if (!isChestReward) {
           switch (selectedAdType) {
             case 'income':
               setAdBoostActive(true);
@@ -183,7 +134,54 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
               });
               break;
             case 'timeWarp':
-              const passiveIncome = GameMechanics.calculatePassiveIncome(state) * 3600; // 60 minutes
+              const passiveIncome = GameMechanics.calculatePassiveIncome(state) * 3600;
+              applyTimeWarp(passiveIncome);
+              toast({
+                title: "Time Warp Activated!",
+                description: "You've earned 60 minutes of passive income!",
+                variant: "default",
+              });
+              break;
+          }
+        }
+        setLastAdWatchedTime(Date.now());
+        const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+        setNextAdTime(Date.now() + nextDelay * 1000);
+        return true;
+      } else {
+        if (!isRewardedAdLoaded) {
+          const adLoaded = await adMobService.loadRewardedAd();
+          setIsRewardedAdLoaded(adLoaded);
+          if (!adLoaded) {
+            throw new Error("Failed to load rewarded ad");
+          }
+        }
+
+        const reward = await adMobService.showRewardedAd();
+        setIsRewardedAdLoaded(false);
+
+        if (reward && !isChestReward) {
+          switch (selectedAdType) {
+            case 'income':
+              setAdBoostActive(true);
+              setAdBoostTimeRemaining(adBoostDuration);
+              setIncomeMultiplier(adBoostMultiplier);
+              toast({
+                title: "2x Income Boost Activated!",
+                description: `You've earned a ${adBoostMultiplier}x income boost for 10 minutes!`,
+                variant: "default",
+              });
+              break;
+            case 'gems':
+              addGems(20);
+              toast({
+                title: "Gems Bonus Claimed!",
+                description: "You've received 20 bonus gems!",
+                variant: "default",
+              });
+              break;
+            case 'timeWarp':
+              const passiveIncome = GameMechanics.calculatePassiveIncome(state) * 3600;
               applyTimeWarp(passiveIncome);
               toast({
                 title: "Time Warp Activated!",
@@ -194,19 +192,20 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           }
         }
 
-        // Preload the next rewarded ad
         adMobService.loadRewardedAd()
           .then(success => setIsRewardedAdLoaded(success))
           .catch(err => console.error('Failed to load next rewarded ad', err));
-      }
 
-      setLastAdWatchedTime(Date.now());
-      const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
-      setNextAdTime(Date.now() + nextDelay * 1000);
+        setLastAdWatchedTime(Date.now());
+        const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
+        setNextAdTime(Date.now() + nextDelay * 1000);
+        return reward;
+      }
     } catch (error) {
       console.error("Error handling ad:", error);
       const nextDelay = Math.floor(Math.random() * (maxAdInterval - minAdInterval + 1)) + minAdInterval;
       setNextAdTime(Date.now() + nextDelay * 1000);
+      return false;
     }
   };
 
@@ -224,7 +223,7 @@ export const AdProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       adBoostMultiplier,
       handleWatchAd,
       dismissAdNotification,
-      selectedAdType, // Expose selected ad type
+      selectedAdType,
     }}>
       {children}
     </AdContext.Provider>

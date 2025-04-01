@@ -1,6 +1,6 @@
 import { Perk } from './types';
 
-// Static image imports for artifacts
+// Static image imports for artifacts (keeping your existing imports)
 import ArtifactDefault from '@/assets/images/artifacts/art.png';
 import Artifact1 from '@/assets/images/artifacts/art10.png';
 import Artifact2 from '@/assets/images/artifacts/art9.png';
@@ -13,56 +13,36 @@ import Artifact8 from '@/assets/images/artifacts/art3.png';
 import Artifact9 from '@/assets/images/artifacts/art2.png';
 import Artifact10 from '@/assets/images/artifacts/art1.png';
 
-/**
- * Artifact Interface
- * 
- * Defines the structure for artifact objects that can be acquired to provide
- * special bonuses and effects.
- */
 export interface Artifact {
-  id: string;              // Unique identifier
-  name: string;            // Display name
-  description: string;     // Describes what the artifact is
-  bonus: string;           // Description of the artifact's passive bonus
-  avatar: string;          // Path to avatar image (static import)
-  cost: number;            // Essence cost to acquire
-  effect?: {               // Gameplay effect (automatically applied when owned)
-    type: string;          // Type of effect (production, tap, essence, cost, startingCoins)
-    value: number;         // Magnitude of effect
+  id: string;
+  name: string;
+  description: string;
+  bonus: string;
+  avatar: string;
+  cost: number;
+  effect?: {
+    type: string;
+    value: number;
   };
-  perks?: Perk[];         // Unlockable perks using skill points
+  perks?: Perk[];
 }
 
-/**
- * Artifacts Data
- * 
- * Each artifact:
- * 1. Has a unique ID and appearance
- * 2. Provides passive bonuses to game mechanics
- * 3. Can have up to 3 unlockable perks (costing 3, 6, and 12 skill points)
- * 4. Affects game mechanics through different effects:
- *    - production: Increases element production rate
- *    - tap: Increases value of manual taps
- *    - essence: Increases essence gained from prestige
- *    - cost: Reduces upgrade costs
- *    - startingCoins: Provides starting coins after prestige
- */
 export const artifacts: Artifact[] = [
   {
     id: "artifact-default",
-    name: "Ordinary Rock",
-    description: "Just a regular rock you found on your first day",
-    bonus: "Provides absolutely no benefit whatsoever",
-    avatar: ArtifactDefault,  // Static import (a1.png)
+    name: "Stray Pebble Pup",
+    description: "A small, rocky creature that follows you around.",
+    bonus: "Provides a friendly nudge but no real mining help",
+    avatar: ArtifactDefault,
     cost: 0
   },
   {
     id: "artifact-1",
-    name: "Quantum Computer",
-    description: "Advanced computational device using quantum mechanics",
+    name: "Luminos Drake",
+    description: "A glowing dragon whelp that lights up dark mines.",
     bonus: "Increases all production by 10%",
-    avatar: Artifact1,  // Static import (a2.png)
-    cost: 1,
+    avatar: Artifact1,
+    cost: 2,
     effect: {
       type: "production",
       value: 0.1
@@ -70,28 +50,28 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-1-perk-1",
-        name: "Quantum Acceleration",
-        description: "Upgraded processing algorithms increase production by 20%",
+        name: "Radiant Scales",
+        description: "Its shimmering scales boost production by 20%",
         cost: 3,
-        icon: "🔄",
+        icon: "✨",
         unlocked: false,
         effect: { type: "production", value: 0.2 }
       },
       {
         id: "artifact-1-perk-2",
-        name: "Parallel Computing",
-        description: "Computing in multiple dimensions increases production by 30%",
+        name: "Ember Breath",
+        description: "Fiery exhales melt ore faster, increasing production by 30%",
         cost: 6,
-        icon: "⚡",
+        icon: "🔥",
         unlocked: false,
         effect: { type: "production", value: 0.3 }
       },
       {
         id: "artifact-1-perk-3",
-        name: "Quantum Supremacy",
-        description: "Achieves computational feats impossible with classic computers, increasing production by 40%",
+        name: "Solar Flare",
+        description: "Unleashes a burst of light, boosting production by 40%",
         cost: 12,
-        icon: "🌟",
+        icon: "☀️",
         unlocked: false,
         effect: { type: "production", value: 0.4 }
       }
@@ -99,11 +79,11 @@ export const artifacts: Artifact[] = [
   },
   {
     id: "artifact-2",
-    name: "Space Rocket",
-    description: "Propulsion system for interstellar mining",
+    name: "Skybound Griffin",
+    description: "A majestic bird-beast that dives into stone.",
     bonus: "1.5x tap multiplier",
-    avatar: Artifact2,  // Static import (a3.png)
-    cost: 2,
+    avatar: Artifact2,
+    cost: 4,
     effect: {
       type: "tap",
       value: 1.5
@@ -111,28 +91,28 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-2-perk-1",
-        name: "Reinforced Thrusters",
-        description: "Enhanced propulsion system increases tap multiplier to 2x",
+        name: "Talon Strike",
+        description: "Sharp talons increase tap multiplier to 2x",
         cost: 3,
-        icon: "🚀",
+        icon: "🦅",
         unlocked: false,
         effect: { type: "tap", value: 2.0 }
       },
       {
         id: "artifact-2-perk-2",
-        name: "Quantum Fuel Mixture",
-        description: "Revolutionary fuel composition increases tap multiplier to 2.5x",
+        name: "Wind Rush",
+        description: "Swift wings boost tap multiplier to 2.5x",
         cost: 6,
-        icon: "⛽",
+        icon: "💨",
         unlocked: false,
         effect: { type: "tap", value: 2.5 }
       },
       {
         id: "artifact-2-perk-3",
-        name: "Warp Drive",
-        description: "Bend spacetime to reach minerals faster with a 3x tap multiplier",
+        name: "Aerial Assault",
+        description: "A powerful dive raises tap multiplier to 3x",
         cost: 12,
-        icon: "🌌",
+        icon: "🌪️",
         unlocked: false,
         effect: { type: "tap", value: 3.0 }
       }
@@ -140,11 +120,11 @@ export const artifacts: Artifact[] = [
   },
   {
     id: "artifact-3",
-    name: "Element Scanner",
-    description: "High precision detection of rare elements",
+    name: "Ethereal Salamander",
+    description: "A mystical amphibian that senses hidden essence.",
     bonus: "125% more essence from prestiging",
-    avatar: Artifact3,  // Static import (a4.png)
-    cost: 4,
+    avatar: Artifact3,
+    cost: 8,
     effect: {
       type: "essence",
       value: 1.25
@@ -152,28 +132,28 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-3-perk-1",
-        name: "Enhanced Sensors",
-        description: "Improved detection range increases essence gain to 150%",
+        name: "Spirit Glow",
+        description: "Its luminescence increases essence gain to 150%",
         cost: 3,
-        icon: "📡",
+        icon: "🌟",
         unlocked: false,
         effect: { type: "essence", value: 1.5 }
       },
       {
         id: "artifact-3-perk-2",
-        name: "Quantum Resonance",
-        description: "Detect essence through quantum fields, increasing gain to 175%",
+        name: "Astral Dance",
+        description: "Graceful movements boost essence to 175%",
         cost: 6,
-        icon: "🔍",
+        icon: "💃",
         unlocked: false,
         effect: { type: "essence", value: 1.75 }
       },
       {
         id: "artifact-3-perk-3",
-        name: "Hyperdimensional Analysis",
-        description: "Scan across dimensions for a 200% essence gain",
+        name: "Cosmic Tail",
+        description: "A starry tail whips up 200% essence gain",
         cost: 12,
-        icon: "🔬",
+        icon: "🌌",
         unlocked: false,
         effect: { type: "essence", value: 2.0 }
       }
@@ -181,52 +161,52 @@ export const artifacts: Artifact[] = [
   },
   {
     id: "artifact-4",
-    name: "Telescope Array",
-    description: "Network of deep space observation instruments",
-    bonus: "Reduces upgrade costs by 10%",
-    avatar: Artifact4,  // Static import (a5.png)
-    cost: 8,
+    name: "Stoneback Tortoise",
+    description: "A sturdy shelled friend that streamlines mining.",
+    bonus: "Reduces upgrade costs by 5%",
+    avatar: Artifact4,
+    cost: 16,
     effect: {
       type: "cost",
-      value: 0.1
+      value: 0.05
     },
     perks: [
       {
         id: "artifact-4-perk-1",
-        name: "Wider Aperture",
-        description: "Expanded observation capability reduces upgrade costs by 15%",
+        name: "Rock Polish",
+        description: "Smooth shell reduces upgrade costs by 7.5%",
         cost: 3,
-        icon: "👁️",
+        icon: "🪨",
         unlocked: false,
-        effect: { type: "cost", value: 0.15 }
+        effect: { type: "cost", value: 0.075 }
       },
       {
         id: "artifact-4-perk-2",
-        name: "Gravitational Lensing",
-        description: "Use gravity to enhance observations, reducing upgrade costs by 20%",
+        name: "Burrow Efficiency",
+        description: "Digging prowess cuts costs by 10%",
         cost: 6,
-        icon: "🔭",
+        icon: "⛏️",
         unlocked: false,
-        effect: { type: "cost", value: 0.2 }
+        effect: { type: "cost", value: 0.1 }
       },
       {
         id: "artifact-4-perk-3",
-        name: "Quantum Entanglement Viewer",
-        description: "Instantly observe distant phenomena, reducing upgrade costs by 25%",
+        name: "Ancient Wisdom",
+        description: "Old instincts lower costs by 12.5%",
         cost: 12,
-        icon: "🌠",
+        icon: "🐢",
         unlocked: false,
-        effect: { type: "cost", value: 0.25 }
+        effect: { type: "cost", value: 0.125 }
       }
     ]
   },
   {
     id: "artifact-5",
-    name: "Crystalline Gem",
-    description: "Focus crystal that amplifies mining energy",
+    name: "Gemtail Fox",
+    description: "A sly creature with a jewel-encrusted tail.",
     bonus: "Start with 100,000 coins after each prestige",
-    avatar: Artifact5,  // Static import (a6.png)
-    cost: 16,
+    avatar: Artifact5,
+    cost: 32,
     effect: {
       type: "startingCoins",
       value: 100000
@@ -234,8 +214,8 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-5-perk-1",
-        name: "Empowered Crystal",
-        description: "Enhanced energy focus provides 250,000 starting coins after prestige",
+        name: "Crystal Hoard",
+        description: "Stashes 250,000 starting coins after prestige",
         cost: 3,
         icon: "💎",
         unlocked: false,
@@ -243,19 +223,19 @@ export const artifacts: Artifact[] = [
       },
       {
         id: "artifact-5-perk-2",
-        name: "Resonant Lattice",
-        description: "Crystal structure resonates with cosmic energy for 500,000 starting coins",
+        name: "Treasure Sniff",
+        description: "Sniffs out 500,000 starting coins",
         cost: 6,
-        icon: "✨",
+        icon: "🦊",
         unlocked: false,
         effect: { type: "startingCoins", value: 500000 }
       },
       {
         id: "artifact-5-perk-3",
-        name: "Infinite Refraction",
-        description: "Light passes through the crystal infinitely, providing 1,000,000 starting coins",
+        name: "Jewel Cache",
+        description: "Hides away 1,000,000 starting coins",
         cost: 12,
-        icon: "🌈",
+        icon: "💰",
         unlocked: false,
         effect: { type: "startingCoins", value: 1000000 }
       }
@@ -263,11 +243,11 @@ export const artifacts: Artifact[] = [
   },
   {
     id: "artifact-6",
-    name: "Neutron Wand",
-    description: "Channels cosmic energy into a powerful beam",
+    name: "Thunderhoof Stallion",
+    description: "A powerful horse that stomps ore loose.",
     bonus: "Increases all production by 25%",
-    avatar: Artifact6,  // Static import (a7.png)
-    cost: 32,
+    avatar: Artifact6,
+    cost: 64,
     effect: {
       type: "production",
       value: 0.25
@@ -275,28 +255,28 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-6-perk-1",
-        name: "Focused Beam",
-        description: "Concentrated energy increases all production by 35%",
+        name: "Storm Kick",
+        description: "Charged hooves boost production by 35%",
         cost: 3,
-        icon: "🔦",
+        icon: "⚡",
         unlocked: false,
         effect: { type: "production", value: 0.35 }
       },
       {
         id: "artifact-6-perk-2",
-        name: "Particle Acceleration",
-        description: "Accelerated particles boost all production by 45%",
+        name: "Galloper’s Might",
+        description: "Strong legs increase production by 45%",
         cost: 6,
-        icon: "⚛️",
+        icon: "🐎",
         unlocked: false,
         effect: { type: "production", value: 0.45 }
       },
       {
         id: "artifact-6-perk-3",
-        name: "Cosmic Ray Channeling",
-        description: "Harness the power of cosmic rays for 60% increased production",
+        name: "Tempest Charge",
+        description: "A stormy run boosts production by 60%",
         cost: 12,
-        icon: "☄️",
+        icon: "🌩️",
         unlocked: false,
         effect: { type: "production", value: 0.6 }
       }
@@ -304,11 +284,11 @@ export const artifacts: Artifact[] = [
   },
   {
     id: "artifact-7",
-    name: "Molecular Flask",
-    description: "Contains rare element transmutation formulae",
+    name: "Crimson Phoenix",
+    description: "A fiery bird reborn to peck at rocks.",
     bonus: "2.5x tap multiplier",
-    avatar: Artifact7,  // Static import (a8.png)
-    cost: 64,
+    avatar: Artifact7,
+    cost: 128,
     effect: {
       type: "tap",
       value: 2.5
@@ -316,40 +296,40 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-7-perk-1",
-        name: "Catalytic Reaction",
-        description: "Chemical catalysts increase tap multiplier to 3x",
+        name: "Flame Peck",
+        description: "Burning beak raises tap multiplier to 3x",
         cost: 3,
-        icon: "🧪",
+        icon: "🔥",
         unlocked: false,
         effect: { type: "tap", value: 3.0 }
       },
       {
         id: "artifact-7-perk-2",
-        name: "Quantum Chemistry",
-        description: "Manipulate molecules at quantum level for 3.5x tap multiplier",
+        name: "Ashen Wings",
+        description: "Hot wings boost tap multiplier to 4x",
         cost: 6,
-        icon: "🔬",
+        icon: "🕊️",
         unlocked: false,
-        effect: { type: "tap", value: 3.5 }
+        effect: { type: "tap", value: 4.0 }
       },
       {
         id: "artifact-7-perk-3",
-        name: "Philosopher's Solution",
-        description: "The legendary formula perfected, providing 4x tap multiplier",
+        name: "Rebirth Strike",
+        description: "A fiery revival increases tap multiplier to 5x",
         cost: 12,
-        icon: "⚗️",
+        icon: "🌅",
         unlocked: false,
-        effect: { type: "tap", value: 4.0 }
+        effect: { type: "tap", value: 5.0 }
       }
     ]
   },
   {
     id: "artifact-8",
-    name: "Quantum Microscope",
-    description: "Views matter at the subatomic level",
+    name: "Mistveil Serpent",
+    description: "A ghostly snake that slithers through essence veins.",
     bonus: "225% more essence from prestiging",
-    avatar: Artifact8,  // Static import (a9.png)
-    cost: 128,
+    avatar: Artifact8,
+    cost: 256,
     effect: {
       type: "essence",
       value: 2.25
@@ -357,28 +337,28 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-8-perk-1",
-        name: "Subatomic Resolution",
-        description: "See deeper into the essence of matter for 250% more essence",
+        name: "Fog Fang",
+        description: "Misty bites increase essence to 250%",
         cost: 3,
-        icon: "🔍",
+        icon: "🌫️",
         unlocked: false,
         effect: { type: "essence", value: 2.5 }
       },
       {
         id: "artifact-8-perk-2",
-        name: "Quantum Probability Lens",
-        description: "Observe all possible material states for 275% more essence",
+        name: "Spectral Coil",
+        description: "Ethereal grip boosts essence to 275%",
         cost: 6,
-        icon: "🔎",
+        icon: "🐍",
         unlocked: false,
         effect: { type: "essence", value: 2.75 }
       },
       {
         id: "artifact-8-perk-3",
-        name: "Higgs Field Visualizer",
-        description: "Directly observe the field that gives matter mass, for 300% more essence",
+        name: "Void Slither",
+        description: "Slips through dimensions for 300% essence",
         cost: 12,
-        icon: "📊",
+        icon: "🌀",
         unlocked: false,
         effect: { type: "essence", value: 3.0 }
       }
@@ -386,52 +366,52 @@ export const artifacts: Artifact[] = [
   },
   {
     id: "artifact-9",
-    name: "Satellite Network",
-    description: "Orbital array of mining assistance devices",
-    bonus: "Reduces upgrade costs by 25%",
-    avatar: Artifact9,  // Static import (a10.png)
-    cost: 256,
+    name: "Ironclaw Badger",
+    description: "A tenacious digger that optimizes your efforts.",
+    bonus: "Reduces upgrade costs by 10%",
+    avatar: Artifact9,
+    cost: 512,
     effect: {
       type: "cost",
-      value: 0.25
+      value: 0.1
     },
     perks: [
       {
         id: "artifact-9-perk-1",
-        name: "Extended Coverage",
-        description: "Additional satellites reduce upgrade costs by 30%",
+        name: "Claw Sharpen",
+        description: "Keener claws reduce costs by 12.5%",
         cost: 3,
-        icon: "🛰️",
+        icon: "🦡",
         unlocked: false,
-        effect: { type: "cost", value: 0.3 }
+        effect: { type: "cost", value: 0.125 }
       },
       {
         id: "artifact-9-perk-2",
-        name: "Real-time Analysis",
-        description: "Instant data processing reduces upgrade costs by 35%",
+        name: "Burrow Mastery",
+        description: "Expert digging lowers costs by 15%",
         cost: 6,
-        icon: "📡",
+        icon: "⛏️",
         unlocked: false,
-        effect: { type: "cost", value: 0.35 }
+        effect: { type: "cost", value: 0.15 }
       },
       {
         id: "artifact-9-perk-3",
-        name: "Autonomous Mining Fleet",
-        description: "AI-controlled orbital mining reduces upgrade costs by 40%",
+        name: "Steel Snout",
+        description: "A tough nose cuts costs by 20%",
         cost: 12,
-        icon: "🤖",
+        icon: "⚙️",
         unlocked: false,
-        effect: { type: "cost", value: 0.4 }
+        effect: { type: "cost", value: 0.2 }
       }
     ]
   },
   {
     id: "artifact-10",
-    name: "Energy Core",
-    description: "The heart of an extinct alien civilization",
+    name: "Starborn Unicorn",
+    description: "A celestial steed that blesses your restarts.",
     bonus: "Start with 1,000,000 coins after each prestige",
-    avatar: Artifact10,  // Static import (a11.png)
-    cost: 512,
+    avatar: Artifact10,
+    cost: 1024,
     effect: {
       type: "startingCoins",
       value: 1000000
@@ -439,28 +419,28 @@ export const artifacts: Artifact[] = [
     perks: [
       {
         id: "artifact-10-perk-1",
-        name: "Power Regulation",
-        description: "Better energy control provides 2,500,000 starting coins",
+        name: "Lunar Horn",
+        description: "Glowing horn grants 2,500,000 starting coins",
         cost: 3,
-        icon: "⚡",
+        icon: "🌙",
         unlocked: false,
         effect: { type: "startingCoins", value: 2500000 }
       },
       {
         id: "artifact-10-perk-2",
-        name: "Core Overcharge",
-        description: "Push the core beyond safe limits for 5,000,000 starting coins",
+        name: "Astral Gallop",
+        description: "Starry strides provide 5,000,000 starting coins",
         cost: 6,
-        icon: "🔋",
+        icon: "🦄",
         unlocked: false,
         effect: { type: "startingCoins", value: 5000000 }
       },
       {
         id: "artifact-10-perk-3",
-        name: "Ancient Knowledge Integration",
-        description: "Unlock the aliens' financial wisdom for 10,000,000 starting coins",
+        name: "Galactic Blessing",
+        description: "Cosmic grace offers 10,000,000 starting coins",
         cost: 12,
-        icon: "👽",
+        icon: "⭐",
         unlocked: false,
         effect: { type: "startingCoins", value: 10000000 }
       }

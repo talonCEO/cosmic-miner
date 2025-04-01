@@ -29,6 +29,39 @@ export interface Manager {
 }
 
 /**
+ * Element ID to Name Mapping
+ */
+const elementMap: Record<string, string> = {
+  "element-1": "Hydrogen",
+  "element-11": "Titanium",
+  "element-2": "Carbon",
+  "element-12": "Chromium",
+  "element-3": "Oxygen",
+  "element-17": "Silver",
+  "element-5": "Silicon",
+  "element-15": "Nickel",
+  "element-7": "Iron",
+  "element-26": "Tellurium",
+  "element-32": "Gold",
+  "element-34": "Rhenium",
+  "element-20": "Uranium",
+  "element-19": "Lead",
+  "element-33": "Platinum",
+  "element-40": "Dysprosium",
+  "element-50": "Exotic Matter",
+  "element-31": "Iridium",
+  "element-49": "Antimatter",
+  "element-41": "Promethium",
+};
+
+/**
+ * Utility function to get element name from ID
+ */
+export const getElementName = (elementId: string): string => {
+  return elementMap[elementId] || elementId; // Fallback to ID if not found
+};
+
+/**
  * Managers Data
  */
 export const managers: Manager[] = [
@@ -427,7 +460,7 @@ export const managers: Manager[] = [
         cost: 12,
         icon: "🕳️",
         unlocked: false,
-        effect: { type: "elementBoost", value: 2.0, elements: ["element-49", "element-48"] }
+        effect: { type: "elementBoost", value: 2.0, elements: ["element-49", "element-41"] }
       }
     ]
   }
