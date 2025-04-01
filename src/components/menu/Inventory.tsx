@@ -31,6 +31,14 @@ const ItemSlot: React.FC<{
     );
   }
 
+  // Safely render the icon
+  const renderIcon = () => {
+    if (typeof item.icon === 'string') {
+      return <span className="text-3xl">{item.icon}</span>;
+    }
+    return item.icon; // Assume it’s a React element
+  };
+
   return (
     <div 
       className={`relative w-full h-full aspect-square rounded-lg ${rarityColors[item.rarity]} border p-2 flex flex-col items-center justify-center ${item.usable ? 'cursor-pointer' : 'cursor-default'}`}
@@ -42,7 +50,7 @@ const ItemSlot: React.FC<{
         </div>
         
         <div className="flex-1 flex items-center justify-center my-4">
-          <div className="text-3xl">{item.icon}</div>
+          {renderIcon()}
         </div>
         
         {item.quantity > 1 && (
@@ -294,7 +302,7 @@ useEffect(() => {
           </div>
           <div className="relative">
             <select
-              className="appearance-none bg-slate-800/50 border border BASICSslate-700 text-white py-2 pl-3 pr-8 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+              className="appearance-none bg-slate-800/50 BASICSslate-700 text-white py-2 pl-3 pr-8 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >

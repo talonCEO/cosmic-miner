@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@700&display=swap');
+
+.level-up-overlay {
+  position: fixed;
+  top: 0;
+  left: -7; /* Removed -7px offset for true centering */
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Base z-index for overlay */
+  cursor: pointer;
+}
+
+.level-up-overlay.fade-in {
+  animation: overlay-fade-in 0.5s ease-out forwards;
+}
+
+.level-up-overlay.fade-out {
+  animation: overlay-fade-out 0.5s ease-out forwards;
+  pointer-events: none; /* Prevent clicks during fade-out */
+}
+
+/* Ensure only the topmost popup is fully interactive */
+.level-up-overlay:not(:last-child) {
+  pointer-events: none; /* Prevent interaction with overlapped overlays */
+  opacity: 0.3; /* Slightly dim older popups if they’re still fading */
+}
+
+.level-up-popup {
+  background: url('@/assets/images/nebula.png') center/cover no-repeat,
+    linear-gradient(to bottom, rgba(75, 0, 130, 0.2), rgba(25, 25, 112, 0.1));
+  border: 3px solid #ffd700;
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  animation: popup-appear 0.5s ease-out forwards;
+  position: relative;
+  overflow: hidden;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  z-index: 1001;
+  cursor: default;
+
+}
+
+/* Fade-out animation for popup itself */
+.level-up-popup.fade-out {
+  animation: popup-disappear 0.5s ease-out forwards;
+}
+
+.level-up-title {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 48px;
+  color: #ffd700;
+  text-shadow: 0 0 10px #ffd700, 0 0 20px #ff4500, 0 0 30px #ff4500;
+  margin: 0;
+  animation: pulse 2s infinite;
+  letter-spacing: 1px;
+}
+
+.level-up-subtitle {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 22px;
+  color: #ffffff;
+  margin: 10px 0;
+  text-shadow: 0 0 5px #ffffff;
+}
+
+.rewards-row {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.reward-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: reward-pop 0.5s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+.reward-item span {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 16px;
+  color: #ffffff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+.reward-icon {
+  filter: drop-shadow(0 0 5px currentColor);
+  transition: transform 0.3s ease;
+}
+
+.reward-item:hover .reward-icon {
+  transform: scale(1.1);
+}
+
+/* Overlay fade-in animation */
+@keyframes overlay-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Overlay fade-out animation */
+@keyframes overlay-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Popup appear animation */
+@keyframes popup-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Popup disappear animation */
+@keyframes popup-disappear {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+}
+
+/* Pulse animation for title */
+@keyframes pulse {
+  0%, 100% {
+    text-shadow: 0 0 10px #ffd700, 0 0 20px #ff4500;
+  }
+  50% {
+    text-shadow: 0 0 20px #ffd700, 0 0 40px #ff4500, 0 0 60px #ff4500;
+  }
+}
+
+/* Reward pop-in animation */
+@keyframes reward-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

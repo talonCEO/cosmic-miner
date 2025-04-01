@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber, getRandomPosition } from '@/utils/gameLogic';
-import { calculateTapValue } from '@/utils/GameMechanics';
+import { calculateTapValue, calculateBaseTapValueWithoutCrit } from '@/utils/GameMechanics';
 import AnimatedAsteroid from './AnimatedAsteroid';
 import { useInterval } from '@/hooks/useInterval';
+import ShakeWrapper from './ShakeWrapper';
+import './ClickArea.css';
 
-// Particle effect when clicking
 interface ParticleProps {
   x: number;
   y: number;
@@ -15,45 +16,41 @@ interface ParticleProps {
   onAnimationEnd: () => void;
 }
 
-const Particle: React.FC<ParticleProps> = ({ 
-  x, y, color, size, duration, onAnimationEnd 
-}) => {
-  const randomSize = size || Math.floor(Math.random() * 4) + 2; // 2-5px
-  const randomDuration = duration || (Math.random() * 0.5) + 0.5; // 0.5-1s
-  const randomOpacity = (Math.random() * 0.5) + 0.5; // 0.5-1
-  
+const Particle: React.FC<ParticleProps> = ({ x, y, color, size, duration, onAnimationEnd }) => {
+  const randomSize = size || Math.floor(Math.random() * 4) + 2;
+  const randomDuration = duration || (Math.random() * 0.5) + 0.5;
+  const randomOpacity = (Math.random() * 0.5) + 0.5;
+
   return (
-    <div 
-      className="absolute rounded-full pointer-events-none"
-      style={{ 
-        left: x, 
-        top: y, 
-        width: `${randomSize}px`, 
-        height: `${randomSize}px`, 
+    <div
+      className="particle"
+      style={{
+        left: x,
+        top: y,
+        width: `${randomSize}px`,
+        height: `${randomSize}px`,
         backgroundColor: color,
         opacity: randomOpacity,
-        animation: `float-up ${randomDuration}s ease-out forwards`
+        animation: `float-up ${randomDuration}s ease-out forwards`,
       }}
       onAnimationEnd={onAnimationEnd}
-    ></div>
+    />
   );
 };
 
-// Click effect component
 interface ClickEffectProps {
   x: number;
   y: number;
   value: number;
+  isCritical: boolean;
   onAnimationEnd: () => void;
 }
 
-const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }) => {
+const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, isCritical, onAnimationEnd }) => {
+  const className = isCritical ? 'click-effect critical' : 'click-effect normal';
+
   return (
-    <div 
-      className="click-effect text-yellow-400 font-medium text-shadow-glow"
-      style={{ left: x, top: y }}
-      onAnimationEnd={onAnimationEnd}
-    >
+    <div className={className} style={{ left: x, top: y }} onAnimationEnd={onAnimationEnd}>
       +{formatNumber(value)}
     </div>
   );
@@ -61,133 +58,94 @@ const ClickEffect: React.FC<ClickEffectProps> = ({ x, y, value, onAnimationEnd }
 
 const ClickArea: React.FC = () => {
   const { state, click } = useGame();
-  const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number }>>([]);
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size?: number }>>([]);
+  const [clickEffects, setClickEffects] = useState<
+    Array<{ id: number; x: number; y: number; value: number; isCritical: boolean }>
+  >([]);
+  const [particles, setParticles] = useState<
+    Array<{ id: number; x: number; y: number; color: string; size?: number }>
+  >([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const nextId = useRef(0);
-  
+
   const handleAreaClick = () => {
     if (!containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    
+
     const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
-    
-    setClickEffects(prev => [
-      ...prev, 
-      { id: nextId.current++, x: effectX, y: effectY }
+
+    // Calculate base tap value without critical multiplier
+    const baseTapValue = calculateBaseTapValueWithoutCrit(state);
+    const critChance = state.activeBoosts.some(b => b.id === 'boost-critical-chance' && (b.remainingTime || 0) > 0)
+      ? 1.0
+      : state.abilities.find(a => a.id === "ability-5" && a.unlocked)
+      ? 0.15
+      : 0.10;
+
+    // Determine if this is a critical hit
+    const isCritical = Math.random() < critChance;
+    const actualTapValue = isCritical ? baseTapValue * 5 : baseTapValue;
+
+    setClickEffects((prev) => [
+      ...prev,
+      { id: nextId.current++, x: effectX, y: effectY, value: actualTapValue, isCritical },
     ]);
-    
+
     const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
     const newParticles = [];
-    
     for (let i = 0; i < particleCount; i++) {
       const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
       const size = Math.random() * 5 + 2;
-      
-      // Yellow sparkle colors
-      const colors = [
-        "#FFD700", // Gold
-        "#FFFF00", // Yellow
-        "#FFEC8B", // Light Yellow
-        "#FFC125"  // Goldenrod
-      ];
-      
+      const colors = isCritical
+        ? ['#FF0000', '#FF3333', '#FF6666', '#FF9999'] // Red shades for crit
+        : ['#FFD700', '#FFFF00', '#FFEC8B', '#FFC125']; // Yellow shades for normal
       const color = colors[Math.floor(Math.random() * colors.length)];
-      
-      newParticles.push({ 
-        id: nextId.current++, 
-        x: particleX, 
-        y: particleY,
-        color: color,
-        size: size
-      });
+      newParticles.push({ id: nextId.current++, x: particleX, y: particleY, color, size });
     }
-    
-    setParticles(prev => [...prev, ...newParticles]);
-    
-    click();
-    
-    // Trigger the shake animation
+
+    setParticles((prev) => [...prev, ...newParticles]);
+    click(); // This still uses calculateTapValue in the reducer, but UI is now correct
     setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 150); // Matches the duration of the shake animation
+    setTimeout(() => setIsAnimating(false), 250);
   };
 
-  // Auto-tap animation trigger
   useInterval(() => {
     if (state.autoTapActive && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      
-      const { x: effectX, y: effectY } = getRandomPosition(centerX, centerY, 60);
-      
-      setClickEffects(prev => [
-        ...prev,
-        { id: nextId.current++, x: effectX, y: effectY }
-      ]);
-      
-      const particleCount = Math.min(8 + Math.floor(state.coinsPerClick / 100), 15);
-      const newParticles = [];
-      
-      for (let i = 0; i < particleCount; i++) {
-        const { x: particleX, y: particleY } = getRandomPosition(centerX, centerY, 70);
-        const size = Math.random() * 5 + 2;
-        
-        const colors = ["#FFD700", "#FFFF00", "#FFEC8B", "#FFC125"];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        
-        newParticles.push({
-          id: nextId.current++,
-          x: particleX,
-          y: particleY,
-          color: color,
-          size: size
-        });
-      }
-      
-      setParticles(prev => [...prev, ...newParticles]);
-      
-      setIsAnimating(true);
-      setTimeout(() => setIsAnimating(false), 150);
+      handleAreaClick();
     }
-  }, state.autoTapActive ? 200 : null); // 200ms = 0.2 second
-  
+  }, state.autoTapActive ? 200 : null);
+
   const removeClickEffect = (id: number) => {
-    setClickEffects(prev => prev.filter(effect => effect.id !== id));
+    setClickEffects((prev) => prev.filter((effect) => effect.id !== id));
   };
-  
+
   const removeParticle = (id: number) => {
-    setParticles(prev => prev.filter(particle => particle.id !== id));
+    setParticles((prev) => prev.filter((particle) => particle.id !== id));
   };
-  
+
   return (
     <div className="flex flex-col items-center justify-center py-6 relative z-20">
-      <div 
+      <div
         ref={containerRef}
-        className={`relative w-64 h-64 mb-5 flex items-center justify-center select-none ${isAnimating ? 'shake' : ''}`}
+        className="relative w-[315px] h-[315px] mb-5 flex items-center justify-center select-none"
       >
-        <div className="w-64 h-64 rounded-full cursor-pointer">
-          <AnimatedAsteroid 
-            onClick={handleAreaClick}
-            isAnimating={isAnimating}
-          />
-        </div>
-        
-        {clickEffects.map(effect => (
-          <ClickEffect 
+        <ShakeWrapper isShaking={isAnimating}>
+          <AnimatedAsteroid onClick={handleAreaClick} isAnimating={isAnimating} />
+        </ShakeWrapper>
+        {clickEffects.map((effect) => (
+          <ClickEffect
             key={effect.id}
             x={effect.x}
             y={effect.y}
-            value={calculateTapValue(state)}
+            value={effect.value}
+            isCritical={effect.isCritical}
             onAnimationEnd={() => removeClickEffect(effect.id)}
           />
         ))}
-        
-        {particles.map(particle => (
+        {particles.map((particle) => (
           <Particle
             key={particle.id}
             x={particle.x}
@@ -198,45 +156,13 @@ const ClickArea: React.FC = () => {
           />
         ))}
       </div>
-      
       {state.coinsPerSecond > 0 && (
         <div className="text-center mb-8 animate-slide-up">
           <p className="text-sm text-white text-shadow-sm">
-            +{formatNumber(state.coinsPerSecond)} coins per second
+            {/* Passive income display if needed */}
           </p>
         </div>
       )}
-
-      {/* Inline CSS for the shake animation */}
-      <style jsx>{`
-        @keyframes shake {
-          0% { transform: translate(0, 0); }
-          20% { transform: translate(-2px, 2px); }
-          40% { transform: translate(2px, -2px); }
-          60% { transform: translate(-2px, -1px); }
-          80% { transform: translate(1px, 2px); }
-          100% { transform: translate(0, 0); }
-        }
-        
-        .shake {
-          animation: shake 0.15s ease-in-out;
-        }
-
-        @keyframes float-up {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(-50px); opacity: 0; }
-        }
-
-        .click-effect {
-          position: absolute;
-          animation: float-up 0.8s ease-out forwards;
-          z-index: 10;
-        }
-
-        .text-shadow-glow {
-          text-shadow: 0 0 5px rgba(74, 222, 128, 0.8), 0 0 10px rgba(74, 222, 128, 0.6);
-        }
-      `}</style>
     </div>
   );
 };

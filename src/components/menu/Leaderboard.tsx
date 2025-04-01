@@ -1,97 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BarChart3, Medal, Trophy } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Import top 3 portraits
 import PortraitIcon6 from '@/assets/images/portraits/specialMax.png'; // galactic_guardian
 import PortraitIcon7 from '@/assets/images/portraits/uniqueNormal.png'; // singularity_lord
 import PortraitIcon8 from '@/assets/images/portraits/love.png'; // cosmic_overlord
-// Import default avatar
-import DefaultAvatar from '@/assets/images/icons/profile.png';
 
-// List of player titles in ascending order of prestige
-const playerTitles = [
-  "Space Pilot", // Default starting title
-  "Asteroid Miner",
-  "Orbital Explorer",
-  "Star Navigator",
-  "Nebula Ranger",
-  "Void Wanderer",
-  "Galaxy Voyager",
-  "Cosmic Pathfinder", // Top 3
-  "Celestial Commander",
-  "Galactic Overlord" // Most prestigious title
+// Hardcoded leaderboard data
+const leaderboardData = [
+  {
+    id: 1,
+    username: "Dax",
+    title: "Cosmic Sugar Daddy",
+    portrait: PortraitIcon8,
+    score: 5.25e24, // 5.25 septillion
+    level: 100,
+    elo: 3050,
+    initials: "DA",
+  },
+  {
+    id: 2,
+    username: "Ralson99",
+    title: "Supreme Leader'",
+    portrait: PortraitIcon7,
+    score: 5.15e24, // 5.15 septillion
+    level: 100,
+    elo: 3020,
+    initials: "RA",
+  },
+  {
+    id: 3,
+    username: "Zachy",
+    title: "Essence Paragon",
+    portrait: PortraitIcon6,
+    score: 5.1e24, // 5.1 septillion
+    level: 100,
+    elo: 3000,
+    initials: "ZA",
+  },
+  {
+    id: 4,
+    username: "Írony",
+    title: "Cosmic Sugar Daddy",
+    portrait: PortraitIcon8,
+    score: 5.05e24, // 5.05 septillion
+    level: 100,
+    elo: 2980,
+    initials: "ÍR",
+  },
+  {
+    id: 5,
+    username: "Àkròlolz",
+    title: "Supreme Leader'",
+    portrait: PortraitIcon7,
+    score: 5e24, // 5 septillion
+    level: 100,
+    elo: 2970,
+    initials: "ÀK",
+  },
+  {
+    id: 6,
+    username: "Se7en",
+    title: "Essence Paragon",
+    portrait: PortraitIcon6,
+    score: 4.95e24, // 4.95 septillion
+    level: 100,
+    elo: 2965,
+    initials: "SE",
+  },
+  {
+    id: 7,
+    username: "K0ALA",
+    title: "Cosmic Sugar Daddy",
+    portrait: PortraitIcon8,
+    score: 4.9e24, // 4.9 septillion
+    level: 100,
+    elo: 2960,
+    initials: "K0",
+  },
+  {
+    id: 8,
+    username: "Jaimë",
+    title: "Supreme Leader'",
+    portrait: PortraitIcon7,
+    score: 4.85e24, // 4.85 septillion
+    level: 100,
+    elo: 2955,
+    initials: "JA",
+  },
+  {
+    id: 9,
+    username: "Glassl20",
+    title: "Essence Paragon",
+    portrait: PortraitIcon6,
+    score: 4.8e24, // 4.8 septillion
+    level: 100,
+    elo: 2952,
+    initials: "GL",
+  },
+  {
+    id: 10,
+    username: "Veximity",
+    title: "Cosmic Sugar Daddy",
+    portrait: PortraitIcon8,
+    score: 4.75e24, // 4.75 septillion
+    level: 100,
+    elo: 2950,
+    initials: "VE",
+  },
 ];
-
-// Top 3 portraits for leaderboard
-const topPortraits = [
-  { value: 'cosmic_overlord', image: PortraitIcon6 },
-  { value: 'singularity_lord', image: PortraitIcon7 },
-  { value: 'love', image: PortraitIcon8 },
-];
-
-// Generate realistic player data for leaderboard
-const generateLeaderboardData = () => {
-  // Realistic gaming usernames
-  const names = [
-    "Dax", "Ralson99", "Zachy", "Írony",
-    "Àkròlolz", "Se7en", "K0ALA", "Jaimë",
-    "Glassl20", "Veximity"
-  ];
-
-  // Randomly shuffle names
-  const shuffledNames = [...names].sort(() => 0.5 - Math.random());
-
-  // Create leaderboard data
-  const data = shuffledNames.map((username, index) => {
-    // Random score between 100 trillion (1e14) and 1 quadrillion (1e15)
-    const score = 1e14 + Math.random() * 9e14; // 100T to 1Q
-    const level = 100; // All players at level 100
-
-    // Randomly select one of the top 3 titles (indices 7, 8, 9)
-    const topTitleIndex = Math.floor(Math.random() * 3) + 7; // 7, 8, or 9
-    const title = playerTitles[topTitleIndex];
-
-    // Randomly select one of the top 3 portraits
-    const portrait = topPortraits[Math.floor(Math.random() * 3)];
-
-    // All players have ELO 3000
-    const elo = 3000;
-
-    // Generate initials for the avatar (first two characters)
-    const initials = username.substring(0, 2).toUpperCase();
-
-    return {
-      id: index + 1,
-      username,
-      score,
-      level,
-      title,
-      galacticRank: elo,
-      initials,
-      portrait: portrait.image, // Add portrait image
-    };
-  });
-
-  // Sort by score in descending order (highest score at top)
-  return data.sort((a, b) => b.score - a.score);
-};
 
 const Leaderboard: React.FC = () => {
   const { state } = useGame();
-  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
 
-  // Generate leaderboard data on component mount
-  useEffect(() => {
-    setLeaderboardData(generateLeaderboardData());
-  }, []);
-
-  // Simulated player position
-  const playerPosition = 999; // In a real app, this would be calculated
+  // Simulated player position (fixed for consistency)
+  const playerPosition = 999;
 
   return (
     <>
@@ -146,12 +173,9 @@ const Leaderboard: React.FC = () => {
 
               {/* Portrait and Avatar */}
               <div className="relative flex-shrink-0 mx-2 w-12 h-12">
-                <Avatar className="absolute h-10 w-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001]">
-                  <AvatarImage src={DefaultAvatar} alt={player.username} />
-                  <AvatarFallback className="bg-indigo-700/50">
-                    {player.initials}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="absolute h-10 w-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10001] bg-black rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl font-bold">?</span>
+                </div>
                 <img
                   src={player.portrait}
                   alt={`${player.username}'s portrait`}
@@ -173,7 +197,7 @@ const Leaderboard: React.FC = () => {
               <div className="text-right">
                 <div className="font-medium">{formatNumber(player.score)}</div>
                 <div className="text-xs text-slate-400">
-                  ELO: {player.galacticRank}
+                  ELO: {player.elo}
                 </div>
               </div>
             </div>

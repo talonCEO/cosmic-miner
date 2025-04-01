@@ -79,43 +79,45 @@ const Achievements: React.FC<AchievementsProps> = ({ achievements }) => {
                 </div>
                 {/* Rewards */}
                 <div className="w-16 flex items-center justify-center ml-3">
-                  {achievement.rewards && (
-                    <div className="text-center">
-                      {achievement.rewards.type === 'title' ? (
-                        achievement.unlocked ? (
-                          <motion.strong
-                            variants={titleVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="block text-xs font-bold uppercase text-indigo-300" // Reduced from text-sm to text-xs
-                          >
-                            {achievement.rewards.image}
-                          </motion.strong>
-                        ) : (
-                          <strong className="block text-xs font-bold uppercase text-indigo-300"> {/* Reduced from text-sm to text-xs */}
-                            {achievement.rewards.image}
-                          </strong>
-                        )
-                      ) : achievement.rewards.type === 'gems' ? (
-                        <>
-                          <img
-                            src={achievement.rewards.image}
-                            alt={achievement.rewards.type}
-                            className="w-8 h-8 mx-auto"
-                          />
-                          <span className="text-xs text-slate-300">
-                            {achievement.rewards.value} Gems
-                          </span>
-                        </>
-                      ) : (
-                        <img
-                          src={achievement.rewards.image}
-                          alt={achievement.rewards.type}
-                          className="w-12 h-12 mx-auto"
-                        />
-                      )}
-                    </div>
-                  )}
+                {achievement.rewards && (
+  <div className="text-center">
+    {achievement.rewards.type === 'title' ? (
+      achievement.unlocked ? (
+        <motion.strong
+          variants={titleVariants}
+          initial="hidden"
+          animate="visible"
+          className="block text-xs font-bold uppercase text-indigo-300"
+        >
+          {achievement.rewards.image}
+        </motion.strong>
+      ) : (
+        <strong className="block text-xs font-bold uppercase text-indigo-300">
+          {achievement.rewards.image}
+        </strong>
+      )
+    ) : achievement.rewards.type === 'gems' ? (
+      <>
+        <img
+          src={achievement.rewards.image}
+          alt="Gems"
+          className="w-8 h-8 mx-auto"
+          onError={() => console.error(`Failed to load gem icon for ${achievement.id}`)}
+        />
+        <span className="text-xs text-slate-300">
+          {achievement.rewards.value} Gems
+        </span>
+      </>
+    ) : achievement.rewards.type === 'portrait' ? (
+      <img
+        src={achievement.rewards.image}
+        alt="Portrait"
+        className="w-12 h-12 mx-auto"
+        onError={() => console.error(`Failed to load portrait icon for ${achievement.id}`)}
+      />
+    ) : null}
+  </div>
+)}
                 </div>
               </div>
             ))}

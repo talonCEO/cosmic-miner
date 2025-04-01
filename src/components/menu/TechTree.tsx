@@ -206,23 +206,23 @@ const TechTree: React.FC = () => {
                         className="flex flex-col items-center"
                       >
                         <button
-                          onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
-                          disabled={!canUnlockAbility(ability)}
-                          className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative overflow-hidden
-                            ${ability.unlocked
-                              ? `bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20 ${justUnlocked.includes(ability.id) ? 'animate-burst' : ''}`
-                              : canUnlockAbility(ability)
-                                ? 'bg-green-700 border-green-400 shadow-lg shadow-green-500/20 cursor-pointer animate-pulse'
-                                : 'bg-gray-700 border-gray-500 cursor-not-allowed'
-                            }`}
-                        >
-                          {ability.icon}
-                          {canUnlockAbility(ability) && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                              <span className="text-xs text-white">+</span>
-                            </div>
-                          )}
-                        </button>
+                            onClick={() => canUnlockAbility(ability) && handleUnlockAbility(ability.id, ability.name)}
+                            disabled={!canUnlockAbility(ability)}
+                            className={`w-16 h-16 rounded-full flex items-center justify-center bg-opacity-20 border-2 relative overflow-hidden
+                              ${ability.unlocked
+                                ? `bg-indigo-700 border-indigo-400 shadow-lg shadow-indigo-500/20 ${justUnlocked.includes(ability.id) ? 'animate-burst' : ''}`
+                                : canUnlockAbility(ability)
+                                  ? 'bg-green-700 border-green-400 shadow-lg shadow-green-500/20 cursor-pointer animate-pulse'
+                                  : 'bg-gray-700 border-gray-500 cursor-not-allowed'
+                              }`}
+                          >
+                            <img src={ability.icon} alt={ability.name} className="w-full h-full object-contain" />
+                            {canUnlockAbility(ability) && (
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                <span className="text-xs text-white">+</span>
+                              </div>
+                            )}
+                          </button>
                         <h3 className="text-sm mt-2 font-medium text-center">{ability.name}</h3>
                         <p className="text-xs text-center text-slate-300 mt-1 max-w-48">{ability.description}</p>
                         <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold

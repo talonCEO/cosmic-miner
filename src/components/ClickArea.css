@@ -1,0 +1,45 @@
+/* src/components/ClickArea.css */
+
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -2px); }
+  60% { transform: translate(-2px, -1px); }
+  80% { transform: translate(1px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+.shake {
+  animation: shake 0.15s ease-in-out;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-50px); opacity: 0; }
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.click-effect {
+  position: absolute;
+  animation: float-up 0.8s ease-out forwards;
+  z-index: 10;
+}
+
+.click-effect.normal {
+  color: #FFD700;
+  font-size: 16px;
+  font-weight: 500;
+  text-shadow: 0 0 5px rgba(243, 239, 8, 0.8), 0 0 10px rgb(237, 240, 76);
+}
+
+.click-effect.critical {
+  color: #EF4444;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.8), 0 0 10px rgba(255, 0, 0, 0.6);
+}

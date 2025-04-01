@@ -20,32 +20,14 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
     }
   };
 
-  const exp = state.totalEarned || 0;
-  const { currentLevel, nextLevel } = getLevelFromExp(exp);
-
-  const playerData = {
-    playerName: state.username || "Cosmic Explorer",
-    playerTitle: state.title || "space_pilot",
-    playerLevel: currentLevel.level,
-    playerExp: exp,
-    playerMaxExp: nextLevel ? nextLevel.expRequired : currentLevel.expRequired + 1000,
-    coins: state.coins,
-    gems: state.gems,
-    essence: state.essence,
-    userId: state.userId || Math.floor(10000000 + Math.random() * 90000000).toString(),
-    portrait: state.portrait || 'default',
-  };
+  const { currentLevel, nextLevel } = getLevelFromExp(state.playerData.experience || 0);
 
   const handleAchievementsClick = () => {
-    if (setMenuType) {
-      setMenuType('achievements');
-    }
+    if (setMenuType) setMenuType('achievements');
   };
 
   const handleLeaderboardClick = () => {
-    if (setMenuType) {
-      setMenuType('leaderboard');
-    }
+    if (setMenuType) setMenuType('leaderboard');
   };
 
   return (
@@ -55,20 +37,7 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
       </DialogHeader>
 
       <div className="p-4 space-y-4">
-        <PlayerCard
-          playerName={playerData.playerName}
-          playerTitle={playerData.playerTitle}
-          playerLevel={playerData.playerLevel}
-          playerExp={playerData.playerExp}
-          playerMaxExp={playerData.playerMaxExp}
-          coins={playerData.coins}
-          gems={playerData.gems}
-          essence={playerData.essence}
-          onNameChange={handleNameChange}
-          userId={playerData.userId}
-          portrait={playerData.portrait}
-        />
-
+        <PlayerCard onNameChange={handleNameChange} userId={state.userId} />
         <div className="grid grid-cols-2 gap-3 mt-4">
           <button
             onClick={handleAchievementsClick}
@@ -77,7 +46,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
             <Trophy size={20} />
             <span>Achievements</span>
           </button>
-
           <button
             onClick={handleLeaderboardClick}
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
@@ -86,7 +54,6 @@ const Profile: React.FC<ProfileProps> = ({ setMenuType }) => {
             <span>Leaderboard</span>
           </button>
         </div>
-
         <PlayerFriends />
       </div>
 

@@ -1,7 +1,4 @@
-
 import { ReactNode } from 'react';
-
-// PNG imports for gem packages
 import Gems1 from '@/assets/images/icons/gems1.png';
 import Gems2 from '@/assets/images/icons/gems4.png';
 import Gems3 from '@/assets/images/icons/gems5.png';
@@ -10,12 +7,12 @@ import Gems5 from '@/assets/images/icons/gems7.png';
 import Gems6 from '@/assets/images/icons/gems8.png';
 
 export interface GemPackage {
-  id: string;
+  id: string; // Google Play product ID
   name: string;
   amount: number;
   price: string;
   description: string;
-  image: string; // Added image field for PNGs
+  image: string;
 }
 
 export interface BoostItem {
@@ -35,7 +32,7 @@ export interface BoostItem {
 
 export const gemPackages: GemPackage[] = [
   {
-    id: "gems_small",
+    id: "com.yourapp.gems_small", // Placeholder product ID
     name: "Asteroid Gems",
     amount: 100,
     price: "$0.99",
@@ -43,7 +40,7 @@ export const gemPackages: GemPackage[] = [
     image: Gems1,
   },
   {
-    id: "gems_medium",
+    id: "com.yourapp.gems_medium",
     name: "Nebula Cache",
     amount: 550,
     price: "$4.99",
@@ -51,7 +48,7 @@ export const gemPackages: GemPackage[] = [
     image: Gems2,
   },
   {
-    id: "gems_large",
+    id: "com.yourapp.gems_large",
     name: "Galactic Hoard",
     amount: 1200,
     price: "$9.99",
@@ -59,7 +56,7 @@ export const gemPackages: GemPackage[] = [
     image: Gems3,
   },
   {
-    id: "gems_huge",
+    id: "com.yourapp.gems_huge",
     name: "Cosmic Treasure",
     amount: 2500,
     price: "$19.99",
@@ -67,7 +64,7 @@ export const gemPackages: GemPackage[] = [
     image: Gems4,
   },
   {
-    id: "gems_mega",
+    id: "com.yourapp.gems_mega",
     name: "Solar Fortune",
     amount: 6500,
     price: "$49.99",
@@ -75,7 +72,7 @@ export const gemPackages: GemPackage[] = [
     image: Gems5,
   },
   {
-    id: "gems_ultra",
+    id: "com.yourapp.gems_ultra",
     name: "Universal Vault",
     amount: 15000,
     price: "$99.99",
@@ -83,5 +80,3 @@ export const gemPackages: GemPackage[] = [
     image: Gems6,
   },
 ];
-
-// Removed initialBoostItems array as requested

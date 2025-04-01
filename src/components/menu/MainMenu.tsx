@@ -11,8 +11,8 @@ interface MainMenuProps {
 }
 
 const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
-  const { state, dispatch } = useGame();
-  
+  const { state } = useGame(); // No need for dispatch here, just state for consistency
+
   return (
     <>
       <DialogHeader className="p-4 border-b border-indigo-500/20 relative">
@@ -24,58 +24,63 @@ const MainMenu: React.FC<MainMenuProps> = ({ setMenuType }) => {
           Select an option to continue
         </DialogDescription>
       </DialogHeader>
+
+      {/* Passive Income Chest */}
+      <div
+        className="absolute right-3 top-[10%] transform -translate-y-1/2 z-0"
+        style={{ height: 'auto' }}
+      >
+      </div>
+
       <ScrollArea className="h-[50vh]">
         <div className="flex flex-col p-4 gap-3">
-          <button 
-            onClick={() => setMenuType("profile")} 
+          <button
+            onClick={() => setMenuType("profile")}
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
             <Users size={20} />
             <span>Profile</span>
           </button>
-          
-          <button 
-            onClick={() => setMenuType("inventory")} 
+
+          <button
+            onClick={() => setMenuType("inventory")}
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
             <Package size={20} />
             <span>Inventory</span>
           </button>
-          
-          <button 
-            onClick={() => setMenuType("techTree")} 
+
+          <button
+            onClick={() => setMenuType("techTree")}
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
             <Network size={20} />
             <span>Tech Tree</span>
           </button>
-          
-          <button 
-            onClick={() => setMenuType("prestige")} 
+
+          <button
+            onClick={() => setMenuType("prestige")}
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
             <GraduationCap size={20} />
             <span>Prestige</span>
           </button>
-          
-          <button 
-            onClick={() => setMenuType("shop")} 
+
+          <button
+            onClick={() => setMenuType("shop")}
             className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingBasket size={20} />
             <span>Shop</span>
           </button>
 
-          {/* Worlds Button - Greyed out, disabled, with "Coming Soon" watermark */}
-          <button 
-            disabled
-            className="bg-gray-500/50 text-gray-400 py-3 px-4 rounded-lg font-medium cursor-not-allowed flex items-center justify-center gap-2 relative"
+          {/* Worlds Button - Fully enabled */}
+          <button
+            onClick={() => setMenuType("worlds")}
+            className="bg-indigo-600/80 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
             <Globe size={20} />
             <span>Worlds</span>
-            <span className="absolute text-xs text-gray-300 opacity-75 rotate-[-10deg] pointer-events-none">
-              
-            </span>
           </button>
         </div>
       </ScrollArea>

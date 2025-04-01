@@ -3,7 +3,7 @@ import { Sparkles } from 'lucide-react';
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGame } from '@/context/GameContext';
 import { formatNumber } from '@/utils/gameLogic';
-import { calculateEssenceMultiplier } from '@/utils/gameLogic';
+import { calculateEssenceIncomeBoost } from '@/utils/gameLogic';
 
 interface PrestigeProps {
   potentialEssenceReward: number;
@@ -12,21 +12,15 @@ interface PrestigeProps {
 
 const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handlePrestige }) => {
   const { state } = useGame();
+
   const onPrestige = () => {
     handlePrestige();
   };
 
-  // Calculate the essence boost bonus percentage from temp stacks
-  const tempEssenceBoostStacks = state.tempEssenceBoostStacks || 0;
-  const essenceBoostMultiplier = Math.pow(1.25, tempEssenceBoostStacks);
-  const essenceBoostBonus = (essenceBoostMultiplier - 1) * 100;
-  const hasEssenceBoost = tempEssenceBoostStacks > 0;
-
-  // Calculate the total essence multiplier bonus
   const currentEssence = state.totalEssence || 0;
   const newEssenceTotal = currentEssence + potentialEssenceReward;
-  const essenceMultiplier = calculateEssenceMultiplier(newEssenceTotal) - 1; // Subtract 1 to get bonus
-  const essenceMultiplierBonus = essenceMultiplier * 100; // Convert to percentage
+  const currentBoost = ((calculateEssenceIncomeBoost(currentEssence) - 1) * 100).toFixed(1);
+  const totalBoost = ((calculateEssenceIncomeBoost(newEssenceTotal) - 1) * 100).toFixed(1);
 
   return (
     <>
@@ -34,55 +28,51 @@ const Prestige: React.FC<PrestigeProps> = ({ potentialEssenceReward = 0, handleP
         <DialogTitle className="text-xl">Prestige</DialogTitle>
       </DialogHeader>
       <div className="p-6 flex flex-col items-center">
-        <div className="bg-indigo-900/30 rounded-lg py-3 px-6 mb-4 flex items-center justify-between w-full">
-          <p className="text-lg font-medium">Potential Essence Reward:</p>
-          <div className="flex items-center">
-            <Sparkles size={18} className="text-purple-400 mr-1" />
-            <span className="text-xl font-bold text-purple-400">{formatNumber(potentialEssenceReward)}</span>
+        {/* Essence Reward */}
+        <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 rounded-lg py-4 px-6 mb-4 w-full text-center">
+          <p className="text-lg font-medium text-slate-200">Essence Reward</p>
+          <div className="flex items-center justify-center mt-1">
+            <Sparkles size={24} className="text-purple-400 mr-2" />
+            <span className="text-2xl font-bold text-purple-300">
+              {formatNumber(potentialEssenceReward)}
+            </span>
           </div>
         </div>
 
-        {/* Display essence multiplier bonus */}
-        {potentialEssenceReward > 0 && (
-          <p className="text-sm text-green-400 mb-4 text-center">
-            Prestige Bonus: +{formatNumber(essenceMultiplierBonus)}% to all income (Each essence grants +10%)
+        {/* Current and Total Boost */}
+        <div className="text-center mb-4 w-full">
+          <p className="text-md font-semibold text-green-400">
+            Current Boost: +{currentBoost}%
           </p>
-        )}
+          <p className="text-md font-semibold text-green-400">
+            New Boost: +{totalBoost}%
+          </p>
+          <p className="text-sm text-slate-300 mt-1">
+            Total Essence: {formatNumber(currentEssence)} → {formatNumber(newEssenceTotal)}
+          </p>
+        </div>
 
-        {/* Display current essence multiplier */}
+        {/* Essence Description */}
         <p className="text-sm text-slate-300 mb-4 text-center">
-          Current Essence Multiplier: {formatNumber((calculateEssenceMultiplier(currentEssence) - 1) * 100)}% 
-          ({formatNumber(currentEssence)} essence)
+          Essence is a powerful resource earned by resetting progress. It boosts all income permanently!
         </p>
 
-        {/* Display essence boost bonus if active */}
-        {hasEssenceBoost && (
-          <p className="text-sm text-yellow-400 mb-4 text-center">
-            Essence Boost Active: +{formatNumber(essenceBoostBonus)}% this prestige ({tempEssenceBoostStacks} stack{tempEssenceBoostStacks !== 1 ? 's' : ''})
-          </p>
-        )}
-        
-        <p className="text-center text-slate-300 mb-4">
-          Reset your progress in exchange for essence, which permanently boosts your income. Each essence earned increases all income by 10%.
-        </p>
-        
-        <div className="border-t border-indigo-500/20 w-full my-2"></div>
-        
-        <p className="text-sm text-slate-400 mb-4 text-center">
-          Essence reward scales with total coins earned. Earn your first essence at 100k coins, with costs doubling every 5 essence.
-        </p>
-        
+        {/* Prestige Button */}
         <button
           onClick={onPrestige}
-          className="bg-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-purple-700 transition-colors w-full"
+          className={`py-3 px-6 rounded-lg font-medium w-full transition-colors ${
+            potentialEssenceReward === 0
+              ? "bg-gray-600 text-slate-400 cursor-not-allowed"
+              : "bg-purple-600 text-white hover:bg-purple-700"
+          }`}
           disabled={potentialEssenceReward === 0}
         >
-          {potentialEssenceReward === 0 ? "Not enough coins to prestige" : "Prestige Now"}
+          {potentialEssenceReward === 0 ? "Need 100k Coins" : "Prestige Now"}
         </button>
-        
+
         {potentialEssenceReward === 0 && (
           <p className="text-xs text-red-400 mt-2 text-center">
-            You need at least 100,000 total coins to earn essence.
+            Earn {formatNumber(100000 - (state.totalEarned || 0))} more coins to prestige!
           </p>
         )}
       </div>

@@ -5,59 +5,48 @@ import PerkButton from './PerkButton';
 import { artifacts } from '@/utils/artifactsData';
 import { useBoostManager } from '@/hooks/useBoostManager';
 import { 
-  Beaker, 
-  Star, 
-  Diamond,
-  Zap,
-  DollarSign,
-  BarChart,
-  Clock,
-  Shield,
-  TrendingUp,
-  Battery,
-  Sparkles,
-  Trophy,
-  Settings,
-  Users,
-  Lightbulb,
-  Brain,
-  Heart,
+  Beaker, Star, Diamond, Sparkles, Flame, Sun, Bird, Wind, Zap, Music, Globe,
+  Gem, Pickaxe, Book, Banknote, Eye, CloudLightning, RefreshCw, Cloud,
+  Waves, CircleDot, PawPrint, Wrench, Moon
 } from 'lucide-react';
 
 const ArtifactsTab: React.FC = () => {
   const { state, unlockPerk } = useGame();
   const { getHighestUnlockedPerkValue, formatEffectDescription } = useBoostManager();
-  
-  // Unique icons for artifact perks (different from managers)
-  const artifactPerkIcons = [
-    <Zap size={16} className="text-yellow-400" />,
-    <DollarSign size={16} className="text-green-500" />,
-    <BarChart size={16} className="text-blue-400" />,
-    <Clock size={16} className="text-amber-300" />,
-    <Shield size={16} className="text-red-400" />,
-    <TrendingUp size={16} className="text-indigo-400" />,
-    <Battery size={16} className="text-cyan-300" />,
-    <Sparkles size={16} className="text-amber-400" />,
-    <Trophy size={16} className="text-yellow-500" />,
-    <Settings size={16} className="text-gray-400" />,
-    <Users size={16} className="text-green-300" />,
-    <Lightbulb size={16} className="text-orange-400" />,
-    <Brain size={16} className="text-blue-500" />,
-    <Heart size={16} className="text-pink-400" />,
-    <Star size={16} className="text-purple-500" />,
-    <Diamond size={16} className="text-teal-400" />,
-  ];
 
-  // Flatten all perks across all artifacts and assign icons
-  const allPerks = artifacts.flatMap(artifact => 
-    artifact.perks ? artifact.perks.map(perk => ({ ...perk, artifactId: artifact.id })) : []
-  );
-  
-  const perkIconMap = new Map<string, React.ReactNode>();
-  allPerks.forEach((perk, index) => {
-    perkIconMap.set(perk.id, artifactPerkIcons[index % artifactPerkIcons.length]);
-  });
-  
+  const perkIconMap = new Map<string, React.ReactNode>([
+    ["artifact-1-perk-1", <Sparkles size={16} className="text-purple-500" />],
+    ["artifact-1-perk-2", <Flame size={16} className="text-purple-500" />],
+    ["artifact-1-perk-3", <Sun size={16} className="text-purple-500" />],
+    ["artifact-2-perk-1", <Bird size={16} className="text-purple-500" />],
+    ["artifact-2-perk-2", <Wind size={16} className="text-purple-500" />],
+    ["artifact-2-perk-3", <Zap size={16} className="text-purple-500" />],
+    ["artifact-3-perk-1", <Star size={16} className="text-purple-500" />],
+    ["artifact-3-perk-2", <Music size={16} className="text-purple-500" />],
+    ["artifact-3-perk-3", <Globe size={16} className="text-purple-500" />],
+    ["artifact-4-perk-1", <Gem size={16} className="text-purple-500" />],
+    ["artifact-4-perk-2", <Pickaxe size={16} className="text-purple-500" />],
+    ["artifact-4-perk-3", <Book size={16} className="text-purple-500" />],
+    ["artifact-5-perk-1", <Diamond size={16} className="text-purple-500" />],
+    ["artifact-5-perk-2", <Eye size={16} className="text-purple-500" />],
+    ["artifact-5-perk-3", <Banknote size={16} className="text-purple-500" />],
+    ["artifact-6-perk-1", <Zap size={16} className="text-purple-500" />],
+    ["artifact-6-perk-2", <PawPrint size={16} className="text-purple-500" />], // Replaced Horse with PawPrint
+    ["artifact-6-perk-3", <CloudLightning size={16} className="text-purple-500" />],
+    ["artifact-7-perk-1", <Flame size={16} className="text-purple-500" />],
+    ["artifact-7-perk-2", <Bird size={16} className="text-purple-500" />],
+    ["artifact-7-perk-3", <RefreshCw size={16} className="text-purple-500" />],
+    ["artifact-8-perk-1", <Cloud size={16} className="text-purple-500" />],
+    ["artifact-8-perk-2", <Waves size={16} className="text-purple-500" />],
+    ["artifact-8-perk-3", <CircleDot size={16} className="text-purple-500" />],
+    ["artifact-9-perk-1", <PawPrint size={16} className="text-purple-500" />],
+    ["artifact-9-perk-2", <Pickaxe size={16} className="text-purple-500" />],
+    ["artifact-9-perk-3", <Wrench size={16} className="text-purple-500" />],
+    ["artifact-10-perk-1", <Moon size={16} className="text-purple-500" />],
+    ["artifact-10-perk-2", <PawPrint size={16} className="text-purple-500" />], // Replaced Horse with PawPrint
+    ["artifact-10-perk-3", <Star size={16} className="text-purple-500" />],
+  ]);
+
   return (
     <div className="w-full max-w-md mx-auto pb-8">
       <h2 className="text-lg font-medium mb-4 text-center text-slate-100">Powerful Artifacts</h2>
@@ -78,7 +67,6 @@ const ArtifactsTab: React.FC = () => {
                 ${isOwned ? 'opacity-100' : 'opacity-50'}`}
             >
               <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">
-                {/* artifact.avatar is now a static import path, resolved to a string by the bundler */}
                 <AvatarImage src={artifact.avatar} alt={artifact.name} />
                 <AvatarFallback className="bg-purple-900/50 text-purple-300 rounded-xl">
                   {artifact.id.includes("artifact-1") ? (
@@ -103,7 +91,7 @@ const ArtifactsTab: React.FC = () => {
               
               {artifact.perks && artifact.id !== "artifact-default" && (
                 <div className="flex flex-col items-center justify-center ml-auto">
-                  {artifact.perks.map(perk => (
+                  {artifact.perks.map((perk, index) => (
                     <PerkButton 
                       key={perk.id}
                       perk={perk}
@@ -111,6 +99,8 @@ const ArtifactsTab: React.FC = () => {
                       onUnlock={unlockPerk}
                       disabled={!isOwned}
                       icon={perkIconMap.get(perk.id)}
+                      perkIndex={index}
+                      parentPerks={artifact.perks}
                     />
                   ))}
                 </div>

@@ -12,31 +12,21 @@ interface EditCustomizationProps {
 
 const EditCustomization: React.FC<EditCustomizationProps> = ({ onClose }) => {
   const { state, updatePortrait, updateTitle } = useGame();
-  const [selectedPortrait, setSelectedPortrait] = useState(state.portrait);
-  const [selectedTitle, setSelectedTitle] = useState(state.title);
+  const [selectedPortrait, setSelectedPortrait] = useState(state.playerData.portrait || 'default');
+  const [selectedTitle, setSelectedTitle] = useState(state.playerData.title || 'space_pilot');
 
-  const levelData = getLevelFromExp(state.totalEarned || 0);
-  const unlockedPortraitIds = getUnlockedPortraits(
-    levelData.currentLevel.level, 
-    state.achievements.map(a => a.id),
-    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
-    true // Unlock all portraits by default
-  ).map(p => p.id);
-  const unlockedTitleIds = getUnlockedTitles(
-    levelData.currentLevel.level, 
-    state.achievements.map(a => a.id),
-    state.prestigeCount || 0, // Adjust if prestigeCount isn’t in state
-    true // Unlock all titles by default
-  ).map(t => t.id);
+  const levelData = getLevelFromExp(state.playerData.experience || 0);
+  const unlockedPortraitIds = state.playerData.unlockedPortraits || ['default'];
+  const unlockedTitleIds = state.playerData.unlockedTitles || ['space_pilot'];
 
   const handleApply = () => {
-    if (selectedPortrait !== state.portrait && unlockedPortraitIds.includes(selectedPortrait)) {
+    if (selectedPortrait !== state.playerData.portrait && unlockedPortraitIds.includes(selectedPortrait)) {
       updatePortrait(selectedPortrait);
     }
-    if (selectedTitle !== state.title && unlockedTitleIds.includes(selectedTitle)) {
+    if (selectedTitle !== state.playerData.title && unlockedTitleIds.includes(selectedTitle)) {
       updateTitle(selectedTitle);
     }
-    onClose(); // Close after applying
+    onClose();
   };
 
   return (
